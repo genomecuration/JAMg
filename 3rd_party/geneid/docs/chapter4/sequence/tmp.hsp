@@ -1,7 +1,0 @@
-example1	blast	hsp	736	1130	150.000	+	1
-example1	blast	hsp	5504	5618	150.000	+	3
-example2	blast	hsp	55	276	150.000	-	1
-example3	blast	hsp	736	1130	150.000	+	1
-example3	blast	hsp	5504	5618	150.000	+	3
-example4	blast	hsp	55	276	150.000	-	1
-exampleN	blast	hsp	55	276	150.000	-	1
