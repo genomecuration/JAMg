@@ -1,0 +1,29 @@
+#line with the length of the sequence
+seq2	EMBL	Sequence	1	1000	.	.	.	1
+#annotations for this sequence
+seq2	EMBL	First	1	4	.	+	0	1
+HSU65896	EMBL	Terminal	6	10	.	+	0	1
+seq2	EMBL	Single	16	18	.	+	0	2
+seq2	EMBL	Single	20	26	.	+	0	3
+seq2	EMBL	Single	27	28	.	+	0	4
+seq2	EMBL	Single	30	32	.	+	0	5
+$
+#line with the length of the sequence
+seq2	EMBL	Sequence	1	1000	.	.	.	1
+#annotations for this sequence
+seq2	EMBL	First	1	4	.	+	0	1
+HSU65896	EMBL	Terminal	6	10	.	+	0	1
+seq2	EMBL	Single	16	18	.	+	0	2
+seq2	EMBL	Single	20	26	.	+	0	3
+seq2	EMBL	Single	27	28	.	+	0	4
+seq2	EMBL	Single	30	32	.	+	0	5
+$
+#line with the length of the sequence
+seq2	EMBL	Sequence	1	1000	.	.	.	1
+#annotations for this sequence
+seq2	EMBL	First	1	4	.	+	0	1
+HSU65896	EMBL	Terminal	6	10	.	+	0	1
+seq2	EMBL	Single	16	18	.	+	0	2
+seq2	EMBL	Single	20	26	.	+	0	3
+seq2	EMBL	Single	27	28	.	+	0	4
+seq2	EMBL	Single	30	32	.	+	0	5

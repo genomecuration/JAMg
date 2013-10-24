@@ -1,0 +1,12 @@
+track name='test.fsa.transdecoder.gff3'
+asmbl_31248	0	1896	ID=asmbl_31248|m.17;asmbl_31248|g.17;ORF_asmbl_31248|g.17_asmbl_31248|m.17_type:complete_len:572_(+)	0	+	69	1785	.	1	1896	0
+asmbl_31253	0	1635	ID=asmbl_31253|m.19;asmbl_31253|g.19;ORF_asmbl_31253|g.19_asmbl_31253|m.19_type:5prime_partial_len:466_(+)	0	+	2	1400	.	1	1635	0
+asmbl_31266	0	3638	ID=asmbl_31266|m.14;asmbl_31266|g.14;ORF_asmbl_31266|g.14_asmbl_31266|m.14_type:complete_len:716_(+)	0	+	431	2579	.	1	3638	0
+asmbl_31273	0	848	ID=asmbl_31273|m.6;asmbl_31273|g.6;ORF_asmbl_31273|g.6_asmbl_31273|m.6_type:5prime_partial_len:120_(-)	0	-	487	847	.	1	848	0
+asmbl_31608	0	5712	ID=asmbl_31608|m.8;asmbl_31608|g.8;ORF_asmbl_31608|g.8_asmbl_31608|m.8_type:complete_len:614_(+)	0	+	99	1941	.	1	5712	0
+asmbl_31608	0	5712	ID=asmbl_31608|m.11;asmbl_31608|g.11;ORF_asmbl_31608|g.11_asmbl_31608|m.11_type:complete_len:132_(-)	0	-	1899	2295	.	1	5712	0
+asmbl_31611	0	5391	ID=asmbl_31611|m.1;asmbl_31611|g.1;ORF_asmbl_31611|g.1_asmbl_31611|m.1_type:complete_len:1154_(+)	0	+	1205	4667	.	1	5391	0
+asmbl_31611	0	5391	ID=asmbl_31611|m.5;asmbl_31611|g.5;ORF_asmbl_31611|g.5_asmbl_31611|m.5_type:complete_len:109_(-)	0	-	310	637	.	1	5391	0
+asmbl_33354	0	1647	ID=asmbl_33354|m.12;asmbl_33354|g.12;ORF_asmbl_33354|g.12_asmbl_33354|m.12_type:complete_len:411_(-)	0	-	308	1541	.	1	1647	0
+asmbl_33359	0	3053	ID=asmbl_33359|m.16;asmbl_33359|g.16;ORF_asmbl_33359|g.16_asmbl_33359|m.16_type:complete_len:837_(-)	0	-	410	2921	.	1	3053	0
+asmbl_33396	0	693	ID=asmbl_33396|m.18;asmbl_33396|g.18;ORF_asmbl_33396|g.18_asmbl_33396|m.18_type:5prime_partial_len:147_(+)	0	+	0	441	.	1	693	0

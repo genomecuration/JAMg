@@ -1,0 +1,652 @@
+<html>
+<head>
+<style type="text/css">
+div.bulk { text-align: justify }
+</style>
+<title>
+geneid docs
+</title>
+</head>
+
+<BODY 
+TEXT color ="blue"
+BGCOLOR="white"
+LINK="blue"
+VLINK="blue"
+ALINK="blue">
+
+<center>
+<table border=0 width=700>
+<tr>
+<td align=left>
+<font face=courier size=5 color=red><b>geneid documentation:</b></font>
+</td>
+<td align=right>
+<font face="arial black" size=3>8. <tt>geneid</tt> parameter file</font>
+</td>
+</table>
+
+<br><p><br><p>
+<table border=0 width=700 cellpadding=10>
+<tr>
+<td bgcolor="red"><font face="arial black" size=3>Table of contents:</font></td>
+<tr>
+<td>
+<div class="bulk"><font face="arial black" size=2>
+<ol>
+<li> <a href="#description">Description</a>
+<li> <a href="#gm">The GENE MODEL</a>
+<li> <a href="#acc">Acceptor splice sites: 
+Branch Points and  Poly Pyrimidine Tracts</a>
+<li> <a href="#full">Full description</a>
+
+<li> <a href="./../index.html">INDEX</a>
+</ol>
+</font>
+</div>
+</td>
+</table>
+
+<br><p><br><p>
+<table border=0 width=700 cellpadding=10>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Description:</font>
+<a name ="description"></td>
+<tr>
+<td>
+<div class="bulk"><font face="arial black" size=2>
+<tt>geneid</tt> relies on a parameter file to build the predictions. 
+The parameter file contains
+mostly the description of the probabilistic model on which the predictions
+are based. It also contains the so-called gene model at the end, the set of 
+rules describing how to chain gene elements (such as exons) into gene 
+predictions. Through the usage of the gene model
+and the options <tt>O/R</tt>, <tt>geneid</tt> offers support for the
+integration of predictions from multiple sources.
+</font>
+</div>
+</td>
+</table>
+
+<br><p><br><p>
+<table border=0 width=700 cellpadding=10>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>The GENE MODEL</font>
+<a name ="gm"></td>
+<tr>
+<td>
+<div class="bulk"><font face="arial black" size=2>
+The gene model is the list of rules describing the constrains under which,
+predicted gene elements must be joined together in the final output. This
+constrains refer to the succession of elements in the gene structure and
+to the range of allowed distances among them.
+
+<br><p>
+<center>
+<table border=1 cellpadding=10 width=600>
+<tr>
+<td align=center bgcolor="skyblue">
+<font size=2>
+<pre>
+#Intragenic connections
+First+:Internal+     Internal+:Terminal+     40:11000
+</pre>
+</font>
+</td>
+</table>
+</center>
+<br><p>
+For instance, the rule above indicates that elements (exons) of type
+<tt>Internal</tt> or <tt>Terminal</tt>, must be chained immediately after
+elements of type <tt>First</tt> or <tt>Internal</tt> in the forward strand.
+The third column indicates the range at which they can be chained. In this
+rule, the predicted elements must be at least 40 bp and at most 11000, apart.
+The equivalent rule for the reverse sense is:
+<br><p>
+<center>
+<table border=1 cellpadding=10 width=600>
+<tr>
+<td align=center bgcolor="skyblue">
+<font size=2>
+<pre>
+#Intragenic connections (reverse)
+Terminal-:Internal-     Internal-:First-    40:11000
+</pre>
+</font>
+</td>
+</table>
+</center>
+<br><p>
+The following rule specifies the constrains governing connections between
+genes:
+<br><p>
+<center>
+<table border=1 cellpadding=10 width=600>
+<tr>
+<td align=left bgcolor="skyblue">
+<font size=2>
+<pre>
+#Intergenic connections
+Terminal+       First+:Terminal-        500:Infinity
+First-          First+:Terminal-        500:Infinity
+</pre>
+</font>
+</td>
+</table>
+</center>
+<br><p>
+First line describes the relationship between the end of a gene
+in the forward strand  and the beginning of another one in the positive
+strand or the end of a gene in the reverse strand.
+Second rule defines the connections between the beginning of a gene
+in the reverse strand and the beginning of a gene in the forward strand
+or the end of another gene in reverse strand. To specify no maximum 
+distance constrains, the keyword Infinity must be used.
+<br><p>
+The present version of <tt>geneid</tt> predicts elements with types
+<tt>First, Internal, Terminal and Single</tt>. Gene termination is 
+coded within the program with the features <tt>First+/Terminal-</tt> 
+(start) and <tt>First-/Terminal+</tt> (end) while <tt>Single+/Single-</tt> 
+are both start and end from genes. Other elements in the additional 
+files provided externally (O/R options) are ignored when they are not 
+defined in any rule of the gene model.
+<br><p>
+<center>
+<table border=1 cellpadding=10 width=600>
+<tr>
+<td align=left bgcolor="skyblue">
+<font size=2>
+<pre>
+# BEGINNING and END of prediction
+Begin+        First+:Internal+:Terminal+:Single+  0:Infinity
+Begin-        First-:Internal-:Terminal-:Single-  0:Infinity
+First+:Internal+:Terminal+:Single+   End+         0:Infinity
+First-:Internal-:Terminal-:Single-   End-         0:Infinity
+</pre>
+</font>
+</td>
+</table>
+</center>
+<br><p>
+Rules above are defining which elements are allowed to start and
+finish the prediction output. Option -F forces <tt>geneid</tt> to 
+predict a complete gene structure in the input sequence. That is, 
+either First-(Internal)*-Terminal, Terminal-(Internal)*-First or a 
+single-exon gene.
+</font>
+</div>
+</td>
+</table>
+
+<br><p><br><p>
+<table border=0 width=700 cellpadding=10>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Acceptor Splice sites:</font>
+<a name ="acc"></td>
+<tr>
+<td>
+<div class="bulk"><font face="arial black" size=2>
+<tt>geneid</tt> can predict both the putative branch point and 
+the putative Poly Pyrimidine Tract for each predicted acceptor. In order
+to obtain such predictions, separate optional profiles for one of them or 
+both additional signals must be provided in the parameter file. It is always 
+mandatory to have a very basic acceptor profile to detect the core of the 
+signal: <tt>AG</tt>.
+<br><p>
+Then, the structure
+of the parameter file in that section would be:
+<br><p>
+<center>
+<table border=1>
+<tr>
+<td bgcolor=lightblue>
+<pre>
+<b>
+Branch_point_profile
+20 0 0 1
+# Transition probabilities at every position
+1 AA -0.128982
+1 AC 0.401934
+1 AG -0.580466
+1 AT 0.293935
+1 CA -0.41815
+1 CC 0.0892966
+1 CG -0.350502
+1 CT 0.294759
+1 GA -0.103346
+1 GC 0.110032
+1 GG -0.345638
+1 GT 0.358765
+1 TA -0.111567
+...
+
+Poly_Pyrimidine_Tract_profile
+20 0 0 1
+# Transition probabilities at every position
+1 AA -0.128982
+1 AC 0.401934
+1 AG -0.580466
+1 AT 0.293935
+1 CA -0.41815
+1 CC 0.0892966
+1 CG -0.350502
+1 CT 0.294759
+1 GA -0.103346
+1 GC 0.110032
+1 GG -0.345638
+1 GT 0.358765
+1 TA -0.111567
+1 TC 0.0519978
+1 TG -0.300144
+1 TT 0.273584
+2 AA -0.082934
+2 AC 0.399051
+2 AG -0.606083
+2 AT 0.221358
+2 CA -0.320746
+2 CC 0.0964467
+2 CG 0.0141593
+2 CT 0.15082
+2 GA -0.00298645
+...
+
+Acceptor_profile
+7 4 -7 1
+# Transition probabilities at every position
+
+1 AA 0.489398
+1 AC 0.559547
+1 AG -1.62606
+1 AT -0.114812
+1 CA -0.0513558
+1 CC 0.240873
+1 CG 0.463496
+1 CT -0.413189
+1 GA -0.287557
+1 GC 0.250994
+1 GG 0.152369
+1 GT -0.255893
+1 TA -0.353906
+1 TC 0.166021
+1 TG -0.0541454
+1 TT 0.150306
+2 AA -1.45683
+2 AC 0.970558
+2 AG -4.94779
+2 AT 0.397884
+2 CA -1.93025
+2 CC 0.36421
+2 CG -3.01555
+2 CT 0.565917
+2 GA -1.98417
+2 GC 0.970977
+2 GG -4.5318
+2 GT 0.383942
+2 TA -1.24867
+2 TC 0.614448
+2 TG -5.14748
+2 TT 0.758865
+3 AA 0.000
+3 AC -9999
+3 AG -9999
+3 AT -9999
+3 CA 0.000
+3 CC -9999
+3 CG -9999
+3 CT -9999
+3 GA 0.000
+3 GC -9999
+3 GG -9999
+3 GT -9999
+3 TA 0.000
+3 TC -9999
+3 TG -9999
+3 TT -9999
+4 AA -9999
+4 AC -9999
+4 AG 0.000
+4 AT -9999
+4 CA -9999
+4 CC -9999
+4 CG -9999
+4 CT -9999
+4 GA -9999
+4 GC -9999
+4 GG -9999
+4 GT -9999
+4 TA -9999
+4 TC -9999
+4 TG -9999
+4 TT -9999
+5 AA -9999
+5 AC -9999
+5 AG -9999
+5 AT -9999
+5 CA -9999
+5 CC -9999
+5 CG -9999
+5 CT -9999
+5 GA -0.17512
+5 GC -0.456677
+5 GG 0.573456
+5 GT -0.627791
+5 TA -9999
+5 TC -9999
+5 TG -9999
+5 TT -9999
+6 AA -0.213185
+6 AC -0.085246
+6 AG -0.346927
+6 AT 0.573534
+6 CA -0.33339
+6 CC -0.154707
+6 CG 0.349989
+6 CT 0.305452
+6 GA -0.120601
+6 GC -0.354317
+6 GG -0.061412
+6 GT 0.491861
+6 TA -0.316615
+6 TC -0.244502
+6 TG 0.049206
+6 TT 0.276332
+7 AA 0.0223094
+7 AC 0.25836
+7 AG -0.361517
+7 AT 0.168915
+7 CA -0.238056
+7 CC 0.195423
+7 CG 0.184102
+7 CT -0.00295397
+7 GA -0.22978
+7 GC 0.203999
+7 GG -0.0720478
+7 GT 0.162323
+7 TA -0.111801
+7 TC 0.00204436
+7 TG 0.108514
+7 TT -0.0726444
+</b></pre>
+</td>
+</table>
+</center>
+</font>
+</div>
+</td>
+</table>
+
+<br><p>
+<table border=0 width=700 cellpadding=10>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Full description:</font>
+<a name ="full"></td>
+<tr>
+<td>
+<div class="bulk"><font face="arial black" size=2>
+
+<br><p>
+<table border=0 width=600 cellpadding=10>
+<tr>
+<td bgcolor="white">
+<b>(1)</b>
+This the general structure in geneid parameter files:
+<tt>NO_SCORE</tt> parameter, information model to predict genomic elements 
+according to the G+C content
+of every sequence fragment, and gene model to assemble the predictions
+following series of rules.</td>
+
+<tr>
+<td>
+<font size=1>
+<tt>NO_SCORE</tt> is the value that will be used to score exon positions that
+do not overlap with any input HSP. By default, its value is zero, but it can be
+modified to enhance the appearance of predictions supported by homology 
+information (option -S).
+</font>
+</td>
+
+<tr>
+<td bgcolor="lightblue">
+<font size=2 color="black">
+<b>
+<pre>
+<font color=red>
+# 0. Non-homology penalty</font>
+NO_SCORE
+0
+
+<font color=red>
+#1. ISOCHORE DEPENDENT INFORMATION</font>
+number_of_isochores
+3
+
+# SET OF PARAMETERS FOR ISOCHORE 1
+boundaries_of_isochore
+0  40
+<font color="white">...</font>
+# SET OF PARAMETERS FOR ISOCHORE 2
+boundaries_of_isochore
+40  70
+<font color="white">...</font>
+# SET OF PARAMETERS FOR ISOCHORE 3
+boundaries_of_isochore
+70  100
+<font color="white">...</font>
+
+<font color=red>#2. GENE ASSEMBLING RULES (gene model)</font>
+<font color="white">...</font>
+</pre></b></font>
+</td>
+<tr>
+<td bgcolor="white">
+<b>(2)</b>
+This the general structure for every isochore model: cutoff values to filter
+exons after scoring, profiles to discover genomic signals, Markov
+model matrices to measure coding potential property and maximum number
+of exons starting with the same starting signal.
+</td>
+<tr>
+<td bgcolor="lightblue">
+<font size=2 color="black">
+<b>
+<pre>
+# SET OF PARAMETERS FOR ISOCHORE 1
+boundaries_of_isochore
+0  40
+
+<font color=red>#1. SET OF PARAMETERS to filter exons</font>
+<font color="white">...</font>
+
+<font color=red>#2. PROFILES TO PREDICT SIGNALS</font>
+<font color="white">...</font>
+
+<font color=red>#3. MARKOV MODEL TO ESTIMATE CODING POTENTIAL</font>
+<font color="white">...</font>
+
+<font color=red>#4. Maximum amount of exons with every left signal</font>
+maximum_number_of_donors_per_acceptor_site
+5
+</pre></b></font>
+</td>
+<tr>
+<td bgcolor="white">
+<b>(3)</b>
+Parameters for filtering exons depending on their coding potential score:
+cutoff on the final exon score, cutoff on the protein coding potential
+score, factors for weighting site score, coding potential score and 
+homology score and finally exon weight parameter (value added to exons 
+which have overcome all of the previous filters: penalty to avoid predicting 
+long genes with too many exons due to the additive schema under gene 
+assembling model). There are always 4 values for each of exon types: First, 
+Internal, Terminal and Single.
+</td>
+<tr>
+<td bgcolor="lightblue">
+<font size=2 color="black">
+<b>
+<pre>
+# SET OF PARAMETERS to filter exons
+
+<font color="red">Total_score_cutoff</font>
+-15 -15 -15 -15
+
+<font color="red">Coding_potential_score_cutoff</font>
+-10 -15 -15 -15
+
+<font color="red">Site_factor</font>
+0.6 0.6 0.6 0.6
+
+<font color="red">Exon_factor</font>
+0.4 0.4 0.4 0.4
+
+<font color="red">HSP_factor</font>
+1.0 1.0 1.0 1.0
+
+<font color="red">Exon_weight_values</font>
+-7 -7 -7 -7
+</pre></b></font>
+</td>
+<tr>
+<td bgcolor="white">
+<b>(4)</b> This a generic profile to predict genomic signals: start / stop
+codons or acceptor / donor splice sites. This type of profile is called
+Position Weight Array: a matrix addressed by (nucleotide,position) in which
+every cell contains a loglikelihood ratio between a Markov model (order k)
+recognizing true sites and another one, matching false ones. Therefore,
+for every nucleotide in a candidate region, is scored the probability to
+find the oligonucleotide (length k) before that nucleotide whether the region
+contains a true site or not. PWA are well characterized by defining 4 parameters:
+<ul>
+<li>length of profile (region to be scanned)
+<li>offset: distance from the beginning of the profile to the characteristic
+or core element for that signal (i.e. ATG in start codons)
+<li>cutoff: score to filter false signals
+<li>order (Markov chains): length of oligonucleotides used to score every
+element in the candidate region
+</ul>
+</td>
+<tr>
+<td bgcolor="lightblue">
+<font size=2 color="black">
+<b>
+<pre>
+<font color="red">Start profile</font>
+20 14 -6 2
+
+<font color="red"># Position Weight Array</font>
+
+1 AAA -0.230297
+1 AAC 0.519562
+1 AAG 0.301505
+1 AAT -0.519705
+1 ACA -0.688891
+1 ACC 0.483538
+<font color="white">...</font>
+20 TGT -0.483268
+20 TTA -0.545436
+20 TTC 0.557414
+20 TTG -0.0335678
+20 TTT -0.172498
+
+<font size=1>
+# e.g. Given S=ATGAGC then
+# score(GAGC) = score(1,ATG) + score(2,TGA) + score(3,GAG) + score(4,AGC)
+</font></pre></b></font>
+</td>
+<tr>
+<td bgcolor="white">
+<b>(5)</b> Model to measure the protein coding potential of genomic regions.
+A Markov model (chains of order 5) are usually used, having 2 types of
+matrices: initial (for scoring the first pentanucleotide of an exon) and
+transition (for scoring the exon by taking 5+1 nucleotides until reaching
+the end of the exon). Initial matrix has been computed by measuring the
+ratio between frequency of pentanucleotides found in real exons and
+contained in intronic regions. Transition matrix has been computed by
+measuring the ratio between the probability to find a pentanucleotide X in
+codon position CP (translation) before a given nucleotide, in a real exon or
+in a false one (intronic region).
+</td>
+<tr>
+<td bgcolor="lightblue">
+<font size=2 color="black">
+<b>
+<pre>
+<font color="red"># Markov model (log likelihood ratio)</font>
+<font color="red">Markov_model_order</font>
+5
+
+<font color="red">Markov_initial_probability_matrix</font>
+AAAAA 0 0 -0.85727
+AAAAA 0 1 -1.48328
+AAAAA 0 2 -1.72858
+AAAAC 1 0 -0.377093
+AAAAC 1 1 -0.202228
+AAAAC 1 2 -0.961698
+<font color="white">...</font>
+
+<font color="red">Markov_transition_probability_matrix</font>
+AAAAAA 0 0 -1.10797
+AAAAAA 0 1 -0.736771
+AAAAAA 0 2 -0.570196
+AAAAAC 1 0 0.961644
+AAAAAC 1 1 0.516564
+AAAAAC 1 2 0.646909
+</pre></b></font>
+</td>
+<tr>
+<td bgcolor="white">
+<b>(6)</b> Gene model rules. Rules defining which exon types are allowed
+to join to others, respecting minimum and maximum distance requirement.
+First column of rule are features which will be assembled before features
+in the second one, respecting the distances (third column). The word
+"block" is used to preserve connections between exons sharing the same
+identifier (group), as annotated genes (evidences) without mixing them
+with ab initio predictions. Minimum distance is the smallest allowed
+distance between the end and start of both connected exons while maximum
+distance is the highest allowed distance to connect two exons (the reserved
+word "Infinity" is used to disable the maximum restriction to save time
+consuming). Connection between exons, depending on their type, are sometimes
+actual gene connections (i.e. a Terminal exon with a First exon means joining
+the end of a gene with the beginning of another one).
+</td>
+<tr>
+<td bgcolor="lightblue">
+<font size=2 color="black">
+<b>
+<pre>
+<font color="red">#Intronic connections</font>
+First+:Internal+       Internal+:Terminal+      20:25000 block
+Terminal-:Internal-    First-:Internal-         20:25000 block
+</pre></b></font>
+</td>
+</table>
+
+</font>
+</div>
+</td>
+</table>
+
+
+
+<br><p><br><p><br><p>
+
+<table border=0>
+<tr>
+<td align=left bgcolor=darkgreen>
+<script>
+var modifieddate=document.lastModified
+    document.write("<font size=1 face  = 'arial black'  color='white'>" + 
+                   "Last modified: " + modifieddate)
+</script>
+</td>
+</table>
+
+<br><p>
+Enrique Blanco Garcia &copy; 2003<br><p><br><p>
+</center>
+</body>
+</html>
+
+
+
+

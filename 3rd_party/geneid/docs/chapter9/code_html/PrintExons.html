@@ -1,0 +1,146 @@
+<html>
+<head>
+<style type="text/css">
+div.bulk { text-align: justify }
+</style>
+<title>
+geneid source docs
+</title>
+</head>
+
+<BODY 
+TEXT color ="blue"
+BGCOLOR="white"
+LINK="black"
+VLINK="black"
+ALINK="black">
+
+<center>
+<table border=0 width=700>
+<tr>
+<td align=left>
+<font face=courier size=5 color=red>PrintExons.c</font>
+</td>
+<td align=right>
+<font face=courier size=3>geneid v 1.1</font>
+<font face=arial black size=3>source documentation</font>
+</td>
+</table>
+
+<br><p><br><p>
+<table border=0 width=700 cellpadding=10>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Description:</font></td>
+<tr>
+<td>
+<div class="bulk"><font face="arial black" size=2>
+Output predicted exons, selecting the proper format according to the
+setup options and whether the exon is part of a gene (gff/xml/geneid)
+or not (gff/geneid).
+</font>
+</div>
+</td>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Briefing:</font></td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+void PrintExon(exonGFF *e, char Name[], char* s, dict* dAA)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+Print a exon, previously translated into amino acids, using the proper
+output format taking into account the positions plus offsets (corrections),
+if exon is not an annotation.
+</font>
+</div>
+</td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+void PrintExons (exonGFF *e,
+                 long ne,
+                 int type,
+                 char Name[],
+                 long l1, long l2,
+                 char* Sequence,
+                 dict* dAA)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+Print a list of exons by using the proper output format.
+</font>
+</div>
+</td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+void PrintGExon(exonGFF *e,
+                char Name[],
+                char* s,
+                dict* dAA,
+                long ngen,
+                int AA1,
+                int AA2,
+                int nAA)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+Print an exon which is part of a gene (identifer, amino acid positions) in
+gff/geneid format. For annotations, type field is different.
+</font>
+</div>
+</td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+void PrintXMLExon(exonGFF *e,
+                  char Name[],
+                  long ngen,
+                  long nExon,
+                  int type1,
+                  int type2,
+                  int nExons) 
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+Print an exon which is part of a gene by using the XML format.
+</font>
+</div>
+</td>
+</table>
+
+<br><p><br><p><br><p>
+
+<table border=0>
+<tr>
+<td align=left bgcolor=darkgreen>
+<script>
+var modifieddate=document.lastModified
+    document.write("<font size=1 face  = 'arial black'  color='white'>" + 
+                   "Last modified: " + modifieddate)
+</script>
+</td>
+</table>
+
+<br><p>
+Enrique Blanco Garcia &copy; 2001<br><p><br><p>
+</center>
+</body>
+</html>
+
+
+
+

@@ -1,0 +1,124 @@
+<html>
+<head>
+<style type="text/css">
+div.bulk { text-align: justify }
+</style>
+<title>
+geneid docs
+</title>
+</head>
+
+<BODY 
+TEXT color ="blue"
+BGCOLOR="white"
+LINK="blue"
+VLINK="blue"
+ALINK="blue">
+
+<center>
+<table border=0 width=700>
+<tr>
+<td align=left>
+<font face=courier size=5 color=red><b>geneid documentation:</b></font>
+</td>
+<td align=right>
+<font face="arial black" size=3>5. Assembling predicted exons into gene structures</font>
+</td>
+</table>
+
+<br><p><br><p>
+<table border=0 width=700 cellpadding=10>
+<tr>
+<td bgcolor="red"><font face="arial black" size=3>Table of contents:</font></td>
+<tr>
+<td>
+<div class="bulk"><font face="arial black" size=2>
+<ol>
+<li> <a href="#exons">Assembling exons</a>
+<li> <a href="#others">Working with promoters, polyA tails, CpG islands,...</a>
+<li> <a href="./../index.html">INDEX</a>
+</ol>
+</font>
+</div>
+</td>
+</table>
+
+<br><p><br><p>
+<table border=0 width=700 cellpadding=10>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Assembling exons:</font>
+<a name ="exons"></td>
+<tr>
+<td>
+<div class="bulk"><font face="arial black" size=2>
+<tt>geneid</tt> can be used to chain predicted exons, obtained through
+sources other than <tt>geneid</tt>, into coherent structures. The score
+associated to the input predicted exons will be used to predict the gene
+structure that maximizes the sum of scores of assembled exons. There is no
+point in using <tt>geneid</tt> in this context when the sum of these scores
+is not a meaningful score.
+<br><p>
+The set of predicted exons must be given in an additional file formatted in
+<tt>gff</tt> style. <tt>geneid</tt> is instructed to read this file with
+the command line option <tt>-O filename</tt>. This file must be sorted
+by the starting position of the exons (column 4 in <tt>gff</tt> format).
+</font>
+</div>
+</td>
+</table>
+
+<br><p><br><p>
+<table border=0 width=700 cellpadding=10>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Working with promoters, polyA tails, CpG islands,...:</font>
+<a name ="others"></td>
+<tr>
+<td>
+<div class="bulk"><font face="arial black" size=2>
+Actually, the input file may include predicted genic elements of any type, such
+as promoters, repeats, etc... and not only, exons. The gene model lists
+the rules according to which the predicted elements must be chained.
+Elements types are identified through the feature name in the
+<tt>gff</tt> file. Therefore, this name must be employed in the gene model
+to refer to the element. The rules specify essentially which elements might
+be chained together and within which distances,
+<br><p>
+<tt>geneid</tt> implementation of this problem is not completely satisfactory
+due to the frame/remainder requirement. The remainder is automatically computed
+from the frame and length of the element. But assigning a frame to intergenic
+elements such as <i>promoters, CpG islands</i>,... is pointless, so the frame
+column for these elements is recommended to be specified with a point: '.'.
+<tt>geneid</tt> internally will expand every record into three (one per frame),
+and frame/remainder problem will be skipped.
+<br><p>
+Another solution to avoid this <tt>geneid</tt> limitation would be
+introducing elements with length multiple of three and frame 0 to
+skip the frame/remainder problem. Both solutions are temporary and not
+satisfactory so this problem will be solved in next releases.
+</font>
+</div>
+</td>
+</table>
+
+<br><p><br><p><br><p>
+
+<table border=0>
+<tr>
+<td align=left bgcolor=darkgreen>
+<script>
+var modifieddate=document.lastModified
+    document.write("<font size=1 face  = 'arial black'  color='white'>" + 
+                   "Last modified: " + modifieddate)
+</script>
+</td>
+</table>
+
+<br><p>
+Enrique Blanco Garcia &copy; 2003<br><p><br><p>
+</center>
+</body>
+</html>
+
+
+
+

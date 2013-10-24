@@ -1,0 +1,12 @@
+seq1	EMBL	Single	3	8	.	+	0	1
+$
+seq2	EMBL	Single	2	8	.	+	0	1
+seq2	EMBL	Single	12	14	.	+	0	2
+seq2	EMBL	Single	19	21	.	+	0	3
+seq2	EMBL	Single	22	23	.	+	0	4
+seq2	EMBL	Single	24	25	.	+	0	5
+seq2	EMBL	Single	27	34	.	+	0	6
+seq2	EMBL	Single	40	50	.	+	0	7
+$
+seq3	EMBL	Single	1	4	.	+	0	1
+

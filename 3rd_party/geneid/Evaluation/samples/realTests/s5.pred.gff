@@ -1,0 +1,28 @@
+HS04636	geneid_v1.0	First	966	1017	 2.19	+	0	gene_1	# AA   1: 18
+HS04636	geneid_v1.0	Internal	1818	1934	 1.52	+	2	gene_1	# AA  18: 57
+HS04636	geneid_v1.0	Internal	2055	2198	 1.49	+	2	gene_1	# AA  57:105
+HS04636	geneid_v1.0	Internal	2852	2995	 1.69	+	2	gene_1	# AA 105:153
+HS04636	geneid_v1.0	Internal	3426	3607	 3.06	+	2	gene_1	# AA 153:213
+HS04636	geneid_v1.0	Internal	4340	4423	 2.12	+	0	gene_1	# AA 214:241
+HS04636	geneid_v1.0	Internal	4543	4789	 4.68	+	0	gene_1	# AA 242:324
+HS04636	geneid_v1.0	Internal	5072	5358	 6.16	+	2	gene_1	# AA 324:419
+HS04636	geneid_v1.0	Internal	5860	6007	 5.90	+	0	gene_1	# AA 420:469
+HS04636	geneid_v1.0	Terminal	6494	6903	 9.09	+	2	gene_1	# AA 469:605
+$
+HS08198	geneid_v1.0	First	445	582	 0.46	+	0	gene_1	# AA   1: 46
+HS08198	geneid_v1.0	Internal	812	894	 0.08	+	0	gene_1	# AA  47: 74
+HS08198	geneid_v1.0	Internal	1053	1123	 2.57	+	1	gene_1	# AA  74: 98
+HS08198	geneid_v1.0	Internal	1208	1315	 0.92	+	2	gene_1	# AA  98:134
+HS08198	geneid_v1.0	Internal	1587	1688	 2.38	+	2	gene_1	# AA 134:168
+HS08198	geneid_v1.0	Internal	1772	1810	 1.52	+	2	gene_1	# AA 168:180
+$
+HS10116	geneid_v1.0	Internal	2432	2604	 0.86	+	0	gene_1	# AA   1: 58
+HS10116	geneid_v1.0	Terminal	4405	4444	-0.80	+	1	gene_1	# AA  58: 71
+HS10116	geneid_v1.0	Single	5085	5807	29.37	+	0	gene_2	# AA   1:241
+$
+HS11870	geneid_v1.0	Terminal	2024	3109	32.97	+	0	gene_1	# AA   1:362
+$
+HS207581	geneid_v1.0	Internal	537	575	 1.35	+	0	gene_1	# AA   1: 13
+HS207581	geneid_v1.0	Internal	1232	1273	 1.80	+	0	gene_1	# AA  14: 27
+HS207581	geneid_v1.0	Internal	1597	1920	12.51	+	0	gene_1	# AA  28:135
+HS207581	geneid_v1.0	Internal	2305	2700	13.15	+	0	gene_1	# AA 136:267

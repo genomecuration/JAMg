@@ -1,0 +1,117 @@
+<html>
+<head>
+<style type="text/css">
+div.bulk { text-align: justify }
+</style>
+<title>
+geneid docs
+</title>
+</head>
+
+<BODY 
+TEXT color ="black"
+BGCOLOR="white"
+LINK="black"
+VLINK="black"
+ALINK="black">
+
+<br><p>
+<center>
+<font face=courier size=5 color=red>geneid eXtended output format (Description)</font>
+<br><p>
+<table border=0 cellpadding=15>
+<tr>
+<td align=center>
+<font color="red">Gene extracted from a human prediction (geneid eXtended format)
+</td>
+<tr>
+<td bgcolor=black>
+<font size=3 color="white">
+<b>
+<pre>
+<font color="#A0A0A0"># Gene 7 (Reverse). 3 exons. 476 aa. Score = 47.50</font>
+    <font color="brown">Stop</font>    <font color="lightblue">91832    91834</font>       <font color="red">0.00</font>   <font color="yellow">-</font>       A<font size=+2>TAA</font>
+<font color="orange">Terminal</font>    <font color="lightblue">91832    92551</font>      <font color="red">30.56</font>   <font color="yellow">-</font> <font color="blue">0 0</font>   <font color="#A000F0">0.00  3.93   84.26  0.00</font>   <font color="lightgreen">AA 237:476</font> <font color="magenta">gene_7</font>
+Acceptor    <font color="lightblue">92551    92552</font>       <font color="red">3.93</font>   <font color="yellow">-</font>       GCGGTGGTGCGGCTGTCCCCGC<font size=+2>AG</font>GTG
+   <font color="brown">Donor</font>    <font color="lightblue">93982    93983</font>       <font color="red">1.23</font>   <font color="yellow">-</font>       AAG<font size=+2>GT</font>ATCT
+<font color="orange">Internal</font>    <font color="lightblue">93983    94263</font>       <font color="red">9.83</font>  <font color="yellow"> -</font> <font color="blue">2 0</font>   <font color="#A000F0">1.23  2.79   32.30  0.00</font>   <font color="lightgreen">AA 143:236</font> <font color="magenta">gene_7</font>
+<font color="brown">Acceptor</font>    <font color="lightblue">94263    94264</font>       <font color="red">2.79 </font>  <font color="yellow">-</font>       AGCTGTGAACTGTTTGTTTGCT<font size=+2>AG</font>GGT
+   <font color="brown">Donor</font>    <font color="lightblue">95208    95209</font>       <font color="red">2.52</font>   <font color="yellow">-</font>       AAG<font size=+2>GT</font>AACC
+   <font color="orange">First</font>    <font color="lightblue">95209    95635</font>       <font color="red">7.11</font>  <font color="yellow"> -</font> <font color="blue">0 1</font>   <font color="#A000F0">2.52  -1.55  30.08  0.00</font>   <font color="lightgreen">AA   1:143</font> <font color="magenta">gene_7</font>
+   <font color="brown">Start</font>    <font color="lightblue">95633    95635</font>      <font color="red">-1.55</font>   <font color="yellow">-</font>       TTTAGAAAGCTGAG<font size=+2>ATG</font>ATG
+<font color="lightgreen">
+<font color="#A0A0A0">>L1084|geneid_v1.1_predicted_protein_7|476_AA</font>
+MMERIRKEMILMERGLHSPTAGKRFSSLSDSAGGAVLEALENSQHPARLSPRLPSAPLHG
+ALGDLPAKGKFEIDTLFNLQHPSSESTVSSEIASATESRKKPSHYSEAAAEADMSSDVEV
+GCSALRSPSGLGAAPLKENNAKGYTESGSVAGTTTSASGSGLGSLHGGGGGGNSGAAALG
+GSGSGSGADQVRRYRTAFTREQIARLEKEFYRENYVSRPRRCELAAALNLPETTIKVWFQ
+NRRMKDKRQRLAMSWPHPADPSFYTYMMTHAAATGSLPYPFHSHVPLHYYPHVGVTAAAA
+AAAASGAAAAASSPFATSIRPLDTFRALSHPYSRPELLCSFRHPGLYQAPAAAAGLNSAA
+SAAAAAAAAAAAASSAAAAGAPPSGSSAPCSCLSCHSSQSAAAAAAAAAAALGSRGGGGS
+GGGGGGGAGTAGGSDFGCSAAAPRSESGFLPYSAAVLSKTAVSPPDQRDEAPLTR*</font>
+</pre></b></font></td>
+</table>
+<br><p><br><p>
+
+<table border=0 cellpadding=10>
+<tr>
+<td align=center colspan=2><font color="red">Description of columns (geneid eXtended format)</td>
+<tr>
+<td bgcolor="orange">Exon type</td>
+<td>Type of predicted exon: First, Internal, Terminal or Single </td>
+<tr>
+<td bgcolor="brown">Signal type</td>
+<td>Type of predicted signal: Acceptor, Donor, Start or Stop codon </td>
+<tr>
+<td bgcolor="lightblue">Positions</td>
+<td>Start and finish positions of current exon and signals</td>
+<tr>
+<td bgcolor="red">Score</td>
+<td>Score (reliability) of exon and signals</td>
+<tr>
+<td bgcolor="yellow">Strand</td>
+<td>Reading sense: forward or reverse</td>
+<tr>
+<td bgcolor="blue">Frame</td>
+<td>Left uncomplete codon length in this exon</td>
+<tr>
+<td bgcolor="blue">Remainder</td>
+<td>Right uncomplete codon length in this exon</td>
+<tr>
+<td bgcolor="#A000F0">Partial scores (exons):</td>
+<td>
+Scores (log likelihood) from:
+<ul>
+<li> Score for both signals defining exon 
+<li> Protein coding potential (exon content)
+<li> Homology information score (SR regions): provided by user
+</ul>
+</td>
+<tr>
+<td bgcolor="lightgreen">AA</td>
+<td>Amino acids corresponding to the exon translation</td>
+<tr>
+<td bgcolor="magenta">Key</td>
+<td>Gene identifier</td>
+</table>
+
+<br><p><br><p>
+<table border=0>
+<tr>
+<td align=left bgcolor=darkgreen>
+<script>
+var modifieddate=document.lastModified
+    document.write("<font size=1 face  = 'arial black'  color='white'>" + 
+                   "Last modified: " + modifieddate)
+</script>
+</td>
+</table>
+
+<br><p>
+Enrique Blanco Garcia &copy; 2003<br><p><br><p>
+</center>
+</body>
+</html>
+
+
+

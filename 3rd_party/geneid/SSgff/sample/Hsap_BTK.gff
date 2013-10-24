@@ -1,0 +1,43 @@
+## gff-version 2
+## date Mon Dec 17 16:34:14 2001
+## source-version: geneid v 1.1 -- geneid@imim.es
+## Sequence Hsap_BTK - Length = 78931 bps
+# Optimal Gene Structure. 6 genes. Score = 79.175683 
+# Gene 1 (Reverse). 1 exons. 44 aa. Score = 0.350567 
+Hsap_BTK	geneid_v1.1	First	2961	3092	 0.35	-	0	gene_1
+# Gene 2 (Reverse). 17 exons. 659 aa. Score = 34.155878 
+Hsap_BTK	geneid_v1.1	Terminal	4313	4384	 0.06	-	0	gene_2
+Hsap_BTK	geneid_v1.1	Internal	7622	7779	 2.01	-	2	gene_2
+Hsap_BTK	geneid_v1.1	Internal	8298	8416	 1.43	-	1	gene_2
+Hsap_BTK	geneid_v1.1	Internal	9058	9122	 0.96	-	0	gene_2
+Hsap_BTK	geneid_v1.1	Internal	10480	10696	 8.60	-	1	gene_2
+Hsap_BTK	geneid_v1.1	Internal	11212	11455	 3.58	-	2	gene_2
+Hsap_BTK	geneid_v1.1	Internal	12738	12865	 2.63	-	1	gene_2
+Hsap_BTK	geneid_v1.1	Internal	13045	13124	 2.26	-	0	gene_2
+Hsap_BTK	geneid_v1.1	Internal	13721	13775	 1.13	-	1	gene_2
+Hsap_BTK	geneid_v1.1	Internal	14516	14578	 0.44	-	1	gene_2
+Hsap_BTK	geneid_v1.1	Internal	14996	15183	 3.99	-	0	gene_2
+Hsap_BTK	geneid_v1.1	Internal	16601	16668	-0.82	-	2	gene_2
+Hsap_BTK	geneid_v1.1	Internal	16989	17117	 3.55	-	2	gene_2
+Hsap_BTK	geneid_v1.1	Internal	24426	24507	-0.66	-	0	gene_2
+Hsap_BTK	geneid_v1.1	Internal	26061	26129	 2.01	-	0	gene_2
+Hsap_BTK	geneid_v1.1	Internal	28964	29062	 1.09	-	0	gene_2
+Hsap_BTK	geneid_v1.1	First	29572	29712	 1.90	-	0	gene_2
+# Gene 3 (Forward). 4 exons. 66 aa. Score = 3.119031 
+Hsap_BTK	geneid_v1.1	First	45472	45474	-1.51	+	0	gene_3
+Hsap_BTK	geneid_v1.1	Internal	45887	45992	 3.12	+	0	gene_3
+Hsap_BTK	geneid_v1.1	Internal	46183	46250	 2.96	+	2	gene_3
+Hsap_BTK	geneid_v1.1	Terminal	50156	50176	-1.45	+	0	gene_3
+# Gene 4 (Reverse). 7 exons. 430 aa. Score = 15.432114 
+Hsap_BTK	geneid_v1.1	Terminal	52237	52527	 0.01	-	0	gene_4
+Hsap_BTK	geneid_v1.1	Internal	52798	52995	 4.13	-	0	gene_4
+Hsap_BTK	geneid_v1.1	Internal	53213	53374	 1.86	-	0	gene_4
+Hsap_BTK	geneid_v1.1	Internal	55094	55185	-0.04	-	2	gene_4
+Hsap_BTK	geneid_v1.1	Internal	56060	56237	 4.93	-	0	gene_4
+Hsap_BTK	geneid_v1.1	Internal	58239	58413	 2.10	-	1	gene_4
+Hsap_BTK	geneid_v1.1	First	62138	62331	 2.44	-	0	gene_4
+# Gene 5 (Forward). 1 exons. 423 aa. Score = 26.104002 
+Hsap_BTK	geneid_v1.1	Single	66498	67766	26.10	+	0	gene_5
+# Gene 6 (Forward). 2 exons. 108 aa. Score = 0.014091 
+Hsap_BTK	geneid_v1.1	First	72723	72965	-0.38	+	0	gene_6
+Hsap_BTK	geneid_v1.1	Terminal	73338	73418	 0.40	+	0	gene_6

@@ -1,0 +1,85 @@
+<html>
+<head>
+<style type="text/css">
+div.bulk { text-align: justify }
+</style>
+<title>
+geneid source docs
+</title>
+</head>
+
+<BODY 
+TEXT color ="blue"
+BGCOLOR="white"
+LINK="black"
+VLINK="black"
+ALINK="black">
+
+<center>
+<table border=0 width=700>
+<tr>
+<td align=left>
+<font face=courier size=5 color=red>ComputeStopInfo.c</font>
+</td>
+<td align=right>
+<font face=courier size=3>geneid v 1.1</font>
+<font face=arial black size=3>source documentation</font>
+</td>
+</table>
+
+<br><p><br><p>
+<table border=0 width=700 cellpadding=10>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Description:</font></td>
+<tr>
+<td>
+<div class="bulk"><font face="arial black" size=2>
+Genes are series of connected exons. It sometimes happens that one stop codon is made up by
+the final nucleotides of the left exon and the last nucleotides of the right one. To avoid
+this situation, geneid records these features for every exon. Then, during the assembly, this
+requirement is evaluated.
+</font>
+</div>
+</td>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Briefing:</font></td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+void ComputeStopInfo(exonGFF* e, char* s)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+Record which nucleotides were at the end of the current exon according to the content
+of the input sequence. Depending on the <tt>lValue</tt> (beginning) and <tt>rValue</tt> (end), 
+during the assembly, a connection will be allowed or not.
+</font>
+</div>
+</td>
+</table>
+
+<br><p><br><p><br><p>
+
+<table border=0>
+<tr>
+<td align=left bgcolor=darkgreen>
+<script>
+var modifieddate=document.lastModified
+    document.write("<font size=1 face  = 'arial black'  color='white'>" + 
+                   "Last modified: " + modifieddate)
+</script>
+</td>
+</table>
+
+<br><p>
+Enrique Blanco Garcia &copy; 2001<br><p><br><p>
+</center>
+</body>
+</html>
+
+
+
+

@@ -1,0 +1,455 @@
+AB009080	geneid_dd	First	354	1352	184.47	+	0	gene_1	#	AA	1:333
+AB009080	geneid_dd	Internal	1489	1581	14.70	+	0	gene_1	#	AA	334:364
+AB009080	geneid_dd	Internal	1669	2485	139.27	+	0	gene_1	#	AA	365:637
+AB009080	geneid_dd	Terminal	2596	4859	314.64	+	2	gene_1	#	AA	637:1391
+$
+AB016609	geneid_dd	First	200	552	30.68	+	0	gene_1	#	AA	1:118
+AB016609	geneid_dd	Internal	703	1227	47.60	+	1	gene_1	#	AA	118:293
+AB016609	geneid_dd	Internal	1328	1547	22.06	+	1	gene_1	#	AA	293:366
+AB016609	geneid_dd	Terminal	1630	2766	136.21	+	0	gene_1	#	AA	367:745
+$
+AB017909	geneid_dd	First	24	209	24.42	+	0	gene_1	#	AA	1:	62
+AB017909	geneid_dd	Internal	333	2545	378.34	+	0	gene_1	#	AA	63:800
+AB017909	geneid_dd	Terminal	2651	2828	14.89	+	1	gene_1	#	AA	800:859
+$
+AB017910	geneid_dd	Internal	147	417	38.13	+	1	gene_1	#	AA	1:	91
+AB017910	geneid_dd	Internal	1045	5803	585.56	+	0	gene_1	#	AA	92:1678
+AB017910	geneid_dd	Terminal	5899	6086	30.48	+	2	gene_1	#	AA	1678:1740
+$
+AB018543	geneid_dd	Single	230	4984	463.61	+	0	gene_1	#	AA	1:1585
+$
+AB029311	geneid_dd	First	53	162	21.12	+	0	gene_1	#	AA	1:	37
+AB029311	geneid_dd	Internal	408	1482	150.61	+	1	gene_1	#	AA	37:395
+AB029311	geneid_dd	Terminal	1568	1759	22.56	+	0	gene_1	#	AA	396:459
+$
+AB030033	geneid_dd	First	270	485	24.22	+	0	gene_1	#	AA	1:	72
+AB030033	geneid_dd	Internal	575	1376	89.84	+	0	gene_1	#	AA	73:340
+AB030033	geneid_dd	Internal	1467	1563	6.46	+	2	gene_1	#	AA	340:372
+AB030033	geneid_dd	Internal	1668	7930	768.58	+	1	gene_1	#	AA	372:2460
+AB030033	geneid_dd	Terminal	8039	8697	81.66	+	2	gene_1	#	AA	2460:2679
+$
+AB032841	geneid_dd	First	156	829	93.81	+	0	gene_1	#	AA	1:225
+AB032841	geneid_dd	Terminal	934	1099	28.54	+	1	gene_1	#	AA	225:280
+$
+AF001981	geneid_dd	Internal	252	602	58.10	+	0	gene_1	#	AA	1:117
+AF001981	geneid_dd	Terminal	825	920	13.20	+	0	gene_1	#	AA	118:149
+$
+AF006055	geneid_dd	First	457	514	7.57	+	0	gene_1	#	AA	1:	20
+AF006055	geneid_dd	Internal	625	1065	54.06	+	2	gene_1	#	AA	20:167
+AF006055	geneid_dd	Internal	1166	1435	31.40	+	2	gene_1	#	AA	167:257
+AF006055	geneid_dd	Terminal	1580	3111	180.24	+	2	gene_1	#	AA	257:767
+$
+AF019107	geneid_dd	Internal	688	765	4.63	+	2	gene_1	#	AA	1:	27
+AF019107	geneid_dd	Terminal	856	3878	296.21	+	2	gene_1	#	AA	27:1034
+$
+AF019108	geneid_dd	First	1109	1258	7.66	+	0	gene_1	#	AA	1:	50
+AF019108	geneid_dd	Internal	1364	1591	25.27	+	0	gene_1	#	AA	51:126
+AF019108	geneid_dd	Internal	1756	2322	65.97	+	0	gene_1	#	AA	127:315
+AF019108	geneid_dd	Terminal	2434	2688	15.80	+	0	gene_1	#	AA	316:400
+$
+AF019236	geneid_dd	First	693	1346	87.16	+	0	gene_1	#	AA	1:218
+AF019236	geneid_dd	Terminal	1424	2608	179.72	+	0	gene_1	#	AA	219:613
+$
+AF020279	geneid_dd	Internal	68	970	125.81	+	2	gene_1	#	AA	1:302
+AF020279	geneid_dd	Internal	1019	1225	16.31	+	2	gene_1	#	AA	302:370
+$
+AF024654	geneid_dd	First	1059	3428	205.10	+	0	gene_1	#	AA	1:790
+AF024654	geneid_dd	Terminal	3509	7048	456.48	+	0	gene_1	#	AA	791:1970
+$
+AF030823	geneid_dd	Internal	26	307	44.84	+	2	gene_1	#	AA	1:	95
+AF030823	geneid_dd	Internal	422	1333	146.54	+	2	gene_1	#	AA	95:399
+AF030823	geneid_dd	Internal	1385	1432	1.39	+	2	gene_1	#	AA	399:414
+$
+AF037042	geneid_dd	Terminal	703	1282	73.84	+	1	gene_1	#	AA	1:194
+$
+AF037357	geneid_dd	Internal	408	704	26.62	+	2	gene_1	#	AA	1:100
+AF037357	geneid_dd	Terminal	783	1108	31.37	+	2	gene_1	#	AA	100:208
+$
+AF038919	geneid_dd	Internal	71	3669	328.56	+	2	gene_1	#	AA	1:1200
+$
+AF049896	geneid_dd	Terminal	370	779	73.75	+	2	gene_1	#	AA	1:137
+$
+AF052006	geneid_dd	Internal	625	1388	56.78	+	2	gene_1	#	AA	1:255
+AF052006	geneid_dd	Terminal	1798	4614	374.80	+	0	gene_1	#	AA	256:1194
+$
+AF053068	geneid_dd	Internal	26	69	7.44	+	2	gene_1	#	AA	1:	15
+AF053068	geneid_dd	Internal	185	453	42.69	+	0	gene_1	#	AA	16:105
+AF053068	geneid_dd	Internal	545	644	11.13	+	1	gene_1	#	AA	105:138
+AF053068	geneid_dd	Internal	729	788	14.92	+	0	gene_1	#	AA	139:158
+AF053068	geneid_dd	Internal	881	965	10.12	+	0	gene_1	#	AA	159:186
+$
+AF057019	geneid_dd	Internal	45	1069	61.53	+	0	gene_1	#	AA	1:342
+AF057019	geneid_dd	Internal	2097	2378	29.59	+	1	gene_1	#	AA	342:436
+AF057019	geneid_dd	Internal	2796	7315	578.61	+	1	gene_1	#	AA	436:1943
+AF057019	geneid_dd	Terminal	7392	7570	29.00	+	2	gene_1	#	AA	1943:2002
+$
+AF066071	geneid_dd	Internal	29	799	131.41	+	2	gene_1	#	AA	1:258
+AF066071	geneid_dd	Terminal	891	1690	144.51	+	2	gene_1	#	AA	258:524
+$
+AF069757	geneid_dd	First	1099	1209	16.45	+	0	gene_1	#	AA	1:	37
+AF069757	geneid_dd	Terminal	1329	2072	112.21	+	0	gene_1	#	AA	38:285
+$
+AF079444	geneid_dd	First	166	361	19.53	+	0	gene_1	#	AA	1:	66
+AF079444	geneid_dd	Terminal	549	1489	105.62	+	2	gene_1	#	AA	66:379
+$
+AF079445	geneid_dd	Internal	225	442	15.58	+	2	gene_1	#	AA	1:	73
+AF079445	geneid_dd	Terminal	522	11852	1280.14	+	0	gene_1	#	AA	74:3850
+$
+AF079448	geneid_dd	Terminal	368	1821	187.46	+	2	gene_1	#	AA	1:485
+$
+AF080677	geneid_dd	First	161	190	5.87	+	0	gene_1	#	AA	1:	10
+AF080677	geneid_dd	Internal	303	762	66.56	+	0	gene_1	#	AA	11:164
+AF080677	geneid_dd	Terminal	884	1248	44.03	+	2	gene_1	#	AA	164:285
+$
+AF081681	geneid_dd	First	112	138	0.02	+	0	gene_1	#	AA	1:	9
+AF081681	geneid_dd	Internal	231	380	14.81	+	0	gene_1	#	AA	10:	59
+AF081681	geneid_dd	Internal	450	869	55.39	+	0	gene_1	#	AA	60:199
+$
+AF081802	geneid_dd	First	432	438	2.70	+	0	gene_1	#	AA	1:	3
+AF081802	geneid_dd	Terminal	537	1108	88.80	+	2	gene_1	#	AA	3:193
+$
+AF088979	geneid_dd	First	1452	2925	211.58	+	0	gene_1	#	AA	1:492
+AF088979	geneid_dd	Internal	3010	3218	23.32	+	2	gene_1	#	AA	492:561
+AF088979	geneid_dd	Internal	3346	3908	64.60	+	0	gene_1	#	AA	562:749
+AF088979	geneid_dd	Terminal	3991	12604	1255.63	+	1	gene_1	#	AA	749:3620
+$
+AF100676	geneid_dd	Terminal	445	1184	136.74	+	2	gene_1	#	AA	1:247
+$
+AF102575	geneid_dd	First	625	4825	436.63	+	0	gene_1	#	AA	1:1400
+$
+AF111941	geneid_dd	First	378	1288	103.70	+	0	gene_1	#	AA	1:303
+$
+AF116859	geneid_dd	Internal	440	666	32.77	+	0	gene_1	#	AA	1:	76
+AF116859	geneid_dd	Internal	746	1167	64.94	+	1	gene_1	#	AA	76:216
+$
+AF117611	geneid_dd	Internal	39	352	26.46	+	1	gene_1	#	AA	1:106
+AF117611	geneid_dd	Internal	547	3527	346.59	+	2	gene_1	#	AA	106:1099
+AF117611	geneid_dd	Internal	3573	3760	13.10	+	0	gene_1	#	AA	1100:1162
+AF117611	geneid_dd	Internal	4517	4941	27.27	+	1	gene_1	#	AA	1162:1303
+$
+AF118151	geneid_dd	First	350	483	7.62	+	0	gene_1	#	AA	1:	45
+AF118151	geneid_dd	Internal	634	1229	50.27	+	1	gene_1	#	AA	45:244
+AF118151	geneid_dd	Internal	1301	1522	21.81	+	2	gene_1	#	AA	244:318
+AF118151	geneid_dd	Internal	1733	2688	80.85	+	2	gene_1	#	AA	318:636
+AF118151	geneid_dd	Terminal	2810	2971	6.09	+	0	gene_1	#	AA	637:690
+$
+AF123275	geneid_dd	Internal	68	122	4.11	+	2	gene_1	#	AA	1:	19
+AF123275	geneid_dd	Internal	242	457	18.20	+	1	gene_1	#	AA	19:	91
+AF123275	geneid_dd	Internal	639	1057	52.80	+	1	gene_1	#	AA	91:231
+AF123275	geneid_dd	Internal	1091	1731	104.81	+	2	gene_1	#	AA	231:444
+$
+AF128626	geneid_dd	Terminal	493	2764	325.09	+	1	gene_1	#	AA	1:758
+$
+AF136753	geneid_dd	First	257	584	31.41	+	0	gene_1	#	AA	1:110
+AF136753	geneid_dd	Terminal	672	1249	66.26	+	2	gene_1	#	AA	110:302
+$
+AF140780	geneid_dd	Internal	485	589	14.91	+	2	gene_1	#	AA	1:	36
+AF140780	geneid_dd	Terminal	677	1320	96.77	+	2	gene_1	#	AA	36:250
+$
+AF151111	geneid_dd	Internal	33	237	22.27	+	1	gene_1	#	AA	1:	69
+AF151111	geneid_dd	Terminal	379	3885	460.68	+	0	gene_1	#	AA	70:1238
+$
+AF153362	geneid_dd	First	622	1349	89.82	+	0	gene_1	#	AA	1:243
+AF153362	geneid_dd	Terminal	1429	7072	772.37	+	1	gene_1	#	AA	243:2124
+$
+AF157836	geneid_dd	Internal	165	232	11.08	+	1	gene_1	#	AA	1:	24
+AF157836	geneid_dd	Internal	331	574	39.96	+	2	gene_1	#	AA	24:105
+AF157836	geneid_dd	Internal	700	1126	48.28	+	1	gene_1	#	AA	105:247
+AF157836	geneid_dd	Internal	1230	1365	16.86	+	0	gene_1	#	AA	248:292
+$
+AF164347	geneid_dd	Internal	44	77	0.75	+	2	gene_1	#	AA	1:	12
+AF164347	geneid_dd	Terminal	164	3470	408.94	+	1	gene_1	#	AA	12:1114
+$
+AF176830	geneid_dd	Terminal	130	3245	473.59	+	2	gene_1	#	AA	1:1039
+$
+AF202726	geneid_dd	First	55	222	16.46	+	0	gene_1	#	AA	1:	56
+AF202726	geneid_dd	Internal	328	893	73.55	+	0	gene_1	#	AA	57:245
+AF202726	geneid_dd	Terminal	988	4282	478.72	+	1	gene_1	#	AA	245:1343
+$
+AF211482	geneid_dd	Terminal	386	2268	366.38	+	2	gene_1	#	AA	1:628
+$
+AF238311	geneid_dd	Internal	160	888	90.60	+	0	gene_1	#	AA	1:243
+AF238311	geneid_dd	Terminal	974	2503	230.67	+	0	gene_1	#	AA	244:753
+$
+AF238312	geneid_dd	First	1537	2876	197.52	+	0	gene_1	#	AA	1:447
+AF238312	geneid_dd	Terminal	2963	3767	138.34	+	1	gene_1	#	AA	447:715
+$
+AF246689	geneid_dd	Single	16	4572	567.90	+	0	gene_1	#	AA	1:1519
+$
+AF246690	geneid_dd	First	39	188	15.02	+	0	gene_1	#	AA	1:	50
+AF246690	geneid_dd	Internal	345	527	20.40	+	0	gene_1	#	AA	51:111
+AF246690	geneid_dd	Internal	701	780	9.35	+	0	gene_1	#	AA	112:138
+AF246690	geneid_dd	Terminal	904	970	8.70	+	1	gene_1	#	AA	138:160
+$
+AF258615	geneid_dd	First	1360	1438	4.78	+	0	gene_1	#	AA	1:	27
+AF258615	geneid_dd	Terminal	1504	4091	296.62	+	2	gene_1	#	AA	27:889
+$
+AF279135	geneid_dd	Single	602	1996	260.86	+	0	gene_1	#	AA	1:465
+$
+AF305060	geneid_dd	First	253	453	31.51	+	0	gene_1	#	AA	1:	67
+AF305060	geneid_dd	Internal	576	792	36.23	+	0	gene_1	#	AA	68:140
+AF305060	geneid_dd	Terminal	879	1660	150.30	+	2	gene_1	#	AA	140:400
+$
+D12883	geneid_dd	First	93	445	26.73	+	0	gene_1	#	AA	1:118
+D12883	geneid_dd	Internal	527	1060	44.21	+	1	gene_1	#	AA	118:296
+D12883	geneid_dd	Internal	1142	1361	18.19	+	1	gene_1	#	AA	296:369
+D12883	geneid_dd	Terminal	1471	2556	123.38	+	0	gene_1	#	AA	370:731
+$
+D13973	geneid_dd	First	1511	1592	6.24	+	0	gene_1	#	AA	1:	28
+D13973	geneid_dd	Terminal	1703	3288	308.82	+	2	gene_1	#	AA	28:556
+$
+D37980	geneid_dd	Terminal	463	873	69.03	+	0	gene_1	#	AA	1:137
+$
+D50338	geneid_dd	Terminal	912	1502	43.40	-	0	gene_1	#	AA	148:344
+D50338	geneid_dd	Internal	2547	2623	-0.24	-	2	gene_1	#	AA	122:147
+D50338	geneid_dd	First	3393	3756	52.75	-	0	gene_1	#	AA	1:122
+$
+D82024	geneid_dd	Single	922	4770	488.09	+	0	gene_1	#	AA	1:1283
+$
+D88027	geneid_dd	First	237	797	82.39	+	0	gene_1	#	AA	1:187
+D88027	geneid_dd	Internal	899	1165	31.30	+	0	gene_1	#	AA	188:276
+D88027	geneid_dd	Internal	1253	1837	86.76	+	0	gene_1	#	AA	277:471
+D88027	geneid_dd	Terminal	1954	3123	168.24	+	0	gene_1	#	AA	472:861
+$
+J01284	geneid_dd	Single	196	957	120.45	+	0	gene_1	#	AA	1:254
+$
+L06805	geneid_dd	Terminal	393	3174	420.07	+	1	gene_1	#	AA	1:928
+$
+L07125	geneid_dd	First	28	306	28.56	+	0	gene_1	#	AA	1:	93
+L07125	geneid_dd	Internal	407	574	23.42	+	0	gene_1	#	AA	94:149
+L07125	geneid_dd	Internal	658	1735	122.47	+	0	gene_1	#	AA	150:508
+$
+L08391	geneid_dd	Internal	827	1821	178.86	+	1	gene_1	#	AA	1:333
+L08391	geneid_dd	Terminal	2083	2279	39.78	+	2	gene_1	#	AA	333:398
+$
+L13999	geneid_dd	First	178	805	119.14	+	0	gene_1	#	AA	1:210
+L13999	geneid_dd	Terminal	917	1662	127.67	+	2	gene_1	#	AA	210:458
+$
+L22213	geneid_dd	Single	32	784	127.73	+	0	gene_1	#	AA	1:251
+$
+L23067	geneid_dd	First	25	72	3.50	+	0	gene_1	#	AA	1:	16
+L23067	geneid_dd	Internal	217	494	64.11	+	0	gene_1	#	AA	17:109
+L23067	geneid_dd	Terminal	602	743	19.87	+	1	gene_1	#	AA	109:156
+$
+L23068	geneid_dd	First	181	253	13.48	+	0	gene_1	#	AA	1:	25
+L23068	geneid_dd	Internal	362	535	15.97	+	2	gene_1	#	AA	25:	83
+L23068	geneid_dd	Internal	904	1174	45.05	+	2	gene_1	#	AA	83:173
+L23068	geneid_dd	Internal	1258	1398	25.81	+	1	gene_1	#	AA	173:219
+$
+L33457	geneid_dd	Single	105	647	99.22	+	0	gene_1	#	AA	1:181
+$
+L35173	geneid_dd	First	228	230	0.14	+	0	gene_1	#	AA	1:	1
+L35173	geneid_dd	Internal	434	779	54.96	+	0	gene_1	#	AA	2:117
+L35173	geneid_dd	Terminal	854	912	4.26	+	2	gene_1	#	AA	117:136
+$
+L35321	geneid_dd	First	49	595	69.18	+	0	gene_1	#	AA	1:183
+L35321	geneid_dd	Internal	730	1081	46.99	+	2	gene_1	#	AA	183:300
+L35321	geneid_dd	Internal	1196	1486	39.69	+	1	gene_1	#	AA	300:397
+L35321	geneid_dd	Terminal	1573	7456	886.27	+	1	gene_1	#	AA	397:2358
+$
+L35323	geneid_dd	First	34	919	143.87	+	0	gene_1	#	AA	1:296
+L35323	geneid_dd	Terminal	1031	3657	491.28	+	2	gene_1	#	AA	296:1171
+$
+L36941	geneid_dd	First	451	604	15.95	+	0	gene_1	#	AA	1:	52
+L36941	geneid_dd	Internal	761	965	32.04	+	2	gene_1	#	AA	52:120
+L36941	geneid_dd	Terminal	1085	1742	94.26	+	1	gene_1	#	AA	120:339
+$
+M11012	geneid_dd	Terminal	262	1122	107.07	+	0	gene_1	#	AA	1:287
+$
+M14146	geneid_dd	Single	511	1641	232.06	+	0	gene_1	#	AA	1:377
+$
+M14628	geneid_dd	Single	70	6420	1120.73	+	0	gene_1	#	AA	1:2117
+$
+M16039	geneid_dd	First	834	1269	59.10	+	0	gene_1	#	AA	1:146
+M16039	geneid_dd	Internal	1372	1516	21.32	+	2	gene_1	#	AA	146:194
+M16039	geneid_dd	Internal	1598	2082	78.89	+	1	gene_1	#	AA	194:356
+M16039	geneid_dd	Internal	2186	2210	3.99	+	2	gene_1	#	AA	356:364
+M16039	geneid_dd	Terminal	2338	2377	1.58	+	1	gene_1	#	AA	364:377
+$
+M18106	geneid_dd	Single	1058	2434	118.82	+	0	gene_1	#	AA	1:459
+$
+M19468	geneid_dd	Single	433	816	41.86	+	0	gene_1	#	AA	1:128
+$
+M19491	geneid_dd	Terminal	58	1151	190.35	+	2	gene_1	#	AA	1:365
+$
+M20909	geneid_dd	Single	93	599	66.67	+	0	gene_1	#	AA	1:169
+$
+M23449	geneid_dd	First	4127	4146	2.11	+	0	gene_1	#	AA	1:	7
+M23449	geneid_dd	Terminal	4297	5635	208.58	+	1	gene_1	#	AA	7:453
+$
+M25132	geneid_dd	Single	139	984	133.75	+	0	gene_1	#	AA	1:282
+$
+M26037	geneid_dd	Internal	188	301	7.87	+	0	gene_1	#	AA	1:	38
+M26037	geneid_dd	Internal	485	1712	216.97	+	0	gene_1	#	AA	39:448
+M26037	geneid_dd	Internal	1803	2288	87.72	+	2	gene_1	#	AA	448:610
+M26037	geneid_dd	Internal	2361	3644	260.54	+	2	gene_1	#	AA	610:1037
+$
+M26238	geneid_dd	First	282	345	4.93	+	0	gene_1	#	AA	1:	22
+M26238	geneid_dd	Terminal	646	2195	294.16	+	2	gene_1	#	AA	22:538
+$
+M26239	geneid_dd	First	109	262	29.50	+	0	gene_1	#	AA	1:	52
+M26239	geneid_dd	Terminal	384	1504	187.04	+	2	gene_1	#	AA	52:425
+$
+M27713	geneid_dd	Internal	23	283	36.96	+	2	gene_1	#	AA	1:	88
+M27713	geneid_dd	Terminal	374	873	78.66	+	2	gene_1	#	AA	88:254
+$
+M29237	geneid_dd	First	1164	1339	7.51	+	0	gene_1	#	AA	1:	59
+M29237	geneid_dd	Internal	1630	1735	6.78	+	1	gene_1	#	AA	59:	94
+M29237	geneid_dd	Terminal	1852	3948	297.22	+	0	gene_1	#	AA	95:793
+$
+M33861	geneid_dd	Terminal	1505	3555	345.27	+	2	gene_1	#	AA	1:684
+$
+M33862	geneid_dd	Internal	1213	1253	3.62	+	1	gene_1	#	AA	1:	15
+M33862	geneid_dd	Terminal	1341	2881	256.24	+	2	gene_1	#	AA	15:528
+$
+M34457	geneid_dd	Single	49	675	87.91	+	0	gene_1	#	AA	1:209
+$
+M64089	geneid_dd	First	271	273	0.28	+	0	gene_1	#	AA	1:	1
+M64089	geneid_dd	Internal	569	664	20.81	+	0	gene_1	#	AA	2:	33
+M64089	geneid_dd	Internal	753	883	28.00	+	0	gene_1	#	AA	34:	77
+M64089	geneid_dd	Terminal	1008	1236	50.16	+	1	gene_1	#	AA	77:153
+$
+M77492	geneid_dd	First	275	387	13.90	+	0	gene_1	#	AA	1:	38
+M77492	geneid_dd	Internal	497	1068	91.64	+	1	gene_1	#	AA	38:229
+M77492	geneid_dd	Terminal	1174	3467	349.10	+	2	gene_1	#	AA	229:993
+$
+M82822	geneid_dd	Terminal	1471	4332	423.23	+	0	gene_1	#	AA	1:954
+$
+M87278	geneid_dd	First	85	327	16.76	+	0	gene_1	#	AA	1:	81
+M87278	geneid_dd	Internal	436	702	14.16	+	0	gene_1	#	AA	82:170
+M87278	geneid_dd	Terminal	799	2865	252.43	+	0	gene_1	#	AA	171:859
+$
+S55234	geneid_dd	First	159	456	30.63	+	0	gene_1	#	AA	1:100
+S55234	geneid_dd	Terminal	558	1387	97.72	+	2	gene_1	#	AA	100:376
+$
+U06228	geneid_dd	First	358	390	3.50	+	0	gene_1	#	AA	1:	11
+U06228	geneid_dd	Internal	484	907	53.49	+	0	gene_1	#	AA	12:153
+U06228	geneid_dd	Internal	1020	2651	213.48	+	2	gene_1	#	AA	153:696
+$
+U11056	geneid_dd	First	433	672	27.67	+	0	gene_1	#	AA	1:	80
+U11056	geneid_dd	Terminal	801	1871	158.23	+	0	gene_1	#	AA	81:437
+$
+U14576	geneid_dd	First	927	1317	47.88	+	0	gene_1	#	AA	1:131
+U14576	geneid_dd	Internal	1435	1708	40.76	+	2	gene_1	#	AA	131:222
+U14576	geneid_dd	Terminal	1782	8595	1221.33	+	1	gene_1	#	AA	222:2493
+$
+U20432	geneid_dd	Terminal	242	5886	794.74	+	2	gene_1	#	AA	1:1882
+$
+U20806	geneid_dd	Internal	90	391	39.05	+	2	gene_1	#	AA	1:101
+U20806	geneid_dd	Internal	776	930	24.91	+	0	gene_1	#	AA	102:153
+U20806	geneid_dd	Terminal	1040	1637	79.81	+	1	gene_1	#	AA	153:352
+$
+U23479	geneid_dd	Internal	75	3165	359.34	+	1	gene_1	#	AA	1:1031
+U23479	geneid_dd	Internal	3199	3268	1.02	+	0	gene_1	#	AA	1032:1054
+$
+U23480	geneid_dd	Internal	36	2143	267.91	+	1	gene_1	#	AA	1:704
+U23480	geneid_dd	Internal	2333	2403	5.75	+	2	gene_1	#	AA	704:727
+$
+U25143	geneid_dd	First	1161	1226	2.17	+	0	gene_1	#	AA	1:	22
+U25143	geneid_dd	Terminal	1412	3898	397.24	+	0	gene_1	#	AA	23:851
+$
+U25144	geneid_dd	Internal	69	240	3.36	+	0	gene_1	#	AA	1:	58
+U25144	geneid_dd	Internal	309	440	6.19	+	2	gene_1	#	AA	58:102
+U25144	geneid_dd	Internal	2649	2990	39.25	+	2	gene_1	#	AA	102:216
+U25144	geneid_dd	Terminal	3084	4708	275.44	+	2	gene_1	#	AA	216:757
+$
+U31631	geneid_dd	Single	1842	2927	138.54	+	0	gene_1	#	AA	1:362
+$
+U32112	geneid_dd	First	147	189	7.34	+	0	gene_1	#	AA	1:	15
+U32112	geneid_dd	Terminal	423	1267	175.15	+	2	gene_1	#	AA	15:296
+$
+U32174	geneid_dd	Internal	33	180	10.76	+	0	gene_1	#	AA	1:	50
+U32174	geneid_dd	Internal	334	1001	43.71	+	2	gene_1	#	AA	50:272
+U32174	geneid_dd	Internal	1083	1156	8.73	+	0	gene_1	#	AA	273:297
+U32174	geneid_dd	Terminal	1224	5763	634.28	+	1	gene_1	#	AA	297:1810
+$
+U40211	geneid_dd	First	358	444	12.28	+	0	gene_1	#	AA	1:	29
+U40211	geneid_dd	Terminal	562	1320	116.82	+	0	gene_1	#	AA	30:282
+$
+U41222	geneid_dd	First	153	161	4.41	+	0	gene_1	#	AA	1:	3
+U41222	geneid_dd	Internal	313	371	12.09	+	0	gene_1	#	AA	4:	23
+U41222	geneid_dd	Internal	613	770	19.97	+	1	gene_1	#	AA	23:	76
+U41222	geneid_dd	Internal	922	1007	17.15	+	2	gene_1	#	AA	76:104
+U41222	geneid_dd	Terminal	1093	1452	67.15	+	0	gene_1	#	AA	105:224
+$
+U42409	geneid_dd	First	40	810	119.88	+	0	gene_1	#	AA	1:257
+U42409	geneid_dd	Internal	899	1048	17.87	+	0	gene_1	#	AA	258:307
+U42409	geneid_dd	Terminal	1167	6983	813.99	+	0	gene_1	#	AA	308:2246
+$
+U43887	geneid_dd	Single	49	2106	343.02	+	0	gene_1	#	AA	1:686
+$
+U48298	geneid_dd	Single	1202	2302	211.01	+	0	gene_1	#	AA	1:367
+$
+U48706	geneid_dd	Terminal	189	1044	94.12	+	1	gene_1	#	AA	1:286
+$
+U50042	geneid_dd	Internal	580	2568	242.63	+	1	gene_1	#	AA	1:664
+U50042	geneid_dd	Terminal	2661	4119	194.29	+	1	gene_1	#	AA	664:1150
+$
+U55379	geneid_dd	First	85	244	15.26	+	0	gene_1	#	AA	1:	54
+U55379	geneid_dd	Internal	351	511	21.50	+	2	gene_1	#	AA	54:107
+U55379	geneid_dd	Terminal	595	780	29.25	+	0	gene_1	#	AA	108:169
+$
+U60168	geneid_dd	First	602	944	40.92	+	0	gene_1	#	AA	1:115
+U60168	geneid_dd	Internal	1066	1421	65.29	+	2	gene_1	#	AA	115:233
+U60168	geneid_dd	Terminal	1547	1594	6.05	+	0	gene_1	#	AA	234:249
+$
+U60169	geneid_dd	First	364	786	51.93	+	0	gene_1	#	AA	1:141
+U60169	geneid_dd	Terminal	896	3055	263.22	+	0	gene_1	#	AA	142:861
+$
+U60170	geneid_dd	First	1035	1590	60.63	+	0	gene_1	#	AA	1:186
+U60170	geneid_dd	Internal	1694	1855	19.05	+	2	gene_1	#	AA	186:240
+U60170	geneid_dd	Internal	1928	2880	125.79	+	2	gene_1	#	AA	240:557
+U60170	geneid_dd	Internal	2964	3200	24.82	+	0	gene_1	#	AA	558:636
+U60170	geneid_dd	Terminal	3322	3795	64.19	+	0	gene_1	#	AA	637:794
+$
+U64319	geneid_dd	Terminal	29	1597	165.70	+	0	gene_1	#	AA	1:523
+$
+U64830	geneid_dd	First	670	4212	461.87	+	0	gene_1	#	AA	1:1181
+U64830	geneid_dd	Internal	4326	4794	66.35	+	0	gene_1	#	AA	1182:1337
+$
+U65018	geneid_dd	First	52	584	70.97	+	0	gene_1	#	AA	1:178
+U65018	geneid_dd	Terminal	652	1549	101.97	+	1	gene_1	#	AA	178:477
+$
+U66909	geneid_dd	Internal	436	1008	61.86	+	0	gene_1	#	AA	1:191
+U66909	geneid_dd	Terminal	1109	1408	41.56	+	0	gene_1	#	AA	192:291
+$
+U67836	geneid_dd	First	798	824	2.71	+	0	gene_1	#	AA	1:	9
+U67836	geneid_dd	Terminal	993	3245	353.88	+	0	gene_1	#	AA	10:760
+$
+U67838	geneid_dd	Single	144	590	70.21	+	0	gene_1	#	AA	1:149
+$
+U67917	geneid_dd	Terminal	47	816	95.38	+	2	gene_1	#	AA	1:257
+$
+U68246	geneid_dd	Internal	29	205	12.49	+	0	gene_1	#	AA	1:	59
+U68246	geneid_dd	Terminal	1727	2563	126.90	+	0	gene_1	#	AA	60:338
+$
+U72236	geneid_dd	First	308	1513	159.48	+	0	gene_1	#	AA	1:402
+U72236	geneid_dd	Terminal	1626	3251	254.64	+	0	gene_1	#	AA	403:944
+$
+U73685	geneid_dd	Single	1160	1648	69.63	+	0	gene_1	#	AA	1:163
+$
+U77065	geneid_dd	Internal	286	413	18.91	+	1	gene_1	#	AA	1:	44
+U77065	geneid_dd	Terminal	589	2867	355.26	+	2	gene_1	#	AA	44:803
+$
+U77066	geneid_dd	Single	363	2693	365.79	+	0	gene_1	#	AA	1:777
+$
+U80927	geneid_dd	Single	355	2079	147.50	+	0	gene_1	#	AA	1:575
+$
+U81156	geneid_dd	Single	55	2523	380.55	+	0	gene_1	#	AA	1:823
+$
+U81500	geneid_dd	Single	441	1739	194.90	+	0	gene_1	#	AA	1:433
+$
+U86962	geneid_dd	First	884	2899	243.70	+	0	gene_1	#	AA	1:672
+U86962	geneid_dd	Terminal	2998	3423	49.73	+	0	gene_1	#	AA	673:814
+$
+U89350	geneid_dd	First	280	881	54.00	+	0	gene_1	#	AA	1:201
+U89350	geneid_dd	Internal	975	1238	28.10	+	1	gene_1	#	AA	201:289
+U89350	geneid_dd	Terminal	1355	2228	134.16	+	1	gene_1	#	AA	289:580
+$
+U95159	geneid_dd	First	355	763	66.58	+	0	gene_1	#	AA	1:137
+U95159	geneid_dd	Terminal	858	3712	411.25	+	2	gene_1	#	AA	137:1088
+$
+U96916	geneid_dd	First	260	392	17.43	+	0	gene_1	#	AA	1:	45
+U96916	geneid_dd	Internal	490	749	48.25	+	2	gene_1	#	AA	45:131
+U96916	geneid_dd	Internal	863	1198	57.39	+	0	gene_1	#	AA	132:243
+U96916	geneid_dd	Terminal	1315	1506	25.40	+	0	gene_1	#	AA	244:307

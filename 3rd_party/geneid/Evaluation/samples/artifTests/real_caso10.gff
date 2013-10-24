@@ -1,0 +1,9 @@
+#line with the length of the sequence
+HSU65896	EMBL	Sequence	1	1000	.	.	.	1
+#annotations for this sequence
+HSU65896	EMBL	First	1	4	.	+	0	1
+HSU65896	EMBL	Terminal	6	10	.	+	0	1
+HSU65896	EMBL	Single	16	18	.	+	0	2
+HSU65896	EMBL	Single	20	26	.	+	0	3
+HSU65896	EMBL	Single	27	28	.	+	0	4
+HSU65896	EMBL	Single	30	32	.	+	0	5

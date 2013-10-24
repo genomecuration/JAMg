@@ -1,0 +1,117 @@
+<html>
+<head>
+<style type="text/css">
+div.bulk { text-align: justify }
+</style>
+<title>
+geneid source docs
+</title>
+</head>
+
+<BODY 
+TEXT color ="blue"
+BGCOLOR="white"
+LINK="black"
+VLINK="black"
+ALINK="black">
+
+<center>
+<table border=0 width=700>
+<tr>
+<td align=left>
+<font face=courier size=5 color=red>genamic.c</font>
+</td>
+<td align=right>
+<font face=courier size=3>geneid v 1.1</font>
+<font face=arial black size=3>source documentation</font>
+</td>
+</table>
+
+<br><p><br><p>
+<table border=0 width=700 cellpadding=10>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Description:</font></td>
+<tr>
+<td>
+<div class="bulk"><font face="arial black" size=2>
+Assembling the best gene from an input set of exons by using the algorithm
+<i>genamic</i> which is based on dynammic programming techniques. The best
+gene is the series of linked exons which have the highest sum of scores respecting
+the allowed rules (gene model). Optimal result is guaranteed. Exons must be
+sorted by acceptor (left, minor) position and within genamic, for every
+assembling rule (class), exons are also sorted by donor (right, major)
+position. The goal is to assemble the best gene finished with every exon and
+then, return the highest score produced gene. Essentially, for every exon
+in the input, there are 3 possible assemblings: remain alone, join to the
+gene assembled to the previous input exon or join to the best gene that
+finishes between the previous input exon and it. Having acceptor and
+donor sorting functions, every exon (and the associated gene finishing
+with it) is used only once, and therefore, genamic is a linear time algorithm
+(respect to the number of input exons). <font color="red">Annotations
+or evidences may be included among the predicted exons. Group field is
+then used to allow the mix between ab initio and evidence exons or
+to force that only exons having same group can be joined using a blocked
+rule. To block a rule, use the block keyword in the selected rule of the
+gene model.
+</font>
+</div>
+</td>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Briefing:</font></td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+void genamic(exonGFF* E,
+             long nExons,
+             packGenes* pg,
+             gparam* gp)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+genamic processing:
+<br>
+<ul>
+<li> Prepare reverse exons to be used.
+<li> Sorting by donor the input set of exons.
+<li> For every exon, look up the dictionary to get the identifier of type.
+<li> For every class in which this exon is in the downstream part, get
+the temporary best gene according to class and frame, right now:
+<ul>
+<li> Checking maximum/minimum distances
+<li> Updating best temporary gene between previous and current exon
+<li> Assembling best temporary gene and exon, checking groups
+<li> Updating best gene pointer
+</ul>
+<li> Restore reverse exons.
+</ul>
+</font>
+</div>
+</td>
+</table>
+
+<br><p><br><p><br><p>
+
+<center>
+<table border=0>
+<tr>
+<td align=left bgcolor="darkgreen">
+<script>
+var modifieddate=document.lastModified
+    document.write("<font size=1 face  = 'arial black'  color='white'>" + 
+                   "Last modified: " + modifieddate)
+</script>
+</td>
+</table>
+
+<br><p>
+Enrique Blanco Garcia &copy; 2001<br><p><br><p>
+</center>
+</body>
+</html>
+
+
+
+

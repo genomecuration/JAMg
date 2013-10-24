@@ -1,0 +1,113 @@
+<html>
+<head>
+<style type="text/css">
+div.bulk { text-align: justify }
+</style>
+<title>
+geneid source docs
+</title>
+</head>
+
+<BODY 
+TEXT color ="blue"
+BGCOLOR="white"
+LINK="black"
+VLINK="black"
+ALINK="black">
+
+<center>
+<table border=0 width=700>
+<tr>
+<td align=left>
+<font face=courier size=5 color=red>ReadHSP.c</font>
+</td>
+<td align=right>
+<font face=courier size=3>geneid v 1.2</font>
+<font face=arial black size=3>source documentation</font>
+</td>
+</table>
+
+<br><p><br><p>
+<table border=0 width=700 cellpadding=10>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Description:</font></td>
+<tr>
+<td>
+<div class="bulk"><font face="arial black" size=2>
+Read the external file containing HSPs from sequence alignments.
+Blast High-scoring Segment Pairs over the input sequence are projected over 
+the input sequence, taking the best value in every position. Positions without
+homology support are assigned the value <tt>NO_SCORE</tt> (parameter file).
+By using these homologous regions to the input DNA sequence, exons overlapping 
+any HSP will be enhancered and better predictions will be obtained. 
+
+<ul>
+<li>HSPs file is in gff format (8 mandatory records plus string group optional).
+<li> If blastn (DNA vs DNA) is used to obtain the homologous regions, their frame is unknown, so a dot (".") can be used to make three copies from every one.
+</ul>
+
+<center><font size=2 color="red"> -- It is NOT necessary to provide the 
+HSPs records ordered by any position -- </font></center>
+
+</font>
+</div>
+</td>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Briefing:</font></td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+packHSP* SelectHSP(packExternalInformation* external,
+                   char* Locus,
+                   long LengthSequence)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+Select the group of HSPs to be integrated into the predictions according 
+to current Locus name (using a hash table - dictionary of locus). Both FWD and
+RVS HSPs will be sorted using a quicksort routine.
+</font>
+</div>
+</td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+long ReadHSP (char* FileName, 
+              packExternalInformation* external)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+To place every HSP into the correct array according to their blast frame (1,2,3) and strand. If frame is unknown (blastn), then 3 copies of the same HSP will be produced. (It IS necessary a previous sorting in the HSP file)
+</font>
+</div>
+</td>
+</table>
+
+<br><p><br><p><br><p>
+
+<table border=0>
+<tr>
+<td align=left bgcolor=darkgreen>
+<script>
+var modifieddate=document.lastModified
+    document.write("<font size=1 face  = 'arial black'  color='white'>" + 
+                   "Last modified: " + modifieddate)
+</script>
+</td>
+</table>
+
+<br><p>
+Enrique Blanco Garcia &copy; 2003<br><p><br><p>
+</center>
+</body>
+</html>
+
+
+
+

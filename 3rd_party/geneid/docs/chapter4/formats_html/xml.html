@@ -1,0 +1,122 @@
+<html>
+<head>
+<style type="text/css">
+div.bulk { text-align: justify }
+</style>
+<title>
+geneid docs
+</title>
+</head>
+
+<BODY 
+TEXT color ="black"
+BGCOLOR="white"
+LINK="black"
+VLINK="black"
+ALINK="black">
+
+<br><p>
+<center>
+<font face=courier size=5 color=red>XML output format (Description)</font>
+<br><p>
+<table border=0 cellpadding=15>
+<tr>
+<td align=center>
+<font color="red">Gene extracted from a human prediction (XML format)
+</td>
+<tr>
+<td bgcolor=black>
+<font size=3 color="white">
+<b>
+<pre>
+<font color="yellow">&lt;?xml version="1.0" ?&gt;
+&lt;!DOCTYPE prediction SYSTEM "geneid.dtd"&gt;</font>
+<font color="lightgreen">
+&lt;prediction locus="AF100956_AF027865" length="140000" source="geneid_v1.2" 
+    date="Thu Sep 27 12:52:58 2001" genes="10" score ="204.19"&gt;</font>
+...
+   <font color="#A000F0">&lt;gene idGene="AF100956_AF027865.G5" strand ="fwd" exons="6" score="12.35"&gt;</font>
+      <font color="orange">&lt;exon idExon="AF100956_AF027865.G5E1" type="First" frame="0" score="5.38"&gt;</font>
+         <font color="red">&lt;site idSite="AF100956_AF027865.G5E1S1" type="Start" position="65038" score="3.06" /&gt;
+         &lt;site idSite="AF100956_AF027865.G5E1S2" type="Donor" position="65220" score="2.89" /&gt;</font>
+      <font color="orange">&lt;/exon&gt;
+      &lt;exon idExon="AF100956_AF027865.G5E2" type="Internal" frame="0" score="-0.93"&gt;</font>
+         <font color="red">&lt;site idSite="AF100956_AF027865.G5E2S1" type="Acceptor" position="65872" score="2.58" /&gt;
+         &lt;site idSite="AF100956_AF027865.G5E2S2" type="Donor" position="66019" score="0.44" /&gt;</font>
+      <font color="orange">&lt;/exon&gt;
+      &lt;exon idExon="AF100956_AF027865.G5E3" type="Internal" frame="2" score="-0.44"&gt;</font>
+         <font color="red">&lt;site idSite="AF100956_AF027865.G5E3S1" type="Acceptor" position="66210" score="2.20" /&gt;
+         &lt;site idSite="AF100956_AF027865.G5E3S2" type="Donor" position="66321" score="3.78" /&gt;</font>
+      <font color="orange">&lt;/exon&gt;
+      &lt;exon idExon="AF100956_AF027865.G5E4" type="Internal" frame="1" score="2.57"&gt;</font>
+         <font color="red">&lt;site idSite="AF100956_AF027865.G5E4S1" type="Acceptor" position="66774" score="2.22" /&gt;
+         &lt;site idSite="AF100956_AF027865.G5E4S2" type="Donor" position="66903" score="3.50" /&gt;</font>
+      <font color="orange">&lt;/exon&gt;
+      &lt;exon idExon="AF100956_AF027865.G5E5" type="Internal" frame="0" score="4.80"&gt;</font>
+         <font color="red">&lt;site idSite="AF100956_AF027865.G5E5S1" type="Acceptor" position="67344" score="2.54" /&gt;
+         &lt;site idSite="AF100956_AF027865.G5E5S2" type="Donor" position="67548" score="1.45" /&gt;</font>
+      <font color="orange">&lt;/exon&gt;
+      &lt;exon idExon="AF100956_AF027865.G5E6" type="Terminal" frame="2" score="0.97"&gt;</font>
+         <font color="red">&lt;site idSite="AF100956_AF027865.G5E6S1" type="Acceptor" position="67811" score="4.31" /&gt;
+         &lt;site idSite="AF100956_AF027865.G5E6S2" type="Stop" position="67899" score="0.00" /&gt;</font>
+      <font color="orange">&lt;/exon&gt;</font>
+      <font color="magenta">&lt;protein length="289"&gt;
+        MALLDLCGAARGQRPEWAALDAGSGGRSDPGHYSFSAQAPELALPRGMQVRTVGRSGEMQ
+        EPTAFLRSFGGDQERNVQIEMAHGTTTLAFKFQHGVIVAVDSRATAGSYISSLRMNKVIE
+        INPYLLGTMSGCAADCQYWERLLAKECRLYYLRNGERISVSAASKLLSNMMLQYRGMGLS
+        MGSMICGWDKKGPGLYYVDDNGTRLSGQMFSTGSGNTYAYGVMDSGYRQDLSPEEAYDLG
+        RRAIAYATHRDNYSGGVVNMYHMKEDGWVKVESSDVSDLLYKYGEAAL*
+      &lt;/protein&gt;</font>
+   <font color="#A000F0">&lt;/gene&gt;</font>
+...
+<font color="lightgreen">&lt;/prediction&gt;</font>
+</pre></b></font>
+</td></table>
+<br><p><br><p>
+
+<table border=0 cellpadding=10>
+<tr>
+<td align=center colspan=2><font color="red">Description of columns (gff format)</td>
+<tr>
+<td bgcolor="yellow">XML headers</td>
+<td>XML Version and DTD used</td>
+<tr>
+<td bgcolor="lightgreen">Prediction</td>
+<td>Prediction as a collection of genes</td>
+<tr>
+<td bgcolor="#A000F0">Gene</td>
+<td>Gene as a collection of exons</td>
+<tr>
+<td bgcolor="orange">Exon</td>
+<td>Gene as a couple of sites</td>
+<tr>
+<td bgcolor="red">Site</td>
+<td>Splice site or transcription signal description</td>
+<tr>
+<td bgcolor="magenta">Key</td>
+<td>Predicted protein</td>
+</table>
+<br><p><br><p>
+<center>
+To see more details about XML format, <a href="http://www.w3.org/XML/">click here</a>
+</center>
+<br><p><br><p>
+<table border=0>
+<tr>
+<td align=left bgcolor=darkgreen>
+<script>
+var modifieddate=document.lastModified
+    document.write("<font size=1 face  = 'arial black'  color='white'>" + 
+                   "Last modified: " + modifieddate)
+</script>
+</td>
+</table>
+
+<br><p>
+Enrique Blanco Garcia &copy; 2003<br><p><br><p>
+</center>
+</body>
+</html>
+
+
+

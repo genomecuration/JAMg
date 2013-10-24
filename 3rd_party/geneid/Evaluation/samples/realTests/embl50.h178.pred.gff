@@ -1,0 +1,985 @@
+HS04636	geneid_v1.0	First	966	1017	 2.19	+	0	gene_1	# AA   1: 18
+HS04636	geneid_v1.0	Internal	1818	1934	 1.52	+	2	gene_1	# AA  18: 57
+HS04636	geneid_v1.0	Internal	2055	2198	 1.49	+	2	gene_1	# AA  57:105
+HS04636	geneid_v1.0	Internal	2852	2995	 1.69	+	2	gene_1	# AA 105:153
+HS04636	geneid_v1.0	Internal	3426	3607	 3.06	+	2	gene_1	# AA 153:213
+HS04636	geneid_v1.0	Internal	4340	4423	 2.12	+	0	gene_1	# AA 214:241
+HS04636	geneid_v1.0	Internal	4543	4789	 4.68	+	0	gene_1	# AA 242:324
+HS04636	geneid_v1.0	Internal	5072	5358	 6.16	+	2	gene_1	# AA 324:419
+HS04636	geneid_v1.0	Internal	5860	6007	 5.90	+	0	gene_1	# AA 420:469
+HS04636	geneid_v1.0	Terminal	6494	6903	 9.09	+	2	gene_1	# AA 469:605
+$
+HS08198	geneid_v1.0	First	445	582	 0.46	+	0	gene_1	# AA   1: 46
+HS08198	geneid_v1.0	Internal	812	894	 0.08	+	0	gene_1	# AA  47: 74
+HS08198	geneid_v1.0	Internal	1053	1123	 2.57	+	1	gene_1	# AA  74: 98
+HS08198	geneid_v1.0	Internal	1208	1315	 0.92	+	2	gene_1	# AA  98:134
+HS08198	geneid_v1.0	Internal	1587	1688	 2.38	+	2	gene_1	# AA 134:168
+HS08198	geneid_v1.0	Internal	1772	1810	 1.52	+	2	gene_1	# AA 168:180
+$
+HS10116	geneid_v1.0	Internal	2432	2604	 0.86	+	0	gene_1	# AA   1: 58
+HS10116	geneid_v1.0	Terminal	4405	4444	-0.80	+	1	gene_1	# AA  58: 71
+HS10116	geneid_v1.0	Single	5085	5807	29.37	+	0	gene_2	# AA   1:241
+$
+HS11870	geneid_v1.0	Terminal	2024	3109	32.97	+	0	gene_1	# AA   1:362
+$
+HS207581	geneid_v1.0	Internal	537	575	 1.35	+	0	gene_1	# AA   1: 13
+HS207581	geneid_v1.0	Internal	1232	1273	 1.80	+	0	gene_1	# AA  14: 27
+HS207581	geneid_v1.0	Internal	1597	1920	12.51	+	0	gene_1	# AA  28:135
+HS207581	geneid_v1.0	Internal	2305	2700	13.15	+	0	gene_1	# AA 136:267
+$
+HS215MBP	geneid_v1.0	Single	67	615	10.92	+	0	gene_1	# AA   1:183
+$
+HS299531	geneid_v1.0	Internal	11573	11664	 2.01	+	2	gene_1	# AA   1: 31
+HS299531	geneid_v1.0	Internal	14528	14726	 8.33	+	0	gene_1	# AA  32: 98
+HS299531	geneid_v1.0	Internal	15707	15862	 4.94	+	2	gene_1	# AA  98:150
+HS299531	geneid_v1.0	Internal	16551	16754	 5.07	+	2	gene_1	# AA 150:218
+HS299531	geneid_v1.0	Internal	19737	19879	 1.89	+	2	gene_1	# AA 218:265
+HS299531	geneid_v1.0	Internal	21219	21456	 6.89	+	0	gene_1	# AA 266:344
+$
+HS307871	geneid_v1.0	First	72	145	 1.63	-	0	gene_1	# AA   1: 25
+HS307871	geneid_v1.0	First	1833	1860	-1.30	+	0	gene_2	# AA   1: 10
+HS307871	geneid_v1.0	Internal	1976	2055	 0.24	+	2	gene_2	# AA  10: 36
+HS307871	geneid_v1.0	Internal	2132	2194	 0.44	+	0	gene_2	# AA  37: 57
+HS307871	geneid_v1.0	Internal	2434	2682	 4.66	+	0	gene_2	# AA  58:140
+HS307871	geneid_v1.0	Internal	2749	2910	 3.19	+	0	gene_2	# AA 141:194
+HS307871	geneid_v1.0	Internal	3279	3416	 0.97	+	0	gene_2	# AA 195:240
+HS307871	geneid_v1.0	Internal	3576	3676	 3.23	+	0	gene_2	# AA 241:274
+HS307871	geneid_v1.0	Internal	3780	3846	-0.96	+	1	gene_2	# AA 274:296
+HS307871	geneid_v1.0	Terminal	4179	4340	 4.55	+	0	gene_2	# AA 297:350
+$
+HS3112010	geneid_v1.0	First	2100	2345	 3.28	+	0	gene_1	# AA   1: 82
+HS3112010	geneid_v1.0	Internal	3403	3456	 2.22	+	0	gene_1	# AA  83:100
+HS3112010	geneid_v1.0	Internal	3709	3813	 3.31	+	0	gene_1	# AA 101:135
+HS3112010	geneid_v1.0	Terminal	4160	4267	 0.11	+	0	gene_1	# AA 136:171
+$
+HS325761	geneid_v1.0	Terminal	5242	5407	 3.32	+	1	gene_1	# AA   1: 56
+$
+HS34804	geneid_v1.0	First	3730	3877	 7.61	+	0	gene_1	# AA   1: 50
+HS34804	geneid_v1.0	Internal	3985	4110	 4.02	+	2	gene_1	# AA  50: 92
+HS34804	geneid_v1.0	Internal	4196	4293	-0.98	+	2	gene_1	# AA  92:124
+HS34804	geneid_v1.0	Internal	6088	6346	 3.81	+	0	gene_1	# AA 125:211
+HS34804	geneid_v1.0	Internal	7176	7394	 8.45	+	2	gene_1	# AA 211:284
+HS34804	geneid_v1.0	Terminal	7517	7629	 5.60	+	2	gene_1	# AA 284:321
+$
+HS3702210	geneid_v1.0	First	748	965	 4.12	+	0	gene_1	# AA   1: 73
+HS3702210	geneid_v1.0	Internal	1123	1258	 2.96	+	1	gene_1	# AA  73:118
+HS3702210	geneid_v1.0	Internal	1376	1543	 2.66	+	0	gene_1	# AA 119:174
+HS3702210	geneid_v1.0	Internal	1701	1810	 3.63	+	0	gene_1	# AA 175:211
+HS3702210	geneid_v1.0	Internal	2949	2999	 0.48	+	1	gene_1	# AA 211:228
+HS3702210	geneid_v1.0	Internal	3135	3270	 0.63	+	1	gene_1	# AA 228:273
+HS3702210	geneid_v1.0	Internal	3836	3914	 1.68	+	0	gene_1	# AA 274:299
+$
+HS37106	geneid_v1.0	First	820	906	 2.53	+	0	gene_1	# AA   1: 29
+HS37106	geneid_v1.0	Internal	1819	2644	10.89	+	0	gene_1	# AA  30:305
+HS37106	geneid_v1.0	Terminal	2900	3075	 2.01	+	2	gene_1	# AA 305:363
+$
+HS403691	geneid_v1.0	Internal	3934	3985	 1.84	+	0	gene_1	# AA   1: 18
+HS403691	geneid_v1.0	Internal	4076	4159	 2.98	+	2	gene_1	# AA  18: 46
+HS403691	geneid_v1.0	Internal	5609	5710	 0.98	+	2	gene_1	# AA  46: 80
+HS403691	geneid_v1.0	Internal	5801	5841	 1.15	+	2	gene_1	# AA  80: 93
+HS403691	geneid_v1.0	Internal	5965	6131	 1.31	+	0	gene_1	# AA  94:148
+$
+HS403911	geneid_v1.0	Internal	1801	2038	 2.00	+	0	gene_1	# AA   1: 80
+HS403911	geneid_v1.0	Internal	2302	2456	 5.60	+	2	gene_1	# AA  80:131
+HS403911	geneid_v1.0	Terminal	2794	3099	11.13	+	0	gene_1	# AA 132:233
+$
+HS466921	geneid_v1.0	First	417	482	 3.81	+	0	gene_1	# AA   1: 22
+HS466921	geneid_v1.0	Internal	1926	2027	 3.00	+	0	gene_1	# AA  23: 56
+HS466921	geneid_v1.0	Terminal	2355	2483	 3.53	+	0	gene_1	# AA  57: 99
+$
+HS487951	geneid_v1.0	First	706	915	 6.29	+	0	gene_1	# AA   1: 70
+HS487951	geneid_v1.0	Internal	1554	1661	 2.06	+	0	gene_1	# AA  71:106
+HS487951	geneid_v1.0	Internal	1803	1874	 3.20	+	0	gene_1	# AA 107:130
+HS487951	geneid_v1.0	Terminal	2330	2623	 1.60	+	0	gene_1	# AA 131:228
+$
+HS501361	geneid_v1.0	First	1447	1504	 0.69	+	0	gene_1	# AA   1: 20
+HS501361	geneid_v1.0	Internal	2950	3049	 3.39	+	2	gene_1	# AA  20: 53
+HS501361	geneid_v1.0	Internal	3152	3222	 0.93	+	1	gene_1	# AA  53: 77
+HS501361	geneid_v1.0	Internal	3307	3388	 2.72	+	2	gene_1	# AA  77:103
+$
+HS5082210	geneid_v1.0	Terminal	162	1243	38.71	+	2	gene_1	# AA   1:361
+$
+HSACKI10	geneid_v1.0	Internal	1721	2300	16.30	+	1	gene_1	# AA   1:194
+HSACKI10	geneid_v1.0	Internal	3142	3224	 1.52	+	0	gene_1	# AA 195:222
+HSACKI10	geneid_v1.0	Internal	3592	3748	 2.71	+	1	gene_1	# AA 222:274
+HSACKI10	geneid_v1.0	Internal	3836	3997	 7.68	+	0	gene_1	# AA 275:328
+HSACKI10	geneid_v1.0	Internal	4085	4163	-2.00	+	0	gene_1	# AA 329:355
+HSACKI10	geneid_v1.0	Internal	5098	5499	42.92	+	2	gene_1	# AA 355:488
+$
+HSACTH	geneid_v1.0	First	4495	4626	 1.81	+	0	gene_1	# AA   1: 44
+HSACTH	geneid_v1.0	Internal	7513	8180	34.45	+	0	gene_1	# AA  45:266
+$
+HSACTREC	geneid_v1.0	Internal	71	1515	26.17	+	2	gene_1	# AA   1:482
+$
+HSADH6	geneid_v1.0	Internal	542	643	 0.30	+	0	gene_1	# AA   1: 34
+HSADH6	geneid_v1.0	Internal	669	810	 1.30	+	0	gene_1	# AA  35: 82
+HSADH6	geneid_v1.0	Internal	836	923	-0.57	+	2	gene_1	# AA  82:111
+HSADH6	geneid_v1.0	Internal	949	1165	 0.87	+	1	gene_1	# AA 111:183
+HSADH6	geneid_v1.0	Internal	1191	1451	 3.45	+	0	gene_1	# AA 184:270
+$
+HSAFP3	geneid_v1.0	Internal	5096	5228	 4.87	+	1	gene_1	# AA   1: 45
+HSAFP3	geneid_v1.0	Internal	7516	7727	 1.72	+	0	gene_1	# AA  46:116
+HSAFP3	geneid_v1.0	Internal	9214	9346	-0.54	+	1	gene_1	# AA 116:160
+HSAFP3	geneid_v1.0	Internal	10265	10362	 0.99	+	0	gene_1	# AA 161:193
+HSAFP3	geneid_v1.0	Internal	11911	12040	 2.97	+	1	gene_1	# AA 193:236
+HSAFP3	geneid_v1.0	Internal	14316	14530	 2.75	+	0	gene_1	# AA 237:308
+HSAFP3	geneid_v1.0	Internal	16188	16320	-0.55	+	1	gene_1	# AA 308:352
+HSAFP3	geneid_v1.0	Internal	16889	16986	 0.65	+	0	gene_1	# AA 353:385
+HSAFP3	geneid_v1.0	Internal	17469	17607	 1.60	+	1	gene_1	# AA 385:431
+HSAFP3	geneid_v1.0	Internal	19255	19478	 1.18	+	0	gene_1	# AA 432:506
+HSAFP3	geneid_v1.0	Internal	20619	20751	 1.60	+	1	gene_1	# AA 506:550
+$
+HSAGG	geneid_v1.0	Terminal	1791	2252	 5.73	+	0	gene_1	# AA   1:154
+$
+HSAK1	geneid_v1.0	First	3982	3988	 0.27	+	0	gene_1	# AA   1:  3
+HSAK1	geneid_v1.0	Internal	5534	5569	 4.18	+	2	gene_1	# AA   3: 15
+HSAK1	geneid_v1.0	Internal	5742	5905	 5.11	+	2	gene_1	# AA  15: 69
+HSAK1	geneid_v1.0	Internal	6656	6772	 6.71	+	0	gene_1	# AA  70:108
+HSAK1	geneid_v1.0	Internal	10075	10266	11.60	+	0	gene_1	# AA 109:172
+HSAK1	geneid_v1.0	Terminal	10508	10576	 1.26	+	0	gene_1	# AA 173:195
+$
+HSALIFA	geneid_v1.0	Internal	2471	2649	 1.80	+	2	gene_1	# AA   1: 60
+HSALIFA	geneid_v1.0	Terminal	3343	3753	22.82	+	0	gene_1	# AA  61:197
+$
+HSANT2X	geneid_v1.0	Internal	1942	2114	 7.47	+	2	gene_1	# AA   1: 58
+HSANT2X	geneid_v1.0	Internal	3124	3610	13.29	+	0	gene_1	# AA  59:221
+HSANT2X	geneid_v1.0	Internal	3835	3975	 3.70	+	2	gene_1	# AA 221:268
+HSANT2X	geneid_v1.0	Terminal	4350	4507	 1.94	+	2	gene_1	# AA 268:320
+$
+HSANTCE	geneid_v1.0	Terminal	126	2205	50.78	+	1	gene_1	# AA   1:694
+$
+HSAPC3A	geneid_v1.0	Internal	1054	1177	 3.56	+	2	gene_1	# AA   1: 42
+HSAPC3A	geneid_v1.0	Internal	3015	3105	 0.76	+	1	gene_1	# AA  42: 72
+$
+HSAPC3G	geneid_v1.0	Internal	1124	1247	 2.84	+	2	gene_1	# AA   1: 42
+HSAPC3G	geneid_v1.0	Internal	3102	3192	 0.68	+	1	gene_1	# AA  42: 72
+$
+HSAPOA2	geneid_v1.0	Internal	1380	1455	 1.56	+	0	gene_1	# AA   1: 26
+HSAPOA2	geneid_v1.0	Internal	1749	1881	 3.73	+	2	gene_1	# AA  26: 70
+HSAPOA2	geneid_v1.0	Terminal	2277	2394	 1.22	+	1	gene_1	# AA  70:109
+$
+HSAPOA2B	geneid_v1.0	Internal	414	489	 1.56	+	0	gene_1	# AA   1: 26
+HSAPOA2B	geneid_v1.0	Internal	783	915	 3.73	+	2	gene_1	# AA  26: 70
+HSAPOA2B	geneid_v1.0	Terminal	1311	1428	 1.52	+	1	gene_1	# AA  70:109
+$
+HSAPOA2G	geneid_v1.0	Internal	1115	1190	 1.56	+	0	gene_1	# AA   1: 26
+HSAPOA2G	geneid_v1.0	Internal	1484	1616	 3.68	+	2	gene_1	# AA  26: 70
+HSAPOA2G	geneid_v1.0	Terminal	2012	2129	 1.52	+	1	gene_1	# AA  70:109
+$
+HSAPOAIA	geneid_v1.0	Internal	254	316	 0.99	+	2	gene_1	# AA   1: 22
+HSAPOAIA	geneid_v1.0	Internal	504	660	 3.33	+	2	gene_1	# AA  22: 74
+HSAPOAIA	geneid_v1.0	Internal	1249	1848	28.96	+	1	gene_1	# AA  74:273
+$
+HSAPOC2G	geneid_v1.0	Internal	2881	3040	 3.58	+	2	gene_1	# AA   1: 54
+HSAPOC2G	geneid_v1.0	Terminal	3339	3429	 0.74	+	1	gene_1	# AA  54: 84
+$
+HSARYLA	geneid_v1.0	First	624	847	 3.69	+	0	gene_1	# AA   1: 75
+HSARYLA	geneid_v1.0	Internal	997	1237	 6.33	+	1	gene_1	# AA  75:155
+HSARYLA	geneid_v1.0	Internal	1352	1570	 4.41	+	0	gene_1	# AA 156:228
+HSARYLA	geneid_v1.0	Internal	1645	1814	 1.74	+	0	gene_1	# AA 229:285
+HSARYLA	geneid_v1.0	Internal	2127	2251	-3.47	+	1	gene_1	# AA 285:327
+HSARYLA	geneid_v1.0	Internal	2342	2469	 5.21	+	2	gene_1	# AA 327:369
+HSARYLA	geneid_v1.0	Internal	2720	2822	 0.65	+	0	gene_1	# AA 370:404
+HSARYLA	geneid_v1.0	Internal	2920	3161	 4.25	+	2	gene_1	# AA 404:484
+$
+HSATP1A2	geneid_v1.0	Internal	6713	6817	 5.04	+	0	gene_1	# AA   1: 35
+HSATP1A2	geneid_v1.0	Internal	6999	7058	 4.96	+	0	gene_1	# AA  36: 55
+HSATP1A2	geneid_v1.0	Internal	9020	9223	 7.95	+	0	gene_1	# AA  56:123
+HSATP1A2	geneid_v1.0	Internal	9750	9863	 5.17	+	0	gene_1	# AA 124:161
+HSATP1A2	geneid_v1.0	Internal	10103	10237	 4.61	+	0	gene_1	# AA 162:206
+HSATP1A2	geneid_v1.0	Internal	10943	11060	 5.87	+	0	gene_1	# AA 207:246
+HSATP1A2	geneid_v1.0	Internal	12480	12748	 6.90	+	2	gene_1	# AA 246:335
+HSATP1A2	geneid_v1.0	Internal	13580	13778	 9.62	+	0	gene_1	# AA 336:402
+HSATP1A2	geneid_v1.0	Internal	13908	14017	 3.05	+	2	gene_1	# AA 402:438
+HSATP1A2	geneid_v1.0	Internal	14194	14375	 1.78	+	0	gene_1	# AA 439:499
+HSATP1A2	geneid_v1.0	Internal	14963	15219	 8.04	+	1	gene_1	# AA 499:585
+HSATP1A2	geneid_v1.0	Internal	15350	15525	 5.27	+	2	gene_1	# AA 585:643
+HSATP1A2	geneid_v1.0	Internal	19411	19547	 6.26	+	0	gene_1	# AA 644:689
+HSATP1A2	geneid_v1.0	Internal	20072	20222	 6.43	+	1	gene_1	# AA 689:739
+HSATP1A2	geneid_v1.0	Internal	20361	20529	 8.52	+	0	gene_1	# AA 740:796
+HSATP1A2	geneid_v1.0	Internal	20766	20920	 7.22	+	2	gene_1	# AA 796:847
+HSATP1A2	geneid_v1.0	Internal	21174	21297	 4.17	+	0	gene_1	# AA 848:889
+HSATP1A2	geneid_v1.0	Internal	21497	21642	 5.92	+	2	gene_1	# AA 889:937
+HSATP1A2	geneid_v1.0	Internal	21828	21958	 6.86	+	0	gene_1	# AA 938:981
+HSATP1A2	geneid_v1.0	Internal	22647	22748	 3.55	+	1	gene_1	# AA 981:1015
+HSATP1A2	geneid_v1.0	Internal	22900	22991	 3.81	+	1	gene_1	# AA 1015:1046
+HSATP1A2	geneid_v1.0	Internal	24795	24876	 1.75	+	2	gene_1	# AA 1046:1072
+$
+HSATPCP1	geneid_v1.0	First	4583	4729	 3.35	+	0	gene_1	# AA   1: 49
+HSATPCP1	geneid_v1.0	Internal	5341	5388	 1.32	+	0	gene_1	# AA  50: 65
+HSATPCP1	geneid_v1.0	Internal	6304	6381	 1.38	+	0	gene_1	# AA  66: 91
+HSATPCP1	geneid_v1.0	Internal	7088	7266	 7.97	+	0	gene_1	# AA  92:151
+HSATPCP1	geneid_v1.0	Internal	7587	7697	 1.60	+	1	gene_1	# AA 151:187
+$
+HSATPCP2	geneid_v1.0	Internal	10774	10917	 4.63	+	1	gene_1	# AA   1: 49
+HSATPCP2	geneid_v1.0	Terminal	14641	14755	 3.07	+	1	gene_1	# AA  49: 87
+$
+HSBCDIFFI	geneid_v1.0	Internal	529	696	 1.61	+	0	gene_1	# AA   1: 56
+HSBCDIFFI	geneid_v1.0	Internal	905	937	 0.56	+	0	gene_1	# AA  57: 67
+HSBCDIFFI	geneid_v1.0	Internal	1883	2337	 0.22	+	0	gene_1	# AA  68:218
+$
+HSBHSD	geneid_v1.0	Internal	4631	4661	 1.20	+	0	gene_1	# AA   1: 11
+HSBHSD	geneid_v1.0	Internal	5682	5846	 2.07	+	2	gene_1	# AA  11: 66
+HSBHSD	geneid_v1.0	Terminal	8014	8825	20.66	+	2	gene_1	# AA  66:336
+$
+HSCAIVA	geneid_v1.0	Single	48	986	32.58	+	0	gene_1	# AA   1:313
+$
+HSCBRG	geneid_v1.0	First	278	566	19.64	+	0	gene_1	# AA   1: 97
+HSCBRG	geneid_v1.0	Internal	1112	1219	 0.89	+	2	gene_1	# AA  97:133
+HSCBRG	geneid_v1.0	Internal	2608	3040	 8.22	+	2	gene_1	# AA 133:276
+$
+HSCD19A	geneid_v1.0	Internal	1364	1494	 1.63	+	1	gene_1	# AA   1: 45
+HSCD19A	geneid_v1.0	Internal	1752	2018	 5.30	+	2	gene_1	# AA  45:134
+HSCD19A	geneid_v1.0	Internal	2317	2520	 0.36	+	2	gene_1	# AA 134:202
+HSCD19A	geneid_v1.0	Internal	2640	2796	-1.04	+	2	gene_1	# AA 202:254
+HSCD19A	geneid_v1.0	Internal	4849	4959	 0.81	+	1	gene_1	# AA 254:291
+HSCD19A	geneid_v1.0	Internal	5917	6005	 0.97	+	1	gene_1	# AA 291:321
+HSCD19A	geneid_v1.0	Internal	6676	6780	 3.85	+	2	gene_1	# AA 321:356
+HSCD19A	geneid_v1.0	Internal	6860	6928	 3.26	+	2	gene_1	# AA 356:379
+HSCD19A	geneid_v1.0	Internal	7030	7086	 0.27	+	2	gene_1	# AA 379:398
+HSCD19A	geneid_v1.0	Internal	8014	8175	 1.26	+	2	gene_1	# AA 398:452
+HSCD19A	geneid_v1.0	Internal	8279	8366	 0.45	+	2	gene_1	# AA 452:480
+$
+HSCD43	geneid_v1.0	First	2791	3415	 8.08	+	0	gene_1	# AA   1:208
+$
+HSCEL	geneid_v1.0	Internal	4043	4193	 4.50	+	0	gene_1	# AA   1: 51
+HSCEL	geneid_v1.0	Internal	4279	4401	 2.59	+	2	gene_1	# AA  51: 92
+HSCEL	geneid_v1.0	Internal	4679	4876	 8.30	+	2	gene_1	# AA  92:158
+HSCEL	geneid_v1.0	Internal	6160	6357	 3.36	+	2	gene_1	# AA 158:224
+HSCEL	geneid_v1.0	Internal	8301	8487	14.56	+	2	gene_1	# AA 224:286
+HSCEL	geneid_v1.0	Internal	8687	8890	 7.33	+	1	gene_1	# AA 286:354
+HSCEL	geneid_v1.0	Internal	10096	10293	 8.87	+	1	gene_1	# AA 354:420
+HSCEL	geneid_v1.0	Terminal	10620	11364	20.00	+	1	gene_1	# AA 420:668
+$
+HSCKBG	geneid_v1.0	First	1148	1340	15.74	+	0	gene_1	# AA   1: 65
+HSCKBG	geneid_v1.0	Internal	1464	1618	13.62	+	2	gene_1	# AA  65:116
+HSCKBG	geneid_v1.0	Internal	1691	1823	 6.30	+	0	gene_1	# AA 117:161
+HSCKBG	geneid_v1.0	Internal	2208	2379	 7.99	+	2	gene_1	# AA 161:218
+HSCKBG	geneid_v1.0	Internal	3050	3173	 3.50	+	1	gene_1	# AA 218:259
+HSCKBG	geneid_v1.0	Internal	3331	3520	10.89	+	0	gene_1	# AA 260:323
+HSCKBG	geneid_v1.0	Terminal	3600	3778	 9.28	+	2	gene_1	# AA 323:382
+$
+HSCLN3	geneid_v1.0	Internal	1437	1515	 1.52	+	2	gene_1	# AA   1: 27
+HSCLN3	geneid_v1.0	Internal	3600	3696	 2.19	+	1	gene_1	# AA  27: 59
+HSCLN3	geneid_v1.0	Internal	5249	5334	 0.23	+	0	gene_1	# AA  60: 88
+HSCLN3	geneid_v1.0	Internal	5449	5534	-0.34	+	1	gene_1	# AA  88:117
+HSCLN3	geneid_v1.0	Internal	6340	6412	 2.55	+	2	gene_1	# AA 117:141
+HSCLN3	geneid_v1.0	Internal	6500	6643	 2.11	+	1	gene_1	# AA 141:189
+HSCLN3	geneid_v1.0	Internal	8860	8972	 1.65	+	1	gene_1	# AA 189:227
+HSCLN3	geneid_v1.0	Internal	10297	10327	-0.71	+	2	gene_1	# AA 227:237
+HSCLN3	geneid_v1.0	Internal	10771	10864	-0.26	+	1	gene_1	# AA 237:268
+HSCLN3	geneid_v1.0	Internal	15092	15232	 5.10	+	0	gene_1	# AA 269:315
+HSCLN3	geneid_v1.0	Terminal	15334	15453	 1.73	+	0	gene_1	# AA 316:355
+$
+HSCOLLX	geneid_v1.0	Internal	2892	2945	 0.14	+	0	gene_1	# AA   1: 18
+HSCOLLX	geneid_v1.0	Internal	3471	3639	 3.06	+	0	gene_1	# AA  19: 75
+HSCOLLX	geneid_v1.0	Internal	6942	8826	28.25	+	2	gene_1	# AA  75:702
+$
+HSCOSE	geneid_v1.0	Internal	1138	1258	 0.04	+	1	gene_1	# AA   1: 41
+HSCOSE	geneid_v1.0	Internal	2635	2836	 5.27	+	0	gene_1	# AA  42:109
+HSCOSE	geneid_v1.0	Terminal	3012	3184	 3.47	+	2	gene_1	# AA 109:166
+$
+HSCPH70	geneid_v1.0	Internal	1625	1728	 0.64	+	2	gene_1	# AA   1: 35
+HSCPH70	geneid_v1.0	Internal	4628	4800	 3.17	+	0	gene_1	# AA  36: 93
+HSCPH70	geneid_v1.0	Terminal	6215	6350	 4.00	+	1	gene_1	# AA  93:138
+$
+HSCRCANTA	geneid_v1.0	Internal	7766	7999	 1.25	+	0	gene_1	# AA   1: 78
+$
+HSCSPA	geneid_v1.0	Internal	2107	2254	 5.18	+	2	gene_1	# AA   1: 50
+HSCSPA	geneid_v1.0	Internal	2772	2907	 4.69	+	1	gene_1	# AA  50: 95
+HSCSPA	geneid_v1.0	Internal	3113	3370	 3.07	+	0	gene_1	# AA  96:181
+HSCSPA	geneid_v1.0	Terminal	3773	3916	 1.53	+	0	gene_1	# AA 182:229
+$
+HSCST3G	geneid_v1.0	First	1085	1327	11.95	+	0	gene_1	# AA   1: 81
+HSCST3G	geneid_v1.0	Internal	3580	3693	 1.97	+	0	gene_1	# AA  82:119
+$
+HSCTLA1	geneid_v1.0	Internal	848	964	 2.40	+	2	gene_1	# AA   1: 40
+HSCTLA1	geneid_v1.0	Internal	2008	2155	-0.67	+	2	gene_1	# AA  40: 89
+HSCTLA1	geneid_v1.0	Internal	2611	2746	 3.79	+	1	gene_1	# AA  89:134
+HSCTLA1	geneid_v1.0	Internal	2952	3212	 6.19	+	0	gene_1	# AA 135:221
+HSCTLA1	geneid_v1.0	Terminal	3856	3999	 0.71	+	0	gene_1	# AA 222:269
+$
+HSCYTOK17	geneid_v1.0	First	149	580	21.95	+	0	gene_1	# AA   1:144
+HSCYTOK17	geneid_v1.0	Internal	1626	1708	 7.87	+	0	gene_1	# AA 145:172
+HSCYTOK17	geneid_v1.0	Internal	2147	2303	11.01	+	1	gene_1	# AA 172:224
+HSCYTOK17	geneid_v1.0	Internal	2904	3065	11.74	+	0	gene_1	# AA 225:278
+HSCYTOK17	geneid_v1.0	Internal	3567	3692	 4.41	+	0	gene_1	# AA 279:320
+HSCYTOK17	geneid_v1.0	Internal	3779	3999	12.30	+	0	gene_1	# AA 321:394
+HSCYTOK17	geneid_v1.0	Internal	4100	4122	 2.74	+	1	gene_1	# AA 394:402
+HSCYTOK17	geneid_v1.0	Terminal	4970	5064	 1.95	+	2	gene_1	# AA 402:433
+$
+HSDAO	geneid_v1.0	Internal	512	587	 0.06	+	0	gene_1	# AA   1: 26
+HSDAO	geneid_v1.0	Internal	2551	2581	 0.08	+	2	gene_1	# AA  26: 36
+HSDAO	geneid_v1.0	Internal	4840	6425	57.93	+	1	gene_1	# AA  36:565
+HSDAO	geneid_v1.0	Internal	7145	7430	11.36	+	2	gene_1	# AA 565:660
+HSDAO	geneid_v1.0	Internal	8880	9012	 6.55	+	1	gene_1	# AA 660:704
+HSDAO	geneid_v1.0	Terminal	9322	9588	 6.57	+	0	gene_1	# AA 705:793
+$
+HSDARC	geneid_v1.0	Terminal	956	1995	 8.37	+	2	gene_1	# AA   1:347
+$
+HSDEF5A	geneid_v1.0	Internal	1387	1570	 6.75	+	0	gene_1	# AA   1: 62
+HSDEF5A	geneid_v1.0	Internal	2550	2617	 1.84	+	2	gene_1	# AA  62: 84
+$
+HSDNAAMHI	geneid_v1.0	Internal	2608	2796	 0.41	+	0	gene_1	# AA   1: 63
+HSDNAAMHI	geneid_v1.0	Internal	5773	5887	 2.52	+	0	gene_1	# AA  64:102
+HSDNAAMHI	geneid_v1.0	Internal	6330	6502	 2.38	+	2	gene_1	# AA 102:159
+HSDNAAMHI	geneid_v1.0	Internal	6708	6855	 2.25	+	0	gene_1	# AA 160:209
+HSDNAAMHI	geneid_v1.0	Internal	7023	7159	 0.69	+	2	gene_1	# AA 209:254
+HSDNAAMHI	geneid_v1.0	Internal	8056	8197	 0.31	+	0	gene_1	# AA 255:301
+$
+HSDNAMIA	geneid_v1.0	Internal	1381	1513	 2.08	+	0	gene_1	# AA   1: 45
+HSDNAMIA	geneid_v1.0	Internal	1595	1728	 3.12	+	2	gene_1	# AA  45: 89
+HSDNAMIA	geneid_v1.0	Internal	2812	2922	 5.39	+	0	gene_1	# AA  90:126
+HSDNAMIA	geneid_v1.0	Internal	3240	3259	 0.02	+	0	gene_1	# AA 127:132
+$
+HSECP1	geneid_v1.0	Internal	551	926	 2.31	+	2	gene_1	# AA   1:125
+$
+HSENO2	geneid_v1.0	Internal	2447	2546	 2.87	+	0	gene_1	# AA   1: 34
+HSENO2	geneid_v1.0	Internal	3044	3139	 3.49	+	2	gene_1	# AA  34: 66
+HSENO2	geneid_v1.0	Internal	4202	4335	 2.44	+	2	gene_1	# AA  66:110
+HSENO2	geneid_v1.0	Internal	4561	4783	14.65	+	0	gene_1	# AA 111:185
+HSENO2	geneid_v1.0	Internal	6188	6478	 8.03	+	2	gene_1	# AA 185:282
+HSENO2	geneid_v1.0	Internal	8198	8399	 8.94	+	2	gene_1	# AA 282:349
+HSENO2	geneid_v1.0	Internal	8864	9019	 1.35	+	1	gene_1	# AA 349:400
+$
+HSERPG	geneid_v1.0	First	615	627	 1.31	+	0	gene_1	# AA   1:  5
+HSERPG	geneid_v1.0	Internal	1254	1339	 0.59	+	2	gene_1	# AA   5: 33
+HSERPG	geneid_v1.0	Internal	1596	1682	 0.18	+	0	gene_1	# AA  34: 62
+HSERPG	geneid_v1.0	Internal	2294	2473	 4.08	+	0	gene_1	# AA  63:122
+HSERPG	geneid_v1.0	Terminal	2608	2763	 3.21	+	0	gene_1	# AA 123:174
+$
+HSFBRGG	geneid_v1.0	Internal	1973	2017	 0.02	+	0	gene_1	# AA   1: 15
+HSFBRGG	geneid_v1.0	Internal	2207	2390	 3.35	+	0	gene_1	# AA  16: 77
+HSFBRGG	geneid_v1.0	Internal	2510	2603	 0.38	+	2	gene_1	# AA  77:108
+HSFBRGG	geneid_v1.0	Internal	4211	4341	 2.56	+	1	gene_1	# AA 108:152
+HSFBRGG	geneid_v1.0	Internal	4645	4778	 1.38	+	2	gene_1	# AA 152:196
+HSFBRGG	geneid_v1.0	Internal	5758	5942	-0.73	+	0	gene_1	# AA 197:258
+HSFBRGG	geneid_v1.0	Internal	7426	7703	10.40	+	1	gene_1	# AA 258:351
+HSFBRGG	geneid_v1.0	Terminal	9342	9574	 0.96	+	2	gene_1	# AA 351:428
+$
+HSFOLA	geneid_v1.0	Internal	2395	2622	 0.94	+	0	gene_1	# AA   1: 76
+HSFOLA	geneid_v1.0	Internal	4687	4875	 4.44	+	0	gene_1	# AA  77:139
+HSFOLA	geneid_v1.0	Internal	4993	5128	 2.31	+	0	gene_1	# AA 140:185
+HSFOLA	geneid_v1.0	Internal	5287	5505	 6.44	+	2	gene_1	# AA 185:257
+$
+HSG0S2A	geneid_v1.0	Single	161	472	12.54	+	0	gene_1	# AA   1:104
+$
+HSG0S2PE	geneid_v1.0	Terminal	3459	3802	13.30	+	2	gene_1	# AA   1:115
+$
+HSGA733A	geneid_v1.0	Single	307	1278	59.00	+	0	gene_1	# AA   1:324
+$
+HSGALE	geneid_v1.0	Terminal	89	1140	40.85	+	2	gene_1	# AA   1:351
+$
+HSGALTB	geneid_v1.0	Internal	715	884	 5.91	+	2	gene_1	# AA   1: 57
+HSGALTB	geneid_v1.0	Internal	1964	2086	 2.25	+	0	gene_1	# AA  58: 98
+HSGALTB	geneid_v1.0	Internal	2392	2524	 0.58	+	0	gene_1	# AA  99:143
+HSGALTB	geneid_v1.0	Internal	3039	3193	 3.84	+	2	gene_1	# AA 143:194
+HSGALTB	geneid_v1.0	Terminal	4004	4084	 0.17	+	0	gene_1	# AA 195:221
+$
+HSGCK	geneid_v1.0	First	1941	1988	 1.21	+	0	gene_1	# AA   1: 16
+HSGCK	geneid_v1.0	Internal	3197	3359	 6.72	+	0	gene_1	# AA  17: 71
+HSGCK	geneid_v1.0	Internal	3727	3881	 5.51	+	2	gene_1	# AA  71:122
+HSGCK	geneid_v1.0	Internal	4165	4311	 5.59	+	0	gene_1	# AA 123:171
+HSGCK	geneid_v1.0	Internal	4710	4805	 1.76	+	0	gene_1	# AA 172:203
+HSGCK	geneid_v1.0	Internal	4915	5014	 6.12	+	0	gene_1	# AA 204:237
+HSGCK	geneid_v1.0	Internal	5268	5451	10.47	+	2	gene_1	# AA 237:298
+HSGCK	geneid_v1.0	Internal	5808	5963	 6.56	+	1	gene_1	# AA 298:350
+HSGCK	geneid_v1.0	Internal	6241	6474	15.70	+	1	gene_1	# AA 350:428
+HSGCK	geneid_v1.0	Internal	6805	6945	 4.72	+	1	gene_1	# AA 428:474
+$
+HSGCSFG	geneid_v1.0	Internal	580	734	 2.82	+	2	gene_1	# AA   1: 52
+HSGCSFG	geneid_v1.0	Internal	1122	1229	 1.64	+	0	gene_1	# AA  53: 88
+HSGCSFG	geneid_v1.0	Internal	1374	1520	 3.82	+	0	gene_1	# AA  89:137
+$
+HSGDF5	geneid_v1.0	First	640	2141	42.14	+	0	gene_1	# AA   1:500
+$
+HSGLUT4B	geneid_v1.0	Internal	3535	3651	 3.96	+	0	gene_1	# AA   1: 39
+HSGLUT4B	geneid_v1.0	Internal	3763	3935	 0.60	+	0	gene_1	# AA  40: 97
+HSGLUT4B	geneid_v1.0	Internal	4028	4152	 3.28	+	1	gene_1	# AA  97:139
+HSGLUT4B	geneid_v1.0	Internal	4264	4379	 4.17	+	2	gene_1	# AA 139:177
+HSGLUT4B	geneid_v1.0	Internal	4507	4669	 3.80	+	0	gene_1	# AA 178:232
+HSGLUT4B	geneid_v1.0	Internal	4775	4962	 5.25	+	2	gene_1	# AA 232:294
+HSGLUT4B	geneid_v1.0	Internal	5125	5229	 1.84	+	0	gene_1	# AA 295:329
+HSGLUT4B	geneid_v1.0	Internal	5378	5479	 1.24	+	0	gene_1	# AA 330:363
+HSGLUT4B	geneid_v1.0	Internal	5995	6198	 7.10	+	0	gene_1	# AA 364:431
+HSGLUT4B	geneid_v1.0	Terminal	6716	6919	 2.31	+	0	gene_1	# AA 432:499
+$
+HSGPV	geneid_v1.0	Internal	2492	4100	34.18	+	2	gene_1	# AA   1:536
+$
+HSGROW2	geneid_v1.0	Internal	601	761	 1.23	+	2	gene_1	# AA   1: 54
+HSGROW2	geneid_v1.0	Internal	1184	1348	 7.67	+	0	gene_1	# AA  55:109
+HSGROW2	geneid_v1.0	Terminal	1602	1799	 9.36	+	0	gene_1	# AA 110:175
+$
+HSGTRH	geneid_v1.0	Internal	2063	2204	 1.12	+	1	gene_1	# AA   1: 48
+HSGTRH	geneid_v1.0	Internal	3720	3815	 1.76	+	0	gene_1	# AA  49: 80
+$
+HSH1T	geneid_v1.0	First	488	1052	14.30	+	0	gene_1	# AA   1:188
+$
+HSHAIL8G	geneid_v1.0	Terminal	465	1550	32.97	+	0	gene_1	# AA   1:362
+$
+HSHAP	geneid_v1.0	Internal	780	905	 3.14	+	2	gene_1	# AA   1: 43
+HSHAP	geneid_v1.0	Internal	1116	1303	 2.58	+	2	gene_1	# AA  43:105
+HSHAP	geneid_v1.0	Internal	1870	2062	 4.31	+	0	gene_1	# AA 106:170
+HSHAP	geneid_v1.0	Terminal	2193	2710	11.87	+	2	gene_1	# AA 170:342
+$
+HSHCF1	geneid_v1.0	Internal	101	249	 5.23	+	2	gene_1	# AA   1: 50
+HSHCF1	geneid_v1.0	Internal	543	703	 0.72	+	0	gene_1	# AA  51:104
+HSHCF1	geneid_v1.0	Internal	1393	1601	 4.50	+	1	gene_1	# AA 104:174
+HSHCF1	geneid_v1.0	Internal	2520	2604	 0.37	+	2	gene_1	# AA 174:202
+HSHCF1	geneid_v1.0	Internal	3178	3284	 2.00	+	1	gene_1	# AA 202:238
+HSHCF1	geneid_v1.0	Internal	4413	4592	 8.47	+	2	gene_1	# AA 238:298
+HSHCF1	geneid_v1.0	Internal	4666	4724	 2.23	+	2	gene_1	# AA 298:317
+HSHCF1	geneid_v1.0	Internal	6061	6258	 4.26	+	0	gene_1	# AA 318:383
+HSHCF1	geneid_v1.0	Internal	6579	6803	 5.99	+	0	gene_1	# AA 384:458
+HSHCF1	geneid_v1.0	Internal	6942	7046	 3.90	+	0	gene_1	# AA 459:493
+HSHCF1	geneid_v1.0	Internal	7290	7509	10.54	+	0	gene_1	# AA 494:567
+HSHCF1	geneid_v1.0	Internal	7763	7905	 5.28	+	2	gene_1	# AA 567:614
+HSHCF1	geneid_v1.0	Internal	8060	8198	 3.31	+	0	gene_1	# AA 615:661
+HSHCF1	geneid_v1.0	Internal	8412	8632	 6.85	+	2	gene_1	# AA 661:734
+HSHCF1	geneid_v1.0	Internal	9250	10726	25.84	+	0	gene_1	# AA 735:1227
+HSHCF1	geneid_v1.0	Internal	11022	11185	 4.39	+	2	gene_1	# AA 1227:1281
+HSHCF1	geneid_v1.0	Internal	11702	12278	 9.06	+	0	gene_1	# AA 1282:1474
+HSHCF1	geneid_v1.0	Internal	12633	13001	 6.86	+	2	gene_1	# AA 1474:1597
+HSHCF1	geneid_v1.0	Internal	13081	13199	 2.77	+	2	gene_1	# AA 1597:1636
+HSHCF1	geneid_v1.0	Internal	13301	13438	 3.31	+	0	gene_1	# AA 1637:1682
+HSHCF1	geneid_v1.0	Internal	13790	13975	 4.72	+	0	gene_1	# AA 1683:1744
+HSHCF1	geneid_v1.0	Internal	14246	14546	12.68	+	0	gene_1	# AA 1745:1845
+HSHCF1	geneid_v1.0	Internal	15171	15234	 1.34	+	2	gene_1	# AA 1845:1865
+$
+HSHCF2	geneid_v1.0	Internal	6948	7852	37.11	+	1	gene_1	# AA   1:303
+HSHCF2	geneid_v1.0	Internal	11623	11896	 3.71	+	2	gene_1	# AA 303:394
+HSHCF2	geneid_v1.0	Internal	13654	13798	 5.20	+	1	gene_1	# AA 394:442
+HSHCF2	geneid_v1.0	Terminal	14527	14718	 1.84	+	0	gene_1	# AA 443:506
+$
+HSHIS4	geneid_v1.0	Single	613	924	10.11	+	0	gene_1	# AA   1:104
+$
+HSHISH1T	geneid_v1.0	First	115	679	14.71	+	0	gene_1	# AA   1:188
+$
+HSHKATPC	geneid_v1.0	Internal	2312	2455	 7.79	+	0	gene_1	# AA   1: 48
+HSHKATPC	geneid_v1.0	Internal	2571	2630	 2.19	+	0	gene_1	# AA  49: 68
+HSHKATPC	geneid_v1.0	Internal	3201	3404	 7.63	+	0	gene_1	# AA  69:136
+HSHKATPC	geneid_v1.0	Internal	4907	5020	 7.86	+	0	gene_1	# AA 137:174
+HSHKATPC	geneid_v1.0	Internal	5224	5476	 9.80	+	0	gene_1	# AA 175:259
+HSHKATPC	geneid_v1.0	Internal	5766	6034	13.97	+	2	gene_1	# AA 259:348
+HSHKATPC	geneid_v1.0	Internal	6648	6846	 7.51	+	0	gene_1	# AA 349:415
+HSHKATPC	geneid_v1.0	Internal	7153	7262	 2.85	+	2	gene_1	# AA 415:451
+HSHKATPC	geneid_v1.0	Internal	7343	7477	 8.13	+	0	gene_1	# AA 452:496
+HSHKATPC	geneid_v1.0	Internal	7992	8184	 7.76	+	0	gene_1	# AA 497:561
+HSHKATPC	geneid_v1.0	Internal	8751	8926	 5.89	+	2	gene_1	# AA 561:619
+HSHKATPC	geneid_v1.0	Internal	10032	10168	 6.34	+	0	gene_1	# AA 620:665
+HSHKATPC	geneid_v1.0	Internal	10254	10404	 7.64	+	1	gene_1	# AA 665:715
+HSHKATPC	geneid_v1.0	Internal	10510	10678	 4.00	+	0	gene_1	# AA 716:772
+HSHKATPC	geneid_v1.0	Internal	10768	10922	 9.67	+	2	gene_1	# AA 772:823
+HSHKATPC	geneid_v1.0	Internal	12019	12142	 1.38	+	0	gene_1	# AA 824:865
+HSHKATPC	geneid_v1.0	Internal	12666	12811	 2.42	+	2	gene_1	# AA 865:913
+HSHKATPC	geneid_v1.0	Internal	14268	14401	 5.43	+	0	gene_1	# AA 914:958
+HSHKATPC	geneid_v1.0	Internal	14737	14838	 7.23	+	1	gene_1	# AA 958:992
+HSHKATPC	geneid_v1.0	Internal	14923	15014	 2.83	+	1	gene_1	# AA 992:1022
+$
+HSHMG17G	geneid_v1.0	First	2509	2523	 2.26	+	0	gene_1	# AA   1:  5
+HSHMG17G	geneid_v1.0	Internal	3370	3414	 2.66	+	0	gene_1	# AA   6: 20
+HSHMG17G	geneid_v1.0	Internal	3970	4020	 0.10	+	0	gene_1	# AA  21: 37
+HSHMG17G	geneid_v1.0	Internal	4457	4552	 2.06	+	0	gene_1	# AA  38: 69
+HSHMG17G	geneid_v1.0	Internal	4998	5029	 0.04	+	0	gene_1	# AA  70: 79
+$
+HSHMG2A	geneid_v1.0	First	1669	1818	 8.19	+	0	gene_1	# AA   1: 50
+HSHMG2A	geneid_v1.0	Internal	2104	2249	 5.51	+	0	gene_1	# AA  51: 99
+HSHMG2A	geneid_v1.0	Internal	2323	2497	 3.43	+	1	gene_1	# AA  99:157
+HSHMG2A	geneid_v1.0	Terminal	3080	3238	 6.44	+	0	gene_1	# AA 158:210
+$
+HSHNRNPA	geneid_v1.0	Internal	1377	1493	 2.32	+	0	gene_1	# AA   1: 39
+HSHNRNPA	geneid_v1.0	Internal	2084	2294	 5.02	+	0	gene_1	# AA  40:110
+HSHNRNPA	geneid_v1.0	Internal	2388	2480	 0.73	+	2	gene_1	# AA 110:141
+HSHNRNPA	geneid_v1.0	Internal	2567	2659	 1.20	+	2	gene_1	# AA 141:172
+HSHNRNPA	geneid_v1.0	Internal	2794	2868	 2.85	+	2	gene_1	# AA 172:197
+HSHNRNPA	geneid_v1.0	Internal	3073	3228	 0.66	+	2	gene_1	# AA 197:249
+HSHNRNPA	geneid_v1.0	Internal	3806	3961	 0.77	+	2	gene_1	# AA 249:300
+$
+HSHOX3D	geneid_v1.0	First	2355	2808	 3.13	+	0	gene_1	# AA   1:152
+HSHOX3D	geneid_v1.0	Terminal	3507	3721	 5.63	+	2	gene_1	# AA 152:223
+$
+HSHOX51	geneid_v1.0	First	1619	2051	 5.44	+	0	gene_1	# AA   1:145
+HSHOX51	geneid_v1.0	Terminal	2593	2927	 5.00	+	2	gene_1	# AA 145:256
+$
+HSHSP70D	geneid_v1.0	First	489	2402	134.59	+	0	gene_1	# AA   1:638
+$
+HSHSP89KD	geneid_v1.0	Internal	946	1107	 0.95	+	0	gene_1	# AA   1: 54
+HSHSP89KD	geneid_v1.0	Internal	1200	1566	 8.74	+	0	gene_1	# AA  55:177
+HSHSP89KD	geneid_v1.0	Internal	1896	2029	 4.32	+	2	gene_1	# AA 177:221
+HSHSP89KD	geneid_v1.0	Internal	2329	2646	20.04	+	0	gene_1	# AA 222:327
+HSHSP89KD	geneid_v1.0	Internal	2763	2928	 1.72	+	0	gene_1	# AA 328:383
+HSHSP89KD	geneid_v1.0	Internal	3344	3534	 1.12	+	2	gene_1	# AA 383:446
+HSHSP89KD	geneid_v1.0	Internal	3633	3780	 2.05	+	0	gene_1	# AA 447:496
+HSHSP89KD	geneid_v1.0	Internal	4024	4292	 8.55	+	2	gene_1	# AA 496:585
+HSHSP89KD	geneid_v1.0	Internal	4882	5215	 6.20	+	0	gene_1	# AA 586:697
+HSHSP89KD	geneid_v1.0	Terminal	5505	5614	 1.68	+	2	gene_1	# AA 697:733
+$
+HSIFD2	geneid_v1.0	Internal	801	1064	 2.40	+	0	gene_1	# AA   1: 88
+$
+HSIFD3	geneid_v1.0	Terminal	577	984	 4.26	+	0	gene_1	# AA   1:136
+$
+HSIFD4	geneid_v1.0	Terminal	328	921	11.62	+	0	gene_1	# AA   1:198
+$
+HSIFNAD	geneid_v1.0	Terminal	128	790	 6.94	+	0	gene_1	# AA   1:221
+$
+HSIFNAH2	geneid_v1.0	Terminal	577	984	 4.26	+	0	gene_1	# AA   1:136
+$
+HSIFNAI	geneid_v1.0	Internal	801	1064	 2.40	+	0	gene_1	# AA   1: 88
+$
+HSIFNB1F	geneid_v1.0	Terminal	328	921	11.62	+	0	gene_1	# AA   1:198
+$
+HSIFNG	geneid_v1.0	Internal	1828	1896	 3.11	+	0	gene_1	# AA   1: 23
+HSIFNG	geneid_v1.0	Internal	1992	2174	 3.73	+	0	gene_1	# AA  24: 84
+HSIFNG	geneid_v1.0	Terminal	4600	4734	 3.14	+	0	gene_1	# AA  85:129
+$
+HSIGFBP1A	geneid_v1.0	Internal	2657	2826	 3.17	+	2	gene_1	# AA   1: 57
+$
+HSIL1AG	geneid_v1.0	First	2161	2207	 1.85	+	0	gene_1	# AA   1: 16
+HSIL1AG	geneid_v1.0	Internal	3166	3214	 0.81	+	1	gene_1	# AA  16: 32
+HSIL1AG	geneid_v1.0	Internal	4103	4325	 7.95	+	0	gene_1	# AA  33:107
+HSIL1AG	geneid_v1.0	Internal	6262	6432	 3.15	+	2	gene_1	# AA 107:164
+HSIL1AG	geneid_v1.0	Internal	7815	7939	 2.26	+	2	gene_1	# AA 164:205
+HSIL1AG	geneid_v1.0	Internal	10290	10486	 0.06	+	0	gene_1	# AA 206:270
+$
+HSIL1RECA	geneid_v1.0	Internal	6069	6120	 2.67	+	2	gene_1	# AA   1: 18
+HSIL1RECA	geneid_v1.0	Internal	7952	8040	 4.46	+	1	gene_1	# AA  18: 48
+HSIL1RECA	geneid_v1.0	Internal	9418	9530	 1.63	+	2	gene_1	# AA  48: 85
+HSIL1RECA	geneid_v1.0	Terminal	11029	11244	 7.04	+	0	gene_1	# AA  86:157
+$
+HSIL4A	geneid_v1.0	Internal	1217	1305	 4.17	+	2	gene_1	# AA   1: 30
+HSIL4A	geneid_v1.0	Internal	6826	7002	 5.02	+	0	gene_1	# AA  31: 89
+$
+HSIL8A	geneid_v1.0	Internal	2464	2599	 1.19	+	2	gene_1	# AA   1: 46
+HSIL8A	geneid_v1.0	Internal	2871	2954	 2.85	+	1	gene_1	# AA  46: 73
+$
+HSIL8R	geneid_v1.0	Internal	1391	1453	 2.41	+	1	gene_1	# AA   1: 22
+HSIL8R	geneid_v1.0	Terminal	9847	10954	34.29	+	1	gene_1	# AA  22:391
+$
+HSIL9RA	geneid_v1.0	Internal	7589	7883	 4.58	+	0	gene_1	# AA   1: 99
+HSIL9RA	geneid_v1.0	Internal	8448	8593	 1.92	+	2	gene_1	# AA  99:147
+HSIL9RA	geneid_v1.0	Internal	9306	9507	 0.79	+	0	gene_1	# AA 148:215
+HSIL9RA	geneid_v1.0	Internal	10111	10216	-0.03	+	2	gene_1	# AA 215:250
+HSIL9RA	geneid_v1.0	Internal	11551	11635	 2.52	+	1	gene_1	# AA 250:278
+$
+HSIMPD	geneid_v1.0	Terminal	596	869	 2.34	+	1	gene_1	# AA   1: 92
+HSIMPD	geneid_v1.0	First	1972	2069	 2.87	+	0	gene_2	# AA   1: 33
+HSIMPD	geneid_v1.0	Internal	2515	2599	 3.23	+	1	gene_2	# AA  33: 61
+HSIMPD	geneid_v1.0	Internal	2998	3072	 0.90	+	0	gene_2	# AA  62: 86
+HSIMPD	geneid_v1.0	Internal	3400	3606	 5.47	+	0	gene_2	# AA  87:155
+HSIMPD	geneid_v1.0	Internal	4264	4351	 3.09	+	0	gene_2	# AA 156:185
+HSIMPD	geneid_v1.0	Internal	4425	4624	 5.55	+	2	gene_2	# AA 185:251
+HSIMPD	geneid_v1.0	Internal	4702	4792	 5.10	+	0	gene_2	# AA 252:282
+HSIMPD	geneid_v1.0	Internal	4892	4987	 3.40	+	2	gene_2	# AA 282:314
+HSIMPD	geneid_v1.0	Internal	6053	6196	 4.98	+	2	gene_2	# AA 314:362
+HSIMPD	geneid_v1.0	Internal	6280	6424	 2.01	+	2	gene_2	# AA 362:410
+HSIMPD	geneid_v1.0	Internal	6519	6662	 4.72	+	1	gene_2	# AA 410:458
+HSIMPD	geneid_v1.0	Internal	6897	6915	 0.21	+	1	gene_2	# AA 458:464
+$
+HSKERTRA	geneid_v1.0	Internal	1029	1349	 1.34	+	2	gene_1	# AA   1:108
+HSKERTRA	geneid_v1.0	Internal	1500	1688	 4.00	+	2	gene_1	# AA 108:171
+HSKERTRA	geneid_v1.0	Internal	2686	2934	10.48	+	2	gene_1	# AA 171:254
+HSKERTRA	geneid_v1.0	Internal	3326	3444	 1.42	+	2	gene_1	# AA 254:293
+HSKERTRA	geneid_v1.0	Internal	3573	3680	 4.06	+	0	gene_1	# AA 294:329
+HSKERTRA	geneid_v1.0	Internal	4135	4309	 2.73	+	0	gene_1	# AA 330:388
+HSKERTRA	geneid_v1.0	Internal	4708	4846	 5.89	+	2	gene_1	# AA 388:434
+HSKERTRA	geneid_v1.0	Internal	4993	5096	 0.80	+	1	gene_1	# AA 434:469
+HSKERTRA	geneid_v1.0	Internal	7301	7389	 4.30	+	2	gene_1	# AA 469:498
+HSKERTRA	geneid_v1.0	Internal	7860	8013	 9.41	+	0	gene_1	# AA 499:550
+HSKERTRA	geneid_v1.0	Internal	8124	8405	 8.58	+	2	gene_1	# AA 550:644
+HSKERTRA	geneid_v1.0	Internal	8553	8713	 7.34	+	2	gene_1	# AA 644:697
+HSKERTRA	geneid_v1.0	Internal	9089	9225	 2.44	+	0	gene_1	# AA 698:743
+HSKERTRA	geneid_v1.0	Internal	13841	14016	 3.90	+	1	gene_1	# AA 743:801
+$
+HSL7A	geneid_v1.0	First	398	496	 9.53	-	0	gene_1	# AA   1: 33
+HSL7A	geneid_v1.0	First	2070	2072	 0.81	+	0	gene_2	# AA   1:  1
+HSL7A	geneid_v1.0	Internal	2746	2866	 3.08	+	0	gene_2	# AA   2: 42
+HSL7A	geneid_v1.0	Internal	3375	3524	 5.92	+	2	gene_2	# AA  42: 92
+HSL7A	geneid_v1.0	Internal	3740	4033	 0.92	+	2	gene_2	# AA  92:190
+HSL7A	geneid_v1.0	Internal	4084	4163	 2.06	+	2	gene_2	# AA 190:216
+HSL7A	geneid_v1.0	Internal	4441	4571	-1.02	+	0	gene_2	# AA 217:260
+HSL7A	geneid_v1.0	Internal	4849	4918	 4.67	+	1	gene_2	# AA 260:283
+HSL7A	geneid_v1.0	Terminal	5109	5213	 3.35	+	0	gene_2	# AA 284:318
+$
+HSLACFE	geneid_v1.0	Single	2589	4721	44.41	+	0	gene_1	# AA   1:711
+$
+HSLCATG	geneid_v1.0	Internal	1724	1880	 0.51	+	2	gene_1	# AA   1: 53
+HSLCATG	geneid_v1.0	Internal	1960	2075	 4.51	+	1	gene_1	# AA  53: 92
+HSLCATG	geneid_v1.0	Internal	2170	2265	 6.48	+	2	gene_1	# AA  92:124
+HSLCATG	geneid_v1.0	Internal	2349	2573	 7.47	+	2	gene_1	# AA 124:199
+HSLCATG	geneid_v1.0	Terminal	4458	5032	18.31	+	2	gene_1	# AA 199:390
+$
+HSLPAPGEN	geneid_v1.0	Terminal	1968	2585	10.13	+	0	gene_1	# AA   1:206
+$
+HSLUFHSA	geneid_v1.0	Terminal	877	2725	64.35	+	1	gene_1	# AA   1:617
+$
+HSLYTOXBB	geneid_v1.0	Internal	3559	3630	 1.05	+	2	gene_1	# AA   1: 25
+HSLYTOXBB	geneid_v1.0	Internal	4026	4476	10.47	+	2	gene_1	# AA  25:174
+$
+HSMECDAG	geneid_v1.0	First	1327	1392	 1.15	+	0	gene_1	# AA   1: 22
+HSMECDAG	geneid_v1.0	Internal	2328	2516	 0.75	+	0	gene_1	# AA  23: 85
+HSMECDAG	geneid_v1.0	Internal	2701	2775	 3.29	+	0	gene_1	# AA  86:110
+HSMECDAG	geneid_v1.0	Internal	2870	2965	 2.61	+	0	gene_1	# AA 111:142
+HSMECDAG	geneid_v1.0	Internal	3403	3543	 3.14	+	0	gene_1	# AA 143:189
+HSMECDAG	geneid_v1.0	Internal	3768	3851	 2.38	+	0	gene_1	# AA 190:217
+$
+HSMGSAG	geneid_v1.0	Internal	162	229	 0.64	+	1	gene_1	# AA   1: 24
+HSMGSAG	geneid_v1.0	Internal	328	451	 2.57	+	2	gene_1	# AA  24: 65
+HSMGSAG	geneid_v1.0	Internal	565	648	 3.90	+	1	gene_1	# AA  65: 92
+$
+HSMIF	geneid_v1.0	First	1173	1280	 1.79	+	0	gene_1	# AA   1: 36
+HSMIF	geneid_v1.0	Internal	1470	1642	11.08	+	0	gene_1	# AA  37: 94
+HSMIF	geneid_v1.0	Terminal	1738	1804	 5.68	+	1	gene_1	# AA  94:116
+$
+HSMOGG	geneid_v1.0	Internal	3274	3621	 8.99	+	2	gene_1	# AA   1:117
+HSMOGG	geneid_v1.0	Internal	11597	11617	 1.71	+	2	gene_1	# AA 117:124
+HSMOGG	geneid_v1.0	Internal	14658	14678	 0.73	+	2	gene_1	# AA 124:131
+HSMOGG	geneid_v1.0	Terminal	15379	15407	-1.70	+	2	gene_1	# AA 131:140
+HSMOGG	geneid_v1.0	Terminal	16453	17506	 7.94	-	1	gene_2	# AA   1:351
+$
+HSMT1H	geneid_v1.0	First	788	815	 0.43	+	0	gene_1	# AA   1: 10
+HSMT1H	geneid_v1.0	Internal	1409	1474	 2.13	+	2	gene_1	# AA  10: 31
+$
+HSMT2A	geneid_v1.0	First	423	450	 1.06	+	0	gene_1	# AA   1: 10
+HSMT2A	geneid_v1.0	Internal	1074	1142	 0.94	+	2	gene_1	# AA  10: 32
+$
+HSMTIXG	geneid_v1.0	First	208	235	 0.71	+	0	gene_1	# AA   1: 10
+HSMTIXG	geneid_v1.0	Internal	831	896	 1.86	+	2	gene_1	# AA  10: 31
+$
+HSMYCL2A	geneid_v1.0	Single	1040	2113	29.44	+	0	gene_1	# AA   1:358
+$
+HSNTFR	geneid_v1.0	Terminal	67	1040	14.90	+	2	gene_1	# AA   1:325
+$
+HSNUCLEO	geneid_v1.0	First	1181	1198	 0.40	+	0	gene_1	# AA   1:  6
+HSNUCLEO	geneid_v1.0	Internal	2159	2275	 5.84	+	0	gene_1	# AA   7: 45
+HSNUCLEO	geneid_v1.0	Internal	3439	3916	24.74	+	0	gene_1	# AA  46:205
+HSNUCLEO	geneid_v1.0	Internal	4587	4784	16.78	+	2	gene_1	# AA 205:271
+HSNUCLEO	geneid_v1.0	Internal	4889	4975	 1.85	+	2	gene_1	# AA 271:300
+HSNUCLEO	geneid_v1.0	Internal	5160	5301	 0.59	+	2	gene_1	# AA 300:347
+HSNUCLEO	geneid_v1.0	Internal	6307	6431	 4.80	+	1	gene_1	# AA 347:389
+HSNUCLEO	geneid_v1.0	Internal	7037	7160	 2.51	+	2	gene_1	# AA 389:430
+HSNUCLEO	geneid_v1.0	Internal	7620	7777	 3.03	+	1	gene_1	# AA 430:483
+HSNUCLEO	geneid_v1.0	Internal	9279	9405	 4.15	+	2	gene_1	# AA 483:525
+HSNUCLEO	geneid_v1.0	Internal	9792	10006	 4.56	+	1	gene_1	# AA 525:597
+HSNUCLEO	geneid_v1.0	Terminal	10140	10216	 0.72	+	2	gene_1	# AA 597:622
+$
+HSODC1A	geneid_v1.0	Internal	4753	4871	 2.17	+	2	gene_1	# AA   1: 40
+HSODC1A	geneid_v1.0	Internal	5155	5328	 5.60	+	0	gene_1	# AA  41: 98
+HSODC1A	geneid_v1.0	Internal	5535	5707	 2.44	+	0	gene_1	# AA  99:156
+HSODC1A	geneid_v1.0	Internal	5966	6100	 4.44	+	1	gene_1	# AA 156:201
+HSODC1A	geneid_v1.0	Internal	6231	6312	 1.28	+	1	gene_1	# AA 201:228
+HSODC1A	geneid_v1.0	Internal	6489	6572	 0.79	+	0	gene_1	# AA 229:256
+HSODC1A	geneid_v1.0	Internal	7628	7790	 2.59	+	0	gene_1	# AA 257:311
+HSODC1A	geneid_v1.0	Internal	7873	7985	 0.35	+	2	gene_1	# AA 311:348
+HSODC1A	geneid_v1.0	Internal	8079	8293	 5.39	+	0	gene_1	# AA 349:419
+$
+HSODCG	geneid_v1.0	Internal	4073	4191	 2.17	+	2	gene_1	# AA   1: 40
+HSODCG	geneid_v1.0	Internal	4475	4648	 5.60	+	0	gene_1	# AA  41: 98
+HSODCG	geneid_v1.0	Internal	4855	5027	 2.44	+	0	gene_1	# AA  99:156
+HSODCG	geneid_v1.0	Internal	5286	5420	 4.44	+	1	gene_1	# AA 156:201
+HSODCG	geneid_v1.0	Internal	5551	5632	 1.28	+	1	gene_1	# AA 201:228
+HSODCG	geneid_v1.0	Internal	5809	5892	 0.79	+	0	gene_1	# AA 229:256
+HSODCG	geneid_v1.0	Internal	6948	7110	 2.59	+	0	gene_1	# AA 257:311
+HSODCG	geneid_v1.0	Internal	7193	7305	 0.35	+	2	gene_1	# AA 311:348
+HSODCG	geneid_v1.0	Internal	7399	7613	 5.39	+	0	gene_1	# AA 349:419
+$
+HSOP18A	geneid_v1.0	Internal	3754	3926	 3.15	+	2	gene_1	# AA   1: 58
+HSOP18A	geneid_v1.0	Internal	5886	6077	 6.92	+	0	gene_1	# AA  59:122
+HSOP18A	geneid_v1.0	Terminal	6483	6554	 3.14	+	0	gene_1	# AA 123:146
+$
+HSP3	geneid_v1.0	Internal	1277	1328	 1.15	+	2	gene_1	# AA   1: 18
+HSP3	geneid_v1.0	Terminal	2574	4149	46.56	+	1	gene_1	# AA  18:543
+$
+HSP53G	geneid_v1.0	Internal	729	1273	 1.73	-	1	gene_1	# AA  77:259
+HSP53G	geneid_v1.0	Internal	2101	2227	 1.15	-	2	gene_1	# AA  35: 77
+HSP53G	geneid_v1.0	Internal	9417	9475	 3.14	-	1	gene_1	# AA  15: 35
+HSP53G	geneid_v1.0	First	11675	11718	-0.73	-	0	gene_1	# AA   1: 15
+HSP53G	geneid_v1.0	First	13157	13238	 5.71	+	0	gene_2	# AA   1: 28
+HSP53G	geneid_v1.0	Internal	13320	13432	-0.30	+	2	gene_2	# AA  28: 65
+HSP53G	geneid_v1.0	Internal	14000	14109	 4.49	+	0	gene_2	# AA  66:102
+HSP53G	geneid_v1.0	Internal	14452	14588	 0.28	+	1	gene_2	# AA 102:148
+HSP53G	geneid_v1.0	Internal	14681	14754	-0.09	+	2	gene_2	# AA 148:172
+HSP53G	geneid_v1.0	Internal	17572	17678	 2.19	+	0	gene_2	# AA 173:207
+$
+HSPAP1	geneid_v1.0	Internal	951	1011	 1.11	+	0	gene_1	# AA   1: 21
+HSPAP1	geneid_v1.0	Internal	1970	2088	 2.98	+	2	gene_1	# AA  21: 60
+HSPAP1	geneid_v1.0	Internal	2276	2413	 0.83	+	0	gene_1	# AA  61:106
+HSPAP1	geneid_v1.0	Internal	3040	3166	 1.95	+	0	gene_1	# AA 107:148
+$
+HSPAT133	geneid_v1.0	First	1311	1446	 5.34	+	0	gene_1	# AA   1: 46
+HSPAT133	geneid_v1.0	Terminal	1850	3171	19.56	+	2	gene_1	# AA  46:486
+$
+HSPCBD	geneid_v1.0	First	4689	4691	 2.17	+	0	gene_1	# AA   1:  1
+HSPCBD	geneid_v1.0	Internal	7292	7423	 3.21	+	0	gene_1	# AA   2: 45
+HSPCBD	geneid_v1.0	Internal	7989	8069	 2.22	+	0	gene_1	# AA  46: 72
+$
+HSPCI	geneid_v1.0	Internal	7932	8567	20.03	+	2	gene_1	# AA   1:213
+HSPCI	geneid_v1.0	Internal	10627	10897	 6.47	+	2	gene_1	# AA 213:303
+HSPCI	geneid_v1.0	Internal	11335	11482	 4.63	+	1	gene_1	# AA 303:352
+HSPCI	geneid_v1.0	Terminal	12608	12790	 4.63	+	0	gene_1	# AA 353:413
+$
+HSPCRF	geneid_v1.0	Terminal	1305	1909	15.93	+	2	gene_1	# AA   1:202
+$
+HSPEM	geneid_v1.0	Internal	1409	2265	 6.68	+	2	gene_1	# AA   1:286
+HSPEM	geneid_v1.0	Internal	2365	2420	-2.73	+	0	gene_1	# AA 287:305
+HSPEM	geneid_v1.0	Internal	2570	2706	 4.22	+	1	gene_1	# AA 305:351
+HSPEM	geneid_v1.0	Internal	2851	2972	 0.91	+	2	gene_1	# AA 351:391
+HSPEM	geneid_v1.0	Internal	3053	3202	 7.14	+	0	gene_1	# AA 392:441
+$
+HSPF4V1A	geneid_v1.0	First	329	380	 1.24	+	0	gene_1	# AA   1: 18
+HSPF4V1A	geneid_v1.0	Internal	699	825	 2.26	+	2	gene_1	# AA  18: 60
+HSPF4V1A	geneid_v1.0	Terminal	951	1038	 1.57	+	1	gene_1	# AA  60: 89
+$
+HSPR22	geneid_v1.0	Terminal	755	826	 3.14	-	0	gene_1	# AA 101:124
+HSPR22	geneid_v1.0	Internal	1230	1421	 6.92	-	0	gene_1	# AA  37:100
+HSPR22	geneid_v1.0	Internal	3380	3442	 1.72	-	0	gene_1	# AA  16: 36
+HSPR22	geneid_v1.0	First	6522	6566	-0.56	-	0	gene_1	# AA   1: 15
+HSPR22	geneid_v1.0	First	9344	9388	-0.56	+	0	gene_2	# AA   1: 15
+HSPR22	geneid_v1.0	Internal	12471	12533	 1.72	+	0	gene_2	# AA  16: 36
+HSPR22	geneid_v1.0	Internal	14466	14657	 6.92	+	0	gene_2	# AA  37:100
+HSPR22	geneid_v1.0	Terminal	15064	15135	 3.14	+	0	gene_2	# AA 101:124
+$
+HSPRB3L	geneid_v1.0	Internal	2087	2933	14.20	+	0	gene_1	# AA   1:283
+HSPRB3L	geneid_v1.0	Terminal	4082	4197	 1.89	+	2	gene_1	# AA 283:321
+$
+HSPRB4S	geneid_v1.0	Internal	2150	2811	 9.16	+	0	gene_1	# AA   1:220
+$
+HSPVALB	geneid_v1.0	First	573	790	 9.19	+	0	gene_1	# AA   1: 73
+HSPVALB	geneid_v1.0	Internal	815	918	 2.08	+	1	gene_1	# AA  73:107
+$
+HSRIGBCHA	geneid_v1.0	Internal	440	511	 0.14	+	1	gene_1	# AA   1: 24
+$
+HSRING3GE	geneid_v1.0	Internal	2811	3114	 6.32	+	1	gene_1	# AA   1:102
+HSRING3GE	geneid_v1.0	Internal	3729	3866	 4.05	+	0	gene_1	# AA 103:148
+HSRING3GE	geneid_v1.0	Internal	4375	4513	 4.97	+	0	gene_1	# AA 149:195
+HSRING3GE	geneid_v1.0	Internal	4595	4809	 0.88	+	2	gene_1	# AA 195:266
+HSRING3GE	geneid_v1.0	Internal	4907	5281	 6.18	+	0	gene_1	# AA 267:391
+HSRING3GE	geneid_v1.0	Internal	5787	5915	 6.95	+	0	gene_1	# AA 392:434
+HSRING3GE	geneid_v1.0	Internal	6102	6350	 9.64	+	0	gene_1	# AA 435:517
+HSRING3GE	geneid_v1.0	Internal	6471	6733	 6.51	+	0	gene_1	# AA 518:605
+HSRING3GE	geneid_v1.0	Internal	8171	8475	 6.71	+	1	gene_1	# AA 605:707
+HSRING3GE	geneid_v1.0	Internal	8685	8807	 5.03	+	2	gene_1	# AA 707:747
+$
+HSROD1X	geneid_v1.0	First	652	1241	 4.55	+	0	gene_1	# AA   1:197
+HSROD1X	geneid_v1.0	Internal	1629	1875	 5.93	+	1	gene_1	# AA 197:279
+$
+HSRODPDE	geneid_v1.0	First	3398	3543	 2.56	+	0	gene_1	# AA   1: 49
+HSRODPDE	geneid_v1.0	Internal	5006	5046	 1.28	+	1	gene_1	# AA  49: 63
+HSRODPDE	geneid_v1.0	Terminal	5538	5614	 3.24	+	2	gene_1	# AA  63: 88
+$
+HSRPIB2	geneid_v1.0	Internal	806	898	 2.79	+	2	gene_1	# AA   1: 32
+HSRPIB2	geneid_v1.0	Internal	2149	2267	 3.52	+	2	gene_1	# AA  32: 71
+HSRPIB2	geneid_v1.0	Internal	2575	2712	 0.13	+	0	gene_1	# AA  72:117
+HSRPIB2	geneid_v1.0	Internal	3476	3673	 3.12	+	0	gene_1	# AA 118:183
+$
+HSRPS3AGE	geneid_v1.0	First	387	448	 3.11	+	0	gene_1	# AA   1: 21
+HSRPS3AGE	geneid_v1.0	Internal	1212	1315	-0.26	+	1	gene_1	# AA  21: 56
+HSRPS3AGE	geneid_v1.0	Internal	1702	1889	 5.44	+	2	gene_1	# AA  56:118
+HSRPS3AGE	geneid_v1.0	Internal	3598	3806	 5.37	+	0	gene_1	# AA 119:188
+HSRPS3AGE	geneid_v1.0	Internal	4911	5020	 1.75	+	1	gene_1	# AA 188:225
+HSRPS3AGE	geneid_v1.0	Terminal	5209	5330	 3.32	+	2	gene_1	# AA 225:265
+$
+HSRPS6B	geneid_v1.0	Internal	927	1100	 7.49	+	0	gene_1	# AA   1: 58
+HSRPS6B	geneid_v1.0	Internal	1627	1837	 3.41	+	0	gene_1	# AA  59:129
+HSRPS6B	geneid_v1.0	Internal	2031	2177	 2.26	+	2	gene_1	# AA 129:178
+HSRPS6B	geneid_v1.0	Internal	3893	4050	 5.23	+	2	gene_1	# AA 178:230
+HSRPS6B	geneid_v1.0	Terminal	4156	4251	 1.33	+	0	gene_1	# AA 231:262
+$
+HSRPS6G	geneid_v1.0	Internal	1493	1666	 7.49	+	0	gene_1	# AA   1: 58
+HSRPS6G	geneid_v1.0	Internal	2193	2403	 3.41	+	0	gene_1	# AA  59:129
+HSRPS6G	geneid_v1.0	Internal	2597	2743	 2.26	+	2	gene_1	# AA 129:178
+HSRPS6G	geneid_v1.0	Internal	4460	4617	 5.23	+	2	gene_1	# AA 178:230
+HSRPS6G	geneid_v1.0	Terminal	4723	4818	 1.28	+	0	gene_1	# AA 231:262
+$
+HSRPS7	geneid_v1.0	Internal	2073	2165	 5.29	+	0	gene_1	# AA   1: 31
+HSRPS7	geneid_v1.0	Internal	2297	2368	 3.39	+	0	gene_1	# AA  32: 55
+HSRPS7	geneid_v1.0	Internal	2964	3107	 5.70	+	0	gene_1	# AA  56:103
+HSRPS7	geneid_v1.0	Internal	4189	4253	-0.69	+	0	gene_1	# AA 104:125
+HSRPS7	geneid_v1.0	Internal	6583	6733	 3.89	+	1	gene_1	# AA 125:175
+HSRPS7	geneid_v1.0	Terminal	7277	7354	 0.10	+	0	gene_1	# AA 176:201
+$
+HSRPS8	geneid_v1.0	First	251	254	 0.90	+	0	gene_1	# AA   1:  2
+HSRPS8	geneid_v1.0	Internal	685	791	 5.17	+	2	gene_1	# AA   2: 37
+HSRPS8	geneid_v1.0	Internal	1326	1425	-0.04	+	0	gene_1	# AA  38: 71
+HSRPS8	geneid_v1.0	Internal	2263	2438	 8.18	+	2	gene_1	# AA  71:129
+HSRPS8	geneid_v1.0	Internal	2649	2801	 3.95	+	0	gene_1	# AA 130:180
+$
+HSSEMI	geneid_v1.0	Internal	637	792	 1.52	+	2	gene_1	# AA   1: 53
+HSSEMI	geneid_v1.0	Terminal	1037	2349	22.61	+	2	gene_1	# AA  53:490
+$
+HSSEMIIB	geneid_v1.0	Internal	4342	4485	 1.30	+	2	gene_1	# AA   1: 49
+HSSEMIIB	geneid_v1.0	Terminal	4729	6401	31.96	+	2	gene_1	# AA  49:606
+$
+HSSFTP1A	geneid_v1.0	Internal	1551	1670	 0.98	+	2	gene_1	# AA   1: 41
+HSSFTP1A	geneid_v1.0	Internal	2425	2502	 0.56	+	2	gene_1	# AA  41: 67
+HSSFTP1A	geneid_v1.0	Terminal	2969	3345	 8.73	+	2	gene_1	# AA  67:192
+$
+HSSIAL	geneid_v1.0	Single	2038	2730	 7.98	+	0	gene_1	# AA   1:231
+HSSIAL	geneid_v1.0	Terminal	4715	4750	 0.73	-	0	gene_2	# AA   1: 12
+$
+HSSPERSYN	geneid_v1.0	First	1397	1563	 8.93	+	0	gene_1	# AA   1: 56
+HSSPERSYN	geneid_v1.0	Internal	1995	2115	 5.05	+	1	gene_1	# AA  56: 96
+HSSPERSYN	geneid_v1.0	Internal	2448	2540	 6.92	+	0	gene_1	# AA  97:127
+HSSPERSYN	geneid_v1.0	Internal	4584	4737	 7.23	+	0	gene_1	# AA 128:179
+HSSPERSYN	geneid_v1.0	Internal	5247	5330	 4.76	+	2	gene_1	# AA 179:207
+HSSPERSYN	geneid_v1.0	Internal	5415	5560	 5.70	+	2	gene_1	# AA 207:255
+HSSPERSYN	geneid_v1.0	Internal	6255	6377	 6.56	+	0	gene_1	# AA 256:296
+$
+HSSSPN1AG	geneid_v1.0	Internal	1583	1634	 1.84	+	0	gene_1	# AA   1: 18
+HSSSPN1AG	geneid_v1.0	Internal	1725	1808	 2.98	+	2	gene_1	# AA  18: 46
+HSSSPN1AG	geneid_v1.0	Internal	3258	3359	 0.98	+	2	gene_1	# AA  46: 80
+HSSSPN1AG	geneid_v1.0	Internal	3450	3490	 1.15	+	2	gene_1	# AA  80: 93
+HSSSPN1AG	geneid_v1.0	Internal	3614	3780	 1.31	+	0	gene_1	# AA  94:148
+$
+HSSURF3	geneid_v1.0	First	281	283	 0.81	+	0	gene_1	# AA   1:  1
+HSSURF3	geneid_v1.0	Internal	912	1032	 2.68	+	0	gene_1	# AA   2: 42
+HSSURF3	geneid_v1.0	Internal	1542	1691	 5.92	+	2	gene_1	# AA  42: 92
+HSSURF3	geneid_v1.0	Internal	1907	2047	 3.19	+	2	gene_1	# AA  92:139
+HSSURF3	geneid_v1.0	Internal	2241	2320	 2.06	+	2	gene_1	# AA 139:165
+HSSURF3	geneid_v1.0	Internal	2598	2728	-1.02	+	0	gene_1	# AA 166:209
+HSSURF3	geneid_v1.0	Internal	3004	3073	 4.67	+	1	gene_1	# AA 209:232
+HSSURF3	geneid_v1.0	Terminal	3262	3366	 3.35	+	0	gene_1	# AA 233:267
+$
+HSTPI1G	geneid_v1.0	First	524	749	 9.89	+	0	gene_1	# AA   1: 76
+HSTPI1G	geneid_v1.0	Internal	1916	2039	 3.20	+	2	gene_1	# AA  76:117
+HSTPI1G	geneid_v1.0	Internal	2151	2235	 0.07	+	1	gene_1	# AA 117:145
+HSTPI1G	geneid_v1.0	Internal	2310	2442	 0.53	+	0	gene_1	# AA 146:190
+HSTPI1G	geneid_v1.0	Internal	2740	2825	 2.42	+	2	gene_1	# AA 190:218
+HSTPI1G	geneid_v1.0	Internal	3099	3186	 2.18	+	0	gene_1	# AA 219:248
+HSTPI1G	geneid_v1.0	Terminal	3317	3435	 2.84	+	2	gene_1	# AA 248:287
+$
+HSU33446	geneid_v1.0	Internal	4297	4568	10.62	+	1	gene_1	# AA   1: 92
+HSU33446	geneid_v1.0	Internal	4654	4820	 7.53	+	2	gene_1	# AA  92:147
+HSU33446	geneid_v1.0	Terminal	4913	5239	 0.97	+	0	gene_1	# AA 148:256
+HSU33446	geneid_v1.0	Terminal	5986	6050	 2.57	-	2	gene_2	# AA 133:154
+HSU33446	geneid_v1.0	Internal	6344	6498	 7.46	-	1	gene_2	# AA  81:133
+HSU33446	geneid_v1.0	Internal	6636	6783	 0.50	-	2	gene_2	# AA  32: 81
+HSU33446	geneid_v1.0	Internal	6879	6972	 0.14	-	0	gene_2	# AA   1: 32
+$
+HSU34879	geneid_v1.0	Single	6690	7070	 6.60	+	0	gene_1	# AA   1:127
+HSU34879	geneid_v1.0	Single	8215	8346	 0.53	+	0	gene_2	# AA   1: 44
+HSU34879	geneid_v1.0	First	10950	11332	11.12	+	0	gene_3	# AA   1:128
+HSU34879	geneid_v1.0	Internal	12075	12222	 5.18	+	1	gene_3	# AA 128:177
+HSU34879	geneid_v1.0	Internal	13016	13162	 4.13	+	0	gene_3	# AA 178:226
+HSU34879	geneid_v1.0	Internal	13347	13432	 3.84	+	0	gene_3	# AA 227:255
+HSU34879	geneid_v1.0	Internal	15627	15883	 6.15	+	1	gene_3	# AA 255:341
+HSU34879	geneid_v1.0	Terminal	17705	18915	40.46	+	2	gene_3	# AA 341:744
+HSU34879	geneid_v1.0	First	20746	20848	 0.41	+	0	gene_4	# AA   1: 35
+HSU34879	geneid_v1.0	Internal	21632	21799	 0.30	+	2	gene_4	# AA  35: 91
+HSU34879	geneid_v1.0	Internal	21946	22116	 1.65	+	2	gene_4	# AA  91:148
+HSU34879	geneid_v1.0	Internal	22285	22378	-0.24	+	2	gene_4	# AA 148:179
+HSU34879	geneid_v1.0	Internal	23004	23052	 2.29	+	1	gene_4	# AA 179:195
+HSU34879	geneid_v1.0	Internal	23139	23340	 6.78	+	0	gene_4	# AA 196:263
+HSU34879	geneid_v1.0	Internal	27803	27970	 0.97	+	2	gene_4	# AA 263:319
+HSU34879	geneid_v1.0	Internal	28118	28297	 2.88	+	2	gene_4	# AA 319:379
+HSU34879	geneid_v1.0	Internal	28473	28566	-0.29	+	2	gene_4	# AA 379:410
+HSU34879	geneid_v1.0	Internal	29081	29261	 7.80	+	1	gene_4	# AA 410:470
+HSU34879	geneid_v1.0	Internal	29348	29567	 4.94	+	0	gene_4	# AA 471:544
+HSU34879	geneid_v1.0	Internal	37275	37985	16.72	+	2	gene_4	# AA 544:781
+HSU34879	geneid_v1.0	Internal	38624	39042	 1.65	+	2	gene_4	# AA 781:920
+HSU34879	geneid_v1.0	Internal	39109	39240	 5.60	+	0	gene_4	# AA 921:964
+HSU34879	geneid_v1.0	Internal	39372	39561	 1.11	+	0	gene_4	# AA 965:1028
+HSU34879	geneid_v1.0	Internal	39646	39710	 0.88	+	2	gene_4	# AA 1028:1049
+HSU34879	geneid_v1.0	Internal	39890	39974	 3.27	+	0	gene_4	# AA 1050:1078
+HSU34879	geneid_v1.0	Internal	40134	40201	-1.42	+	2	gene_4	# AA 1078:1100
+HSU34879	geneid_v1.0	Internal	42282	42318	 5.07	+	0	gene_4	# AA 1101:1113
+HSU34879	geneid_v1.0	Internal	43500	43606	 1.84	+	2	gene_4	# AA 1113:1148
+HSU34879	geneid_v1.0	Internal	43867	44089	 3.68	+	0	gene_4	# AA 1149:1223
+HSU34879	geneid_v1.0	Internal	44170	44269	 4.14	+	2	gene_4	# AA 1223:1256
+HSU34879	geneid_v1.0	Internal	44645	44846	 5.97	+	1	gene_4	# AA 1256:1323
+$
+HSU46165	geneid_v1.0	First	2052	2421	12.20	+	0	gene_1	# AA   1:124
+HSU46165	geneid_v1.0	Internal	3320	3393	 2.46	+	2	gene_1	# AA 124:148
+HSU46165	geneid_v1.0	Internal	3519	3723	 7.99	+	0	gene_1	# AA 149:217
+HSU46165	geneid_v1.0	Terminal	4929	5119	 1.27	+	2	gene_1	# AA 217:280
+$
+HSU48869	geneid_v1.0	First	411	698	14.23	+	0	gene_1	# AA   1: 96
+$
+HSU49869	geneid_v1.0	Terminal	2077	2772	34.64	+	0	gene_1	# AA   1:232
+$
+HSU50871	geneid_v1.0	Terminal	8623	9215	 4.79	+	2	gene_1	# AA   1:198
+HSU50871	geneid_v1.0	Terminal	28385	28448	 0.05	-	1	gene_2	# AA  27: 48
+HSU50871	geneid_v1.0	Internal	30811	30857	 1.38	-	0	gene_2	# AA  12: 27
+HSU50871	geneid_v1.0	First	31248	31280	 0.62	-	0	gene_2	# AA   1: 11
+HSU50871	geneid_v1.0	First	37077	37217	-0.66	+	0	gene_3	# AA   1: 47
+HSU50871	geneid_v1.0	Internal	38872	39086	 6.43	+	0	gene_3	# AA  48:119
+HSU50871	geneid_v1.0	Internal	40705	40846	10.92	+	1	gene_3	# AA 119:166
+HSU50871	geneid_v1.0	Internal	43261	43328	 0.79	+	0	gene_3	# AA 167:189
+HSU50871	geneid_v1.0	Internal	43999	44219	 6.67	+	1	gene_3	# AA 189:263
+HSU50871	geneid_v1.0	Internal	46448	46531	 1.65	+	2	gene_3	# AA 263:291
+HSU50871	geneid_v1.0	Internal	46913	47014	 0.60	+	2	gene_3	# AA 291:325
+HSU50871	geneid_v1.0	Internal	49177	49295	 2.80	+	2	gene_3	# AA 325:364
+HSU50871	geneid_v1.0	Terminal	50594	50749	 3.93	+	0	gene_3	# AA 365:416
+HSU50871	geneid_v1.0	Single	82211	83500	18.42	+	0	gene_4	# AA   1:430
+HSU50871	geneid_v1.0	First	84109	84595	 4.24	+	0	gene_5	# AA   1:162
+$
+HSU51243	geneid_v1.0	Internal	3401	3533	 0.81	+	1	gene_1	# AA   1: 45
+HSU51243	geneid_v1.0	Internal	4648	4818	 2.88	+	0	gene_1	# AA  46:102
+HSU51243	geneid_v1.0	Internal	5003	5214	-0.16	+	0	gene_1	# AA 103:173
+HSU51243	geneid_v1.0	Internal	7771	7900	 1.53	+	1	gene_1	# AA 173:216
+HSU51243	geneid_v1.0	Internal	16794	16891	 0.11	+	0	gene_1	# AA 217:249
+HSU51243	geneid_v1.0	Internal	20929	21061	 1.04	+	1	gene_1	# AA 249:293
+HSU51243	geneid_v1.0	Internal	22663	22887	 0.26	+	0	gene_1	# AA 294:368
+$
+HSU51899	geneid_v1.0	Terminal	6755	7216	 4.51	+	0	gene_1	# AA   1:154
+$
+HSU56438	geneid_v1.0	Internal	3805	4848	42.87	+	1	gene_1	# AA   1:349
+HSU56438	geneid_v1.0	Terminal	7881	8469	 7.67	+	1	gene_1	# AA 349:545
+$
+HSU62025	geneid_v1.0	First	1064	1121	 0.69	+	0	gene_1	# AA   1: 20
+HSU62025	geneid_v1.0	Internal	2569	2668	 3.39	+	2	gene_1	# AA  20: 53
+HSU62025	geneid_v1.0	Internal	2771	2841	 0.93	+	1	gene_1	# AA  53: 77
+HSU62025	geneid_v1.0	Internal	2926	3007	 2.72	+	2	gene_1	# AA  77:103
+$
+HSU65896	geneid_v1.0	First	732	774	 1.46	+	0	gene_1	# AA   1: 15
+HSU65896	geneid_v1.0	Internal	1188	1358	 0.32	+	2	gene_1	# AA  15: 72
+HSU65896	geneid_v1.0	Internal	3099	3257	 3.26	+	2	gene_1	# AA  72:125
+HSU65896	geneid_v1.0	Internal	3569	3734	 0.91	+	2	gene_1	# AA 125:180
+HSU65896	geneid_v1.0	Internal	5915	5993	-1.20	+	1	gene_1	# AA 180:206
+HSU65896	geneid_v1.0	Internal	6585	6691	 2.76	+	0	gene_1	# AA 207:242
+HSU65896	geneid_v1.0	Internal	7869	8032	 0.32	+	1	gene_1	# AA 242:297
+HSU65896	geneid_v1.0	Internal	8678	8943	 3.52	+	2	gene_1	# AA 297:385
+HSU65896	geneid_v1.0	Internal	9105	9236	 4.45	+	0	gene_1	# AA 386:429
+HSU65896	geneid_v1.0	Internal	9608	9759	 1.06	+	0	gene_1	# AA 430:480
+HSU65896	geneid_v1.0	Internal	10194	10375	 1.13	+	1	gene_1	# AA 480:541
+HSU65896	geneid_v1.0	Internal	10565	10695	 1.28	+	2	gene_1	# AA 541:584
+HSU65896	geneid_v1.0	Internal	11103	11250	 4.61	+	0	gene_1	# AA 585:634
+HSU65896	geneid_v1.0	Internal	11425	11620	 6.46	+	2	gene_1	# AA 634:699
+HSU65896	geneid_v1.0	Terminal	12049	12241	 0.91	+	1	gene_1	# AA 699:763
+$
+HSU66711	geneid_v1.0	Internal	3972	4091	 3.58	+	2	gene_1	# AA   1: 41
+HSU66711	geneid_v1.0	Terminal	4223	4446	 1.80	+	2	gene_1	# AA  41:115
+$
+HSU80982	geneid_v1.0	First	602	1015	 7.68	+	0	gene_1	# AA   1:138
+HSU80982	geneid_v1.0	Terminal	1772	2107	13.74	+	0	gene_1	# AA 139:250
+$
+HSUPA	geneid_v1.0	Internal	1875	1982	 0.77	+	2	gene_1	# AA   1: 37
+HSUPA	geneid_v1.0	Internal	2586	2760	 4.34	+	2	gene_1	# AA  37: 95
+HSUPA	geneid_v1.0	Internal	2954	3045	 0.69	+	1	gene_1	# AA  95:126
+HSUPA	geneid_v1.0	Internal	3203	3422	 3.25	+	2	gene_1	# AA 126:199
+HSUPA	geneid_v1.0	Internal	3644	3792	 5.21	+	1	gene_1	# AA 199:249
+HSUPA	geneid_v1.0	Internal	4458	4598	 3.51	+	2	gene_1	# AA 249:296
+HSUPA	geneid_v1.0	Internal	4945	5093	 7.68	+	2	gene_1	# AA 296:345
+$
+HSUSF2	geneid_v1.0	Internal	944	1117	 4.11	+	2	gene_1	# AA   1: 59
+HSUSF2	geneid_v1.0	Internal	1421	1552	 6.18	+	2	gene_1	# AA  59:103
+HSUSF2	geneid_v1.0	Internal	1694	2319	12.42	+	2	gene_1	# AA 103:311
+HSUSF2	geneid_v1.0	Terminal	2409	2444	-0.81	+	0	gene_1	# AA 312:323
+HSUSF2	geneid_v1.0	First	3688	3749	 2.98	+	0	gene_2	# AA   1: 21
+HSUSF2	geneid_v1.0	Internal	4031	4077	 2.19	+	1	gene_2	# AA  21: 37
+HSUSF2	geneid_v1.0	Internal	4166	4284	 5.27	+	2	gene_2	# AA  37: 76
+HSUSF2	geneid_v1.0	Internal	4388	4507	 5.05	+	0	gene_2	# AA  77:116
+HSUSF2	geneid_v1.0	Internal	5032	5182	 3.50	+	0	gene_2	# AA 117:167
+HSUSF2	geneid_v1.0	Internal	5303	5390	-0.17	+	2	gene_2	# AA 167:196
+HSUSF2	geneid_v1.0	Internal	5668	5726	 2.10	+	1	gene_2	# AA 196:216
+HSUSF2	geneid_v1.0	Internal	13284	13378	 3.04	+	2	gene_2	# AA 216:247
+HSUSF2	geneid_v1.0	Internal	13532	13660	 7.47	+	0	gene_2	# AA 248:290
+HSUSF2	geneid_v1.0	Terminal	13753	13842	 4.46	+	0	gene_2	# AA 291:320
+$
+HSVCAM1A	geneid_v1.0	Internal	779	1054	 2.64	+	2	gene_1	# AA   1: 93
+HSVCAM1A	geneid_v1.0	Internal	1127	1447	 6.23	+	2	gene_1	# AA  93:200
+HSVCAM1A	geneid_v1.0	Internal	1520	1786	 7.43	+	2	gene_1	# AA 200:289
+HSVCAM1A	geneid_v1.0	Internal	1859	2134	 2.69	+	2	gene_1	# AA 289:381
+HSVCAM1A	geneid_v1.0	Internal	2207	2527	 6.60	+	2	gene_1	# AA 381:488
+HSVCAM1A	geneid_v1.0	Internal	2897	3163	 2.01	+	2	gene_1	# AA 488:577
+HSVCAM1A	geneid_v1.0	Internal	3236	3502	 9.16	+	2	gene_1	# AA 577:666
+HSVCAM1A	geneid_v1.0	Terminal	3922	4082	 0.01	+	2	gene_1	# AA 666:719

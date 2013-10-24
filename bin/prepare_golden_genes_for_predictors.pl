@@ -58,6 +58,7 @@ Other options:
     -same_species             => Contigs/proteins and genome is the same species
     -norefine                 => Don't use -refine for exonerate
     -norerun                  => Don't re-run exonerate (assume it already exists as [input file].exonerate.results
+    -augustus                 => Directory where Augustus is installed (if not in your path)
 
 =head1 DESCRIPTION
 
@@ -195,7 +196,7 @@ my $mismatch_cutoff = 10;
 #globals
 my $failed_cutoff = int(0);
 my ($cdbfasta_exec,$cdbyank_exec) = &check_program('cdbfasta','cdbyank');
-my (%get_id_seq_from_fasta_hash);
+my (%get_id_seq_from_fasta_hash,$augustus_dir);
 
 GetOptions(
             'exonerate:s'             => \$exonerate_file,
@@ -222,7 +223,8 @@ GetOptions(
 	    'same_species' => \$same_species,
             'norefine'  => \$norefine,
             'norerun' => \$no_rerun_exonerate,
-	    'nodataprint' => \$nodataprint
+	    'nodataprint' => \$nodataprint,
+            'augustus_dir:s' => \$augustus_dir
 );
 pod2usage "A required file is missing"
   unless (
@@ -242,7 +244,7 @@ die "cDNA mode is only used without peptides\n" if $peptide_file && $is_cdna;
 die "Softmasked genome file does not exist\n" if $softmasked_genome && !-s $softmasked_genome;
 
 my ($gff2gb_exec,$fathom_exec,$augustus_exec,$augustus_train_exec,$augustus_filterGenes_exec) = &check_program_optional('gff2gbSmallDNA.pl','fathom','augustus','etraining','filterGenes.pl');
-my $augustus_dir= dirname(dirname($augustus_exec)) if $augustus_exec;
+$augustus_dir= $augustus_dir ? readlink($augustus_dir ) : dirname(dirname($augustus_exec)) if $augustus_exec && !$augustus_dir;
 &check_augustus() unless ($stop_after_correction || $stop_after_golden);
 
 $same_species = '-same_species' if  $same_species;
@@ -258,6 +260,15 @@ if ($exonerate_file) {
 
   &correct_exonerate_gff($exonerate_file) unless -s $exonerate_file.'.corrected.gff3' && $exonerate_file.'.corrected.passed';
   die unless -s $exonerate_file.'.corrected.gff3';
+  if ($stop_after_correction){
+    print "User asked to stop after correction\n";
+    exit();
+  }
+
+  if ($stop_after_golden) {
+    print "User stop requested\n";
+    exit(0);
+  }
   &process_for_gene_prediction($exonerate_file.'.corrected.gff3');
   print "Done!\n";
 }
@@ -799,7 +810,7 @@ sub create_golden_gffs(){
   close VULGAR;
 
   my $number_of_passing_genes = scalar( keys %accepted );
-  open( PASS, ">$exonerate_file.corrected.gff3.passed" );
+  open( PASS, ">$exonerate_file.passed" );
   my @shuffled_genes = shuffle( keys %accepted );
   foreach my $gene (@shuffled_genes) {
     print PASS $gene . "\t" . $accepted{$gene} . "\n";
@@ -945,23 +956,26 @@ sub process_for_gene_prediction(){
                  "$gff_file.golden.optimization.gff3"
     );
     rename( "$gff_file.golden.optimization.gff3.rest","$gff_file.golden.test.gff3" );
-    system("$gff2gb_exec $gff_file.golden.train.gff3 $genome_sequence_file $augustus_flank_region $gff_file.golden.train.gb >/dev/null"    );
-    system("$augustus_train_exec --species=generic $gff_file.golden.train.gb 2>&1 | grep 'n sequence' | perl -pe 's/.*n sequence (\\S+):.*/\$1/' | sort -u > $gff_file.golden.train.gb.bad.lst"    );
-    system("$augustus_filterGenes_exec $gff_file.golden.train.gb.bad.lst $gff_file.golden.train.gb > $gff_file.golden.train.good.gb"    );
+    if ($gff2gb_exec && $augustus_train_exec && $augustus_filterGenes_exec){
 
-    system("$gff2gb_exec $gff_file.golden.test.gff3 $genome_sequence_file $augustus_flank_region $gff_file.golden.test.gb  >/dev/null"    );
-    system("$augustus_train_exec --species=generic $gff_file.golden.test.gb 2>&1 | grep 'n sequence' | perl -pe 's/.*n sequence (\\S+):.*/\$1/' | sort -u > $gff_file.golden.test.gb.bad.lst"    );
-    system("$augustus_filterGenes_exec $gff_file.golden.test.gb.bad.lst $gff_file.golden.test.gb > $gff_file.golden.test.good.gb"    );
+      system("$gff2gb_exec $gff_file.golden.train.gff3 $genome_sequence_file $augustus_flank_region $gff_file.golden.train.gb >/dev/null 2> /dev/null"    ) if -s "$gff_file.golden.train.gff3";
+      system("$augustus_train_exec --species=generic $gff_file.golden.train.gb 2>&1 | grep 'n sequence' | perl -pe 's/.*n sequence (\\S+):.*/\$1/' | sort -u > $gff_file.golden.train.gb.bad.lst 2>/dev/null"    ) if -s "$gff_file.golden.train.gb";
+      system("$augustus_filterGenes_exec $gff_file.golden.train.gb.bad.lst $gff_file.golden.train.gb > $gff_file.golden.train.good.gb 2>/dev/null"    ) if -s "$gff_file.golden.train.gb.bad.lst";
 
-    system("$gff2gb_exec $gff_file.golden.optimization.gff3 $genome_sequence_file $augustus_flank_region $gff_file.golden.optimization.gb  >/dev/null"    );
-    system("$augustus_train_exec --species=generic $gff_file.golden.optimization.gb 2>&1 | grep 'n sequence' | perl -pe 's/.*n sequence (\\S+):.*/\$1/' | sort -u > $gff_file.golden.optimization.gb.bad.lst"    );
-    system("$augustus_filterGenes_exec $gff_file.golden.optimization.gb.bad.lst $gff_file.golden.optimization.gb > $gff_file.golden.optimization.good.gb"    );
+      system("$gff2gb_exec $gff_file.golden.test.gff3 $genome_sequence_file $augustus_flank_region $gff_file.golden.test.gb  >/dev/null 2>/dev/null"    ) if -s "$gff_file.golden.test.gff3";
+      system("$augustus_train_exec --species=generic $gff_file.golden.test.gb 2>&1 | grep 'n sequence' | perl -pe 's/.*n sequence (\\S+):.*/\$1/' | sort -u > $gff_file.golden.test.gb.bad.lst 2>/dev/null"    ) if -s "$gff_file.golden.test.gb";
+      system("$augustus_filterGenes_exec $gff_file.golden.test.gb.bad.lst $gff_file.golden.test.gb > $gff_file.golden.test.good.gb 2>/dev/null"    ) if -s "$gff_file.golden.test.gb.bad.lst";
+
+      system("$gff2gb_exec $gff_file.golden.optimization.gff3 $genome_sequence_file $augustus_flank_region $gff_file.golden.optimization.gb  >/dev/null"    ) if -s "$gff_file.golden.optimization.gff3";
+      system("$augustus_train_exec --species=generic $gff_file.golden.optimization.gb 2>&1 | grep 'n sequence' | perl -pe 's/.*n sequence (\\S+):.*/\$1/' | sort -u > $gff_file.golden.optimization.gb.bad.lst 2>/dev/null"    ) if -s "$gff_file.golden.optimization.gb";
+      system("$augustus_filterGenes_exec $gff_file.golden.optimization.gb.bad.lst $gff_file.golden.optimization.gb > $gff_file.golden.optimization.good.gb 2>/dev/null"    ) if -s "$gff_file.golden.optimization.gb.bad.lst";
+    }
   }
 
   #parse GB
-  my $train_ref = &parse_gb("$gff_file.golden.train.good.gb");
-  my $test_ref  = &parse_gb("$gff_file.golden.test.good.gb");
-  my $opt_ref   = &parse_gb("$gff_file.golden.optimization.good.gb");
+  my $train_ref = &parse_gb("$gff_file.golden.train.good.gb") if -s "$gff_file.golden.train.good.gb";
+  my $test_ref  = &parse_gb("$gff_file.golden.test.good.gb") if -s "$gff_file.golden.test.good.gb";
+  my $opt_ref   = &parse_gb("$gff_file.golden.optimization.good.gb") if -s "$gff_file.golden.optimization.good.gb";
 
   #hints
   &gff2hints("$gff_file")
@@ -971,13 +985,6 @@ sub process_for_gene_prediction(){
 
   #snap already have made zff. $gff_file.golden.zff and $gff_file.golden.gff3.fasta
   print "\tsnap\n";
-#  &gff2zff("$gff_file.golden.train.gff3","$gff_file.golden.train.zff");
-#  &gff2zff("$gff_file.golden.test.gff3","$gff_file.golden.test.zff");
-#  &gff2zff("$gff_file.golden.optimization.gff3","$gff_file.golden.optimization.zff");
-#    &order_fasta( $genome_sequence_file, "$gff_file.golden.optimization.gff3" );
-#    &order_fasta( $genome_sequence_file, "$gff_file.golden.train.gff3" );
-#    &order_fasta( $genome_sequence_file, "$gff_file.golden.test.gff3" );
-
 
   #geneid
   print "\tgeneid\n";
@@ -1025,9 +1032,9 @@ sub process_for_gene_prediction(){
     &gb2geneid( $opt_ref,
                 "$gff_file.golden.optimization.good.gb.geneid" )
       if $opt_ref;
-    &order_fasta("$gff_file.golden.optimization.good.gb.fasta","$gff_file.golden.optimization.good.gb.geneid" );
-    &order_fasta( "$gff_file.golden.train.good.gb.fasta", "$gff_file.golden.train.good.gb.geneid" );
-    &order_fasta( "$gff_file.golden.test.good.gb.fasta", "$gff_file.golden.test.good.gb.geneid" );
+    &order_fasta("$gff_file.golden.optimization.good.gb.fasta","$gff_file.golden.optimization.good.gb.geneid" ) if -s "$gff_file.golden.optimization.good.gb.geneid";
+    &order_fasta( "$gff_file.golden.train.good.gb.fasta", "$gff_file.golden.train.good.gb.geneid" ) if -s  "$gff_file.golden.train.good.gb.geneid";
+    &order_fasta( "$gff_file.golden.test.good.gb.fasta", "$gff_file.golden.test.good.gb.geneid" ) if -s "$gff_file.golden.test.good.gb.geneid";
   }
 
   #glimmer
@@ -2001,7 +2008,7 @@ sub check_program(){
 	my @paths;
 	foreach my $prog (@_){
 	        my $path = `which $prog`;
-        	die "Error, path to required $prog cannot be found" unless $path =~ /^\//;
+        	die "Error, path to required $prog cannot be found\n" unless $path =~ /^\//;
 		chomp($path);
 		$path = readlink($path) if -l $path;
 		push(@paths,$path);
@@ -2013,7 +2020,7 @@ sub check_program_optional(){
         my @paths;
         foreach my $prog (@_){
                 my $path = `which $prog`;
-                warn "Warning: path to optional $prog cannot be found" unless $path =~ /^\//;
+                warn "Warning: path to optional $prog cannot be found in your path environment.\n" unless $path =~ /^\//;
                 chomp($path);
 		$path = readlink($path) if -l $path;
                 push(@paths,$path);

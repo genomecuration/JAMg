@@ -1,0 +1,179 @@
+<html>
+<head>
+<style type="text/css">
+div.bulk { text-align: justify }
+</style>
+<title>
+geneid source docs
+</title>
+</head>
+
+<BODY 
+TEXT color ="blue"
+BGCOLOR="white"
+LINK="black"
+VLINK="black"
+ALINK="black">
+
+<center>
+<table border=0 width=700>
+<tr>
+<td align=left>
+<font face=courier size=5 color=red>BackupGenes.c</font>
+</td>
+<td align=right>
+<font face=courier size=3>geneid v 1.1</font>
+<font face=arial black size=3>source documentation</font>
+</td>
+</table>
+
+<br><p><br><p>
+<table border=0 width=700 cellpadding=10>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Description:</font></td>
+<tr>
+<td>
+<div class="bulk"><font face="arial black" size=2>
+Data structures about predicted signals and exons are emptied and fill in
+in every fragment processing, but some exons (and genes) are needed to be
+used in the next split and therefore they must be temporally in the arrays
+of sites and exons into the dumpster. To avoid copying twice or more times
+the same exon, a hash table (DumpHash) is available to record which exons have been
+already copied and their address. Gene structure (linked exons) must be
+preserved between copies of genes.
+</font>
+</div>
+</td>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Briefing:</font></td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+long IncrMod(long x, long Modulus)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+Increase values modulus an input long number.
+</font>
+</div>
+</td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+exonGFF* backupExon(exonGFF* E,
+                    exonGFF* Prev,
+                    packDump* d)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+It saves an exon (properties and sites) into the dumpster. Returns the
+pointer to the new copy for this exon.
+</font>
+</div>
+</td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+exonGFF* backupGene(exonGFF* E, packDump* d)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+It saves the gene (exons, sites, properties) which last exon is E, into the
+dumpster. For every exon of this gene, check whether it has already been
+copied or not, by looking up the hash table. <font color="red">Note: Whenever
+any exon of a gene is found to be in the dumpster, it is not necessary to go
+on copying the rest of the gene, because, from this point, both genes will
+be exactly equal (dynamic programming). This is because there is only one
+best gene finished in this exon, whatever exons have forward. Obviously, this
+function is recursive due to the need to conserve exon links (to backup one
+exon, its previous exon must have already been copied, and therefore the
+address is known).</font>
+</font>
+</div>
+</td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+void BackupGenes(packGenes* pg, int nclass, packDump* d)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+To save best partial assembled genes and temporary optimal gene from
+packGenes structure to be used the next fragment of the input sequence. 
+</font>
+</div>
+</td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+void BackupArrayD(packGenes* pg, long accSearch,
+                  gparam* gp, packDump* dumpster)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+From the set of exons input to genamic (gene assembling algorithm), some
+ordering functions by donor (right position) are computed for every class
+or assembling rule in the gene model. Most exons are used in the same
+iteration where they were produced, but a few of them in the intersection
+between two fragments of sequence, must be saved to be able to recover the
+gene assembling process in the next iteration, checking minimum/maximum
+distance requirements as well.
+</font>
+</div>
+</td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+void cleanGenes(packGenes* pg,
+                int nclass,
+                packDump* dumpster)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+Preparing sort-by-donor functions and best partial genes structures for
+the next DNA sequence (reset counters and pointers).
+</font>
+</div>
+</td>
+</table>
+
+<br><p><br><p><br><p>
+
+<table border=0>
+<tr>
+<td align=left bgcolor=darkgreen>
+<script>
+var modifieddate=document.lastModified
+    document.write("<font size=1 face  = 'arial black'  color='white'>" + 
+                   "Last modified: " + modifieddate)
+</script>
+</td>
+</table>
+
+<br><p>
+Enrique Blanco Garcia &copy; 2001<br><p><br><p>
+</center>
+</body>
+</html>
+
+
+
+

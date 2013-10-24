@@ -1,0 +1,116 @@
+<html>
+<head>
+<style type="text/css">
+div.bulk { text-align: justify }
+</style>
+<title>
+geneid source docs
+</title>
+</head>
+
+<BODY 
+TEXT color ="blue"
+BGCOLOR="white"
+LINK="black"
+VLINK="black"
+ALINK="black">
+
+<center>
+<table border=0 width=700>
+<tr>
+<td align=left>
+<font face=courier size=5 color=red>account.c</font>
+</td>
+<td align=right>
+<font face=courier size=3>geneid v 1.1</font>
+<font face=arial black size=3>source documentation</font>
+</td>
+</table>
+
+<br><p><br><p>
+<table border=0 width=700 cellpadding=10>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Description:</font></td>
+<tr>
+<td>
+<div class="bulk"><font face="arial black" size=2>
+To save accounting information such as statistics about amount of predicted
+sites and exons or (CPU and real) time consumed for the current running. This
+data will be displayed at the end of the processing (verbose mode).
+</font>
+</div>
+</td>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Briefing:</font></td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+account* InitAcc()
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+Allocation of accounting data structure and setting the counters (including
+the time counter).
+</font>
+</div>
+</td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+void updateTotals(account *m,
+                  packSites* allSites,
+                  packSites* allSites_r,
+                  packExons* allExons,
+                  packExons* allExons_r)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+Update stats for every type of sites and exons. Compute the total number
+of sites and exons (both strands and together) in the input sequence.
+</font>
+</div>
+</td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+void cleanAcc(account* m)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+Reset total number of sites and exons counters for the next input sequence.
+</font>
+</div>
+</td>
+</table>
+
+<br><p><br><p><br><p>
+
+<table border=0>
+<tr>
+<td align=left bgcolor=darkgreen>
+<script>
+var modifieddate=document.lastModified
+    document.write("<font size=1 face  = 'arial black'  color='white'>" + 
+                   "Last modified: " + modifieddate)
+</script>
+</td>
+</table>
+
+<br><p>
+Enrique Blanco Garcia &copy; 2001<br><p><br><p>
+</center>
+</body>
+</html>
+
+
+
+

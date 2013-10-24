@@ -1,0 +1,119 @@
+<html>
+<head>
+<style type="text/css">
+div.bulk { text-align: justify }
+</style>
+<title>
+geneid source docs
+</title>
+</head>
+
+<BODY 
+TEXT color ="blue"
+BGCOLOR="white"
+LINK="black"
+VLINK="black"
+ALINK="black">
+
+<center>
+<table border=0 width=700>
+<tr>
+<td align=left>
+<font face=courier size=5 color=red>manager.c</font>
+</td>
+<td align=right>
+<font face=courier size=3>geneid v 1.2</font>
+<font face=arial black size=3>source documentation</font>
+</td>
+</table>
+
+<br><p><br><p>
+<table border=0 width=700 cellpadding=10>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Description:</font></td>
+<tr>
+<td>
+<div class="bulk"><font face="arial black" size=2>
+Control of signal and exon prediction and scoring functions, both in
+positive and negative strand processing, in a range (l1,l2). Main parameters
+are the input sequence (forward or reverse), length of sequence, coordinates
+of the ends of the fragment, the pack of sites and exons to be filled in,
+scoring model (isochores) and GC information precomputed before about G+C
+content on that split.
+</font>
+</div>
+</td>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Briefing:</font></td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+void manager(char *Sequence,
+             long LengthSequence,
+             packSites* allSites,
+             packExons* allExons,
+             long l1, long l2,
+             int Strand, 
+             packExternalInformation* external,
+             packHSP* hsp,
+             gparam* gp,
+             gparam** isochores,
+             int nIsochores,
+             packGC* GCInfo)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+<ul>
+<li>
+Stablishing limits in the fragment for signal prediction (and therefore
+the exon construction, as well) because of the overlapping processing of
+fragments in which exons must be predicted following an order and repeated
+exons are not allowed. Search by signal: start codons, acceptor and donor
+splice sites and stop codons.
+<li>
+Construction of exons: every feasible pair
+of left and right signals (specific depending on the exon type) will be
+used to build one exon as long as the parameter Max_donor_per_acceptor
+(maximum right signals used together with the same left signal to
+build different exons) in the current isochore is not reached.
+<li>
+Scoring exons according to the G+C content in the region around every exon.
+Due to the pre-processing step done before (packGC), there is no need to scan the
+sequence for each exon.
+</ul>
+<br><p>
+NOTE: Reverse prediction implies recomputing signal positions according to
+the forward sense of the original sequence (remember they have been predicted
+reading the reverse sequence and therefore, having reverse coordinates).
+Moreover, left and right signals must be exchanged to preserve the property:
+left signal position < right signal position.
+</font>
+</div>
+</td>
+</table>
+
+<br><p><br><p><br><p>
+
+<table border=0>
+<tr>
+<td align=left bgcolor=darkgreen>
+<script>
+var modifieddate=document.lastModified
+    document.write("<font size=1 face  = 'arial black'  color='white'>" + 
+                   "Last modified: " + modifieddate)
+</script>
+</td>
+</table>
+
+<br><p>
+Enrique Blanco Garcia &copy; 2003<br><p><br><p>
+</center>
+</body>
+</html>
+
+
+
+

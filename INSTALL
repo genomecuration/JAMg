@@ -7,6 +7,9 @@ The following perl modules are required.
 * List::Util
 * Digest::SHA
 
+Note that using the gene predictors requires BioPerl. Otherwise use the option
+ -stop_golden
+
 You can install via CPAN:
 $ cpan Pod::Usage Data::Dumper Getopt::Long List::Util Digest::SHA
 
@@ -18,15 +21,25 @@ The following software are required.
  * NCBI's BLAST C++ package
  
 You can install them using a repository, e.g. on an Ubuntu:
-$ aptitude install exonerate emboss ncbi-blast+
+$ sudo apt-get install exonerate emboss ncbi-blast+
 
 The following software are supported and therefore required if you want to generate input for the gene prediction software
  * Augustus
  * SNAP
  * geneid
 
+I've provided working versions for each one to facilitate testing but you should download the 
+latest versions of SNAP and Augustus for your work (e.g. the Augustus version is not 
+distributed using all tutorials/config files that normally come with Augustus).
+
+GeneID has been edited to make it work (for my system at least).
+
+Transdecoder is also provided but without the PFAM database. If you'd like to predict proteins properly, 
+then please include a PFAM database (one is provided at the sourceforge repository).
+
+
 =============================================================================================================
-Please not that exonerate is not free of bugs.
+Please not that exonerate is not free of bugs but this software tries to deal with some of them.
 Please report bugs to:
 
  Alexie Papanicolaou

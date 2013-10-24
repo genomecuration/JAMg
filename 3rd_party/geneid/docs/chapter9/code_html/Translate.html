@@ -1,0 +1,137 @@
+<html>
+<head>
+<style type="text/css">
+div.bulk { text-align: justify }
+</style>
+<title>
+geneid source docs
+</title>
+</head>
+
+<BODY 
+TEXT color ="blue"
+BGCOLOR="white"
+LINK="black"
+VLINK="black"
+ALINK="black">
+
+<center>
+<table border=0 width=700>
+<tr>
+<td align=left>
+<font face=courier size=5 color=red>Translate.c</font>
+</td>
+<td align=right>
+<font face=courier size=3>geneid v 1.1</font>
+<font face=arial black size=3>source documentation</font>
+</td>
+</table>
+
+<br><p><br><p>
+<table border=0 width=700 cellpadding=10>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Description:</font></td>
+<tr>
+<td>
+<div class="bulk"><font face="arial black" size=2>
+This module implements the translation of genomic sequences
+(exons and genes) into proteins by using the Genetic Code (amino acid
+dictionary). The function to extract the exonic nucleotides is provided
+as well.
+</font>
+</div>
+</td>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Briefing:</font></td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+int Translate(long p1,
+              long p2,
+              short fra,
+              short rmd,
+              char* s,
+              dict* dAA,
+              char sAux[])
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+Translation of exons: obtaining the protein product by applying the Genetic
+code to the input exon sequence. First and last uncomplete codons are preserved
+(in lower case) corresponding to frame and remainder, respectively. Complete
+codons are translated by using the dictionary of amino acids. It returns the
+number of amino acids (including uncomplete codons) and the protein.
+</font>
+</div>
+</td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+void TranslateGene(exonGFF* e,
+                   char* s,
+                   dict* dAA,
+                   long nExons,
+                   int** tAA,
+                   char* prot,
+                   long* nAA)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+Translate a whole gene: translation of the list of linked exons that form
+the gene, taking care with the connections (frame/remainder) which are
+shared between 2 consecutive exons. Two different processes accoriding
+to the gene strand.
+</font>
+</div>
+</td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+void GetcDNA(exonGFF* e,
+             char* s,
+             long nExons,
+             char* cDNA,
+             long* nNN)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+Traversing the exons of the gene, picking up the nucleotides and joining
+them building the exonic sequence.
+</font>
+</div>
+</td>
+
+
+</table>
+
+<br><p><br><p><br><p>
+
+<table border=0>
+<tr>
+<td align=left bgcolor=darkgreen>
+<script>
+var modifieddate=document.lastModified
+    document.write("<font size=1 face  = 'arial black'  color='white'>" + 
+                   "Last modified: " + modifieddate)
+</script>
+</td>
+</table>
+
+<br><p>
+Enrique Blanco Garcia &copy; 2001<br><p><br><p>
+</center>
+</body>
+</html>
+
+
+
+

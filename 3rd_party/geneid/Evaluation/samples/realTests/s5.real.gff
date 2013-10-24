@@ -1,0 +1,45 @@
+#line with the length of the sequence
+HS04636	EMBL	Sequence	1	18906	.	.	.	1
+#annotations for this sequence
+HS04636	EMBL	First	966	1017	.	+	0	1
+HS04636	EMBL	Internal	1818	1934	.	+	2	1
+HS04636	EMBL	Internal	2055	2198	.	+	2	1
+HS04636	EMBL	Internal	2852	2995	.	+	2	1
+HS04636	EMBL	Internal	3426	3607	.	+	2	1
+HS04636	EMBL	Internal	4340	4423	.	+	0	1
+HS04636	EMBL	Internal	4543	4789	.	+	0	1
+HS04636	EMBL	Internal	5072	5358	.	+	2	1
+HS04636	EMBL	Internal	5860	6007	.	+	0	1
+HS04636	EMBL	Terminal	6494	6903	.	+	2	1
+$
+#line with the length of the sequence
+HS08198	EMBL	Sequence	1	4688	.	.	.	1	
+#annotations for this sequence
+HS08198	EMBL	First	445	582	.	+	0	1
+HS08198	EMBL	Internal	758	894	.	+	0	1
+HS08198	EMBL	Internal	1053	1123	.	+	1	1
+HS08198	EMBL	Internal	1208	1315	.	+	2	1
+HS08198	EMBL	Internal	1587	1688	.	+	2	1
+HS08198	EMBL	Internal	1772	1810	.	+	2	1
+HS08198	EMBL	Terminal	1890	1903	.	+	2	1
+$
+#line with the length of the sequence
+HS10116	EMBL	Sequence	1	20158	.	.	.	1
+#annotations for this sequence
+HS10116	EMBL	Single	5085	5807	.	+	0	1
+$
+#line with the length of the sequence
+HS11870	EMBL	Sequence	1	8904	.	.	.	1
+#annotations for this sequence
+HS11870	EMBL	Single	2057	3109	.	+	0	1
+$
+#line with the length of the sequence
+HS207581	EMBL	Sequence	1	6286	.	.	.	1
+#annotations for this sequence
+HS207581	EMBL	First	374	427	.	+	0	1
+HS207581	EMBL	Internal	537	575	.	+	0	1
+HS207581	EMBL	Internal	884	964	.	+	0	1
+HS207581	EMBL	Internal	1232	1273	.	+	0	1
+HS207581	EMBL	Internal	1597	1920	.	+	0	1
+HS207581	EMBL	Terminal	2305	2709	.	+	0	1
+

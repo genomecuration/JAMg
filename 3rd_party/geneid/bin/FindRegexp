@@ -1,0 +1,38 @@
+#!/bin/sh
+# finds regexps in sequences. Prints positions [and substring matched]
+# usage FindRegexp pattern [p] SequenceFile (tbl)
+# input in lowers
+
+gawk 'BEGIN{
+	regexp=ARGV[1]; # pattern
+	if (ARGC==4) {
+  		s=1;	# pattern match is printed.
+		ARGV[2]="";
+	}
+	ARGV[1]="";
+}
+{
+	locus=$1;
+	sequence=$2;
+	cp=0; # position of last match
+	nm=0; # number of matches
+
+	while (match(sequence, regexp) > 0) {
+		nm++;
+		smatch[nm,1]=(cp+=RSTART); # position in string
+
+		smatch[nm,2]=substr(sequence, RSTART, RLENGTH); # matched substring
+		sequence=substr(sequence,RSTART+1);
+	}
+	printf "%s", locus;
+	for (i=1;i<=nm;i++)
+		if (s) 
+			printf " %d %s", smatch[i,1], smatch[i,2];
+		else
+			printf " %d", smatch[i,1];
+	printf "\n";
+}' "$@"
+
+
+
+	

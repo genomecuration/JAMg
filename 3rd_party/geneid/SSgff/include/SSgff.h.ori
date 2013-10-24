@@ -1,0 +1,187 @@
+/*************************************************************************
+*                                                                        *
+*   Module: SSgff.h                                                      *
+*                                                                        *
+*   Main program. Extract subsequences of a fasta sequence from          *
+*                 a gff file .                                           *
+*                                                                        *
+*   This file is part of the geneid Distribution                         *
+*                                                                        *
+*     Copyright (C) 2000 - Enrique BLANCO GARCIA                         *
+*                          Genis   PARRA  FARRE                          *
+*                          Roderic GUIGO  SERRA                          *
+*                                                                        *
+*  This program is free software; you can redistribute it and/or modify  *
+*  it under the terms of the GNU General Public License as published by  *
+*  the Free Software Foundation; either version 2 of the License, or     *
+*  (at your option) any later version.                                   *
+*                                                                        *
+*  This program is distributed in the hope that it will be useful,       *
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+*  GNU General Public License for more details.                          *
+*                                                                        *
+*  You should have received a copy of the GNU General Public License     *
+*  along with this program; if not, write to the Free Software           *
+*  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.             *
+*************************************************************************/     
+
+/* Include libraries */
+#include <stdio.h>
+#include <sys/types.h>
+#include <time.h>
+#include <malloc.h>  
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <float.h>
+#include <math.h>
+#include <sys/stat.h>
+
+
+/*************************************************************************
+(A). DEFINITIONS
+*************************************************************************/
+
+#define LOCUSLENGTH 50                 /* maximum number of chars (locus) */ 
+#define FILENAMELENGTH 200             /* maximum length of filenames     */
+#define MAXSTRING 200
+#define MAXLINE 1000                   /* Max number of chars/inputline   */
+#define INFI 9999999                   /* the biggest number of the world */
+#define SEQLENGTH 500000000            // 5000000
+#define MAXAA 5000000  
+#define LENGTHCODON 3
+
+#define UP_TRANSCRIP 5000              /* Extra positions up and down string to extract in transcripts */
+#define DOWN_TRANSCRIP 5000
+
+#define UP_START 30                    /* Extra positions up and down string to extract in sites */
+#define DOWN_START 29
+#define UP_DONOR 30
+#define DOWN_DONOR 29
+#define UP_ACCEPTOR 30
+#define DOWN_ACCEPTOR 29
+#define UP_STOP 30
+#define DOWN_STOP 29
+#define UP_SITE1 10
+#define DOWN_SITE1 5
+#define UP_SITE2 5
+#define DOWN_SITE2 10
+
+#define NOSCORE -1
+#define NOFRAME -1
+#define NUMEXONS 1000000                // 10000
+#define NOINFO   0
+#define INFO     1
+#define NOGROUP  "No_group"
+#define MAXGENES 260000                 // 1000
+
+#define STRANDS  2
+#define FORWARD  0                     /* DNA - Strands                   */
+#define REVERSE  1
+
+#define TRUE     1
+#define FALSE    0
+
+#define SFIRST "First"
+#define SINTERNAL "Internal"
+#define STERMINAL "Terminal"
+#define SSINGLE "Single"
+
+#define SSTART "Start"
+#define SACCEPTOR "Acceptor"
+#define SDONOR "Donor"
+#define SSTOP "Stop"
+
+
+#define MIN(a,b) (a<b)?a:b;
+#define MAX(a,b) (a>b)?a:b;
+
+#define MAXENTRY 997              /* Dictionary definitions (hash)        */
+#define MAXTYPE 50               /* Maximum number of chars/exonTypes    */
+#define MAXINFO 100
+#define NOTFOUND -1
+
+/*************************************************************************
+(B). DATA TYPES
+*************************************************************************/
+
+typedef struct s_exonGFF *pexonGFF;
+typedef struct s_exonGFF
+{
+  long    Position1;
+  long    Position2;
+  char    Type[MAXSTRING];
+  short   Frame;
+  char    Strand;
+  double  Score;
+  char    Group[MAXSTRING];
+  pexonGFF NextExon;
+} exonGFF;
+
+
+typedef struct s_pack_gene
+{
+  long numExons;
+  exonGFF* First;
+  exonGFF* Last;
+} pack_gene;
+
+typedef struct s_node *pnode;
+typedef struct s_node
+{
+  char s[MAXSTRING];
+  int key;
+  pnode next;
+} node;
+
+typedef struct s_dict
+{
+  pnode T[MAXENTRY];
+  int nextFree;
+} dict;
+
+/*************************************************************************
+(C). IMPORTED HEADERS
+*************************************************************************/
+
+
+void readargv (int argc,char* argv[],
+               char* PredictionsFile,
+               char* RealFile);
+
+long ReadExonsGFF (FILE* file, exonGFF* exons, pack_gene *genes, dict* d, long *numgen, long Length);   
+
+FILE* OpenFile(char *FileName);
+
+void printMess(char* s);
+
+void printError(char* s);
+
+void ScanSequence (long pos1, long pos2, char *Sequence, char strand, char *saux);
+
+long ReadSequence (FILE* seqfile, char* Locus, char* Sequence);
+ 
+void ReverseSubSequence(long p1, long p2, char* s, char* r);
+
+int complement(int c);
+
+void resetDict(dict* d);
+
+int getkeyDict(dict* d, char s[]);
+
+int setkeyDict(dict* d, char s[]);
+
+void printFasta(long pos1, long pos2, char strand, char *Sequence);
+
+void printHeadSite(char *Group, int numexon, char *nameseq, char *Type);
+
+void printHeadExon(char *Group, int numexon, char *nameseq);
+
+void printFastaGene(char *Group, char *nameseq, char *AuxGene);
+
+void printHeadIntron(char *Group, int numexon, char *nameseq);
+
+void printHeadTranscript(char *Group, char *nameseq);
+
+void CheckBoundaries (long *pos1, long *pos2, long length);

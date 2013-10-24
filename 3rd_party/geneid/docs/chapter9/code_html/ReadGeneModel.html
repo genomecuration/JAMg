@@ -1,0 +1,136 @@
+<html>
+<head>
+<style type="text/css">
+div.bulk { text-align: justify }
+</style>
+<title>
+geneid source docs
+</title>
+</head>
+
+<BODY 
+TEXT color ="blue"
+BGCOLOR="white"
+LINK="black"
+VLINK="black"
+ALINK="black">
+
+<center>
+<table border=0 width=700>
+<tr>
+<td align=left>
+<font face=courier size=5 color=red>ReadGeneModel.c</font>
+</td>
+<td align=right>
+<font face=courier size=3>geneid v 1.2</font>
+<font face=arial black size=3>source documentation</font>
+</td>
+</table>
+
+<br><p><br><p>
+<table border=0 width=700 cellpadding=10>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Description:</font></td>
+<tr>
+<td>
+<div class="bulk"><font face="arial black" size=2>
+Acquiring the information to establish the allowed connections between
+exon types, from the parameter file. Gene model might therefore be modified
+by the user, changing/adding features, distances or switch group restriction on.
+<br><p>
+Gene model rules have this form: 
+<br><p>
+<center>
+<table border=1 cellpadding=10>
+<tr>
+<td><font color=red>U<sub>1</sub> : U<sub>2</sub> : ... : U<sub>n</sub></td>
+<td><font color=orange>D<sub>1</sub> : D<sub>2</sub> : ... : D<sub>m</sub></td>
+<td><font color=blue>dmin : dmax  [block]</td>
+</table>
+</center>
+
+where <br>
+<ul>
+<li>
+the list <font color=blue>(Upstream Compatible)</font> of types
+U<sub>1</sub> : U<sub>2</sub> : ... : U<sub>n</sub> are features allowed to
+connect in front of features in the list <font color=blue> (Downstream Equivalent)</font>
+D<sub>1</sub> : D<sub>2</sub> : ... : D<sub>m</sub>, as long as they match the
+distances [dmin,dmax] requirement.
+<br><p>
+<li>
+block flag in a rule means the restriction of having the same group is
+switch on for 2 candidates to connect by using this assembly class.
+<li>
+Maximum distance may be skipped by using the keyword <font color=red>"Infinity"</font>.
+</ul>
+</font>
+</div>
+</td>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Briefing:</font></td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+void shareGeneModel(gparam** isochores, int nIsochores)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+To share the gene model information between several isochores by using
+the same pointers to the dictionary of features and other arrays and
+copying extra information.
+</font>
+</div>
+</td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+long ReadGeneModel (FILE *file, dict *d,
+                    int nc[], int ne[],
+                    int UC[][MAXENTRY],
+                    int DE[][MAXENTRY],
+                    long md[], long Md[],
+                    int block[])
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+Parsing the gene model rules to extract for every feature this information:
+lines (rules) where it was at the left part (upstream), at the right
+(downstream). For every rule (class or line), to save the range of distances
+allowed to connect and whether the restriction of having the same group
+is raised or not. This information is stored at the dictionary data structure
+and some extra structures such as UC, DE, nc, ne and distances arrays. If the option -F is activated, a couple of artificial rules with feature <tt>sGHOST</tt>
+are introduced to force one complete gene prediction.
+</font>
+</div>
+</td>
+</table>
+
+<br><p><br><p><br><p>
+
+<table border=0>
+<tr>
+<td align=left bgcolor=darkgreen>
+<script>
+var modifieddate=document.lastModified
+    document.write("<font size=1 face  = 'arial black'  color='white'>" + 
+                   "Last modified: " + modifieddate)
+</script>
+</td>
+</table>
+
+<br><p>
+Enrique Blanco Garcia &copy; 2003<br><p><br><p>
+</center>
+</body>
+</html>
+
+
+
+

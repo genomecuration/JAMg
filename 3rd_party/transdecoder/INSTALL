@@ -1,0 +1,7 @@
+You will require
+
+ * hmmer
+ * mpi
+
+You can install them using a repository, e.g. on an Ubuntu:
+$ sudo apt-get install libmpich2-dev mpich2 hmmer

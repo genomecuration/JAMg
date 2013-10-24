@@ -1,0 +1,154 @@
+<html>
+<head>
+<style type="text/css">
+div.bulk { text-align: justify }
+</style>
+<title>
+geneid source docs
+</title>
+</head>
+
+<BODY 
+TEXT color ="blue"
+BGCOLOR="white"
+LINK="black"
+VLINK="black"
+ALINK="black">
+
+<center>
+<table border=0 width=700>
+<tr>
+<td align=left>
+<font face=courier size=5 color=red>SortExons.c</font>
+</td>
+<td align=right>
+<font face=courier size=3>geneid v 1.2</font>
+<font face=arial black size=3>source documentation</font>
+</td>
+</table>
+
+<br><p><br><p>
+<table border=0 width=600 cellpadding=10>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Description:</font></td>
+<tr>
+<td>
+<div class="bulk"><font face="arial black" size=2>
+Sorting predicted exons of every type (first, internal, terminal, single and
+ORFs) and place all of them in the array used to assemble the best genes
+(maximum amount: NUMEXONS * FSORT).
+</font>
+</div>
+</td>
+<tr>
+<td bgcolor=orange><font face="arial black" size=3>Briefing:</font></td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+void FreeItems(struct exonitem *q)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+Free memory allocated for a list of nodes (exon, next node) in a recursive
+way.
+</font>
+</div>
+</td>
+<tr>
+<td><font face=courier size=3 color=red>
+<pre>
+void InsertFirstGhostExon(exonGFF* Exons)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+Insertion of an artificial initial feature to force prediction
+of a complete gene in the current sequence.
+</font>
+</div>
+</td>
+<tr>
+<td><font face=courier size=3 color=red>
+<pre>
+void InsertLastGhostExon(exonGFF* Exons, long n, long L)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+Insertion of an artificial terminal feature to force prediction
+of a complete gene in the current sequence. 
+</font>
+</div>
+</td>
+<tr>
+<td><font face=courier size=3 color=red>
+<pre>
+void UpdateList(struct exonitem** p, exonGFF* InputExon)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+Insert the input exon into a list according to the its position: create a
+new node and insert it at the end of the list. Note: all of the exons of the
+list begin at the same nucleotide.
+</font>
+</div>
+</td>
+<tr>
+<td><font face=courier size=4 color=red>
+<pre>
+void SortExons(packExons* allExons, 
+               packExons* allExons_r, 
+               packExternalInformation* external,
+               packEvidence* pv,
+               exonGFF* Exons,         
+               long l1, long l2)
+</pre>
+</font>
+</td>
+<tr>
+<td bgcolor=skyblue>
+<div class="bulk"><font face="arial black" size=2>
+Sorting all of predicted exons by using this method: insert every exon in
+a table of lists ExonList (range 1:Length of the fragment) where every position
+will contain a list of exons which begin in the same position. Then, screen
+the table, picking up the exons from every list and place them into the final
+array preserving the same order of traversing the table. If the option -F has
+been activated, artificial initial and terminal features are integrated in the
+array in the exons coming from first and last sequence fragments.
+</font>
+</div>
+</td>
+</table>
+
+<br><p><br><p><br><p>
+
+<table border=0>
+<tr>
+<td align=left bgcolor=darkgreen>
+<script>
+var modifieddate=document.lastModified
+    document.write("<font size=1 face  = 'arial black'  color='white'>" + 
+                   "Last modified: " + modifieddate)
+</script>
+</td>
+</table>
+
+<br><p>
+Enrique Blanco Garcia &copy; 2003<br><p><br><p>
+</center>
+</body>
+</html>
+
+
+
+

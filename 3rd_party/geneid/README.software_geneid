@@ -1,0 +1,9 @@
+#
+# README.software_geneid
+#
+# $Id: README.software_geneid,v 1.1 2000/09/27 13:23:49 adminmonstre Exp $
+#
+
+geneid    gene-prediction program developed by Genome Informatics
+
+This directory will contain CVS repository for geneid, programs, manuals, and so on...

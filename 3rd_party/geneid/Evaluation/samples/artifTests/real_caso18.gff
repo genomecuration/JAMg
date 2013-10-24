@@ -1,0 +1,10 @@
+#line with the length of the sequence
+seq1	EMBL	Sequence	1	1000	.	.	.	1
+#annotations for this sequence
+seq1	EMBL	Single	3	8	.	+	0	1
+$
+#line with the length of the sequence
+seq2	EMBL	Sequence	1	1000	.	.	.	1
+#annotations for this sequence
+seq2	EMBL	Single	3	8	.	+	0	1
+
