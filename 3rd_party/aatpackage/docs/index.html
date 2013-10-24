@@ -1,0 +1,512 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="generator" content="AsciiDoc 8.2.6" />
+<style type="text/css">
+/* Debug borders */
+p, li, dt, dd, div, pre, h1, h2, h3, h4, h5, h6 {
+/*
+  border: 1px solid red;
+*/
+}
+
+body {
+  margin: 1em 5% 1em 5%;
+}
+
+a {
+  color: blue;
+  text-decoration: underline;
+}
+a:visited {
+  color: fuchsia;
+}
+
+em {
+  font-style: italic;
+  color: navy;
+}
+
+strong {
+  font-weight: bold;
+  color: #083194;
+}
+
+tt {
+  color: navy;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #527bbd;
+  font-family: sans-serif;
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+}
+
+h1, h2, h3 {
+  border-bottom: 2px solid silver;
+}
+h2 {
+  padding-top: 0.5em;
+}
+h3 {
+  float: left;
+}
+h3 + * {
+  clear: left;
+}
+
+div.sectionbody {
+  font-family: serif;
+  margin-left: 0;
+}
+
+hr {
+  border: 1px solid silver;
+}
+
+p {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+ul, ol, li > p {
+  margin-top: 0;
+}
+
+pre {
+  padding: 0;
+  margin: 0;
+}
+
+span#author {
+  color: #527bbd;
+  font-family: sans-serif;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+span#email {
+}
+span#revision {
+  font-family: sans-serif;
+}
+
+div#footer {
+  font-family: sans-serif;
+  font-size: small;
+  border-top: 2px solid silver;
+  padding-top: 0.5em;
+  margin-top: 4.0em;
+}
+div#footer-text {
+  float: left;
+  padding-bottom: 0.5em;
+}
+div#footer-badges {
+  float: right;
+  padding-bottom: 0.5em;
+}
+
+div#preamble,
+div.tableblock, div.imageblock, div.exampleblock, div.verseblock,
+div.quoteblock, div.literalblock, div.listingblock, div.sidebarblock,
+div.admonitionblock {
+  margin-right: 10%;
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+}
+div.admonitionblock {
+  margin-top: 2.5em;
+  margin-bottom: 2.5em;
+}
+
+div.content { /* Block element content. */
+  padding: 0;
+}
+
+/* Block element titles. */
+div.title, caption.title {
+  color: #527bbd;
+  font-family: sans-serif;
+  font-weight: bold;
+  text-align: left;
+  margin-top: 1.0em;
+  margin-bottom: 0.5em;
+}
+div.title + * {
+  margin-top: 0;
+}
+
+td div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content + div.title {
+  margin-top: 0.0em;
+}
+
+div.sidebarblock > div.content {
+  background: #ffffee;
+  border: 1px solid silver;
+  padding: 0.5em;
+}
+
+div.listingblock {
+  margin-right: 0%;
+}
+div.listingblock > div.content {
+  border: 1px solid silver;
+  background: #f4f4f4;
+  padding: 0.5em;
+}
+
+div.quoteblock > div.content {
+  padding-left: 2.0em;
+}
+
+div.attribution {
+  text-align: right;
+}
+div.verseblock + div.attribution {
+  text-align: left;
+}
+
+div.admonitionblock .icon {
+  vertical-align: top;
+  font-size: 1.1em;
+  font-weight: bold;
+  text-decoration: underline;
+  color: #527bbd;
+  padding-right: 0.5em;
+}
+div.admonitionblock td.content {
+  padding-left: 0.5em;
+  border-left: 2px solid silver;
+}
+
+div.exampleblock > div.content {
+  border-left: 2px solid silver;
+  padding: 0.5em;
+}
+
+div.verseblock div.content {
+  white-space: pre;
+}
+
+div.imageblock div.content { padding-left: 0; }
+div.imageblock img { border: 1px solid silver; }
+span.image img { border-style: none; }
+
+dl {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+dt {
+  margin-top: 0.5em;
+  margin-bottom: 0;
+  font-style: normal;
+}
+dd > *:first-child {
+  margin-top: 0.1em;
+}
+
+ul, ol {
+    list-style-position: outside;
+}
+div.olist > ol {
+  list-style-type: decimal;
+}
+div.olist2 > ol {
+  list-style-type: lower-alpha;
+}
+
+div.tableblock > table {
+  border: 3px solid #527bbd;
+}
+thead {
+  font-family: sans-serif;
+  font-weight: bold;
+}
+tfoot {
+  font-weight: bold;
+}
+
+div.hlist {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+div.hlist td {
+  padding-bottom: 15px;
+}
+td.hlist1 {
+  vertical-align: top;
+  font-style: normal;
+  padding-right: 0.8em;
+}
+td.hlist2 {
+  vertical-align: top;
+}
+
+@media print {
+  div#footer-badges { display: none; }
+}
+
+div#toctitle {
+  color: #527bbd;
+  font-family: sans-serif;
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-top: 1.0em;
+  margin-bottom: 0.1em;
+}
+
+div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+div.toclevel2 {
+  margin-left: 2em;
+  font-size: 0.9em;
+}
+div.toclevel3 {
+  margin-left: 4em;
+  font-size: 0.9em;
+}
+div.toclevel4 {
+  margin-left: 6em;
+  font-size: 0.9em;
+}
+/* Workarounds for IE6's broken and incomplete CSS2. */
+
+div.sidebar-content {
+  background: #ffffee;
+  border: 1px solid silver;
+  padding: 0.5em;
+}
+div.sidebar-title, div.image-title {
+  color: #527bbd;
+  font-family: sans-serif;
+  font-weight: bold;
+  margin-top: 0.0em;
+  margin-bottom: 0.5em;
+}
+
+div.listingblock div.content {
+  border: 1px solid silver;
+  background: #f4f4f4;
+  padding: 0.5em;
+}
+
+div.quoteblock-content {
+  padding-left: 2.0em;
+}
+
+div.exampleblock-content {
+  border-left: 2px solid silver;
+  padding-left: 0.5em;
+}
+
+/* IE6 sets dynamically generated links as visited. */
+div#toc a:visited { color: blue; }
+
+/* Because IE6 child selector is broken. */
+div.olist2 ol {
+  list-style-type: lower-alpha;
+}
+div.olist2 div.olist ol {
+  list-style-type: decimal;
+}
+</style>
+<title>The Analysis and Annotation Tool (AAT) Package</title>
+</head>
+<body>
+<div id="header">
+<h1>The Analysis and Annotation Tool (AAT) Package</h1>
+</div>
+<div id="preamble">
+<div class="sectionbody">
+<div class="para"><p>Developed by <a href="http://www.cs.iastate.edu/~xqhuang/">Xiaoqiu Huang</a>, described in:</p></div>
+<div class="para"><p><a href="AAT.pdf">A Tool for Analyzing and Annotating Genomic Sequences, Genomics 46,37-45 (1997)</a></p></div>
+<div class="para"><p>AAT is a tool for analyzing and annotating large genomic sequences containing introns. The analysis and annotation tool (AAT) includes two sets of programs, one for comparing the query sequence with a protein database and the other for comparing the query with a cDNA database. Each set contains a fast database search program and a rigorous alignment program. The database search program quickly identifies regions of the query sequence that are similar to a database sequence. Then the alignment program constructs an optimal alignment for each region and the database sequence. The alignment program also reports the coordinates of exons in the query sequence. Pairwise alignments of the query sequence with protein and cDNA database sequences are combined into multiple sequence alignments, which provide a view of all protein and cDNA sequences matching a query region.</p></div>
+<div class="para"><p>This analysis package served as the heart of the eukaryotic genome alignment pipeline at <a href="http://www.tigr.org">The Institute for Genomic Research</a>. It remains one of the most rigorous spliced alignment utilities and one of the most sensitive applications for cross-species alignments (such as highly divergent transcript and protein sequences). It is best applied in the context of eukaryotic genomes containing short introns (hundreds of bases, as opposed to tens of thousands of bases), such as found in Fungi, Plants, and microbial eukaryotes.</p></div>
+<div class="para"><p>The AAT software continues to be maintained by <a href="http://www.cs.iastate.edu/~xqhuang/">Xiaoqiu Huang</a> and long-time AAT enthusiast <a href="http://www.broadinstitute.org/%7ebhaas">Brian Haas</a>.</p></div>
+<div class="para"><p>The latest version of the AAT software tool suite can be downloaded <a href="https://sourceforge.net/projects/aatpackage/files/">here</a>.</p></div>
+</div>
+</div>
+<h2 id="_table_of_contents">Table of Contents</h2>
+<div class="sectionbody">
+<div class="ilist"><ul>
+<li>
+<p>
+<a href="#A_overview">AAT package contents</a>
+</p>
+</li>
+<li>
+<p>
+<a href="#A_building_AAT">Building AAT</a>
+</p>
+</li>
+<li>
+<p>
+<a href="#A_running_AAT">Running AAT to generate spliced protein or nucleotide genome alignments</a>
+</p>
+</li>
+<li>
+<p>
+<a href="#A_sample_data">Sample data and pipeline execution</a>
+</p>
+</li>
+<li>
+<p>
+<a href="#A_lit_reference">Referencing AAT</a>
+</p>
+</li>
+<li>
+<p>
+<a href="#A_mailing_list">Contact us</a>
+</p>
+</li>
+</ul></div>
+</div>
+<h2 id="A_overview">AAT package contents</h2>
+<div class="sectionbody">
+<div class="para"><p>The AAT package includes the following tools:</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><tt>dds (a blast-like dna/dna search and alignment tool)
+gap2 (nucleotide spliced alignment tool)</tt></pre>
+</div></div>
+<div class="literalblock">
+<div class="content">
+<pre><tt>dps (a blast-linke protein/dna search and alignment tool)
+nap (protein to genome spliced alignment tool)</tt></pre>
+</div></div>
+<div class="literalblock">
+<div class="content">
+<pre><tt>ext and filter (output parsing tools required by the above)</tt></pre>
+</div></div>
+<div class="literalblock">
+<div class="content">
+<pre><tt>show (multiple alignment tool, given gap2 and nap outputs)</tt></pre>
+</div></div>
+</div>
+<h2 id="A_building_AAT">Building AAT</h2>
+<div class="sectionbody">
+<div class="para"><p>Obtain the AAT software <a href="https://sourceforge.net/projects/aatpackage/files/">here</a>.</p></div>
+<div class="para"><p>To compile the source code, type:</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><tt>./configure --prefix=`pwd`</tt></pre>
+</div></div>
+<div class="literalblock">
+<div class="content">
+<pre><tt>make</tt></pre>
+</div></div>
+<div class="literalblock">
+<div class="content">
+<pre><tt>make install</tt></pre>
+</div></div>
+<div class="para"><p>The executables will be placed in the /bin directory.</p></div>
+</div>
+<h2 id="A_running_AAT">Running AAT to Generate Spliced Protein or Nucleotide Genome Alignments</h2>
+<div class="sectionbody">
+<div class="para"><p>The cDNA/EST alignment pipeline includes:</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><tt>dds -&gt; ext -&gt; filter -&gt; gap2</tt></pre>
+</div></div>
+<div class="para"><p>The protein spliced alignment pipeline includes:</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><tt>dps -&gt; ext -&gt; filter -&gt; nap</tt></pre>
+</div></div>
+<div class="para"><p>The resulting gap2 and nap output files for a single genomic DNA sequence query can be combined into a multiple alignment (very useful visualization tool) using show.</p></div>
+<div class="para"><p>ie.</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><tt>show *gap2 *nap &gt; mult_alignment_file.txt</tt></pre>
+</div></div>
+<div class="para"><p>The AAT.pl script is used to provide a single interface to running the entire AAT pipeline.</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><tt>./bin/AAT.pl</tt></pre>
+</div></div>
+<div class="literalblock">
+<div class="content">
+<pre><tt>########### AAT Usage ##############################################################
+#
+# Required:</tt></pre>
+</div></div>
+<div class="literalblock">
+<div class="content">
+<pre><tt>#  Flags:
+#
+#  -N  :nucleotide (transcript) spliced alignment pipeline (dds/ext/filter/nap)
+#
+#  -P  :protein spliced alignment pipeline (dps/ext/filter/nap)
+#
+#  -b  :btab files only (deletes the nap alignment outputs)
+#  -X  :don't delete the intermediate files of the pipeline
+#
+#  Parameters:
+#
+#  -q 'param' :query database (fasta or multi-fasta of genomic sequence(s) )
+#
+#  -s 'param' :search database (nucleotide or protein fasta or multi-fasta sequence database)
+#
+#  --unmasked 'param'  :if -q provides a masked sequence, here you can provide the unmasked sequence.  The
+#                       masked sequence will be used in the hit-generation stage, and the unmasked sequence
+#                       will be used for generating the global alignments.
+#
+# Optional:
+#
+#  --dds 'params' :parameters passed to dds
+#
+#  --gap2 'params'  :parameters passed to gap2
+#
+#  --dps 'params'  :parameters passed to dps
+#
+#  --nap 'params' :parameters passed to nap
+#
+#  --ext 'params' :parameters passed to ext
+#
+#  --filter 'params' :parameters passed to filter
+#
+#  --AAThelp :provides help menu for all programs in pipeline (must specify -P or -N)
+#
+#  Examples:
+#
+#   protein pipeline:
+#        AAT.pl -P -q genomic_db -s protein_db --dps '-f 100 -i 30 -a 200' --filter '-c 10' --nap '-x 10'
+#
+#   nucleotide (transcript) pipeline:
+#        AAT.pl -N -q genomic_db -s cDNA_transcript_db --dds '-f 100 -i 20 -o 75 -p 70 -a 2000' --filter '-c 10' --gap2 '-x 1'
+#
+##########################################################################################</tt></pre>
+</div></div>
+</div>
+<h2 id="A_sample_data">Sample data and pipeline execution</h2>
+<div class="sectionbody">
+<div class="para"><p>See the <em>sample_data/</em> contents, and try running the <em>runMe.sh</em> script, which provides an example of how to execute the software.</p></div>
+<div class="para"><p>An example of the multiple alignment output format including spliced alignments of protein and EST sequences is available <a href="multalignment.show.txt">here</a>.</p></div>
+</div>
+<h2 id="_referencing_aat">Referencing AAT</h2>
+<div class="sectionbody">
+<div class="para"><p><a href="AAT.pdf">A Tool for Analyzing and Annotating Genomic Sequences, Genomics 46,37-45 (1997)</a></p></div>
+</div>
+<h2 id="_contact_us">Contact us</h2>
+<div class="sectionbody">
+<div class="para"><p>Send us questions, comments, etc., via the mailing list <a href="https://lists.sourceforge.net/lists/listinfo/aatpackage-users">aatpackage-users@lists.sf.net</a></p></div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2011-12-05 15:10:26 EDT
+</div>
+</div>
+</body>
+</html>

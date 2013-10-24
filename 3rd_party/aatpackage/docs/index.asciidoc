@@ -1,0 +1,148 @@
+= The Analysis and Annotation Tool (AAT) Package =
+
+Developed by http://www.cs.iastate.edu/~xqhuang/[Xiaoqiu Huang], described in:
+
+link:AAT.pdf[A Tool for Analyzing and Annotating Genomic Sequences, Genomics 46,37-45 (1997)]
+
+AAT is a tool for analyzing and annotating large genomic sequences containing introns. The analysis and annotation tool (AAT) includes two sets of programs, one for comparing the query sequence with a protein database and the other for comparing the query with a cDNA database. Each set contains a fast database search program and a rigorous alignment program. The database search program quickly identifies regions of the query sequence that are similar to a database sequence. Then the alignment program constructs an optimal alignment for each region and the database sequence. The alignment program also reports the coordinates of exons in the query sequence. Pairwise alignments of the query sequence with protein and cDNA database sequences are combined into multiple sequence alignments, which provide a view of all protein and cDNA sequences matching a query region.
+
+This analysis package served as the heart of the eukaryotic genome alignment pipeline at http://www.tigr.org[The Institute for Genomic Research]. It remains one of the most rigorous spliced alignment utilities and one of the most sensitive applications for cross-species alignments (such as highly divergent transcript and protein sequences). It is best applied in the context of eukaryotic genomes containing short introns (hundreds of bases, as opposed to tens of thousands of bases), such as found in Fungi, Plants, and microbial eukaryotes.
+
+The AAT software continues to be maintained by http://www.cs.iastate.edu/~xqhuang/[Xiaoqiu Huang] and long-time AAT enthusiast http://www.broadinstitute.org/%7ebhaas[Brian Haas].
+
+The latest version of the AAT software tool suite can be downloaded https://sourceforge.net/projects/aatpackage/files/[here].
+
+== Table of Contents ==
+
+- <<A_overview, AAT package contents>>
+- <<A_building_AAT, Building AAT>>
+- <<A_running_AAT, Running AAT to generate spliced protein or nucleotide genome alignments>>
+- <<A_sample_data, Sample data and pipeline execution>>
+- <<A_lit_reference, Referencing AAT>>
+- <<A_mailing_list, Contact us>>
+
+[[A_overview]]
+== AAT package contents ==
+
+The AAT package includes the following tools:
+
+        dds (a blast-like dna/dna search and alignment tool)
+        gap2 (nucleotide spliced alignment tool)
+
+        dps (a blast-linke protein/dna search and alignment tool)
+        nap (protein to genome spliced alignment tool)
+
+        ext and filter (output parsing tools required by the above)
+
+        show (multiple alignment tool, given gap2 and nap outputs)
+
+
+
+[[A_building_AAT]]
+== Building AAT ==
+
+Obtain the AAT software https://sourceforge.net/projects/aatpackage/files/[here].
+
+To compile the source code, type:
+
+    ./configure --prefix=`pwd`
+
+    make
+
+    make install
+
+
+
+The executables will be placed in the /bin directory.  
+
+[[A_running_AAT]]
+== Running AAT to Generate Spliced Protein or Nucleotide Genome Alignments ==
+
+
+The cDNA/EST alignment pipeline includes:
+
+   dds -> ext -> filter -> gap2
+
+The protein spliced alignment pipeline includes:
+
+   dps -> ext -> filter -> nap
+
+The resulting gap2 and nap output files for a single genomic DNA sequence query can be combined into a multiple alignment (very useful visualization tool) using show.
+
+ie.  
+
+   show *gap2 *nap > mult_alignment_file.txt
+
+
+The AAT.pl script is used to provide a single interface to running the entire AAT pipeline. 
+
+
+  ./bin/AAT.pl
+
+
+  ########### AAT Usage ##############################################################
+  #
+  # Required:
+  
+  #  Flags:
+  #
+  #  -N  :nucleotide (transcript) spliced alignment pipeline (dds/ext/filter/nap)
+  #
+  #  -P  :protein spliced alignment pipeline (dps/ext/filter/nap)
+  # 
+  #  -b  :btab files only (deletes the nap alignment outputs)
+  #  -X  :don't delete the intermediate files of the pipeline
+  #
+  #  Parameters:
+  #
+  #  -q 'param' :query database (fasta or multi-fasta of genomic sequence(s) )
+  #
+  #  -s 'param' :search database (nucleotide or protein fasta or multi-fasta sequence database)
+  #
+  #  --unmasked 'param'  :if -q provides a masked sequence, here you can provide the unmasked sequence.  The 
+  #                       masked sequence will be used in the hit-generation stage, and the unmasked sequence
+  #                       will be used for generating the global alignments.
+  #
+  # Optional:
+  #  
+  #  --dds 'params' :parameters passed to dds
+  #
+  #  --gap2 'params'  :parameters passed to gap2
+  #
+  #  --dps 'params'  :parameters passed to dps
+  #
+  #  --nap 'params' :parameters passed to nap
+  #
+  #  --ext 'params' :parameters passed to ext
+  #
+  #  --filter 'params' :parameters passed to filter
+  #
+  #  --AAThelp :provides help menu for all programs in pipeline (must specify -P or -N)
+  # 
+  #  Examples:
+  #  
+  #   protein pipeline:
+  #        AAT.pl -P -q genomic_db -s protein_db --dps '-f 100 -i 30 -a 200' --filter '-c 10' --nap '-x 10'
+  #
+  #   nucleotide (transcript) pipeline:
+  #        AAT.pl -N -q genomic_db -s cDNA_transcript_db --dds '-f 100 -i 20 -o 75 -p 70 -a 2000' --filter '-c 10' --gap2 '-x 1'
+  #
+  ##########################################################################################
+
+
+
+[[A_sample_data]]
+== Sample data and pipeline execution ==
+
+See the 'sample_data/' contents, and try running the 'runMe.sh' script, which provides an example of how to execute the software.
+
+An example of the multiple alignment output format including spliced alignments of protein and EST sequences is available link:multalignment.show.txt[here].
+
+== Referencing AAT ==
+
+link:AAT.pdf[A Tool for Analyzing and Annotating Genomic Sequences, Genomics 46,37-45 (1997)]
+
+== Contact us ==
+
+Send us questions, comments, etc., via the mailing list https://lists.sourceforge.net/lists/listinfo/aatpackage-users[aatpackage-users@lists.sf.net]
+
