@@ -2050,11 +2050,11 @@ sub get_id_seq_from_fasta {
 
 
 sub run_exonerate(){
+    my ($aatpackage,$parafly_exec) = &check_program('AAT.pl','ParaFly');
+    $aatpackage = dirname($aatpackage) if $aatpackage;
 if ( ( $peptide_file || ( $transdecoder_gff && $transdecoder_assembly_file )  )
      && $genome_file )
 {
-    my ($aatpackage,$parafly_exec) = &check_program('AAT.pl','ParaFly');
-    $aatpackage = dirname($aatpackage) if $aatpackage;
   my $genome_dir = basename($genome_file) . '_dir';
   my $files_ref;
   if ( -d $genome_dir ) {
@@ -2071,8 +2071,8 @@ if ( ( $peptide_file || ( $transdecoder_gff && $transdecoder_assembly_file )  )
   my @commands;
   my $aat_command_file = "./".basename($genome_dir).".commands";
   # check if previous exonerate run exists and if so run it?
-    unless ($no_rerun_exonerate){
-        if (-s 'run_exonerate_commands.cmd' &&(!-s 'run_exonerate_commands.cmd.completed' || (-s 'run_exonerate_commands.cmd' != -s 'run_exonerate_commands.cmd.completed'))){
+  unless ($no_rerun_exonerate){
+        if (-s $aat_command_file &&(!-s $aat_command_file.'.completed' || (-s $aat_command_file != -s $aat_command_file.'.completed'))){
             print "Processing with AAT\n";
   	    &process_cmd("$parafly_exec -shuffle -CPU $threads -c run_exonerate_commands.cmd -failed_cmds run_exonerate_commands.cmd.failed -v 2>&1 |grep -v 'successfully completed'");
 	}
@@ -2111,8 +2111,6 @@ if ( ( $peptide_file || ( $transdecoder_gff && $transdecoder_assembly_file )  )
             . "_queries/*exonerate_results >> $exonerate_file" );
     }
   } else {
-    my ($aatpackage,$parafly_exec) = &check_program('AAT.pl','ParaFly');
-    $aatpackage = dirname($aatpackage) if $aatpackage;
     print "Processing transdecoder output via AAT and exonerate to produce output $exonerate_file\n";
     print "Finding contigs from transdecoder...\n";
     my $fasta_contigs = "$transdecoder_gff.contigs";

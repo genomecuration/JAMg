@@ -569,8 +569,8 @@ sub scaffold_exonerate() {
     $cmd .= " $query_file $target_file ";
     print CMD (
 
-      "test ! -e $query_file.exonerate_results  && " .
-      $common . $cmd . " > $query_file.exonerate_results\n"
+      "if [ ! -e $query_file.exonerate_results ]; then " .
+      $common . $cmd . " > $query_file.exonerate_results; fi\n"
     );
   }
   close(CMD);
@@ -662,8 +662,8 @@ sub separate_exonerate() {
       $cmd .= " $query_file $target_file ";
       print CMD (
 
-        "test ! -e $query_file.exonerate_results  && " .
-        $common . $cmd . " > $query_file.exonerate_results\n"
+        "if [ ! -e $query_file.exonerate_results ]; then " .
+        $common . $cmd . " > $query_file.exonerate_results; fi\n"
       );
     }
   }
