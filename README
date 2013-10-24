@@ -1,0 +1,39 @@
+Read INSTALL before continuing
+
+The main perl script, prepare_golden_genes_for_predictors.pl, is what you will need to use. 
+
+Use perldoc to see any ancillary information.
+
+To generate the softmasking, use RepeatMasker (for example) and bedtools (accepts a GFF file).
+
+ http://www.repeatmasker.org/RMDownload.html
+ http://www.repeatmasker.org/RMBlast.html  # recommended due to open license
+ http://code.google.com/p/bedtools
+ 
+For example,
+$ RepeatMasker -pa $CPUS -s -species insecta -no_is -gccalc -gff 
+# softmask
+$ maskFastaFromBed -fi $ASSEMBLTY -fo $ASSEMBLY.repeatmasked.soft -bed $ASSEMBLY.out.gff -soft
+# hardmask
+$ maskFastaFromBed -fi $ASSEMBLTY -fo $ASSEMBLY.repeatmasked.hard -bed $ASSEMBLY.out.gff # or the .masked output from RepeatMasker
+
+
+
+
+
+=============================================================================================================
+Please not that exonerate is not free of bugs but this software tries to deal with some of them.
+Please report bugs to:
+
+ Alexie Papanicolaou
+
+        1 CSIRO Ecosystem Sciences, GPO 1700, Canberra 2601, Australia
+        alexie@butterflybase.org
+
+LICENSE
+This software is released under the GNU General Public License version 3 (GPLv3).
+It is provided "as is" without warranty of any kind.
+You can find the terms and conditions at http://www.opensource.org/licenses/gpl-3.0.html.
+Please note that incorporating the whole software or parts of its code in proprietary software
+is prohibited under the current license.
+
