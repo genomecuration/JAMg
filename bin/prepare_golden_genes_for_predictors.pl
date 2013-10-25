@@ -1769,10 +1769,15 @@ sub parse_transdecoder_gene_gff3() {
 	my @lines = split("\n",$record);
 	pop(@lines) if $lines[-1] eq '>';
         my $id = shift (@lines);
-	$seq_hash{$id} = join('',@lines);
+        my $seq = join('',@lines);
+	$seq=~s/\s+//g;
+	$seq_hash{$id} = $seq;
  }
  close IN;
   my $transdecoder_contig = $transdecoder_gff . '.contigs';
+  # create file for exonerate
+  # (un)naturally, exonerate is not well documented about this
+  # if the ORF is in the negative strand, the co-ordinates are revcomplemented!
   open( ANNOT, ">$transdecoder_contig.annotations" );
   my %contigs_used;
   $/ = "\n\n";
@@ -1788,28 +1793,32 @@ sub parse_transdecoder_gene_gff3() {
     next unless !$only_complete || $mRNA_data[8] =~ /type%3Acomplete/;
     next if ( $hash_ref && !$hash_ref->{$mRNA_id} );
     my $ref = $mRNA_data[0];
+    my $seq_length = length($seq_hash{$ref});
     $contigs_used{$ref}++;
     print TROUT ">$mRNA_id\n".$seq_hash{$ref}."\n";
     for ( my $i = 2 ; $i < scalar(@lines) ; $i++ ) {
+      next unless $lines[$i] =~/\tCDS\t/;
       my @data = split( "\t", $lines[$i] );
-      print ANNOT join(
-                        ' ',
-                        (
+      if ($data[2] eq 'CDS'){
+	      if ($data[6] eq '+'){
+		      print ANNOT join(' ', (
                           $mRNA_id, $data[6],
                           $data[3], ( abs( $data[4] - $data[3] ) + 1 )
-                        )
-        )
-        . "\n"
-        if $data[2] eq 'CDS';
+                        )). "\n";
+              }elsif ($data[6] eq '-'){
+		      print ANNOT join(' ', (
+                          $mRNA_id, $data[6],
+                          ($seq_length - $data[4]  + 1), ( abs( $data[4] - $data[3] ) + 1 )
+                        )). "\n";
+              }
+      }
     }
   }
   close TRANSDECODER;
   close ANNOT;
   close TROUT;
   $/ = $orig_sep;
-  print "Prepared $transdecoder_contig with "
-    . scalar( keys %contigs_used )
-    . " sequences\n";
+  print "Prepared $transdecoder_contig with "    . scalar( keys %contigs_used )    . " sequences\n";
   return $transdecoder_contig;
 }
 
