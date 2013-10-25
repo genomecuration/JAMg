@@ -1831,25 +1831,28 @@ sub splitfasta() {
   open( FILE, $file2split );
   my $orig_sep = $/;
   $/ = ">";
-  <FILE>;  
+  <FILE>;
 
   while ( my $record = <FILE> ) {
    my @lines = split("\n",$record);
    my $id = shift @lines;
+   chomp(@lines);
    my $seq = join('',@lines);
    $seq =~s/>$//;
    $seq =~s/\s+//g;
    next unless $seq;
    $seq = &wrap_text($seq);
-   if ( !$filecount || $seqcount > $how_many_in_a_file ) {
+   $seqcount++;
+   if ( !$filecount || $how_many_in_a_file == 1 || $seqcount > $how_many_in_a_file ) {
         $seqcount = int(0);
         $filecount++;
         my $outfile = $how_many_in_a_file == 1 ? $id : $file2split . "_" . $filecount;
-        open( OUT, ">$outdir/$outfile" ) || die("Cannot open $outdir/$outfile");
-        push( @files, "$outfile" );
+        $outfile = $outdir.'/'.$outfile;
+        close(OUT);
+        open( OUT, ">$outfile" ) || die("Cannot open $outfile");
+        push( @files, $outfile );
    }
    print OUT ">$id\n$seq\n";
-   $seqcount++;
   }
   close(FILE);
   close(OUT);
