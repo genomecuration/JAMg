@@ -677,41 +677,34 @@ sub splitfasta() {
   my $how_many_in_a_file = shift;
   return unless $file2split && -s $file2split && $outdir && $how_many_in_a_file;
   mkdir($outdir) unless -d $outdir;
-  my ($flag);
-  my $filecount = 0;
-  my $seqcount  = 0;
+  my $filecount;
+  my $seqcount  = int(0);
   open( FILE, $file2split );
+  my $orig_sep = $/;
+  $/ = ">";
+  <FILE>;  
 
-  while ( my $line = <FILE> ) {
-    if ( $line =~ /^\s*$/ ) { next; }    #empty line
-    elsif ( $line =~ /^>(\S+)/ ) {
-      my $id = $1;
-      $seqcount++;
-      if ( !$flag ) {
+  while ( my $record = <FILE> ) {
+   my @lines = split("\n",$record);
+   my $id = shift @lines;
+   my $seq = join('',@lines);
+   $seq =~s/>$//;
+   $seq =~s/\s+//g;
+   next unless $seq;
+   $seq = &wrap_text($seq);
+   if ( !$filecount || $seqcount > $how_many_in_a_file ) {
+        $seqcount = int(0);
         $filecount++;
-        my $outfile = $file2split;
-        $outfile .= "_" . $filecount;
-        $outfile = $id if $how_many_in_a_file ==1;
+        my $outfile = $how_many_in_a_file == 1 ? $id : $file2split . "_" . $filecount;
         open( OUT, ">$outdir/$outfile" ) || die("Cannot open $outdir/$outfile");
         push( @files, "$outfile" );
-        $flag = 1;
-      } elsif ( $seqcount >= $how_many_in_a_file ) {
-        $seqcount = 0;
-        $filecount++;
-        my $outfile = $file2split;
-        $outfile .= "_" . $filecount;
-        $outfile = $id if $how_many_in_a_file ==1;
-        close(OUT);
-        open( OUT, ">$outdir/$outfile" );
-        push( @files, "$outfile" );
-      }
-      print OUT ">$id\n";
-    } else {
-      print OUT $line;
-    }
+   }
+   print OUT ">$id\n$seq\n";
+   $seqcount++;
   }
   close(FILE);
   close(OUT);
+  $/ = $orig_sep;
   return \@files;
 }
 
@@ -915,4 +908,12 @@ sub convert_fasta_to_single_line(){
   close IN;
   unlink($file);
   rename("$file.t",$file)
+}
+
+sub wrap_text(){
+	my $string = shift;
+	my $wrap_length = shift;
+	$wrap_length = 120 if !$wrap_length;
+	$string =~ s/(.{0,$wrap_length})/$1\n/g;
+	return $string;
 }

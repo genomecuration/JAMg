@@ -4,8 +4,8 @@
 
 =head1 TODO
 
-smth wrong here (temporarely disabled)
-38G .exonerate.results.passed.genome
+Medium: smth wrong here (temporarely disabled) 38G .exonerate.results.passed.genome
+Low: Would be nice to have a GenBank parser that doesn't use BioPerl
 
 =head1 NAME
 
@@ -286,10 +286,6 @@ sub correct_exonerate_gff() {
       && $genome_sequence_file
       && -s $exonerate_file
       && -s $genome_sequence_file;
-
-  #  my $genome_dir = $genome_sequence_file.'_dir';
-  #  &splitfasta( $genome_sequence_file, $genome_dir, 1 );
-## --ryo "RYOAP_START\nRYOAP_STATS_D\tAlignment length\tidentical\tsimilar\tmismatch\tidentical%%\tsimilar%%\nRYOAP_STATS\t%s\t%et\t%ei\t%es\t%em\t%pi\t%ps\nRYOAP_CODING_QUERY\t%qi\t%qab\t%qae\n>%qi\n%qas\nRYOAP_CODING_GENOME\t%ti\t%tcb\t%tce\n>%ti\n%tcs\nRYOAP_END\n"
   open( EXONERATE, $exonerate_file );
   open( CORRECTED_EXONERATE_GFF,    ">$exonerate_file.corrected.gff3" );
   open( GENEIDGFF, ">$exonerate_file.corrected.gff3.geneid.gff3" );
@@ -1822,6 +1818,7 @@ sub parse_transdecoder_gene_gff3() {
   return $transdecoder_contig;
 }
 
+
 sub splitfasta() {
   my @files;
   my $file2split         = shift;
@@ -1829,41 +1826,34 @@ sub splitfasta() {
   my $how_many_in_a_file = shift;
   return unless $file2split && -s $file2split && $outdir && $how_many_in_a_file;
   mkdir($outdir) unless -d $outdir;
-  my ($flag);
-  my $filecount = 0;
-  my $seqcount  = 0;
+  my $filecount;
+  my $seqcount  = int(0);
   open( FILE, $file2split );
+  my $orig_sep = $/;
+  $/ = ">";
+  <FILE>;  
 
-  while ( my $line = <FILE> ) {
-    if ( $line =~ /^\s*$/ ) { next; }    #empty line
-    elsif ( $line =~ /^>(\S+)/ ) {
-      my $id = $1;
-      $seqcount++;
-      if ( !$flag ) {
+  while ( my $record = <FILE> ) {
+   my @lines = split("\n",$record);
+   my $id = shift @lines;
+   my $seq = join('',@lines);
+   $seq =~s/>$//;
+   $seq =~s/\s+//g;
+   next unless $seq;
+   $seq = &wrap_text($seq);
+   if ( !$filecount || $seqcount > $how_many_in_a_file ) {
+        $seqcount = int(0);
         $filecount++;
-        my $outfile = $file2split;
-        $outfile .= "_" . $filecount;
-        $outfile = $id if $how_many_in_a_file == 1;
+        my $outfile = $how_many_in_a_file == 1 ? $id : $file2split . "_" . $filecount;
         open( OUT, ">$outdir/$outfile" ) || die("Cannot open $outdir/$outfile");
-        push( @files, "$outdir/$outfile" );
-        $flag = 1;
-      } elsif ( $seqcount >= $how_many_in_a_file ) {
-        $seqcount = 0;
-        $filecount++;
-        my $outfile = $file2split;
-        $outfile .= "_" . $filecount;
-        $outfile = $id if $how_many_in_a_file == 1;
-        close(OUT);
-        open( OUT, ">$outdir/$outfile" );
-        push( @files, "$outdir/$outfile" );
-      }
-      print OUT ">$id\n";
-    } else {
-      print OUT $line;
-    }
+        push( @files, "$outfile" );
+   }
+   print OUT ">$id\n$seq\n";
+   $seqcount++;
   }
   close(FILE);
   close(OUT);
+  $/ = $orig_sep;
   return \@files;
 }
 
@@ -2182,4 +2172,11 @@ if ( ( $peptide_file || ( $transdecoder_gff && $transdecoder_assembly_file )  )
   print "Completed processing exonerate file as $exonerate_file\n";
   }
 }
+}
+sub wrap_text(){
+        my $string = shift;
+        my $wrap_length = shift;
+        $wrap_length = 120 if !$wrap_length;
+        $string =~ s/(.{0,$wrap_length})/$1\n/g;
+        return $string;
 }
