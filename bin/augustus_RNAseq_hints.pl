@@ -57,11 +57,12 @@ my $genome_idx_cmd = "$samtools_exec $genome";
 die "Cannot index genome $genome\n" unless -s $genome.'.fai';
 
 my $junction_cmd = "$samtools_exec rmdup -S $bamfile - | $bedtools_exec bamtobed -bed12 | bed12_to_augustus_junction_hints.pl | $augustus_dir/scripts/join_mult_hints.pl > $bamfile.junctions.hints";
-my $coverage_cmd = "$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $bamfile | $augustus_dir/scripts/wig2hints.pl | $augustus_dir/scripts/join_mult_hints.pl >  $bamfile.coverage.hints";
-
 &process_cmd($junction_cmd) unless -s "$bamfile.junctions.hints";
 
-&process_cmd($coverage_cmd) unless -s "$bamfile.coverage.hints";
+my $coverage_cmd = "$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $bamfile >  $bamfile.coverage.bg";
+my $hint_cmd = "$augustus_dir/scripts/bedgraph2wig.pl --bedgraphfile=$bamfile.coverage.bg | $augustus_dir/scripts/wig2hints.pl | $augustus_dir/scripts/join_mult_hints.pl >  $bamfile.coverage.hints";
+&process_cmd($coverage_cmd) unless -s "$bamfile.coverage.bg";
+&process_cmd($hint_cmd) unless -s "$bamfile.coverage.hints";
 
 if (-s "$bamfile.junctions.hints" && -s "$bamfile.junctions.hints"){
  print "Done!\n";
