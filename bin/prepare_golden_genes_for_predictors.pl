@@ -244,7 +244,6 @@ die "cDNA mode is only used without peptides\n" if $peptide_file && $is_cdna;
 die "Softmasked genome file does not exist\n" if $softmasked_genome && !-s $softmasked_genome;
 
 my ($gff2gb_exec,$fathom_exec,$augustus_exec,$augustus_train_exec,$augustus_filterGenes_exec) = &check_program_optional('gff2gbSmallDNA.pl','fathom','augustus','etraining','filterGenes.pl');
-$augustus_dir= $augustus_dir ? readlink($augustus_dir ) : dirname(dirname($augustus_exec)) if $augustus_exec && !$augustus_dir;
 &check_augustus() unless ($stop_after_correction || $stop_after_golden);
 
 $same_species = '-same_species' if  $same_species;
@@ -1744,6 +1743,8 @@ exit 0
 }
 
 sub check_augustus() {
+  $augustus_dir = readlink($augustus_dir ) if $augustus_dir && -l $augustus_dir;
+  $augustus_dir = dirname(dirname($augustus_exec)) if $augustus_exec && !$augustus_dir;
   pod2usage "Can't find the Augustus directory, easiest way is to create a symlink of the augustus executable somewhere in your PATH (e.g. \$HOME/bin) or add the Augustus bin directory in your PATH\n" unless $augustus_dir && -d $augustus_dir;
   $gff2gb_exec = $augustus_dir . '/scripts/gff2gbSmallDNA.pl' if !$gff2gb_exec;
   $augustus_train_exec = $augustus_dir . '/bin/etraining' if !$augustus_train_exec;
@@ -2015,7 +2016,7 @@ sub check_program(){
 	my @paths;
 	foreach my $prog (@_){
 	        my $path = `which $prog`;
-        	die "Error, path to required $prog cannot be found\n" unless $path =~ /^\//;
+        	die "Error, path to a required program ($prog) cannot be found\n" unless $path =~ /^\//;
 		chomp($path);
 		$path = readlink($path) if -l $path;
 		push(@paths,$path);
@@ -2027,7 +2028,7 @@ sub check_program_optional(){
         my @paths;
         foreach my $prog (@_){
                 my $path = `which $prog`;
-                warn "Warning: path to optional $prog cannot be found in your path environment.\n" unless $path =~ /^\//;
+                warn "Warning: path to an optional program ($prog) cannot be found in your path environment.\n" unless $path =~ /^\//;
                 chomp($path);
 		$path = readlink($path) if -l $path;
                 push(@paths,$path);

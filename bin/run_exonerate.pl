@@ -879,7 +879,7 @@ sub check_program(){
         my @paths;
         foreach my $prog (@_){
                 my $path = `which $prog`;
-                die "Error, path to required $prog cannot be found\n" unless $path =~ /^\//;
+                die "Error, path to a required program ($prog) cannot be found\n" unless $path =~ /^\//;
                 chomp($path);
                 $path = readlink($path) if -l $path;
                 push(@paths,$path);
