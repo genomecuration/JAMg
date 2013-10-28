@@ -338,22 +338,22 @@ if ( !$is_protein ) {
 
 #exonerate efficiency
 my ( %reference_hash );
-open (NOTUSED,">$annotation_file.notused");
-foreach my $id ( keys %queries ) {
-  unless ( $queries{$id}{'seq'}
-           && ( $is_protein || exists $queries{$id}{'orf'} ) ){
-        warn "Query $id: no hit, or ORF found\n";
-        print NOTUSED "Query $id: no hit, or ORF found\n";
-	my $err = Dumper $queries{$id};
-        print NOTUSED $err."\n";
-	$not_used++;
-	delete $queries{$id};
-	next;
-  }
-  next unless $queries{$id}{'hit'};
-  push( @{ $reference_hash{ $queries{$id}{'hit'} } }, $id );
-}
-close NOTUSED;
+ open (NOTUSED,">$fasta_file.annotations.notused");
+ foreach my $id ( keys %queries ) {
+   unless ( $queries{$id}{'seq'}
+             && ( $is_protein || exists $queries{$id}{'orf'} ) ){
+         warn "Query $id: no hit, or ORF found\n";
+         print NOTUSED "Query $id: no hit, or ORF found\n";
+ 	my $err = Dumper $queries{$id};
+         print NOTUSED $err."\n";
+ 	$not_used++;
+ 	delete $queries{$id};
+ 	next;
+   }
+   next unless $queries{$id}{'hit'};
+   push( @{ $reference_hash{ $queries{$id}{'hit'} } }, $id );
+ }
+ close NOTUSED;
 die "No references have been matched.\n"
   unless scalar( keys %reference_hash ) > 0;
 warn "$not_used queries had no hit or ORF and will not be searched\n" if $not_used;
@@ -520,6 +520,7 @@ sub parse_aat_core() {
 
 sub scaffold_exonerate() {
   open( CMD, ">run_exonerate_commands.cmd" );
+  my $do_annotations = $annotation_file && -s $annotation_file ? "--annotation $annotation_file" : ' ';
   #only process those with ORF
   foreach my $target ( shuffle keys %reference_hash ) {
     my @queries    = @{ $reference_hash{$target} };
@@ -550,7 +551,7 @@ sub scaffold_exonerate() {
       $cmd =
         $coding_only
         ? " -s 2000 -Q dna -m coding2genome  " # removed --percent 90
-        : " -s 2000 -Q dna -m cdna2genome  --annotation $annotation_file "; # removed --percent 70
+        : " -s 2000 -Q dna -m cdna2genome  $do_annotations "; # removed --percent 70
       $cmd = " -s 1000 -Q protein --exhaustive 1 -m protein2genome:bestfit "  if $is_protein && !$not_exhaustive; # removed --percent 70
       $cmd = " -s 1000 -Q protein -m protein2genome "  if $is_protein && $not_exhaustive; # removed --percent 70
       $cmd .= " --hspfilter 100 --geneseed 250 ";
@@ -560,7 +561,7 @@ sub scaffold_exonerate() {
       $cmd =
         $coding_only
         ? " -s 200 -Q dna -m coding2genome --percent 30" 
-        : " -s 200 -Q dna -m cdna2genome --percent 20 --annotation $annotation_file ";
+        : " -s 200 -Q dna -m cdna2genome --percent 20 $do_annotations ";
       $cmd = " -s 100 -Q protein --exhaustive 1 -m protein2genome:bestfit --percent 30 " if $is_protein && !$not_exhaustive;
       $cmd = " -s 100 -Q protein -m protein2genome --percent 30 " if $is_protein && $not_exhaustive;
     }
@@ -578,6 +579,7 @@ sub scaffold_exonerate() {
 
 sub separate_exonerate() {
   open( CMD, ">run_exonerate_commands.cmd" );
+  my $do_annotations = $annotation_file && -s $annotation_file ? "--annotation $annotation_file" : ' ';
 
   #only process those with ORF
   foreach my $target ( sort keys %reference_hash ) {
@@ -643,17 +645,18 @@ sub separate_exonerate() {
         $cmd =
           $coding_only
           ? " -s 2000 -Q dna -m coding2genome " ## removed --percent 90
-          : " -s 2000 -Q dna -m cdna2genome --annotation $annotation_file "; # --percent 70 
+          : " -s 2000 -Q dna -m cdna2genome $do_annotations "; # --percent 70 
       $cmd = " -s 100 -Q protein --exhaustive 1 -m protein2genome:bestfit --percent 20 " if $is_protein && !$not_exhaustive; # 
       $cmd = " -s 100 -Q protein -m protein2genome --percent 20 " if $is_protein && $not_exhaustive;
         $cmd .= " --hspfilter 100 --geneseed 250 ";
       } else {
 
         # I DON'T KNOW WHAT GOOD SCORE/PERCENT VALUES ARE HERE
+         
         $cmd =
           $coding_only
           ? " -s 200 -Q dna -m coding2genome --percent 30"
-          : " -s 200 -Q dna -m cdna2genome --annotation $annotation_file ";
+          : " -s 200 -Q dna -m cdna2genome $do_annotations ";
       $cmd = " -s 100 -Q protein --exhaustive 1 -m protein2genome:bestfit --percent 20 " if $is_protein && !$not_exhaustive;
       $cmd = " -s 100 -Q protein -m protein2genome --percent 20 " if $is_protein && $not_exhaustive;
       }
@@ -687,6 +690,8 @@ sub splitfasta() {
   while ( my $record = <FILE> ) {
    my @lines = split("\n",$record);
    my $id = shift @lines;
+   $id=~/^(\S+)/;
+   $id = $1 ||die "Cannot find ID for a sequence in $file2split";
    chomp(@lines);
    my $seq = join('',@lines);
    $seq =~s/>$//;

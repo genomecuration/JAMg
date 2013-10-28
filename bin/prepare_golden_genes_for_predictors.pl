@@ -289,7 +289,9 @@ sub correct_exonerate_gff() {
   open( EXONERATE, $exonerate_file );
   open( CORRECTED_EXONERATE_GFF,    ">$exonerate_file.corrected.gff3" );
   open( GENEIDGFF, ">$exonerate_file.corrected.gff3.geneid.gff3" );
-  my ( %details, $flag, $scounter, $ecounter, %vulgar_data, $gene_counter, %already_printed );
+  my ( %details, $flag, %vulgar_data, %already_printed );
+  my ($gene_counter,$scounter, $ecounter) = (int(0),int(0),int(0));
+  
 ###########################################################################################
 # EXONERATE protein has no UTR, the gene is actually the coding part of the mRNA
 # get gene data
@@ -607,8 +609,9 @@ sub correct_exonerate_gff() {
   close(EXONERATE);
   close(GENEIDGFF);
   close CORRECTED_EXONERATE_GFF;
-  die "Report seems incomplete $scounter != $ecounter!\n"
-    unless $scounter && $ecounter && ( $scounter == $ecounter );
+  die "Report seems incomplete!\n"
+    unless $scounter == $ecounter;
+  die "No genes have been found!\n" if $scounter == 0;
   &sort_gff3( $exonerate_file.'.corrected.gff3', "##\n" );
   &order_fasta($genome_sequence_file,$exonerate_file.'.corrected.gff3');
   &gff3_fix_phase_GTF($exonerate_file.'.corrected.gff3') unless -s $exonerate_file.'.corrected.gff3.cds.gtf';
@@ -1836,6 +1839,8 @@ sub splitfasta() {
   while ( my $record = <FILE> ) {
    my @lines = split("\n",$record);
    my $id = shift @lines;
+   $id=~/^(\S+)/;
+   $id = $1 ||die "Cannot find ID for a sequence in $file2split";
    chomp(@lines);
    my $seq = join('',@lines);
    $seq =~s/>$//;
