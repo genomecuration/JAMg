@@ -58,11 +58,11 @@ die "Cannot index genome $genome\n" unless -s $genome.'.fai';
 
 my $junction_cmd = "$samtools_exec rmdup -S $bamfile - | $bedtools_exec bamtobed -bed12 | bed12_to_augustus_junction_hints.pl | $augustus_dir/scripts/join_mult_hints.pl > $bamfile.junctions.hints";
 &process_cmd($junction_cmd) unless -e "$bamfile.junctions.hints.completed";
-touch("$bamfile.junctions.hints.completed");
+&touch("$bamfile.junctions.hints.completed");
 
 my $coverage_cmd = "$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $bamfile >  $bamfile.coverage.bg";
 &process_cmd($coverage_cmd) unless -e "$bamfile.coverage.bg.completed";
-touch("$bamfile.coverage.bg.completed");
+&touch("$bamfile.coverage.bg.completed");
 
 &bg2hints("$bamfile.coverage.bg") unless -e "$bamfile.coverage.hints.completed";
 
@@ -109,6 +109,11 @@ sub bg2hints(){
 	}
 	close OUT;
 	close IN;
-	system("touch $outfile.completed");
+	&touch("$outfile.completed");
 	return $outfile;
+}
+
+sub touch(){
+	my $file = shift;
+	system ("touch $file");
 }
