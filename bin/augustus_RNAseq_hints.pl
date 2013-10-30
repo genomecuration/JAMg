@@ -56,7 +56,7 @@ my $genome_idx_cmd = "$samtools_exec $genome";
 &process_cmd($genome_idx_cmd) unless -s $genome.'.fai';
 die "Cannot index genome $genome\n" unless -s $genome.'.fai';
 
-my $junction_cmd = "$samtools_exec rmdup -S $bamfile - | $bedtools_exec bamtobed -bed12 | bed12_to_augustus_junction_hints.pl | $augustus_dir/scripts/join_mult_hints.pl > $bamfile.junctions.hints";
+my $junction_cmd = "$samtools_exec rmdup -S $bamfile - | $bedtools_exec bamtobed -bed12 | bed12_to_augustus_junction_hints.pl -out $bamfile.junctions.bed | $augustus_dir/scripts/join_mult_hints.pl > $bamfile.junctions.hints";
 &process_cmd($junction_cmd) unless -e "$bamfile.junctions.hints.completed";
 &touch("$bamfile.junctions.hints.completed");
 

@@ -56,17 +56,18 @@ my $min_score = 30;
 my $max_exons = 3;
 my ( $help);
 
+my $bed_outfile = 'junctions.bed';
 GetOptions(
    'help'         =>\$help,
    'exon_min:i'   =>\$min_exon_size,
    'score_min:i'  => \$min_score,
-   'max_exons:i'  => \$max_exons
+   'max_exons:i'  => \$max_exons,
+   'outfile:s'   => \$bed_outfile,
 );
 
 
 pod2usage if $help;
-
-
+open (BEDJUNCTIONS,">$bed_outfile");
 
 while (my $ln=<STDIN>){
 	chomp($ln);
@@ -92,6 +93,7 @@ while (my $ln=<STDIN>){
 		my $stop = $data[2];
 		print $data[0]."\trnaseq\t".$type."\t".$start."\t".$stop."\t".$data[4]."\t".$data[5]."\t.\tsrc=JR;pri=5;grp=".$data[3]."\n";
 	}else{
+		print BEDJUNCTIONS $ln."\n";
 		#exons first
 		for (my $i=0;$i<scalar(@blockStarts);$i++){
 			my $type = 'exonpart';
@@ -107,5 +109,6 @@ while (my $ln=<STDIN>){
 			print $data[0]."\trnaseq\t".$type."\t".$start."\t".$stop."\t".$data[4]."\t".$data[5]."\t.\tsrc=JR;pri=5;grp=".$data[3]."\n";
 		}
 	}
-
 }
+close BEDJUNCTIONS;
+
