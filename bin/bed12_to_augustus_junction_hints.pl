@@ -17,7 +17,7 @@
  exon_min   :i     Minimum exon size (def. 50bp)
  score_min  :i     Minimum score (def. 30)
  max_exons  :i     Maximum number of exons that a single can span (def. 3)
-
+ min_match  :i     Number of min bases for each side of gap (def 20)
 
 =head1 FORMATS
 
@@ -54,6 +54,7 @@ use Getopt::Long;
 my $min_exon_size = 50;
 my $min_score = 30;
 my $max_exons = 3;
+my $min_match = 20;
 my ( $help);
 
 my $bed_outfile = 'junctions.bed';
@@ -62,6 +63,7 @@ GetOptions(
    'exon_min:i'   =>\$min_exon_size,
    'score_min:i'  => \$min_score,
    'max_exons:i'  => \$max_exons,
+   'min_match:i'  => \$min_match,
    'outfile:s'   => \$bed_outfile,
 );
 
@@ -83,7 +85,9 @@ while (my $ln=<STDIN>){
 	$data[3]=~s/\/[0-2]$//;
 	my @blockSizes = split(",",$data[10]);
 	my @blockStarts = split(",",$data[11]);
+        die unless scalar(@blockSizes) == scalar(@blockStarts);
         for (my $i=0;$i<@blockStarts;$i++){
+                next if $blockSizes[$i] < $min_match;
 		$blockStarts[$i] += $data[1];
 	}
 	if (scalar(@blockSizes) == 1){
