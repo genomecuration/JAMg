@@ -71,7 +71,7 @@ GetOptions(
 pod2usage if $help;
 open (BEDJUNCTIONS,">$bed_outfile");
 
-while (my $ln=<STDIN>){
+OUTER: while (my $ln=<STDIN>){
 	chomp($ln);
 	my @data=split("\t",$ln);
 	# too many blocks - i.e. too many exons are being linked... biologically impossible?!
@@ -87,7 +87,7 @@ while (my $ln=<STDIN>){
 	my @blockStarts = split(",",$data[11]);
         die unless scalar(@blockSizes) == scalar(@blockStarts);
         for (my $i=0;$i<@blockStarts;$i++){
-                next if $blockSizes[$i] < $min_match;
+                next OUTER if $blockSizes[$i] < $min_match;
 		$blockStarts[$i] += $data[1];
 	}
 	if (scalar(@blockSizes) == 1){
