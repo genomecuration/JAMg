@@ -1,6 +1,5 @@
 #!/usr/bin/env perl
 
-
 =pod
 
 =head1 USAGE
@@ -52,65 +51,97 @@ use Pod::Usage;
 use Getopt::Long;
 
 my $min_exon_size = 50;
-my $min_score = 30;
-my $max_exons = 3;
-my $min_match = 20;
-my ( $help);
+my $min_score     = 30;
+my $max_exons     = 3;
+my $min_match     = 20;
+my ($help);
 
 my $bed_outfile = 'junctions.bed';
 GetOptions(
-   'help'         =>\$help,
-   'exon_min:i'   =>\$min_exon_size,
-   'score_min:i'  => \$min_score,
-   'max_exons:i'  => \$max_exons,
-   'min_match:i'  => \$min_match,
-   'outfile:s'   => \$bed_outfile,
+	'help'        => \$help,
+	'exon_min:i'  => \$min_exon_size,
+	'score_min:i' => \$min_score,
+	'max_exons:i' => \$max_exons,
+	'min_match:i' => \$min_match,
+	'outfile:s'   => \$bed_outfile,
 );
 
-
 pod2usage if $help;
-open (BEDJUNCTIONS,">$bed_outfile");
+open( BEDJUNCTIONS, ">$bed_outfile" );
 
-OUTER: while (my $ln=<STDIN>){
+OUTER: while ( my $ln = <STDIN> ) {
 	chomp($ln);
-	my @data=split("\t",$ln);
-	# too many blocks - i.e. too many exons are being linked... biologically impossible?!
+	my @data = split( "\t", $ln );
+
+# too many blocks - i.e. too many exons are being linked... biologically impossible?!
 	next if $data[9] > $max_exons;
+
 	#too low score
 	next if $data[4] < $min_score;
+
 	# numbering from 1
 	$data[1]++;
 	$data[2]++;
+
 	#remove any /1 /2 from read name
-	$data[3]=~s/\/[0-2]$//;
-	my @blockSizes = split(",",$data[10]);
-	my @blockStarts = split(",",$data[11]);
-        die unless scalar(@blockSizes) == scalar(@blockStarts);
-        for (my $i=0;$i<@blockStarts;$i++){
-                next OUTER if $blockSizes[$i] < $min_match;
+	$data[3] =~ s/\/[0-2]$//;
+	my @blockSizes  = split( ",", $data[10] );
+	my @blockStarts = split( ",", $data[11] );
+	die unless scalar(@blockSizes) == scalar(@blockStarts);
+	for ( my $i = 0 ; $i < @blockStarts ; $i++ ) {
+		next OUTER if $blockSizes[$i] < $min_match;
 		$blockStarts[$i] += $data[1];
 	}
-	if (scalar(@blockSizes) == 1){
+	if ( scalar(@blockSizes) == 1 ) {
+
 		# no intron
-		my $type = 'exonpart';
+		my $type  = 'exonpart';
 		my $start = $data[1];
-		my $stop = $data[2];
-		print $data[0]."\trnaseq\t".$type."\t".$start."\t".$stop."\t".$data[4]."\t".$data[5]."\t.\tsrc=JR;pri=5;grp=".$data[3]."\n";
-	}else{
-		print BEDJUNCTIONS $ln."\n";
+		my $stop  = $data[2];
+		print $data[0]
+		  . "\trnaseq\t"
+		  . $type . "\t"
+		  . $start . "\t"
+		  . $stop . "\t"
+		  . $data[4] . "\t"
+		  . $data[5]
+		  . "\t.\tsrc=JR;pri=5;grp="
+		  . $data[3] . "\n";
+	}
+	else {
+		print BEDJUNCTIONS $ln . "\n";
+
 		#exons first
-		for (my $i=0;$i<scalar(@blockStarts);$i++){
-			my $type = 'exonpart';
+		for ( my $i = 0 ; $i < scalar(@blockStarts) ; $i++ ) {
+			my $type  = 'exonpart';
 			my $start = $blockStarts[$i];
-			my $stop = $start+$blockSizes[$i]-1;
-			print $data[0]."\trnaseq\t".$type."\t".$start."\t".$stop."\t".$data[4]."\t".$data[5]."\t.\tsrc=JR;pri=5;grp=".$data[3]."\n";
+			my $stop  = $start + $blockSizes[$i] - 1;
+			print $data[0]
+			  . "\trnaseq\t"
+			  . $type . "\t"
+			  . $start . "\t"
+			  . $stop . "\t"
+			  . $data[4] . "\t"
+			  . $data[5]
+			  . "\t.\tsrc=JR;pri=5;grp="
+			  . $data[3] . "\n";
 		}
+
 		#introns
-		for (my $i=1;$i<scalar(@blockStarts);$i++){
+		for ( my $i = 1 ; $i < scalar(@blockStarts) ; $i++ ) {
 			my $type = 'intron';
-			my $start = ($blockStarts[$i-1] + $blockSizes[$i-1] -1) + 1;
-			my $stop = $blockStarts[$i] -1;
-			print $data[0]."\trnaseq\t".$type."\t".$start."\t".$stop."\t".$data[4]."\t".$data[5]."\t.\tsrc=JR;pri=5;grp=".$data[3]."\n";
+			my $start =
+			  ( $blockStarts[ $i - 1 ] + $blockSizes[ $i - 1 ] - 1 ) + 1;
+			my $stop = $blockStarts[$i] - 1;
+			print $data[0]
+			  . "\trnaseq\t"
+			  . $type . "\t"
+			  . $start . "\t"
+			  . $stop . "\t"
+			  . $data[4] . "\t"
+			  . $data[5]
+			  . "\t.\tsrc=JR;pri=5;grp="
+			  . $data[3] . "\n";
 		}
 	}
 }
