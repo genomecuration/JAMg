@@ -12,11 +12,12 @@
 
  Options:
 
- -help             This!
- exon_min   :i     Minimum exon size (def. 50bp)
- score_min  :i     Minimum score (def. 30)
- max_exons  :i     Maximum number of exons that a single can span (def. 3)
- min_match  :i     Number of min bases for each side of gap (def 20)
+ -help              This!
+ -exon_min   :i     Minimum exon size (def. 50bp)
+ -score_min  :i     Minimum score (def. 30)
+ -max_exons  :i     Maximum number of exons that a single can span (def. 3)
+ -min_match  :i     Number of min bases for each side of gap (def 20)
+ -strandness :i     If RNAseq is directional, provide direction: 0 for unknown (default); or 1 for + strand; -1 for - strand
 
 =head1 FORMATS
 
@@ -56,6 +57,7 @@ my $max_exons     = 3;
 my $min_match     = 20;
 my ($help);
 my $priority    = 5;
+my $strandness = int(0);
 my $bed_outfile = 'junctions.bed';
 GetOptions(
             'help'        => \$help,
@@ -64,10 +66,23 @@ GetOptions(
             'max_exons:i' => \$max_exons,
             'min_match:i' => \$min_match,
             'outfile:s'   => \$bed_outfile,
-            'priority:i'  => \$priority
+            'priority:i'  => \$priority,
+	    'strandness:i' => \$strandness  
 );
 
 pod2usage if $help;
+
+my $strand;
+if (!$strandness || $strandness == 0 ){
+	$strand = '.';
+}elsif ($strandness > 0){
+	$strand = '+';
+}elsif ($strandness < 1){
+	$strand = '-';
+}else{
+die;
+}
+
 open( BEDJUNCTIONS, ">$bed_outfile" );
 
 OUTER: while ( my $ln = <STDIN> ) {
@@ -99,15 +114,13 @@ OUTER: while ( my $ln = <STDIN> ) {
   my $type  = 'exonpart';
   my $start = $data[1];
   my $stop  = $data[2];
-
-  #strand is unknown
   print $data[0]
     . "\tRNASeq\t"
     . $type . "\t"
     . $start . "\t"
     . $stop . "\t"
     . $data[4] . "\t"
-    . "\t.\t.\tsrc=JR;pri=$priority;grp="
+    . "\t$strand\t.\tsrc=JR;pri=$priority;grp="
     . $data[3] . "\n";
  }
  else {
@@ -118,15 +131,13 @@ OUTER: while ( my $ln = <STDIN> ) {
    my $type  = 'exonpart';
    my $start = $blockStarts[$i];
    my $stop  = $start + $blockSizes[$i] - 1;
-
-   # strand is unknown
    print $data[0]
      . "\tRNASeq\t"
      . $type . "\t"
      . $start . "\t"
      . $stop . "\t"
      . $data[4] . "\t"
-     . "\t.\t.\tsrc=JR;pri=$priority;grp="
+     . "\t$strand\t.\tsrc=JR;pri=$priority;grp="
      . $data[3] . "\n";
   }
 
@@ -135,8 +146,6 @@ OUTER: while ( my $ln = <STDIN> ) {
    my $type  = 'intron';
    my $start = ( $blockStarts[ $i - 1 ] + $blockSizes[ $i - 1 ] - 1 ) + 1;
    my $stop  = $blockStarts[$i] - 1;
-
-   # strand is unknown
    print $data[0]
      . "\tRNASeq\t"
      . $type . "\t"
@@ -144,7 +153,7 @@ OUTER: while ( my $ln = <STDIN> ) {
      . $stop . "\t"
      . $data[4] . "\t"
 
-     . "\t.\t.\tsrc=JR;pri=$priority;grp=" . $data[3] . "\n";
+     . "\t$strand\t.\tsrc=JR;pri=$priority;grp=" . $data[3] . "\n";
   }
  }
 }

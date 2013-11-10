@@ -10,9 +10,10 @@
 
 Create hint files for Augustus using RNASeq/EST. One is junction reads (excellent for introns), the other is RNASeq/EST coverage
 
- -dir|aug        The directory where Augustus is (if augustus is not already in your PATH).
- -bam|in         The input BAM file (co-ordinate sorted).
- -genome|fasta   The genome assembly FASTA file.
+ -dir|aug      s  The directory where Augustus is (if augustus is not already in your PATH).
+ -bam|in       s  The input BAM file (co-ordinate sorted).
+ -genome|fasta s  The genome assembly FASTA file.
+ -strandness   i  If RNAseq is directional, provide direction: 0 for unknown (default); or 1 for + strand; -1 for - strand
 
 =cut
 
@@ -32,12 +33,14 @@ my ($augustus_exec);
 #Options
 my ( $augustus_dir, $bamfile, $genome, $help );
 my $min_score = 10;
+my $strandness = int(0);
 GetOptions(
 	'help'           => \$help,
 	'dir|aug:s'      => \$augustus_dir,
 	'bam|in:s'       => \$bamfile,
 	'genome|fasta:s' => \$genome,
-	'min_score:i'   => \$min_score
+	'min_score:i'   => \$min_score,
+        'strandness:i' => \$strandness  
 );
 
 pod2usage if $help;
@@ -59,7 +62,20 @@ pod2usage "Cannot find the BAM or genome FASTA file\n"
   unless $bamfile
 	  && -s $bamfile
 	  && $genome
-	  && ( -s $genome || -s $genome . '.fai' );
+	  && ( -s $genome || -s $genome . '.fai');
+
+my $strand;
+if (!$strandness || $strandness == 0 ){
+	$strand = '.';
+}elsif ($strandness > 0){
+	$strand = '+';
+}elsif ($strandness < 1){
+	$strand = '-';
+}else{
+die;
+}
+
+
 
 my $genome_idx_cmd = "$samtools_exec $genome";
 &process_cmd($genome_idx_cmd) unless -s $genome . '.fai';
@@ -127,7 +143,7 @@ sub bg2hints() {
 		  . $data[1] . "\t"
 		  . $data[2] . "\t"
 		  . $data[3]
-		  . "\t.\t.\tsrc=R;pri=5\n";
+		  . "\t$strand\t.\tsrc=R;pri=5\n";
 
 	}
 	close OUT;
