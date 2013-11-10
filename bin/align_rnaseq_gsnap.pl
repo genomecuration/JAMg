@@ -7,122 +7,188 @@ align_rnaseq_gsnap.pl
 
 =head1 USAGE
 
-Run GSNAP on lots of RNASeq data. See source code
+Run GSNAP on lots of RNASeq data.
+
+Will automatically run against all files that match "*_[12]_*fastq" and any files given in the command line.
+Pairs are matched using the _[12]_ Files must only have one _1_ or _2_ pattern in their filename.
+
+Mandatory:
+
+ -fasta :s           FASTA of genome
+ -dbname :s          Name of database for GMAP. Will create if it doesn't exist.
+ 
+ 
+Optional:
+
+ -intron_db :s       GMAP intron splice database
+ -gmap_dir :s        Where the GMAP databases are meant to live (def. /databases/gmap)
+ -intron_size :i     Maximum intron length (def. 70,000)
+ -cpus :i            Number of CPUs/threads (def. 10)
+ -help
+ 
 
 =cut
 
 use strict;
 use warnings;
+use Data::Dumper;
 use Pod::Usage;
+use Getopt::Long;
 use Time::localtime;
 use File::Basename;
+
+my ( $gmap_build_exec, $gsnap_exec,$samtools_exec ) = &check_program( "gmap_build", "gsnap","samtools" );
+&samtools_version_check($samtools_exec);
 
 my $debug = 1;
 my $cwd   = `pwd`;
 chomp($cwd);
-my $genome           = shift;
-my $genome_dbname    = shift;
-my $intron_splice_db = shift;
-
-my ( $gmap_build_exec, $gsnap_exec ) = &check_program( "gmap_build", "gsnap" );
-
-$genome =
-'/archive/pap056/work/assembly_qc/harm_csiro4b/assembly_csiro4b.scaffolds.public.fsa'
-  unless $genome;
-$genome_dbname = 'harm_csiro4b_unmasked' unless $genome_dbname;
-
-my $gmap_dir      = '/databases/gmap/';
+my $gmap_dir = '/databases/gmap/';
+my $genome;
+# '/archive/pap056/work/assembly_qc/harm_csiro4b/assembly_csiro4b.scaffolds.public.fsa';
+my $genome_dbname;
+# 'harm_csiro4b_unmasked';
 my $intron_length = 70000;
+my $cpus = 10;
+my $memory = '30G';
+my ($intron_splice_db,$help);
 
-my @files = glob("*_1_sequence*fastq");
-die unless @files;
+&GetOptions(
+             'fasta:s'       => \$genome,
+             'dbname:s'      => \$genome_dbname,
+             'intron_db:s'   => \$intron_splice_db,
+             'gmap_dir:s'    => \$gmap_dir,
+             'intron_size:i'  => \$intron_length,
+             'cpus|threads:i' => \$cpus,
+             'memory:s'      => \$memory,
+             'help'          => \$help
+);
+
+pod2usage if $help;
+pod2usage "No genome FASTA\n" unless $genome && -s $genome;
+pod2usage "No GMAP genome database name\n" unless $genome_dbname;
+pod2usage "GMAP database does not exist: $gmap_dir\n" unless -d $gmap_dir;
+
+my @files = glob("*_1_*fastq");
+push( @files, @ARGV );
+my @verified_files;
+for ( my $i = 0 ; $i < @files ; $i++ ) {
+ if ( -s $files[$i] ) {
+  push( @verified_files, $files[$i] );
+ }
+ else {
+  warn "Skipping: did not find file " . $files[$i] . "\n";
+ }
+}
+@files = @verified_files;
+die "No files found!\n" unless @files;
 
 my $build_cmd =
 "$gmap_build_exec -D $gmap_dir -d $genome_dbname -T /tmp/pap056 -k 13 -b 10 -q 1 -e 0 --no-sarray $genome >/dev/null";
 my $align_cmd =
-"$gsnap_exec --use-sarray=0 -B 5 -D $gmap_dir -d $genome_dbname --nthreads=10  --pairmax-rna=$intron_length  --localsplicedist=$intron_length -N 1 -Q --npaths=50 --format=sam --sam-use-0M --no-sam-headers --fails-as-input ";
+"$gsnap_exec --use-sarray=0 -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus  --pairmax-rna=$intron_length  --localsplicedist=$intron_length -N 1 -Q --npaths=50 --format=sam --sam-use-0M --no-sam-headers --fails-as-input ";
 $align_cmd .= " -s $intron_splice_db " if $intron_splice_db;
 
 foreach my $file ( sort @files ) {
-	my $pair = $file;
-	$pair =~ s/_1_sequence/_2_sequence/;
-	unless ( $pair ne $file && -s $pair ) {
-		warn "Didn't find pair of $file. Skipping\n";
-		next;
-	}
-	my $base = basename($file);
-	$base =~ s/_1_sequence.+//;
-	my $group_id = $base;
-	$base .= "_vs_$genome_dbname";
-	if ( -s "gsnap.$base.log" ) {
-		open( LOG, "gsnap.$base.log" );
-		my @log = <LOG>;
-		close LOG;
-		next if $log[-1] && $log[-1] =~ /^Done/;
-		my @del = glob("gsnap.$base.*");
-		foreach (@del) { unlink($_); }
-	}
-	open( LOG, ">gsnap.$base.log" );
-	&process_cmd($build_cmd) unless -d $gmap_dir . $genome_dbname;
-	my $file_align_cmd = $align_cmd;
-	$file_align_cmd .=
-	  " --split-output=gsnap.$base --read-group-id=$group_id $file $pair ";
-	&process_cmd($file_align_cmd);
-	close LOG;
-	unless ( -s "gsnap.$base.concordant_uniq.bam" ) {
-		&process_cmd(
-"samtools view -u -T $genome gsnap.$base.concordant_uniq|samtools sort -m 30000000000 - gsnap.$base.concordant_uniq"
-		);
-		&process_cmd("samtools index gsnap.$base.concordant_uniq.bam");
-		&process_cmd(
-"samtools flagstat gsnap.$base.concordant_uniq.bam >> gsnap.$base.log"
-		);
-	}
+ my $pair = $file;
+ $pair =~ s/_1_/_2_/;
+ next if $pair eq $file;
+ unless ( -s $pair ) {
+  warn "Didn't find pair of $file. Skipping\n";
+  next;
+ }
+ my $base = basename($file);
+ $base =~ s/_1_.+//;
+ my $group_id = $base;
+ $base .= "_vs_$genome_dbname";
+ if ( -s "gsnap.$base.log" ) {
+  open( LOG, "gsnap.$base.log" );
+ my @log = <LOG>;
+  close LOG;
+  next if $log[-1] && $log[-1] =~ /^GSNAP Completed/;
+  my @del = glob("gsnap.$base.*");
+  foreach (@del) { unlink($_); }
+ }
+ open( LOG, ">gsnap.$base.log" );
+ &process_cmd($build_cmd) unless -d $gmap_dir .'/'. $genome_dbname;
+ my $file_align_cmd = $align_cmd;
+ $file_align_cmd .= " --split-output=gsnap.$base --read-group-id=$group_id $file $pair ";
+ &process_cmd($file_align_cmd) unless ( -s "gsnap.$base.concordant_uniq" || -s "gsnap.$base.concordant_uniq.bam" );
+ unless ( -s "gsnap.$base.concordant_uniq.bam" ) {
+  &process_cmd("$samtools_exec view -u -T $genome gsnap.$base.concordant_uniq|$samtools_exec sort -@ $cpus -l 9 -m $memory - gsnap.$base.concordant_uniq");
+  &process_cmd("$samtools_exec index gsnap.$base.concordant_uniq.bam");
+  print LOG "\ngsnap.$base.concordant_uniq.bam:\n";
+  &process_cmd("$samtools_exec flagstat gsnap.$base.concordant_uniq.bam >> gsnap.$base.log");
+ }
+ unless ( -s "gsnap.$base.concordant_mult.bam" ) {
+  &process_cmd("$samtools_exec view -u -T $genome gsnap.$base.concordant_mult|$samtools_exec sort -@ $cpus -l 9 -m $memory - gsnap.$base.concordant_mult");
+  &process_cmd("$samtools_exec index gsnap.$base.concordant_mult.bam");
+  print LOG "\ngsnap.$base.concordant_mult.bam:\n";
+  &process_cmd("$samtools_exec flagstat gsnap.$base.concordant_mult.bam >> gsnap.$base.log");
+ }
+ unless ( -s "gsnap.$base.concordant_uniq_mult.bam" ) {
+  &process_cmd("$samtools_exec merge -@ $cpus  -l 9 gsnap.$base.concordant_uniq_mult.bam gsnap.$base.concordant_uniq.bam gsnap.$base.concordant_mult.bam");
+  &process_cmd("$samtools_exec index gsnap.$base.concordant_uniq_mult.bam");
+  print LOG "\ngsnap.$base.concordant_uniq_mult.bam:\n";
+  &process_cmd("$samtools_exec flagstat gsnap.$base.concordant_uniq_mult.bam >> gsnap.$base.log");
+ }
+ 
+ print LOG "\nGSNAP Completed!\n";
+ close LOG;
 }
 
 ########################################
 sub process_cmd {
-	my ( $cmd, $dir ) = @_;
-	print &mytime . "CMD: $cmd\n"     if $debug;
-	print LOG &mytime . "CMD: $cmd\n" if $debug;
-	chdir($dir)                       if $dir;
-	my $ret = system($cmd);
-	if ( $ret && $ret != 256 ) {
-		chdir($cwd) if $dir;
-		die "Error, cmd died with ret $ret\n";
-	}
-	chdir($cwd) if $dir;
-	print LOG "Done\n";
-	return;
+ my ( $cmd, $dir ) = @_;
+ print &mytime . "CMD: $cmd\n"     if $debug;
+ print LOG &mytime . "CMD: $cmd\n" if $debug;
+ chdir($dir)                       if $dir;
+ my $ret = system($cmd);
+ if ( $ret && $ret != 256 ) {
+  chdir($cwd) if $dir;
+  die "Error, cmd died with ret $ret\n";
+ }
+ chdir($cwd) if $dir;
+ print LOG "Done\n";
+ return;
 }
 
 sub mytime() {
-	my @mabbr =
-	  qw(January February March April May June July August September October November December);
-	my @wabbr = qw(Sunday Monday Tuesday Wednesday Thursday Friday Saturday);
-	my $sec = localtime->sec() < 10 ? '0' . localtime->sec() : localtime->sec();
-	my $min = localtime->min() < 10 ? '0' . localtime->min() : localtime->min();
-	my $hour =
-	  localtime->hour() < 10 ? '0' . localtime->hour() : localtime->hour();
-	my $wday = $wabbr[ localtime->wday ];
-	my $mday = localtime->mday;
-	my $mon  = $mabbr[ localtime->mon ];
-	my $year = localtime->year() + 1900;
-	return "$wday, $mon $mday, $year: $hour:$min:$sec\t";
+ my @mabbr =
+   qw(January February March April May June July August September October November December);
+ my @wabbr = qw(Sunday Monday Tuesday Wednesday Thursday Friday Saturday);
+ my $sec   = localtime->sec() < 10 ? '0' . localtime->sec() : localtime->sec();
+ my $min   = localtime->min() < 10 ? '0' . localtime->min() : localtime->min();
+ my $hour =
+   localtime->hour() < 10 ? '0' . localtime->hour() : localtime->hour();
+ my $wday = $wabbr[ localtime->wday ];
+ my $mday = localtime->mday;
+ my $mon  = $mabbr[ localtime->mon ];
+ my $year = localtime->year() + 1900;
+ return "$wday, $mon $mday, $year: $hour:$min:$sec\t";
 }
 
 ###
 sub check_program() {
-	my @paths;
-	foreach my $prog (@_) {
-		my $path = `which $prog`;
-		pod2usage
-		  "Error, path to a required program ($prog) cannot be found\n\n"
-		  unless $path =~ /^\//;
-		chomp($path);
-		$path = readlink($path) if -l $path;
-		push( @paths, $path );
-	}
-	return @paths;
+ my @paths;
+ foreach my $prog (@_) {
+  my $path = `which $prog`;
+  pod2usage "Error, path to a required program ($prog) cannot be found\n\n"
+    unless $path =~ /^\//;
+  chomp($path);
+  $path = readlink($path) if -l $path;
+  push( @paths, $path );
+ }
+ return @paths;
 }
 
+sub samtools_version_check(){
+ $samtools_exec = shift;
+ my @version_lines = `$samtools_exec 2>&1`;
+ foreach my $ln (@version_lines){
+  if ($ln=~/^Version:\s+\d+\.(\d+).(\d+)/i){
+   die "Samtools version 1.19+ is needed\n" unless $1 >= 1 && $2 >= 19;
+   #print "Good: Samtools version 1.19+ found\n";
+  }
+ }
+}

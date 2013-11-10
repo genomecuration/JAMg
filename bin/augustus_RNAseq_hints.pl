@@ -31,12 +31,13 @@ my ($augustus_exec);
 
 #Options
 my ( $augustus_dir, $bamfile, $genome, $help );
-
+my $min_score = 10;
 GetOptions(
 	'help'           => \$help,
 	'dir|aug:s'      => \$augustus_dir,
 	'bam|in:s'       => \$bamfile,
 	'genome|fasta:s' => \$genome,
+	'min_score:i'   => \$min_score
 );
 
 pod2usage if $help;
@@ -65,7 +66,7 @@ my $genome_idx_cmd = "$samtools_exec $genome";
 die "Cannot index genome $genome\n" unless -s $genome . '.fai';
 
 my $junction_cmd =
-"$samtools_exec rmdup -S $bamfile - | $bedtools_exec bamtobed -bed12 | bed12_to_augustus_junction_hints.pl -out $bamfile.junctions.bed | $augustus_dir/scripts/join_mult_hints.pl > $bamfile.junctions.hints";
+"$samtools_exec rmdup -S $bamfile - | $bedtools_exec bamtobed -bed12 | bed12_to_augustus_junction_hints.pl -prio 7 -out $bamfile.junctions.bed | $augustus_dir/scripts/join_mult_hints.pl > $bamfile.junctions.hints";
 &process_cmd($junction_cmd) unless -e "$bamfile.junctions.hints.completed";
 &touch("$bamfile.junctions.hints.completed");
 
@@ -79,6 +80,8 @@ my $coverage_cmd =
 if (   -e "$bamfile.junctions.hints.completed"
 	&& -e "$bamfile.coverage.hints.completed" )
 {
+ &process_cmd("cat $bamfile.junctions.hints $bamfile.coverage.hints| sort -S 1G -n -k 4,4 | sort -S 1G -s -n -k 5,5 | sort -S 1G -s -n -k 3,3 | sort -S 1G -s -k 1,1 > $bamfile.rnaseq.hints") unless -s "$bamfile.rnaseq.completed";
+ &touch("$bamfile.rnaseq.completed");
 	print "Done!\n";
 }
 else {
@@ -118,7 +121,7 @@ sub bg2hints() {
 	while ( my $ln = <IN> ) {
 		chomp($ln);
 		my @data = split( "\t", $ln );
-		next unless $data[3];
+		next unless $data[3] || $data[3] < $min_score;
 		print OUT $data[0]
 		  . "\tRNASeq\texonpart\t"
 		  . $data[1] . "\t"
