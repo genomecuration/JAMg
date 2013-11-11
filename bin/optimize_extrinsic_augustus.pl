@@ -21,6 +21,7 @@ Optional parameters:
  --aug_exec_dir           Path to augustus and etraining executable. If not specified it must be in $PATH environment variable
  --cpus                   The number of CPUs to use (default: 1)
  --training_set           an optional genbank file that is used in addition to train.gb but only for etrain not for intermediate evaluation of accuracy. These genes may e.g. be incomplete.
+ --utr                    Switch on UTR. Recommended to avoid noncoding exons being wrongly predicted as coding.
  --pstep                  For integer and floating parameters start with p tests equidistributed in the allowed range of values (default: 5)
  --min_coding             Minimum coding length
  --genemodel              Augustus genemodel parameter
@@ -77,7 +78,7 @@ my ($common_parameters);
 # globals
 my ( $output_directory, $species_config_dir ) = &check_options();
 my ( $augustus_exec, $etrain_exec ) = &check_program( 'augustus', 'etraining' );
-my %storedsnsp; 
+my %storedsnsp;
 my $cwd = `pwd`;
 chomp($cwd);
 my $be_silent =
@@ -111,6 +112,30 @@ my $thread_helper     = new Thread_helper($cpus);
 my $thread            = threads->create('evalsnsp');
 $thread_helper->add_thread($thread);
 
+# count how many searches we are going to do.
+my $todo = int(0);
+foreach my $src (@sources_that_need_to_be_checked) {
+ next if $src eq 'M';
+ foreach my $feat (@feature_headers) {
+  next if $feat eq 'feature';
+  my $bonus_range = $metaextrinsic_hash_ref->{'bonus'}->{$feat}->{'value'};
+  my $malus_range = $metaextrinsic_hash_ref->{'malus'}->{$feat}->{'value'};
+  foreach my $bonus ( @{$bonus_range} ) {
+   foreach my $malus ( @{$malus_range} ) {
+    my $parameter_range = $metaextrinsic_hash_ref->{$src}->{$feat}->{'value'};
+    if ( scalar(@$parameter_range) > 1 ) {
+     foreach my $value (@$parameter_range) {
+      $todo++;
+     }
+    }
+   }
+  }
+ }
+}
+
+print "Will search for $todo parameters with $cpus CPUs\n";
+sleep(3);
+
 foreach my $src (@sources_that_need_to_be_checked) {
  next if $src eq 'M';
 
@@ -121,13 +146,16 @@ foreach my $src (@sources_that_need_to_be_checked) {
   my $bonus_range = $metaextrinsic_hash_ref->{'bonus'}->{$feat}->{'value'};
   my $malus_range = $metaextrinsic_hash_ref->{'malus'}->{$feat}->{'value'};
 
+  # for every bonus range
   foreach my $bonus ( @{$bonus_range} ) {
+
+   # for every malus range
    foreach my $malus ( @{$malus_range} ) {
     my $parameter_range = $metaextrinsic_hash_ref->{$src}->{$feat}->{'value'};
     if ( scalar(@$parameter_range) > 1 ) {
      foreach my $value (@$parameter_range) {
 
-      #print "Checking $src: $feat with $value\n";
+      # checks every value against the basic_cfg
       my $cfg = $basic_cfg;
       $cfg->{$src}->{$feat}->{'value'}    = $value;
       $cfg->{'bonus'}->{$feat}->{'value'} = $bonus;
@@ -139,16 +167,13 @@ foreach my $src (@sources_that_need_to_be_checked) {
    }
   }
  }
-
- $thread_helper->wait_for_all_threads_to_complete();
+}
+$thread_helper->wait_for_all_threads_to_complete();
  my @failed_threads = $thread_helper->get_failed_threads();
  if (@failed_threads) {
   die "Error, " . scalar(@failed_threads) . " threads failed.\n";
   exit(1);
  }
-
-}
-
 
 
 sub evalsnsp {
@@ -168,7 +193,7 @@ sub evalsnsp {
    return @{ $storedsnsp{$extrinsic_file} };
   }
   &process_cmd(
-"$augustus_exec --genemodel=complete --species=$species --AUGUSTUS_CONFIG_PATH=$config_path --extrinsicCfgFile=$extrinsic_file --hintsfile=$hint_file $common_parameters $optimize_gb > $pred_out 2>/dev/null"
+"$augustus_exec --genemodel=complete --species=$species --alternatives-from-evidence=true --AUGUSTUS_CONFIG_PATH=$config_path --extrinsicCfgFile=$extrinsic_file --hintsfile=$hint_file $common_parameters $optimize_gb > $pred_out 2>/dev/null"
   );
  }
  else {
@@ -217,19 +242,19 @@ sub evalsnsp {
  open( TLOG, '>' . $pred_out . '.log' );
  print TLOG "#Accuracy: " . join( ", ", @snsp ) . "; Target: $target\n";
  close TLOG;
- system ("cat $extrinsic_file >> $pred_out.log") if ($extrinsic_file);
- 
+ system("cat $extrinsic_file >> $pred_out.log") if ($extrinsic_file);
+
  return ($target);
 
 }
 
-######################################################################################
+sub gettarget {
+ ######################################################################################
 # gettarget: get an optimization target value from
 # base sn, base sp, exon sn, exon sp, gene sn, gene sp, tss medianDiff, tts medianDiff
 # feel free to change the weights
-######################################################################################
+ ######################################################################################
 
-sub gettarget {
  my ( $bsn, $bsp, $esn, $esp, $gsn, $gsp, $smd, $tmd ) = @_;
  return ( 3 * $bsn +
           3 * $bsp +
@@ -283,7 +308,7 @@ sub write_extrinsic_cfg() {
  my $extrinsic_ref          = shift;
  my $cfg_extra              = shift;
  my $species_extrinsic_file = $output_directory . "/extrinsic.cfg";
- if ($extrinsic_ref){
+ if ($extrinsic_ref) {
   lock($extrinsic_iteration_counter);
   $species_extrinsic_file .= ".$extrinsic_iteration_counter";
   $extrinsic_iteration_counter++;
@@ -310,8 +335,11 @@ sub write_extrinsic_cfg() {
     ? $extrinsic_ref->{'malus'}->{$feature}->{'value'}
     : 1;
   $prn .= $feature . "\t$bonus $malus ";
+  $prn .= "\t" if length($feature) <= 7;
+  $prn .= "\tM 1 " . $extrinsic_ref->{'M'}->{$feature}->{'value'};
+
   foreach my $source ( keys %{$extrinsic_ref} ) {
-   next if $source eq 'bonus' || $source eq 'malus';
+   next if $source eq 'bonus' || $source eq 'malus' || $source eq 'M';
    my $multiplier = $extrinsic_ref->{$source}->{$feature}->{'value'}
      || die "No bonus found for $source $feature\n";
    $prn .= "\t$source 1 $multiplier";
@@ -340,6 +368,11 @@ sub parse_extrinsic_meta() {
    . scalar(@feature_headers) . ")\n"
    unless scalar(@feature_headers) == 18;
  chomp( $feature_headers[-1] );
+ for ( my $f = 0 ; $f < (@feature_headers) ; $f++ ) {
+  $feature_headers[$f] = 'exonpart'    if $feature_headers[$f] eq 'ep';
+  $feature_headers[$f] = 'nonexonpart' if $feature_headers[$f] eq 'nep';
+  $feature_headers[$f] = 'intronpart'  if $feature_headers[$f] eq 'ip';
+ }
 
  while ( my $ln = <IN> ) {
   next if $ln =~ /^\s*$/ || $ln =~ /^#/;
@@ -361,15 +394,13 @@ sub parse_extrinsic_meta() {
   for ( my $i = 1 ; $i < 18 ; $i++ ) {
    my $score = $data[$i];
    my @parameters;
-
+   my $basic = 1;
    if ( $score =~ /,/ ) {
     @parameters = split( ',', $score );
-    $score = $parameters[0];    # first value for basic cfg
     push( @sources_that_need_to_be_checked, $source )
       unless $source eq 'bonus' || $source eq 'malus';
    }
    elsif ( $score =~ /-/ ) {
-
     my ( $min, $max ) = split( '-', $score );
     if ( $max < $min ) {
      my $t = $max;
@@ -378,19 +409,18 @@ sub parse_extrinsic_meta() {
     }
     my $step = ( $max - $min ) / $pstep;
     for ( my $next_level = $min ; $next_level <= $max ; $next_level += $step ) {
-     push( @parameters, $next_level ) ;
+     push( @parameters, $next_level );
     }
     $parameters[-1] = $max;
-
-    $score = $min;    # first value for basic cfg
     push( @sources_that_need_to_be_checked, $source )
       unless $source eq 'bonus' || $source eq 'malus';
    }
    else {
+    $basic      = $score;
     @parameters = ($score);
    }
 
-   $basic_cfg{$source}->{ $feature_headers[$i] }->{'value'}      = $score;
+   $basic_cfg{$source}->{ $feature_headers[$i] }->{'value'}      = $basic;
    $extrinsic_hash{$source}->{ $feature_headers[$i] }->{'value'} = \@parameters;
 
    #$basic_cfg{$source}->{ $header[$i] }      = \@scores;

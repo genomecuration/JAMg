@@ -26,8 +26,7 @@ use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
 $ENV{PATH} .= ":$RealBin";
 
-my ( $samtools_exec, $bedtools_exec ) =
-  &check_program( 'samtools', 'bedtools' );
+my ( $samtools_exec, $bedtools_exec ) = &check_program( 'samtools', 'bedtools' );
 my ($augustus_exec);
 
 #Options
@@ -45,8 +44,9 @@ GetOptions(
 
 pod2usage if $help;
 if ($augustus_dir) {
-	$augustus_dir = readlink($augustus_dir) if -l $augustus_dir;
+	$ENV{PATH} .= ":$augustus_dir/bin"; 
 	$augustus_exec = $augustus_dir . '/bin/augustus';
+	die "Cannot find Augustus at $augustus_exec\n" unless -s $augustus_exec && -x $augustus_exec;
 }
 else {
 	$augustus_exec = &check_program('augustus');
@@ -137,7 +137,7 @@ sub bg2hints() {
 	while ( my $ln = <IN> ) {
 		chomp($ln);
 		my @data = split( "\t", $ln );
-		next unless $data[3] || $data[3] < $min_score;
+		next unless $data[3] && $data[3] >= $min_score;
 		print OUT $data[0]
 		  . "\tRNASeq\texonpart\t"
 		  . $data[1] . "\t"
