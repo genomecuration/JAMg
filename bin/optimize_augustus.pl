@@ -49,6 +49,7 @@ Others (expert):
 
 use strict;
 use warnings;
+use Data::Dumper;
 use Pod::Usage;
 use Getopt::Long;
 use Time::localtime;
@@ -63,7 +64,7 @@ my (
      $species,      $metapars,           $rounds,      $onlytrain,
      $kfold,        $pstep,              $config_path, $cpus,
      $trans_matrix, $matrix_constraints, $utr,         $exec_dir,
-     $onlyutr,     $notrain,            $trans_table, $genemodel,
+     $onlyutr,      $notrain,            $trans_table, $genemodel,
      $min_coding,   $output_directory,   $verbose,     $optimize_gb,
      $onlytrain_gb
 );
@@ -76,7 +77,7 @@ $exec_dir    = $ENV{'AUGUSTUS_PATH'} . '/bin' if $ENV{'AUGUSTUS_PATH'};
 $config_path = $ENV{'AUGUSTUS_PATH'} . '/config' if $ENV{'AUGUSTUS_PATH'};
 $config_path = $ENV{'AUGUSTUS_CONFIG_PATH'} if $ENV{'AUGUSTUS_CONFIG_PATH'};
 
-my ( $common_parameters, $modelrestrict ) = ('','');
+my ( $common_parameters, $modelrestrict ) = ( '', '' );
 
 &GetOptions(
              'species:s'              => \$species,
@@ -88,11 +89,11 @@ my ( $common_parameters, $modelrestrict ) = ('','');
              'pstep:i'                => \$pstep,
              'AUGUSTUS_CONFIG_PATH:s' => \$config_path,
              'cpus|threads:i'         => \$cpus,
-             'trans_matrix:s'     => \$trans_matrix,
+             'trans_matrix:s'         => \$trans_matrix,
              'matrix_constraints:s'   => \$matrix_constraints,
              'UTR'                    => \$utr,
              'aug_exec_dir:s'         => \$exec_dir,
-             'onlyutr'               => \$onlyutr,
+             'onlyutr'                => \$onlyutr,
              'notrain'                => \$notrain,
              'translation_table:i'    => \$trans_table,
              'genemodel:s'            => \$genemodel,
@@ -108,8 +109,6 @@ my $be_silent =
 " --/augustus/verbosity=0 --/ExonModel/verbosity=0 --/IGenicModel/verbosity=0 --/IntronModel/verbosity=0 --/UtrModel/verbosity=0 --/genbank/verbosity=0 ";
 &check_options();
 my ( $augustus_exec, $etrain_exec ) = &check_program( 'augustus', 'etraining' );
-
-
 
 ##############################################################
 # Read in the meta parameters
@@ -128,173 +127,25 @@ my $metaparsfilename;
 my $n = 0;    # number of states
 my @trans;    # transition matrix, array of array references
 
-if ( !$trans_matrix ) {    # optimize meta parameters
- if ($metapars) {
-  $metaparsfilename = $metapars;
- }
- else {
-  $metaparsfilename = $config_path . "species/generic/generic_metapars.cfg";
- }
- open( META, $metaparsfilename ) or die("Could not open $metaparsfilename\n");
- print 
-"Reading in the meta parameters used for optimization from $metaparsfilename...\n";
- my $orig_sep = $/;
- $/ = "\n";
- while (<META>) {
-  my ( $parname, $range );
-  if (/^\s*\#/) {
-   next;
-  }
-  if (/^\s*(\S+)\s+(.*)\s*/) {
-   $parname = $1;
-   $range   = $2;
-   if ( idx( \@metaparnames, $1 ) != -1 ) {
-    die("Meta parameter $1 occurs twice in $metaparsfilename.");
-   }
-   else {
-    if ( $range =~ /"([^"]+)"-"([^"]+)"/ ) {
-     push @metaparnames, $parname;
-     push @metaparranges, [ 'intrange', $1, $2 ];
-    }
-    elsif ( $range =~ /"([^"]+)"_"([^"]+)"/ ) {
-     push @metaparnames, $parname;
-     push @metaparranges, [ 'floatrange', $1, $2 ];
-    }
-    else {
-     my @tokens = split /\s+/, $2;
-     my @list = ();
-     foreach (@tokens) {
-      s/^"(.*)"$/$1/;
-      push @list, $_;
-     }
-     push @metaparnames, $parname;
-     push @metaparranges, [ 'list', @list ];
-    }
-   }
-  }
- }
- $/ = $orig_sep;
+if ($trans_matrix) {
+ &read_trans_matrix($trans_matrix);
 }
-else {    # read in transition matrix for optimization
- open( TRANS, $trans_matrix )
-   or die("Could not open transition matrix file $trans_matrix");
- print "Reading in the transition matrix...\n";
- my $orig_sep = $/;
- $/ = "\n";
- while (<TRANS>) {
-  my ( $from, $to, $prob );
-  if (/^\s*\#/) {
-   next;
-  }
-  if ( $n == 0 && /(\d+)/ ) {
-   $n = $1;
-   print "Transition matrix has dimension ${n}x${n}.\n";
-  }
-  if (/^\s*(\d+)\s+(\d+)\s*(\S+)/) {
-   $from = $1;
-   $to   = $2;
-   $prob = $3;
-
-   #print "trans[$from][$to]=$prob\n";
-   if ( $from < 0 || $from >= $n || $to < 0 || $to >= $n ) {
-    print
-"State of transition matrix out of bounds ($n) for transition $from->$to:$prob\n";
-   }
-   if ( $prob < 0 ) {
-    print "Error: negative probability in transition $from->$to:$prob\n";
-   }
-   if ( !defined( $trans[$from] ) ) {
-    $trans[$from] = [];
-   }
-   $trans[$from][$to] = $prob;
-  }
- }
- $/ = $orig_sep;
+else {
+ $metaparsfilename =
+     $metapars
+   ? $metapars
+   : $config_path . "species/generic/generic_metapars.cfg";
+ &read_meta_param($metaparsfilename);
 }
-
-#printmetaranges(\@metaparnames, \@metaparranges);
 
 # open species_parameters.cfg
 my ( @spcfilelines, @transfilelines );
 my $speciesdir           = $config_path . "species/$species/";
 my $species_cfg_filename = $speciesdir . $species . "_parameters.cfg";
-if ( !$trans_matrix ) {
+&prepare_parameters() if !$trans_matrix;
+&prepare_matrix()     if $trans_matrix;
 
- # make a copy of the original parameter file
- my $y = 1;
- while ( $y < 20
-         && sysopen( ORIG, "$species_cfg_filename.orig$y", O_WRONLY | O_EXCL ) )
- {
-  $y++;
- }
- if ( $y < 20 ) {
-  close(ORIG);
-  system("cp $species_cfg_filename $species_cfg_filename.orig$y");
- }
- else {
-  die("Too many $species_cfg_filename.orig copies. Please delete some.");
- }
-
- if ( -e "$species_cfg_filename" ) {
-  open( SPCCFG, "<$species_cfg_filename" )
-    or die("Could not open $species_cfg_filename");
- }
- else { die "File $species_cfg_filename does not seem to exist!\n"; }
- print "Reading in the starting meta parameters from $species_cfg_filename...\n";
- my $orig_sep = $/;
- $/            = "\n";
- @spcfilelines = <SPCCFG>;
- close(SPCCFG);
- foreach (@spcfilelines) {
-  my ( $parname, $value );
-  if ( /^\s*\#.*/ || /^\s*$/ ) {    # skip comment lines
-   next;
-  }
-  if (/^\s*(\S+)\s+(\S*)\s*/) {
-   $parname = $1;
-   $value   = $2;
-   my $index = idx( \@metaparnames, $1 );
-   if ( $index != -1 ) {
-    $metastartvalues[$index] = $value;
-   }
-  }
- }
- $/ = $orig_sep;
-
- for ( my $i = 0 ; $i <= $#metaparnames ; $i++ ) {
-  if ( !defined $metastartvalues[$i] ) {
-   die(
-"No start value for parameter $metaparnames[$i] found in file $species_cfg_filename.\n\
-Maybe you misspelled this parameter in $metaparsfilename.\n" );
-  }
- }
-}
-else {
-
- # make a copy of the original transition matrix file
- my $y = 1;
- while ( $y < 40
-         && sysopen( ORIG, "$trans_matrix.orig$y", O_WRONLY | O_EXCL ) )
- {
-  $y++;
- }
- if ( $y < 40 ) {
-  close(ORIG);
-  system("cp $trans_matrix $trans_matrix.orig$y");
- }
- else {
-  die("Too many $trans_matrix.orig copies. Please delete some.");
- }
-
- open( TRANS, $trans_matrix ) or die("Could not open $trans_matrix");
- my $orig_sep = $/;
- $/              = "\n";
- @transfilelines = <TRANS>;
- close(TRANS);
- $/ = $orig_sep;
-}
-
-print "Started: ". &mytime."\n";
+print "Started: " . &mytime . "\n";
 
 #######################################################################################
 # initialize and first test
@@ -310,245 +161,23 @@ print "starting accuracy: "
 my $found_improvement;
 my @bindings;
 
-#######################################################################################
-# optimization loop for meta parameters
-#######################################################################################
+&optimize_meta()         if !$trans_matrix;
+&optimize_trans_matrix() if $trans_matrix;
 
-if ( !$trans_matrix ) {
- my (@testmeta);
- for ( my $r = 0 ; $r < $rounds ; $r++ ) {
-  $found_improvement = 0;
-  for ( my $idx = 0 ; $idx <= $#metaparnames ; $idx++ ) {
-   print
-"improving parameter $metaparnames[$idx] curently set to $curoptmeta[$idx]\n";
-   @testmeta = @curoptmeta;
+# cleanup
+my @todelete = glob("$speciesdir/*tmp*pbl");
+foreach (@todelete) { unlink($_) }
+@todelete = glob("$output_directory/curtrain-*");
+foreach (@todelete) { unlink($_) }
+@todelete = glob("$output_directory/predictions-*");
+foreach (@todelete) { unlink($_) }
 
-   # set the initial min and max of the range to test
-   if ( $metaparranges[$idx][0] ne 'list' ) {
-    $a = $metaparranges[$idx][1];
-    $b = $metaparranges[$idx][2];
-    print "$a-$b\n";
-   }
-   $finished = 0;
-   while ( !$finished ) {
-    $finished = 1;
-
-    # generate a list of values to test
-    @testlist = ();
-    if ( $metaparranges[$idx][0] eq 'list' ) {
-     @testlist = @{ $metaparranges[$idx] };
-     shift @testlist;
-    }
-    elsif ( $metaparranges[$idx][0] eq 'floatrange' ) {
-     for ( my $n = 0 ; $n < $pstep ; $n++ ) {
-      push @testlist, $a + $n * ( $b - $a ) / ( $pstep - 1 );
-     }
-    }
-    else {    # round the values
-     for ( my $n = 0 ; $n < $pstep ; $n++ ) {
-      my $tv = int( $a + $n * ( $b - $a ) / ( $pstep - 1 ) );
-      if ($tv && $testlist[$#testlist] && $tv ne $testlist[$#testlist] ) {
-       push @testlist, $tv;
-      }
-     }
-    }
-    @testlisttargets = ();
-    print "$metaparnames[$idx]: " . join( "\t", @testlist ) . "\n";
-    foreach my $testvalue (@testlist) {
-     $testmeta[$idx] = $testvalue;    # set the parameter to the testvalue
-     @snsp = evalsnsp(@testmeta);
-     
-     $target = sprintf( "%.4f", gettarget(@snsp) );
-     push @testlisttargets, $target;
-     if ( $target > $opttarget ) {    # found improvement
-      $optvalue          = $testvalue;
-      @curoptmeta        = @testmeta;
-      $opttarget         = $target;
-      $found_improvement = 1;
-      print "found improvement: "
-        . join( ", ", @snsp )
-        . ", optimal target: $target\n";
-      print "changing $metaparnames[$idx] to $optvalue\n";
-      printmetavalues( \@metaparnames, \@testmeta );
-      savenewpars(@curoptmeta);
-      $finished = 0;
-     }
-    }
-    print "values  " . join( "\t", @testlist ) . "\n" if @testlist;
-    print "targets " . join( "\t", @testlisttargets ) . "\n" if @testlisttargets;
-    if ( $finished == 0 ) {
-
-     # determine whether further improvements are possible at all
-     # and compute the new range boundaries
-     if ( $metaparranges[$idx][0] eq 'list' ) {
-      $finished = 1;
-     }
-     else {
-      my ( $newa, $newb );
-      $newa = $optvalue - ( $b - $a ) / ( $pstep - 1 );
-      $newb = $optvalue + ( $b - $a ) / ( $pstep - 1 );
-      $newa = ( $newa < $a ) ? $a : $newa;
-      $newb = ( $newb > $b ) ? $b : $newb;
-      $a    = $newa;
-      $b    = $newb;
-      if ( $metaparranges[$idx][0] eq 'intrange' ) {
-       $a = int( $a + 1 );
-       $b = int($b);
-       if ( $b < $a ) {
-        $finished = 1;
-       }
-      }
-     }
-    }
-   }
-  }
-
-#	if (!$found_improvement && $r<$rounds-1) {
-#	    print "Could not further improve. Skipping last ". ($rounds-$r-1) ." rounds\n";
-#	    last;
-#	}
- }
-}
-else {
-#######################################################################################
- # optimization loop for transition probabilities
-#######################################################################################
- my ( @trylist, @normedlist );
- if ($matrix_constraints) {
-  @trylist    = getStateList("TRY");
-  @normedlist = getStateList("NORMED");
- }
- else {
-  @trylist    = ( 0 .. $n );    # optimize all transitions
-  @normedlist = ( 0 .. $n );    # normalize all transitions
- }
- print "Try list: " .    ( join " ", @trylist ) . "\n";
- print "Normed list: " . ( join " ", @normedlist ) . "\n";
- getBindings();
-
- print "Optimizing transitions from these states.\n";
- my @curopttrans = @trans;
- save_trans_matrix( \@curopttrans, $trans_matrix . '.curopt' );
- my @testtrans;
- for ( my $r = 0 ; $r < $rounds ; $r++ ) {
-  print "Improvement round/cycle " . ( $r + 1 ) . "\n";
-  $found_improvement = 0;
-  foreach my $idx (@trylist) {
-   my $normed = 0;
-   if ( grep /^$idx$/, @normedlist ) {
-    $normed = 1;
-   }
-   my $normsum;
-   if ($normed) {
-    $normsum = 0;
-    for ( my $j = 0 ; $j < $n ; $j++ ) {
-     $normsum += $curopttrans[$idx][$j];
-    }
-   }
-   my @tolist;
-   my @transvec;
-   for ( my $j = 0 ; $j < $n ; $j++ ) {
-    if ( $curopttrans[$idx][$j] > 0 ) {
-     push @tolist,   $j;
-     push @transvec, $curopttrans[$idx][$j];
-    }
-   }
-
-# skip state if it is normed and just one transition out of this state is possible.
-   next unless ( !$normed || @tolist > 1 );
-
-   print "Improving transitions out of state $idx\n";
-   print "Nonzero transitions from state $idx: "
-     . join( " ", grep ( $_ > 0, @transvec ) ) . "\n";
-
-   # make a list with all the varied probability vectors to try
-   my @tryvectors = getVariedTransVectors( \@transvec, $normsum, $normed );
-   print "Trying "
-     . scalar(@tryvectors) . " "
-     . ( $normed ? "normed" : "unnormed" )
-     . " variations of transition vector.\n";
-
-   # change each transition probability
-   # evaluate the accuracy
-   foreach my $varieddist (@tryvectors) {
-    print "Try varied distribution " . join( " ", @{$varieddist} ) . " ";
-
-    # create varied transition matrix
-    copyMatrix( \@testtrans, \@curopttrans, $n );
-    for ( my $k = 0 ; $k < @tolist ; $k++ ) {
-     $testtrans[$idx][ $tolist[$k] ] = $varieddist->[$k];
-    }
-    realizeBindings( $idx, \@testtrans, 0 );
-
-    # save it to the file
-    save_trans_matrix( \@testtrans, $trans_matrix );
-
-    # start an evaluation run
-    @snsp = evalsnsp();
-    $target = sprintf( "%.4f", gettarget(@snsp) );
-    print "\ttarget=$target\n";
-    if ( $target > $opttarget ) {    # found improvement
-     $opttarget         = $target;
-     $found_improvement = 1;
-     print "*** Found improvement: "
-       . join( ", ", @snsp )
-       . ", optimal target: $target\n";
-     print "changing trans. probs out of state $idx from "
-       . ( join " ", ( grep ( $_ > 0, @{ $curopttrans[$idx] } ) ) ) . " to "
-       . ( join " ", ( grep ( $_ > 0, @{ $testtrans[$idx] } ) ) ) . "\n";
-     copyMatrix( \@curopttrans, \@testtrans, $n );
-     save_trans_matrix( \@curopttrans, $trans_matrix . ".curopt" );
-     $finished = 0;
-    }
-    else {    # no improvement
-              # restore file with currently optimal transition matrix
-     save_trans_matrix( \@curopttrans, $trans_matrix );
-    }
-   }
-  }
-  if ( !$found_improvement && $r < $rounds - 1 ) {
-   print "Could not further improve. Skipping last "
-     . ( $rounds - $r - 1 )
-     . " rounds\n";
-   last;
-  }
- }
-}
-
-#######################################################################################
-# final training
-#######################################################################################
-
-if ( !$notrain ) {
-
- my @todelete = glob("$speciesdir/*tmp*pbl");
- foreach (@todelete) { unlink($_) }
- @todelete = glob("$output_directory/curtrain-*");
- foreach (@todelete) { unlink($_) }
- @todelete = glob("$output_directory/predictions-*");
- foreach (@todelete) { unlink($_) }
-
- # make the joint training file (train.gb and onlytrain.gb)
- unlink("$output_directory/curtest");
- unlink("$output_directory/curtrain");
- print "Making final training with the optimized parameters.\n";
- if ($onlytrain_gb) {
-  system("cp $optimize_gb $output_directory/curtrain");
-  system("cat $onlytrain_gb >> $output_directory/curtrain");
-  &process_cmd(
-"$etrain_exec --species=$species --AUGUSTUS_CONFIG_PATH=$config_path --/genbank/verbosity=0 $output_directory/curtrain $common_parameters $modelrestrict >/dev/null 2>/dev/null"
-  );
-  unlink("$output_directory/curtrain");
- }
- else {
-  &process_cmd(
-"$etrain_exec --species=$species --AUGUSTUS_CONFIG_PATH=$config_path --/genbank/verbosity=0 $optimize_gb $common_parameters $modelrestrict  >/dev/null 2>/dev/null"
-  );
- }
-}
-
+&do_a_training() if ( !$notrain );
 &process_cmd("rm -rf $output_directory");
+print "Done!\n";
 
+
+################################################################################################
 sub evalsnsp {
 ################################################
 # evalsnsp: determine the values
@@ -772,7 +401,6 @@ sub printmetavalues {
 
 sub printmetaranges {
  my ( $names, $ranges ) = @_;
- print "metapar ranges $#$names:\n";
  for ( my $i = 0 ; $i <= $#$names ; $i++ ) {
   print $names->[$i] . "\t" . join( " ", @{ $ranges->[$i] } ) . "\n";
  }
@@ -1448,7 +1076,7 @@ sub split_genbank() {
 
  if ( @namelines < $partitions ) {
   print "Number of training sequences is too small\n";
-  exit;
+  exit(1);
  }
 
  foreach (@namelines) {
@@ -1539,4 +1167,386 @@ sub check_program() {
   push( @paths, $path );
  }
  return @paths;
+}
+
+sub read_meta_param() {
+ ### eeek! C-like code for perl
+ my $metaparsfilename = shift;
+ open( META, $metaparsfilename ) or die("Could not open $metaparsfilename\n");
+ print
+"Reading in the meta parameters used for optimization from $metaparsfilename...\n";
+ my $orig_sep = $/;
+ $/ = "\n";
+ while (<META>) {
+  my ( $parname, $range );
+  if (/^\s*\#/) {
+   next;
+  }
+  if (/^\s*(\S+)\s+(.*)\s*/) {
+   $parname = $1;
+   $range   = $2;
+   if ( idx( \@metaparnames, $1 ) != -1 ) {
+    die("Meta parameter $1 occurs twice in $metaparsfilename.");
+   }
+   else {
+    if ( $range =~ /"([^"]+)"-"([^"]+)"/ ) {
+     push @metaparnames, $parname;
+     push @metaparranges, [ 'intrange', $1, $2 ];
+    }
+    elsif ( $range =~ /"([^"]+)"_"([^"]+)"/ ) {
+     push @metaparnames, $parname;
+     push @metaparranges, [ 'floatrange', $1, $2 ];
+    }
+    else {
+     my @tokens = split /\s+/, $2;
+     my @list = ();
+     foreach (@tokens) {
+      s/^"(.*)"$/$1/;
+      push @list, $_;
+     }
+     push @metaparnames, $parname;
+     push @metaparranges, [ 'list', @list ];
+    }
+   }
+  }
+ }
+ $/ = $orig_sep;
+}
+
+sub prepare_parameters() {
+
+ # make a copy of the original parameter file
+ my $y = 1;
+ while ( $y < 20
+         && sysopen( ORIG, "$species_cfg_filename.orig$y", O_WRONLY | O_EXCL ) )
+ {
+  $y++;
+ }
+ if ( $y < 20 ) {
+  close(ORIG);
+  system("cp $species_cfg_filename $species_cfg_filename.orig$y");
+ }
+ else {
+  die("Too many $species_cfg_filename.orig copies. Please delete some.");
+ }
+
+ if ( -e "$species_cfg_filename" ) {
+  open( SPCCFG, "<$species_cfg_filename" )
+    or die("Could not open $species_cfg_filename");
+ }
+ else { die "File $species_cfg_filename does not seem to exist!\n"; }
+ print
+   "Reading in the starting meta parameters from $species_cfg_filename...\n";
+ my $orig_sep = $/;
+ $/            = "\n";
+ @spcfilelines = <SPCCFG>;
+ close(SPCCFG);
+ foreach (@spcfilelines) {
+  my ( $parname, $value );
+  if ( /^\s*\#.*/ || /^\s*$/ ) {    # skip comment lines
+   next;
+  }
+  if (/^\s*(\S+)\s+(\S*)\s*/) {
+   $parname = $1;
+   $value   = $2;
+   my $index = idx( \@metaparnames, $1 );
+   if ( $index != -1 ) {
+    $metastartvalues[$index] = $value;
+   }
+  }
+ }
+ $/ = $orig_sep;
+
+ for ( my $i = 0 ; $i <= $#metaparnames ; $i++ ) {
+  if ( !defined $metastartvalues[$i] ) {
+   die(
+"No start value for parameter $metaparnames[$i] found in file $species_cfg_filename.\n\
+Maybe you misspelled this parameter in $metaparsfilename.\n" );
+  }
+ }
+
+}
+
+sub read_trans_matrix() {
+ my $trans_matrix = shift;
+ open( TRANS, $trans_matrix )
+   or die("Could not open transition matrix file $trans_matrix");
+ print "Reading in the transition matrix...\n";
+ my $orig_sep = $/;
+ $/ = "\n";
+ while (<TRANS>) {
+  my ( $from, $to, $prob );
+  if (/^\s*\#/) {
+   next;
+  }
+  if ( $n == 0 && /(\d+)/ ) {
+   $n = $1;
+   print "Transition matrix has dimension ${n}x${n}.\n";
+  }
+  if (/^\s*(\d+)\s+(\d+)\s*(\S+)/) {
+   $from = $1;
+   $to   = $2;
+   $prob = $3;
+
+   #print "trans[$from][$to]=$prob\n";
+   if ( $from < 0 || $from >= $n || $to < 0 || $to >= $n ) {
+    print
+"State of transition matrix out of bounds ($n) for transition $from->$to:$prob\n";
+   }
+   if ( $prob < 0 ) {
+    print "Error: negative probability in transition $from->$to:$prob\n";
+   }
+   if ( !defined( $trans[$from] ) ) {
+    $trans[$from] = [];
+   }
+   $trans[$from][$to] = $prob;
+  }
+ }
+ $/ = $orig_sep;
+}
+
+sub prepare_matrix() {
+ my $y = 1;
+ while ( $y < 40
+         && sysopen( ORIG, "$trans_matrix.orig$y", O_WRONLY | O_EXCL ) )
+ {
+  $y++;
+ }
+ if ( $y < 40 ) {
+  close(ORIG);
+  system("cp $trans_matrix $trans_matrix.orig$y");
+ }
+ else {
+  die("Too many $trans_matrix.orig copies. Please delete some.");
+ }
+
+ open( TRANS, $trans_matrix ) or die("Could not open $trans_matrix");
+ my $orig_sep = $/;
+ $/              = "\n";
+ @transfilelines = <TRANS>;
+ close(TRANS);
+ $/ = $orig_sep;
+
+}
+
+sub optimize_meta() {
+ my (@testmeta);
+ for ( my $r = 0 ; $r < $rounds ; $r++ ) {
+  $found_improvement = 0;
+  for ( my $idx = 0 ; $idx <= $#metaparnames ; $idx++ ) {
+   print
+"improving parameter $metaparnames[$idx] curently set to $curoptmeta[$idx]\n";
+   @testmeta = @curoptmeta;
+
+   # set the initial min and max of the range to test
+   if ( $metaparranges[$idx][0] ne 'list' ) {
+    $a = $metaparranges[$idx][1];
+    $b = $metaparranges[$idx][2];
+    print "$a-$b\n";
+   }
+   $finished = 0;
+   while ( !$finished ) {
+    $finished = 1;
+
+    # generate a list of values to test
+    @testlist = ();
+    if ( $metaparranges[$idx][0] eq 'list' ) {
+     @testlist = @{ $metaparranges[$idx] };
+     shift @testlist;
+    }
+    elsif ( $metaparranges[$idx][0] eq 'floatrange' ) {
+     for ( my $n = 0 ; $n < $pstep ; $n++ ) {
+      push @testlist, $a + $n * ( $b - $a ) / ( $pstep - 1 );
+     }
+    }
+    else {    # intrange; round the values
+     for ( my $n = 0 ; $n < $pstep ; $n++ ) {
+      my $tv = int( $a + $n * ( $b - $a ) / ( $pstep - 1 ) );
+      if ( $tv && ( !$testlist[$#testlist] || $tv ne $testlist[$#testlist] ) ) {
+       push( @testlist, $tv );
+      }
+     }
+    }
+    @testlisttargets = ();
+    print "$metaparnames[$idx]: " . join( "\t", @testlist ) . "\n";
+    foreach my $testvalue (@testlist) {
+     $testmeta[$idx] = $testvalue;    # set the parameter to the testvalue
+     @snsp = evalsnsp(@testmeta);
+
+     $target = sprintf( "%.4f", gettarget(@snsp) );
+     push @testlisttargets, $target;
+     if ( $target > $opttarget ) {    # found improvement
+      $optvalue          = $testvalue;
+      @curoptmeta        = @testmeta;
+      $opttarget         = $target;
+      $found_improvement = 1;
+      print "found improvement: "
+        . join( ", ", @snsp )
+        . ", optimal target: $target\n";
+      print "changing $metaparnames[$idx] to $optvalue\n";
+      &printmetavalues( \@metaparnames, \@testmeta );
+      &savenewpars(@curoptmeta);
+      $finished = 0;
+     }
+    }
+    print "values  " . join( "\t", @testlist ) . "\n" if @testlist;
+    print "targets " . join( "\t", @testlisttargets ) . "\n"
+      if @testlisttargets;
+    if ( $finished == 0 ) {
+
+     # determine whether further improvements are possible at all
+     # and compute the new range boundaries
+     if ( $metaparranges[$idx][0] eq 'list' ) {
+      $finished = 1;
+     }
+     else {
+      my ( $newa, $newb );
+      $newa = $optvalue - ( $b - $a ) / ( $pstep - 1 );
+      $newb = $optvalue + ( $b - $a ) / ( $pstep - 1 );
+      $newa = ( $newa < $a ) ? $a : $newa;
+      $newb = ( $newb > $b ) ? $b : $newb;
+      $a    = $newa;
+      $b    = $newb;
+      if ( $metaparranges[$idx][0] eq 'intrange' ) {
+       $a = int( $a + 1 );
+       $b = int($b);
+       if ( $b < $a ) {
+        $finished = 1;
+       }
+      }
+     }
+    }
+   }
+  }
+
+#   if (!$found_improvement && $r<$rounds-1) {
+#       print "Could not further improve. Skipping last ". ($rounds-$r-1) ." rounds\n";
+#       last;
+#   }
+ }
+
+ sub do_a_training() {
+  unlink("$output_directory/curtest");
+  unlink("$output_directory/curtrain");
+  print "Making final training with the optimized parameters.\n";
+  if ($onlytrain_gb) {
+   system("cp $optimize_gb $output_directory/curtrain");
+   system("cat $onlytrain_gb >> $output_directory/curtrain");
+   &process_cmd(
+"$etrain_exec --species=$species --AUGUSTUS_CONFIG_PATH=$config_path --/genbank/verbosity=0 $output_directory/curtrain $common_parameters $modelrestrict >/dev/null 2>/dev/null"
+   );
+   unlink("$output_directory/curtrain");
+  }
+  else {
+   &process_cmd(
+"$etrain_exec --species=$species --AUGUSTUS_CONFIG_PATH=$config_path --/genbank/verbosity=0 $optimize_gb $common_parameters $modelrestrict  >/dev/null 2>/dev/null"
+   );
+  }
+ }
+}
+
+sub optimize_trans_matrix() {
+ #######################################################################################
+ # optimization loop for transition probabilities
+#######################################################################################
+ my ( @trylist, @normedlist );
+ if ($matrix_constraints) {
+  @trylist    = getStateList("TRY");
+  @normedlist = getStateList("NORMED");
+ }
+ else {
+  @trylist    = ( 0 .. $n );    # optimize all transitions
+  @normedlist = ( 0 .. $n );    # normalize all transitions
+ }
+ print "Try list: " .    ( join " ", @trylist ) . "\n";
+ print "Normed list: " . ( join " ", @normedlist ) . "\n";
+ getBindings();
+
+ print "Optimizing transitions from these states.\n";
+ my @curopttrans = @trans;
+ save_trans_matrix( \@curopttrans, $trans_matrix . '.curopt' );
+ my @testtrans;
+ for ( my $r = 0 ; $r < $rounds ; $r++ ) {
+  print "Improvement round/cycle " . ( $r + 1 ) . "\n";
+  $found_improvement = 0;
+  foreach my $idx (@trylist) {
+   my $normed = 0;
+   if ( grep /^$idx$/, @normedlist ) {
+    $normed = 1;
+   }
+   my $normsum;
+   if ($normed) {
+    $normsum = 0;
+    for ( my $j = 0 ; $j < $n ; $j++ ) {
+     $normsum += $curopttrans[$idx][$j];
+    }
+   }
+   my @tolist;
+   my @transvec;
+   for ( my $j = 0 ; $j < $n ; $j++ ) {
+    if ( $curopttrans[$idx][$j] > 0 ) {
+     push @tolist,   $j;
+     push @transvec, $curopttrans[$idx][$j];
+    }
+   }
+
+# skip state if it is normed and just one transition out of this state is possible.
+   next unless ( !$normed || @tolist > 1 );
+
+   print "Improving transitions out of state $idx\n";
+   print "Nonzero transitions from state $idx: "
+     . join( " ", grep ( $_ > 0, @transvec ) ) . "\n";
+
+   # make a list with all the varied probability vectors to try
+   my @tryvectors = getVariedTransVectors( \@transvec, $normsum, $normed );
+   print "Trying "
+     . scalar(@tryvectors) . " "
+     . ( $normed ? "normed" : "unnormed" )
+     . " variations of transition vector.\n";
+
+   # change each transition probability
+   # evaluate the accuracy
+   foreach my $varieddist (@tryvectors) {
+    print "Try varied distribution " . join( " ", @{$varieddist} ) . " ";
+
+    # create varied transition matrix
+    copyMatrix( \@testtrans, \@curopttrans, $n );
+    for ( my $k = 0 ; $k < @tolist ; $k++ ) {
+     $testtrans[$idx][ $tolist[$k] ] = $varieddist->[$k];
+    }
+    realizeBindings( $idx, \@testtrans, 0 );
+
+    # save it to the file
+    save_trans_matrix( \@testtrans, $trans_matrix );
+
+    # start an evaluation run
+    @snsp = evalsnsp();
+    $target = sprintf( "%.4f", gettarget(@snsp) );
+    print "\ttarget=$target\n";
+    if ( $target > $opttarget ) {    # found improvement
+     $opttarget         = $target;
+     $found_improvement = 1;
+     print "*** Found improvement: "
+       . join( ", ", @snsp )
+       . ", optimal target: $target\n";
+     print "changing trans. probs out of state $idx from "
+       . ( join " ", ( grep ( $_ > 0, @{ $curopttrans[$idx] } ) ) ) . " to "
+       . ( join " ", ( grep ( $_ > 0, @{ $testtrans[$idx] } ) ) ) . "\n";
+     copyMatrix( \@curopttrans, \@testtrans, $n );
+     save_trans_matrix( \@curopttrans, $trans_matrix . ".curopt" );
+     $finished = 0;
+    }
+    else {    # no improvement
+              # restore file with currently optimal transition matrix
+     save_trans_matrix( \@curopttrans, $trans_matrix );
+    }
+   }
+  }
+  if ( !$found_improvement && $r < $rounds - 1 ) {
+   print "Could not further improve. Skipping last "
+     . ( $rounds - $r - 1 )
+     . " rounds\n";
+   last;
+  }
+ }
 }
