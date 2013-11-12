@@ -2,6 +2,10 @@
 
 =pod
 
+=head1 TODO
+
+print out new hint file with only the src that we are testing
+
 =head1 NAME
 
 Optimize extrinsic configuration for Augustus. Based on optimize_augustus by Mario Stanke, 23.04.2007 
@@ -36,26 +40,29 @@ use Data::Dumper;
 use Pod::Usage;
 use Getopt::Long;
 use Time::localtime;
-use File::Basename;
 use IO::File;
 use threads;
 use threads::shared;
 use FindBin;
-use lib ( $FindBin::RealBin . '/PerlLib' );
+use lib ( $FindBin::RealBin . '/../PerlLib' );
 use Thread_helper;
 
 my (
-     $species, $optimize_gb, $extrinsic, $rounds,     $training_set,
-     $pstep,   $config_path, $cpus,      $utr,        $exec_dir,
-     $notrain, $trans_table, $genemodel, $min_coding, $hint_file
+     $species,     $optimize_gb,      $extrinsic,
+     $rounds,      $training_set,     $pstep,
+     $config_path, $cpus,             $utr,
+     $exec_dir,    $output_directory, $species_config_dir,
+     $notrain,     $trans_table,      $genemodel,
+     $min_coding,  $hint_file,        $verbose
 );
-my $debug = 1;
 $rounds      = 1;
 $pstep       = 5;
 $cpus        = 1;
+$exec_dir = $ENV{'AUGUSTUS_PATH'} . '/bin' if $ENV{'AUGUSTUS_PATH'};
+$config_path = $ENV{'AUGUSTUS_PATH'} . '/config' if $ENV{'AUGUSTUS_PATH'};
 $config_path = $ENV{'AUGUSTUS_CONFIG_PATH'} if $ENV{'AUGUSTUS_CONFIG_PATH'};
-$exec_dir    = $ENV{'AUGUSTUS_PATH'} . '/bin' if $ENV{'AUGUSTUS_PATH'};
-my ($common_parameters);
+
+my ($common_parameters) = '';
 
 &GetOptions(
              'species:s'              => \$species,
@@ -65,7 +72,7 @@ my ($common_parameters);
              'training_set:s'         => \$training_set,
              'pstep:i'                => \$pstep,
              'AUGUSTUS_CONFIG_PATH:s' => \$config_path,
-             'cpus:i'                 => \$cpus,
+             'cpus|threads:i'         => \$cpus,
              'UTR'                    => \$utr,
              'aug_exec_dir:s'         => \$exec_dir,
              'notrain'                => \$notrain,
@@ -73,10 +80,12 @@ my ($common_parameters);
              'genemodel:s'            => \$genemodel,
              'min_coding_len:i'       => \$min_coding,
              'hints:s'                => \$hint_file,
+             'output:s'               => \$output_directory,
+             'verbose'                => \$verbose
 );
 
 # globals
-my ( $output_directory, $species_config_dir ) = &check_options();
+&check_options();
 my ( $augustus_exec, $etrain_exec ) = &check_program( 'augustus', 'etraining' );
 my %storedsnsp;
 my $cwd = `pwd`;
@@ -86,20 +95,20 @@ my $be_silent =
 my @feature_order =
   qw/start stop tss tts ass dss exonpart exon intronpart intron CDSpart CDS UTRpart UTR irpart nonexonpart genicpart/;
 
+print "Started: ". &mytime."\n";
+
 # we only need to train once
 system("cat $optimize_gb $training_set > train.set 2>/dev/null");
 &process_cmd(
-"$etrain_exec --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $common_parameters $be_silent train.set 2>/dev/null"
+"$etrain_exec --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $common_parameters $be_silent train.set  >/dev/null 2>/dev/null "
 ) unless $notrain;
 unlink("train.set");
 
-my @sources_that_need_to_be_checked;
+my %sources_that_need_to_be_checked;
 my @feature_headers;
 
 my ( $metaextrinsic_hash_ref, $cfg_extra, $basic_cfg ) =
   &parse_extrinsic_meta();
-
-#print Dumper @sources_that_need_to_be_checked;
 
 #######################################################################################
 # initialize and first test
@@ -114,7 +123,7 @@ $thread_helper->add_thread($thread);
 
 # count how many searches we are going to do.
 my $todo = int(0);
-foreach my $src (@sources_that_need_to_be_checked) {
+foreach my $src ( keys %sources_that_need_to_be_checked ) {
  next if $src eq 'M';
  foreach my $feat (@feature_headers) {
   next if $feat eq 'feature';
@@ -136,7 +145,7 @@ foreach my $src (@sources_that_need_to_be_checked) {
 print "Will search for $todo parameters with $cpus CPUs\n";
 sleep(3);
 
-foreach my $src (@sources_that_need_to_be_checked) {
+foreach my $src ( keys %sources_that_need_to_be_checked ) {
  next if $src eq 'M';
 
  # we really expect one line of evidence to be checked at a time...!
@@ -169,12 +178,40 @@ foreach my $src (@sources_that_need_to_be_checked) {
  }
 }
 $thread_helper->wait_for_all_threads_to_complete();
- my @failed_threads = $thread_helper->get_failed_threads();
- if (@failed_threads) {
-  die "Error, " . scalar(@failed_threads) . " threads failed.\n";
-  exit(1);
- }
+my @failed_threads = $thread_helper->get_failed_threads();
+if (@failed_threads) {
+ die "Error, " . scalar(@failed_threads) . " threads failed.\n";
+ exit(1);
+}
 
+my @results = `grep Accuracy $output_directory/*log | sort -rnk 11")`;
+if ( scalar(@results) == $todo ) {
+ print "Done and all good!\n";
+}
+else {
+ print
+"Done but something happened, not all results may have been completed ($todo != "
+   . scalar(@results) . ")!\n";
+}
+
+my $basic_file = "$output_directory/no_hints.prediction.log";
+if ( -s $basic_file ) {
+ my $first_accuracy = `grep Accuracy $basic_file")`;
+ if ($first_accuracy) {
+  $first_accuracy =~ /Target:\s([\.\d]+)/;
+  my $first_target = $1;
+  print
+"Without any extrinsic evidence the target was $first_target\n$first_accuracy";
+ }
+}
+if ( $results[0] =~ /^([^:]+)/ ) {
+ my $file          = $1;
+ my $best_accuracy = `grep Accuracy $file")`;
+ $best_accuracy =~ /Target:\s([\.\d]+)/;
+ my $best_target = $1;
+ print
+"Best config file is found in $file with target $best_target\n$best_accuracy";
+}
 
 sub evalsnsp {
  my $extrinsic_file = shift;
@@ -280,7 +317,6 @@ sub check_options() {
 "Augustus config directory not in environment (\$AUGUSTUS_CONFIG_PATH) and not specified.\n"
  ) unless $config_path && -d $config_path;
  $config_path .= '/' unless $config_path =~ /\/$/;
- $config_path .= '/' unless $config_path =~ /\/$/;
 
  $optimize_gb = shift if !$optimize_gb;
  pod2usage("Optimizing file missing\n") if ( !$optimize_gb );
@@ -296,12 +332,11 @@ sub check_options() {
  $common_parameters .= " --genemodel=$genemodel"           if ($genemodel);
  $common_parameters .= " --/Constant/min_coding_len=" . $min_coding
    if ($min_coding);
-
- my $output_directory = "tmp_opt_$species";
+ $cpus = 1 if !$cpus || $cpus < 1;
+ $output_directory = "tmp_opt_extrinsic_$species";
  &process_cmd("rm -rf $output_directory;mkdir $output_directory");
  die unless -d $output_directory;
 
- return ( $output_directory, $config_path . "species/$species/" );
 }
 
 sub write_extrinsic_cfg() {
@@ -397,7 +432,7 @@ sub parse_extrinsic_meta() {
    my $basic = 1;
    if ( $score =~ /,/ ) {
     @parameters = split( ',', $score );
-    push( @sources_that_need_to_be_checked, $source )
+    $sources_that_need_to_be_checked{$source} = 1
       unless $source eq 'bonus' || $source eq 'malus';
    }
    elsif ( $score =~ /-/ ) {
@@ -412,7 +447,7 @@ sub parse_extrinsic_meta() {
      push( @parameters, $next_level );
     }
     $parameters[-1] = $max;
-    push( @sources_that_need_to_be_checked, $source )
+    $sources_that_need_to_be_checked{$source} = 1
       unless $source eq 'bonus' || $source eq 'malus';
    }
    else {
@@ -439,7 +474,7 @@ sub parse_extrinsic_meta() {
 
 sub process_cmd {
  my ( $cmd, $dir ) = @_;
- print &mytime . "CMD: $cmd\n" if $debug;
+ print &mytime . "CMD: $cmd\n" if $verbose;
  chdir($dir) if $dir;
  my $ret = system($cmd);
  if ( $ret && $ret != 256 ) {

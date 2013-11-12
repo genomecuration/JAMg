@@ -5,12 +5,7 @@
 =head1 NAME
 
 #############################################################
-# optimize_augustus
-# train augustus and automatically optimize the meta parameters
-#
-# usage: optimize_augustus.pl --species=myspecies train.gb [parameters]
-#
-#
+# optimize_augustus.pl based on Mario Stanke's script (23.04.2007) 
 #
 # Mario Stanke, 23.04.2007
 #############################################################
@@ -20,23 +15,34 @@
 Mandatory parameters:
 
  --species                prefix of the species name
- --train                  genbank file for training with bona fide gene structures
- 
-Optional parameters:
+ --optimize               genbank file for training with bona fide gene structures
+
+Important optional parameters:
 
  --metapars               File with the names and their ranges of the meta parameters that are subject to optimization (default: generic_metapars.cfg)
- --rounds                 The number of rounds to run the optimization for (default: 5)
  --cpus                   The number of CPUs to use (default: 1)
+
+Useful optional parameters:
+
+ --rounds                 The number of rounds to run the optimization for (default: 5)
  --onlytrain              an optional genbank file that is used in addition to train.gb but only for etrain not for intermediate evaluation of accuracy. These genes may e.g. be incomplete.
  --kfold                  Make a k-fold cross validation (default: 8)
- --pstep                  For integer and floating parameters start with p tests equidistributed in the allowed range of values (default: 5)
  --config_path            Specify the config directory d if not set as environment variable
- --opt_trans_matrix       Optimize the transition matrix file s. s must be the transition file used. e.g. ../species/nt/generic/generic_trans_shadow_partial.pbl
- --matrix_constraints     A file with try list, normed list and bindings
- --UTR                    Turn untranslated region model on for training and prediction
  --aug_exec_dir           Path to augustus and etraining executable. If not specified it must be in $PATH environment variable
- --trainOnlyUtr           Use this option, if the exon, intron and intergenic models need not be trained. (default: 0)
- --noTrainPars            Use this option, if the parameters to optimize do not affect training. The training step (etraining) is omitted completely. (default: 0)
+ --onlyutr                Use this option, if the exon, intron and intergenic models need not be trained. (default: 0)
+ 
+Other optional parameters:
+
+ --pstep                  For integer and floating parameters start with p tests equidistributed in the allowed range of values (default: 5)
+ --min_coding             Minimum coding length
+ --UTR                    Turn untranslated region model on for training and prediction
+ --notrain                Use this option, if the parameters to optimize do not affect training. The training step (etraining) is omitted completely. (default: 0)
+
+Others (expert):
+
+ --genemodel              Augustus genemodel parameter
+ --trans_matrix       Optimize the transition matrix file s. s must be the transition file used. e.g. ../species/nt/generic/generic_trans_shadow_partial.pbl
+ --matrix_constraints     A file with try list, normed list and bindings
 
 
 =cut
@@ -45,145 +51,65 @@ use strict;
 use warnings;
 use Pod::Usage;
 use Getopt::Long;
+use Time::localtime;
 use IO::File;
+use threads;
+use threads::shared;
+use FindBin;
+use lib ( $FindBin::RealBin . '/../PerlLib' );
+use Thread_helper;
 
 my (
-     $species,   $train,        $metapars,           $rounds,
-     $onlytrain, $kfold,        $pstep,              $config_path,
-     $cpus,      $trans_matrix, $matrix_constraints, $utr,
-     $exec_dir,  $trainonly,    $notrain,            $trans_table,
-     $genemodel, $min_coding
+     $species,      $metapars,           $rounds,      $onlytrain,
+     $kfold,        $pstep,              $config_path, $cpus,
+     $trans_matrix, $matrix_constraints, $utr,         $exec_dir,
+     $onlyutr,     $notrain,            $trans_table, $genemodel,
+     $min_coding,   $output_directory,   $verbose,     $optimize_gb,
+     $onlytrain_gb
 );
 
 $rounds      = 5;
 $kfold       = 8;
 $pstep       = 5;
 $cpus        = 1;
-$config_path = $ENV{'AUGUSTUS_CONFIG_PATH'} if $ENV{'AUGUSTUS_CONFIG_PATH'};
 $exec_dir    = $ENV{'AUGUSTUS_PATH'} . '/bin' if $ENV{'AUGUSTUS_PATH'};
-my ( $pars, $modelrestrict );
-my $got_ForkManager = 0;
+$config_path = $ENV{'AUGUSTUS_PATH'} . '/config' if $ENV{'AUGUSTUS_PATH'};
+$config_path = $ENV{'AUGUSTUS_CONFIG_PATH'} if $ENV{'AUGUSTUS_CONFIG_PATH'};
+
+my ( $common_parameters, $modelrestrict ) = ('','');
 
 &GetOptions(
              'species:s'              => \$species,
-             'train:s'                => \$train,
+             'optimize:s'             => \$optimize_gb,
              'metapars:s'             => \$metapars,
              'rounds:i'               => \$rounds,
-             'onlytrain'              => \$onlytrain,
+             'onlytrain:s'            => \$onlytrain_gb,
              'kfold:i'                => \$kfold,
              'pstep:i'                => \$pstep,
              'AUGUSTUS_CONFIG_PATH:s' => \$config_path,
-             'cpus:i'                 => \$cpus,
-             'opt_trans_matrix:s'     => \$trans_matrix,
+             'cpus|threads:i'         => \$cpus,
+             'trans_matrix:s'     => \$trans_matrix,
              'matrix_constraints:s'   => \$matrix_constraints,
              'UTR'                    => \$utr,
              'aug_exec_dir:s'         => \$exec_dir,
-             'trainOnlyUtr'           => \$trainonly,
-             'noTrainPars'            => \$notrain,
+             'onlyutr'               => \$onlyutr,
+             'notrain'                => \$notrain,
              'translation_table:i'    => \$trans_table,
              'genemodel:s'            => \$genemodel,
              'min_coding_len:i'       => \$min_coding,
+             'output:s'               => \$output_directory,
+             'verbose'                => \$verbose
 );
 
+#globals
 $SIG{INT} = \&got_interrupt_signal;
-
+my %storedsnsp;    # hash with the stored sn and sp array references
 my $be_silent =
 " --/augustus/verbosity=0 --/ExonModel/verbosity=0 --/IGenicModel/verbosity=0 --/IntronModel/verbosity=0 --/UtrModel/verbosity=0 --/genbank/verbosity=0 ";
-
-##############################################################
-# Check the command line
-##############################################################
 &check_options();
+my ( $augustus_exec, $etrain_exec ) = &check_program( 'augustus', 'etraining' );
 
-##############################################################
-# Create temporary files and folders
-##############################################################
 
-my $optdir = "tmp_opt_$species";
-system("rm -rf $optdir;mkdir $optdir");
-die unless -d $optdir;
-
-# Split train.gb into k_fold equal portions
-print "Splitting training file into $kfold buckets...\n";
-open( TRAINGB, $train ) or die("Could not open $train");
-
-my @seqlist = ();
-push @seqlist, "12";
-@seqlist = <TRAINGB>;
-my @namelines = grep /^LOCUS   +/, @seqlist;
-my @names = ();
-
-if ( @namelines < $kfold ) {
- print "Number of training sequences is too small\n";
- exit;
-}
-
-foreach (@namelines) {
- /LOCUS +([^ ]+) */;
- push @names, $1;
-}
-
-my $bucket    = 0;
-my %bucketmap = ();
-srand(88);
-while ( $#names >= 0 ) {
- my $rand = rand(@names);
- $bucketmap{ $names[$rand] } = $bucket;
- $bucket++;
- if ( $bucket == $kfold ) {
-  $bucket = 0;
- }
- splice @names, $rand, 1;    # delete array element
-}
-my $handle;
-my @fh = ();
-for ( $bucket = 1 ; $bucket <= $kfold ; $bucket++ ) {
- $handle = IO::File->new(">$optdir/bucket$bucket.gb")
-   or die("Could not open bucket$bucket.gb");
- push @fh, $handle;
-}
-
-$/ = "\n//\n"
-  ; # this causes a huge single chunk when DOS carriage returns are used at line breaks
-seek( TRAINGB, 0, 0 );
-my $nloci = 0;
-while (<TRAINGB>) {
- my $gendaten = $_;
- m/^LOCUS +(\S+) .*/;
- my $genname = $1;
-
- $bucket = $bucketmap{$genname};
- my $handle = $fh[$bucket];
- print $handle $gendaten;
- $nloci++;
-}
-
-foreach my $handle (@fh) {
- close $handle;
-}
-
-if ( $nloci < @namelines ) {
- die( "Genbank input file appears to have fewer records than expected.\n"
-  . "This could be a consequence of using DOS (Windows) carriage return symbols at line breaks."
- );
-}
-
-# create training sets for cross-validation (parallel version)
-if ( $cpus > 1 ) {
- for ( my $k = 1 ; $k <= $kfold ; $k++ ) {
-
-  # make the temporary training and testing files
-  system("rm -f $optdir/curtrain-$k");
-  for ( my $m = 1 ; $m <= $kfold ; $m++ ) {
-   if ( $m != $k ) {
-    system("cat $optdir/bucket$m.gb >> $optdir/curtrain-$k");
-   }
-  }
-  if ($trainonly) {
-   system("cat $trainonly >> $optdir/curtrain-$k");
-  }
- }
-}
 
 ##############################################################
 # Read in the meta parameters
@@ -192,18 +118,6 @@ if ( $cpus > 1 ) {
 my @metastartvalues = ();
 my @metaparnames    = ();
 my @metaparranges   = ();
-my $configdir;
-if ($config_path) {
- $configdir = $config_path;
-}
-else {
- exists( $ENV{'AUGUSTUS_CONFIG_PATH'} )
-   or die("Environment variable AUGUSTUS_CONFIG_PATH not set.");
- $configdir = $ENV{'AUGUSTUS_CONFIG_PATH'};
-}
-if ( $configdir !~ /\/$/ ) {
- $configdir .= "/";
-}
 
 ###############################################
 # open the file with the parameters to optimize
@@ -219,12 +133,12 @@ if ( !$trans_matrix ) {    # optimize meta parameters
   $metaparsfilename = $metapars;
  }
  else {
-  $metaparsfilename = $configdir . "species/generic/generic_metapars.cfg";
+  $metaparsfilename = $config_path . "species/generic/generic_metapars.cfg";
  }
  open( META, $metaparsfilename ) or die("Could not open $metaparsfilename\n");
- print
+ print 
 "Reading in the meta parameters used for optimization from $metaparsfilename...\n";
-
+ my $orig_sep = $/;
  $/ = "\n";
  while (<META>) {
   my ( $parname, $range );
@@ -259,11 +173,13 @@ if ( !$trans_matrix ) {    # optimize meta parameters
    }
   }
  }
+ $/ = $orig_sep;
 }
 else {    # read in transition matrix for optimization
  open( TRANS, $trans_matrix )
    or die("Could not open transition matrix file $trans_matrix");
  print "Reading in the transition matrix...\n";
+ my $orig_sep = $/;
  $/ = "\n";
  while (<TRANS>) {
   my ( $from, $to, $prob );
@@ -293,13 +209,14 @@ else {    # read in transition matrix for optimization
    $trans[$from][$to] = $prob;
   }
  }
+ $/ = $orig_sep;
 }
 
 #printmetaranges(\@metaparnames, \@metaparranges);
 
 # open species_parameters.cfg
 my ( @spcfilelines, @transfilelines );
-my $speciesdir           = $configdir . "species/$species/";
+my $speciesdir           = $config_path . "species/$species/";
 my $species_cfg_filename = $speciesdir . $species . "_parameters.cfg";
 if ( !$trans_matrix ) {
 
@@ -323,8 +240,8 @@ if ( !$trans_matrix ) {
     or die("Could not open $species_cfg_filename");
  }
  else { die "File $species_cfg_filename does not seem to exist!\n"; }
- print
-   "Reading in the starting meta parameters from $species_cfg_filename...\n";
+ print "Reading in the starting meta parameters from $species_cfg_filename...\n";
+ my $orig_sep = $/;
  $/            = "\n";
  @spcfilelines = <SPCCFG>;
  close(SPCCFG);
@@ -342,6 +259,7 @@ if ( !$trans_matrix ) {
    }
   }
  }
+ $/ = $orig_sep;
 
  for ( my $i = 0 ; $i <= $#metaparnames ; $i++ ) {
   if ( !defined $metastartvalues[$i] ) {
@@ -368,20 +286,15 @@ else {
   die("Too many $trans_matrix.orig copies. Please delete some.");
  }
 
- open( TRANS, $trans_matrix )
-   or die("Could not open $trans_matrix");
+ open( TRANS, $trans_matrix ) or die("Could not open $trans_matrix");
+ my $orig_sep = $/;
  $/              = "\n";
  @transfilelines = <TRANS>;
  close(TRANS);
+ $/ = $orig_sep;
 }
 
-# check if file $cmdpars{'onlytrain'} exists
-if ($trainonly) {
- $trainonly =~ s/^~/$ENV{HOME}/;
- open( ONLYTRAIN, $trainonly )
-   or die("Could not open $trainonly");
- close(ONLYTRAIN);
-}
+print "Started: ". &mytime."\n";
 
 #######################################################################################
 # initialize and first test
@@ -435,7 +348,7 @@ if ( !$trans_matrix ) {
     else {    # round the values
      for ( my $n = 0 ; $n < $pstep ; $n++ ) {
       my $tv = int( $a + $n * ( $b - $a ) / ( $pstep - 1 ) );
-      if ( $tv ne $testlist[$#testlist] ) {
+      if ($tv && $testlist[$#testlist] && $tv ne $testlist[$#testlist] ) {
        push @testlist, $tv;
       }
      }
@@ -610,57 +523,46 @@ else {
 
 if ( !$notrain ) {
 
- # delete the temporary *pbl files
- for ( my $k = 1 ; $k <= $kfold ; $k++ ) {
-  system(
-"rm -f $speciesdir/exon-tmp$k.pbl $speciesdir/intron-tmp$k.pbl $speciesdir/igenic-tmp$k.pbl $speciesdir/utr-tmp$k.pbl"
-  );
- }
-
- # delete the training files for cross-validation (can be large)
- if ( $cpus > 1 ) {
-  for ( my $k = 1 ; $k <= $kfold ; $k++ ) {
-
-   # delete the temporary training files
-   system("rm -f $optdir/curtrain-$k $optdir/predictions-$k.txt");
-  }
- }
- print "Making final training with the optimized parameters.\n";
+ my @todelete = glob("$speciesdir/*tmp*pbl");
+ foreach (@todelete) { unlink($_) }
+ @todelete = glob("$output_directory/curtrain-*");
+ foreach (@todelete) { unlink($_) }
+ @todelete = glob("$output_directory/predictions-*");
+ foreach (@todelete) { unlink($_) }
 
  # make the joint training file (train.gb and onlytrain.gb)
- system("rm -f $optdir/curtrain $optdir/curtest");
- system("cp $train $optdir/curtrain");
- if ($trainonly) {
-  system("cat $train >> $optdir/curtrain");
+ unlink("$output_directory/curtest");
+ unlink("$output_directory/curtrain");
+ print "Making final training with the optimized parameters.\n";
+ if ($onlytrain_gb) {
+  system("cp $optimize_gb $output_directory/curtrain");
+  system("cat $onlytrain_gb >> $output_directory/curtrain");
+  &process_cmd(
+"$etrain_exec --species=$species --AUGUSTUS_CONFIG_PATH=$config_path --/genbank/verbosity=0 $output_directory/curtrain $common_parameters $modelrestrict >/dev/null 2>/dev/null"
+  );
+  unlink("$output_directory/curtrain");
  }
- my $cmd =
-"etraining --species=$species --AUGUSTUS_CONFIG_PATH=$configdir --/genbank/verbosity=0 $optdir/curtrain $pars $modelrestrict";
- print "$cmd\n";
- system($cmd);
- system("rm -f $optdir/curtrain");
+ else {
+  &process_cmd(
+"$etrain_exec --species=$species --AUGUSTUS_CONFIG_PATH=$config_path --/genbank/verbosity=0 $optimize_gb $common_parameters $modelrestrict  >/dev/null 2>/dev/null"
+  );
+ }
 }
 
-#######################################################################################
-# subroutines
-#######################################################################################
-
+sub evalsnsp {
 ################################################
 # evalsnsp: determine the values
 # base sn, base sp, exon sn, exon sp, gene sn, gene sp, tss medianDiff, tts medianDiff
 # sn: sensitivity, sp: specificity
 # given a set of metaparameter values
 ################################################
-
-my %storedsnsp;    # hash with the stored sn and sp array references
-
-sub evalsnsp {
  my @values = @_;
  my ( $cbsn, $cbsp, $cesn, $cesp, $cgsn, $cgsp, $csmd, $ctmd )
-   ;               # accuracy values of current bucket
+   ;    # accuracy values of current bucket
  my ( $gbsn, $gbsp, $gesn, $gesp, $ggsn, $ggsp, $gsmd, $gtmd )
-   ;               # total accuracy values
+   ;    # total accuracy values
  $gbsn = $gbsp = $gesn = $gesp = $ggsn = $ggsp = $gsmd = $gtmd = 0;
- my $argument;
+ my $argument = '';
  if ( !$trans_matrix ) {
 
   # make the parameters string for the command line
@@ -679,177 +581,69 @@ sub evalsnsp {
  # Loop over the buckets and chose bucket k as the one for testing.
  # All other buckets are taken for training if appropriate
  print "bucket ";
- if ( $cpus <= 1 ) {
-  for ( my $k = 1 ; $k <= $kfold ; $k++ ) {
-
-   # make the temporary training and testing files
-   system("rm -f $optdir/curtrain $optdir/curtest");
-   system("cp $optdir/bucket$k.gb $optdir/curtest");
-   for ( my $m = 1 ; $m <= $kfold ; $m++ ) {
-    if ( $m != $k ) {
-     system("cat $optdir/bucket$m.gb >> $optdir/curtrain");
-    }
-   }
-   if ($trainonly) {
-    system("cat $trainonly >> $optdir/curtrain");
-   }
-   if ( !$notrain )
-   { # no need to retrain if the trans matrix is optimized or this option is otherwise explicitly set.
-    system(
-"$exec_dir/etraining --species=$species --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $be_silent $modelrestrict $optdir/curtrain 2>/dev/null"
-    );
-   }
-
-   system(
-"$exec_dir/augustus --genemodel=complete --species=$species --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $optdir/curtest > $optdir/predictions.txt 2>/dev/null"
-   );
-
-   open( PRED, "<$optdir/predictions.txt" );
-   while (<PRED>) {
-    if (/nucleotide level \| +(\S+) \| +(\S+) \|$/) {
-     ( $cbsn, $cbsp ) = ( $1, $2 );
-    }
-    if (/exon level \|.*-- \| +(\S+) \| +(\S+) \|$/) {
-     ( $cesn, $cesp ) = ( $1, $2 );
-    }
-    if (/gene level \|.* \| +(\S+) \| +(\S+) \|$/) {
-     ( $cgsn, $cgsp ) = ( $1, $2 );
-    }
-    if (/TSS \|.* \|.* \|.* \| +(\S+) \|$/) {
-     $csmd = $1;
-    }
-    if (/TTS \|.* \|.* \|.* \| +(\S+) \|$/) {
-     $ctmd = $1;
-    }
-   }
-   close(PRED);
-
-   if (    !$cbsn
-        || !$cbsp
-        || !$cesn
-        || !$cesp
-        || !$cgsn
-        || !$cgsp )
-   {
-    warn(
-"Could not read the accuracy values out of predictions.txt when processing bucket $k."
-    );
-    $cbsn = int(0);
-    $cbsp = int(0);
-    $cesn = int(0);
-    $cesp = int(0);
-    $cgsn = int(0);
-    $cgsp = int(0);
-    $csmd = int(0);
-    $ctmd = int(0);
-   }
-   print "$k ";
-
-#print "accuracy on bucket$k: $cbsn, $cbsp, $cesn, $cesp, $cgsn, $cgsp, $csmd, $ctmd\n";
-   $gbsn += $cbsn;
-   $gbsp += $cbsp;
-   $gesn += $cesn;
-   $gesp += $cesp;
-   $ggsn += $cgsn;
-   $ggsp += $cgsp;
-   $gsmd += $csmd;
-   $gtmd += $ctmd;
-  }
+ my $thread_helper = new Thread_helper($cpus);
+ for ( my $k = 1 ; $k <= $kfold ; $k++ ) {
+  my $thread = threads->create( 'start_prediction', $k, $argument );
+  $thread_helper->add_thread($thread);
  }
- else {    # parallel
-  my $pm = new Parallel::ForkManager($cpus);
-OUTER: for ( my $k = 1 ; $k <= $kfold ; $k++ ) {
+ $thread_helper->wait_for_all_threads_to_complete();
+ my @failed_threads = $thread_helper->get_failed_threads();
+ if (@failed_threads) {
+  die "Error, " . scalar(@failed_threads) . " threads failed.\n";
+  exit(1);
+ }
 
-   # fork and return the pid for the child:
-   my $pid = $pm->start and next;
-
-   # this part is done in parallel by the child process
-
-   my $pbloutfiles =
-"--/ExonModel/outfile=exon-tmp$k.pbl --/IntronModel/outfile=intron-tmp$k.pbl --/IGenicModel/outfile=igenic-tmp$k.pbl --/UtrModel/outfile=utr-tmp$k.pbl";
-   my $pblinfiles =
-"--/ExonModel/infile=exon-tmp$k.pbl --/IntronModel/infile=intron-tmp$k.pbl --/IGenicModel/infile=igenic-tmp$k.pbl --/UtrModel/infile=utr-tmp$k.pbl";
-   if (    defined($trainonly)
-        && $trainonly ne ""
-        && $trainonly ne "0" )
-   {
-    $pblinfiles = "";
+ # compute accuracy
+ for ( my $k = 1 ; $k <= $kfold ; $k++ ) {
+  open( PRED, "<$output_directory/predictions-$k.txt" );
+  while (<PRED>) {
+   if (/nucleotide level \| +(\S+) \| +(\S+) \|$/) {
+    ( $cbsn, $cbsp ) = ( $1, $2 );
    }
-
-   if ( !$notrain )
-   { # No need to retrain if the trans matrix is optimized or noTrainPars=1 set explicitly.
-    system(
-"$exec_dir/etraining --species=$species --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $be_silent $modelrestrict $pbloutfiles $optdir/curtrain-$k"
-    );
-
-    #		unlink $optdir/curtrain-$k;
+   if (/exon level \|.*-- \| +(\S+) \| +(\S+) \|$/) {
+    ( $cesn, $cesp ) = ( $1, $2 );
    }
-   else {
-    $pblinfiles = $notrain
-      ; # training did not take place, so the $pbloutfiles have not beeen created and cannot be used for prediction
+   if (/gene level \|.* \| +(\S+) \| +(\S+) \|$/) {
+    ( $cgsn, $cgsp ) = ( $1, $2 );
    }
-
-   system(
-"$exec_dir/augustus --genemodel=complete --species=$species --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $pblinfiles $optdir/bucket$k.gb > $optdir/predictions-$k.txt 2>/dev/null"
-   );
-   print "$k ";
-
-   $pm->finish;    # terminate the child process
+   if (/TSS \|.* \|.* \|.* \| +(\S+) \|$/) {
+    $csmd = $1;
+   }
+   if (/TTS \|.* \|.* \|.* \| +(\S+) \|$/) {
+    $ctmd = $1;
+   }
   }
-  $pm->wait_all_children;
+  close(PRED);
 
-  # compute accuracy
-  for ( my $k = 1 ; $k <= $kfold ; $k++ ) {
-   open( PRED, "<$optdir/predictions-$k.txt" );
-   while (<PRED>) {
-    if (/nucleotide level \| +(\S+) \| +(\S+) \|$/) {
-     ( $cbsn, $cbsp ) = ( $1, $2 );
-    }
-    if (/exon level \|.*-- \| +(\S+) \| +(\S+) \|$/) {
-     ( $cesn, $cesp ) = ( $1, $2 );
-    }
-    if (/gene level \|.* \| +(\S+) \| +(\S+) \|$/) {
-     ( $cgsn, $cgsp ) = ( $1, $2 );
-    }
-    if (/TSS \|.* \|.* \|.* \| +(\S+) \|$/) {
-     $csmd = $1;
-    }
-    if (/TTS \|.* \|.* \|.* \| +(\S+) \|$/) {
-     $ctmd = $1;
-    }
-   }
-   close(PRED);
-
-   if (    !$cbsn
-        || !$cbsp
-        || !$cesn
-        || !$cesp
-        || !$cgsn
-        || !$cgsp )
-   {
-    warn(
+  if (    !$cbsn
+       || !$cbsp
+       || !$cesn
+       || !$cesp
+       || !$cgsn
+       || !$cgsp )
+  {
+   warn(
 "Could not read the accuracy values out of predictions.txt when processing bucket $k."
-    );
-    $cbsn = int(0);
-    $cbsp = int(0);
-    $cesn = int(0);
-    $cesp = int(0);
-    $cgsn = int(0);
-    $cgsp = int(0);
-    $csmd = int(0);
-    $ctmd = int(0);
-   }
+   );
+   $cbsn = int(0);
+   $cbsp = int(0);
+   $cesn = int(0);
+   $cesp = int(0);
+   $cgsn = int(0);
+   $cgsp = int(0);
+   $csmd = int(0);
+   $ctmd = int(0);
+  }
 
 #print "accuracy on bucket$k: $cbsn, $cbsp, $cesn, $cesp, $cgsn, $cgsp, $csmd, $ctmd\n";
-   $gbsn += $cbsn;
-   $gbsp += $cbsp;
-   $gesn += $cesn;
-   $gesp += $cesp ? $cesp : int(0);
-   $ggsn += $cgsn ? $cgsn : int(0);
-   $ggsp += $cgsp ? $cgsp : int(0);
-   $gsmd += $csmd ? $csmd : int(0);
-   $gtmd += $ctmd ? $ctmd : int(0);
-  }
+  $gbsn += $cbsn;
+  $gbsp += $cbsp;
+  $gesn += $cesn;
+  $gesp += $cesp ? $cesp : int(0);
+  $ggsn += $cgsn ? $cgsn : int(0);
+  $ggsp += $cgsp ? $cgsp : int(0);
+  $gsmd += $csmd ? $csmd : int(0);
+  $gtmd += $ctmd ? $ctmd : int(0);
  }
 
  #print "\n";
@@ -867,13 +661,39 @@ OUTER: for ( my $k = 1 ; $k <= $kfold ; $k++ ) {
  return @returnarray;
 }
 
+sub start_prediction() {
+ my $k        = shift;
+ my $argument = shift;
+ my $pbloutfiles =
+"--/ExonModel/outfile=exon-tmp$k.pbl --/IntronModel/outfile=intron-tmp$k.pbl --/IGenicModel/outfile=igenic-tmp$k.pbl --/UtrModel/outfile=utr-tmp$k.pbl";
+ my $pblinfiles =
+   $onlyutr
+   ? ''
+   : "--/ExonModel/infile=exon-tmp$k.pbl --/IntronModel/infile=intron-tmp$k.pbl --/IGenicModel/infile=igenic-tmp$k.pbl --/UtrModel/infile=utr-tmp$k.pbl";
+
+ if ( !$notrain ) {
+  &process_cmd(
+"$etrain_exec --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $argument $common_parameters $be_silent $modelrestrict $pbloutfiles $output_directory/curtrain-$k  >/dev/null 2>/dev/null"
+  );
+ }
+ else {
+  $pblinfiles = '';
+  ; # training did not take place, so the $pbloutfiles have not beeen created and cannot be used for prediction
+ }
+
+ &process_cmd(
+"$augustus_exec --genemodel=complete --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $argument $common_parameters $pblinfiles $output_directory/bucket$k.gb > $output_directory/predictions-$k.txt 2>/dev/null"
+ );
+ print "$k ";
+
+}
+
+sub gettarget {
 ######################################################################################
 # gettarget: get an optimization target value from
 # base sn, base sp, exon sn, exon sp, gene sn, gene sp, tss medianDiff, tts medianDiff
 # feel free to change the weights
 ######################################################################################
-
-sub gettarget {
  my ( $bsn, $bsp, $esn, $esp, $gsn, $gsp, $smd, $tmd ) = @_;
  return ( 3 * $bsn +
           3 * $bsp +
@@ -887,10 +707,10 @@ sub gettarget {
  #   return (3*$bsn + 9*$bsp + 4*$esn + 12*$esp + 2*$gsn + 6*$gsp)/36;
 }
 
-################################################
-# savenewpars: replace parameters in the file $species_cfg_filename
-################################################
 sub savenewpars {
+################################################
+ # savenewpars: replace parameters in the file $species_cfg_filename
+################################################
  open( SPCCFG, ">$species_cfg_filename" )
    or die("Could not open $species_cfg_filename");
  print "Writing new parameters to $species_cfg_filename...\n";
@@ -922,11 +742,11 @@ sub savenewpars {
  close(SPCCFG);
 }
 
-################################################
-# save_trans_matrix: replace existing transition
-# probabilities with the given new ones
-################################################
 sub save_trans_matrix {
+################################################
+ # save_trans_matrix: replace existing transition
+ # probabilities with the given new ones
+################################################
  my $newtransref = shift;
  my $filename    = shift;
  open( TRANS, ">$filename" ) or die("Could not open $filename for writing.");
@@ -974,10 +794,11 @@ sub idx {
  return -1;
 }
 
-#
-# norm a vector to sum up to $normsum
-# if $normed is true
 sub norm {
+
+ #
+ # norm a vector to sum up to $normsum
+ # if $normed is true
  my ( $vecref, $normsum, $normed ) = @_;
  if ($normed) {
   my $sum = 0;
@@ -998,10 +819,11 @@ sub norm {
  }
 }
 
-#
-# read try list or normed list from matrix_constraints file
-#
 sub getStateList {
+
+ #
+ # read try list or normed list from matrix_constraints file
+ #
  my $identifyer = shift;             # 'TRY' or 'NORMED'
  if ( !-s $matrix_constraints ) {
   print
@@ -1033,12 +855,13 @@ sub getStateList {
  return @statelist;
 }
 
-#
-# read bindings list from matrix_constraints file
-# into global variables
-#
-#
 sub getBindings {
+
+ #
+ # read bindings list from matrix_constraints file
+ # into global variables
+ #
+ #
  if ( !-s $matrix_constraints ) {
   print
 "Could not find the file with the transition matrix constraints: $matrix_constraints\n";
@@ -1106,11 +929,12 @@ sub getBindings {
  }
 }
 
-#
-# realizeBindings
-#
-# returns error message string if there are any
 sub realizeBindings {
+
+ #
+ # realizeBindings
+ #
+ # returns error message string if there are any
  my $state = shift;    # line that was just changed
  my $trans = shift;    # transition matrix that may need to be adjusted
  my $doNothingButComplain = shift;    # only error msgs
@@ -1337,11 +1161,12 @@ sub realizeBindings {
  }
 }
 
-#
-# parseTransList
-# parses a string like (0,24)+(0,25) or (26,28)/(26,29)
-# into a list of pairs
 sub parseTransList {
+
+ #
+ # parseTransList
+ # parses a string like (0,24)+(0,25) or (26,28)/(26,29)
+ # into a list of pairs
  my $tstr      = shift;
  my @transList = ();
  foreach my $tok ( split /\)[\(\)\+\*,]*\(/, $tstr ) {
@@ -1351,12 +1176,13 @@ sub parseTransList {
  return @transList;
 }
 
-#
-# getVariedTransVectors
-# parameters: \@transvec, $normsum, $normed
-# returns a list of references to varied transition probability vectors
-#
 sub getVariedTransVectors {
+
+ #
+ # getVariedTransVectors
+ # parameters: \@transvec, $normsum, $normed
+ # returns a list of references to varied transition probability vectors
+ #
  my $transvec   = shift;
  my $normsum    = shift;
  my $normed     = shift;
@@ -1364,6 +1190,7 @@ sub getVariedTransVectors {
  my $end;                  # vary components up to this index
  my $maxfactor  = 2;       # factor is between 1 and this
  my $variations = 3;
+
  if ( !$normed || @{$transvec} > 2 ) {
   $end = @{$transvec};
  }
@@ -1389,11 +1216,12 @@ sub getVariedTransVectors {
  return @tryvectors;
 }
 
-#
-# copyMatrix
-# copy a tranistion matrix
-#
 sub copyMatrix {
+
+ #
+ # copyMatrix
+ # copy a tranistion matrix
+ #
  my $new  = shift;
  my $old  = shift;
  my $size = shift;
@@ -1405,10 +1233,11 @@ sub copyMatrix {
  }
 }
 
-#
-# roundVector
-#
 sub roundVector {
+
+ #
+ # roundVector
+ #
  my $sum = 0;
  foreach my $v (@_) {
   $sum += $v;
@@ -1430,10 +1259,11 @@ sub roundVector {
  }
 }
 
-#
-# matrixSquare
-#
 sub matrixSquare {
+
+ #
+ # matrixSquare
+ #
  my $m = shift;    # reference to quadratic matrix
 
  my $n = @{$m};    # dimension nxn
@@ -1449,11 +1279,11 @@ sub matrixSquare {
  return \@ret;
 }
 
-#
-# printMatrix
-#
-
 sub printMatrix {
+
+ #
+ # printMatrix
+ #
  my $m = shift;
  my $n = @{$m};    # dimension nxn
  for ( my $i = 0 ; $i < $n ; $i++ ) {
@@ -1464,11 +1294,12 @@ sub printMatrix {
  }
 }
 
-#
-# reverseMatrix
-#
-#
 sub reverseMatrix {
+
+ #
+ # reverseMatrix
+ #
+ #
  my $m  = shift;
  my $rm = shift;
 
@@ -1492,26 +1323,11 @@ sub reverseMatrix {
    $rm->[$i][$j] /= $scaler[$i];
   }
  }
-
- #print "scale vector " . join (" ", @scale) . "\n";
- #print "reverse scale vector " . join (" ", @scaler) . "\n";
-
- # find stationary distribution
- # approximately by taking a sufficiently large
- # matrix power of the transition matrix
-
- #print "m=\n";
- #printMatrix($m);
- #print "rm=\n";
- #printMatrix($rm);
  my $pm;
  copyMatrix( \@{$pm}, $m, scalar( @{$m} ) );
  for ( my $i = 0 ; $i < 5 ; $i++ ) {
   $pm = matrixSquare($pm);
  }
-
- #print "power matrix\n";
- #printMatrix($pm);
  my @pi = @{ $pm->[0] };    # stationary distribution
       #print "stationary distribution: " . join(" ", @pi) . "\n";
       # rtime-everse other matrix rm
@@ -1520,6 +1336,7 @@ sub reverseMatrix {
       # Q: transition matrix of time-reversed chain
       # P: transition matrix of normal chain
       # pi: stationary distribution
+
  for ( my $i = 0 ; $i < @{$rm} ; $i++ ) {
 
   for ( my $j = 0 ; $j < @{ $rm->[$i] } ; $j++ ) {
@@ -1539,12 +1356,10 @@ sub reverseMatrix {
    $m->[$i][$j] *= $scale[$i];
   }
  }
-
- #print "rescaled reversed chain:=\n";
- #printMatrix($rm);
 }
 
 sub got_interrupt_signal {
+
  print STDERR "$0 was interrupted.\n";
  if ($trans_matrix) {
   if ( -s $trans_matrix . ".curopt" ) {
@@ -1561,79 +1376,167 @@ sub got_interrupt_signal {
 }
 
 sub check_options() {
- $train = shift if !$train;
+ $optimize_gb = shift if !$optimize_gb;
+ pod2usage("Optimization training file missing\n")
+   unless ( $optimize_gb && -s $optimize_gb );
+ pod2usage("No species specified\n") if ( !$species );
+ pod2usage("--kfold must be at least two fold cross validation")
+   if ( $kfold < 1 );
+ $cpus = 1 if !$cpus || $cpus < 1;
+ $ENV{'PATH'} .= ':' . $exec_dir if $exec_dir && -d $exec_dir;
+ die(
+"Augustus config directory not in environment (\$AUGUSTUS_CONFIG_PATH) and not specified.\n"
+ ) unless $config_path && -d $config_path;
+ $config_path .= '/' unless $config_path =~ /\/$/;
+ $notrain = 1 if ($trans_matrix);
 
- if ( !$train ) {
-  pod2usage("training file missing\n");
-
+ if ($onlyutr) {
+  $modelrestrict =
+"--/EHMMTraining/statecount=2 --/EHMMTraining/state00=intronmodel --/EHMMTraining/state01=utrmodel --/IntronModel/outfile=/dev/null";
+  $utr = 1;
  }
 
- if ( !$species ) {
-  pod2usage("no species specified\n");
+ $common_parameters .= "--UTR=on"                          if $utr;
+ $common_parameters .= " --translation_table=$trans_table" if $trans_table;
+ $common_parameters .= " --genemodel=$genemodel"           if $genemodel;
+ $common_parameters .= " --/Constant/min_coding_len=" . $min_coding
+   if $min_coding;
+
+ $output_directory = $utr ? "tmp_opt_utr_$species" : "tmp_opt_$species";
+ &process_cmd("rm -rf $output_directory;mkdir $output_directory");
+ die unless -d $output_directory;
+
+ &split_genbank( $optimize_gb, $kfold );
+
+ &create_cross_validation();
+}
+
+sub create_cross_validation() {
+
+ # create training sets for cross-validation (parallel version)
+ if ( $cpus > 1 ) {
+  for ( my $k = 1 ; $k <= $kfold ; $k++ ) {
+
+   # make the temporary training and testing files
+   system("rm -f $output_directory/curtrain-$k");
+   for ( my $m = 1 ; $m <= $kfold ; $m++ ) {
+    if ( $m != $k ) {
+     system(
+          "cat $output_directory/bucket$m.gb >> $output_directory/curtrain-$k");
+    }
+   }
+   if ($onlytrain_gb) {
+    system("cat $onlytrain_gb >> $output_directory/curtrain-$k");
+   }
+  }
+ }
+}
+
+sub split_genbank() {
+ my $gb_file    = shift;
+ my $partitions = shift;
+
+ # Split $gb_file into $partitions equal portions
+ print "Splitting training file into $partitions buckets...\n";
+ open( TRAINGB, $gb_file ) or die("Could not open $gb_file");
+
+ my @seqlist = ();
+ push @seqlist, "12";
+ @seqlist = <TRAINGB>;
+ my @namelines = grep /^LOCUS   +/, @seqlist;
+ my @names = ();
+
+ if ( @namelines < $partitions ) {
+  print "Number of training sequences is too small\n";
   exit;
  }
 
- if ( $kfold < 1 ) {
-  die("--kfold must be at least two fold cross validation");
+ foreach (@namelines) {
+  /LOCUS +([^ ]+) */;
+  push @names, $1;
  }
 
- if ( $exec_dir =~ /.[^\/]$/ ) {
-  $exec_dir .= '/';
+ my $bucket    = 0;
+ my %bucketmap = ();
+ srand(88);
+ while ( $#names >= 0 ) {
+  my $rand = rand(@names);
+  $bucketmap{ $names[$rand] } = $bucket;
+  $bucket++;
+  if ( $bucket == $partitions ) {
+   $bucket = 0;
+  }
+  splice @names, $rand, 1;    # delete array element
+ }
+ my $handle;
+ my @fh = ();
+ for ( $bucket = 1 ; $bucket <= $partitions ; $bucket++ ) {
+  $handle = IO::File->new(">$output_directory/bucket$bucket.gb")
+    or die("Could not open bucket$bucket.gb");
+  push @fh, $handle;
+ }
+ my $orig_sep = $/;
+ $/ = "\n//\n"
+   ; # this causes a huge single chunk when DOS carriage returns are used at line breaks
+ seek( TRAINGB, 0, 0 );
+ my $nloci = 0;
+ while (<TRAINGB>) {
+  my $gendaten = $_;
+  m/^LOCUS +(\S+) .*/;
+  my $genname = $1;
+
+  $bucket = $bucketmap{$genname};
+  my $handle = $fh[$bucket];
+  print $handle $gendaten;
+  $nloci++;
+ }
+ $/ = $orig_sep;
+ foreach my $handle (@fh) {
+  close $handle;
  }
 
- # check whether augustus and etraining are executable
- if ( qx(which "$exec_dir/augustus") !~ /augustus$/ ) {
-  die(
-"augustus is not executable. Please add the directory which contains the executable augustus to the PATH environment variable or specify the path with --aug_exec_dir."
+ if ( $nloci < @namelines ) {
+  die( "Genbank input file appears to have fewer records than expected.\n"
+   . "This could be a consequence of using DOS (Windows) carriage return symbols at line breaks."
   );
  }
-
- if ($trans_matrix) {
-  $notrain = 1;
- }
-
- if ( !$notrain ) {
-  if ( qx(which "$exec_dir/etraining") !~ /etraining$/ ) {
-   die(
-"etraining is not executable. Please add the directory which contains the executable etraining to the PATH environment variable or specify the path with --aug_exec_dir."
-   );
-  }
- }
- if ($utr) {
-  $pars = "--UTR=on";
- }
- if ($trans_table) {
-  $pars = $pars . " --translation_table=$trans_table";
- }
- if ($genemodel) {
-  $pars = $pars . " --genemodel=$genemodel";
- }
- if ($min_coding) {
-  $pars = $pars . " --/Constant/min_coding_len=" . $min_coding;
- }
-
- if ($trainonly) {
-  $modelrestrict =
-"--/EHMMTraining/statecount=2 --/EHMMTraining/state00=intronmodel --/EHMMTraining/state01=utrmodel --/IntronModel/outfile=/dev/null";
-
-# the intron model needs to be trained because the UTR model depends on it
-# possibly change --/IntronModel/outfile=/dev/null if that is incompatible with some UNIX systems
-  $pars = "--UTR=on" if !$pars;
- }
- eval { require Parallel::ForkManager };
- unless ($@) {
-  $got_ForkManager = 1;
-  Parallel::ForkManager->import();
- }
-
- if ( !$got_ForkManager && $cpus > 1 ) {
-  print STDERR
-"The perl module Parallel::ForkManager is required to run optimize_augustus.pl in parallel.\n";
-  print STDERR "Install this module first. On Ubuntu linux install with\n";
-  print STDERR "sudo apt-get install libparallel-forkmanager-perl\n";
-  print STDERR "Will now run sequentially (--cpus=1)...\n";
-  $cpus = 1;
- }
-
 }
 
+sub process_cmd {
+ my ( $cmd, $dir ) = @_;
+ print &mytime . "CMD: $cmd\n" if $verbose;
+ chdir($dir) if $dir;
+ my $ret = system($cmd);
+ if ( $ret && $ret != 256 ) {
+  die "Error, cmd died with ret $ret\n";
+ }
+ return;
+}
+
+sub mytime() {
+ my @mabbr =
+   qw(January February March April May June July August September October November December);
+ my @wabbr = qw(Sunday Monday Tuesday Wednesday Thursday Friday Saturday);
+ my $sec   = localtime->sec() < 10 ? '0' . localtime->sec() : localtime->sec();
+ my $min   = localtime->min() < 10 ? '0' . localtime->min() : localtime->min();
+ my $hour =
+   localtime->hour() < 10 ? '0' . localtime->hour() : localtime->hour();
+ my $wday = $wabbr[ localtime->wday ];
+ my $mday = localtime->mday;
+ my $mon  = $mabbr[ localtime->mon ];
+ my $year = localtime->year() + 1900;
+ return "$wday, $mon $mday, $year: $hour:$min:$sec\t";
+}
+
+sub check_program() {
+ my @paths;
+ foreach my $prog (@_) {
+  my $path = `which $prog`;
+  pod2usage "Error, path to a required program ($prog) cannot be found\n\n"
+    unless $path =~ /^\//;
+  chomp($path);
+  $path = readlink($path) if -l $path;
+  push( @paths, $path );
+ }
+ return @paths;
+}
