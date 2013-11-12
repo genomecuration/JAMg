@@ -302,7 +302,6 @@ print "Started: ". &mytime."\n";
 my @curoptmeta = @metastartvalues;
 my ( $a, $b, $finished, @testlist, @testlisttargets, $opttarget, $optvalue );
 my @snsp = evalsnsp(@curoptmeta);
-print "\n";
 my $target = sprintf( "%.4f", gettarget(@snsp) );
 $opttarget = $target;
 print "starting accuracy: "
@@ -358,7 +357,7 @@ if ( !$trans_matrix ) {
     foreach my $testvalue (@testlist) {
      $testmeta[$idx] = $testvalue;    # set the parameter to the testvalue
      @snsp = evalsnsp(@testmeta);
-     print "\n";
+     
      $target = sprintf( "%.4f", gettarget(@snsp) );
      push @testlisttargets, $target;
      if ( $target > $opttarget ) {    # found improvement
@@ -658,6 +657,7 @@ sub evalsnsp {
 
  my @returnarray = ( $gbsn, $gbsp, $gesn, $gesp, $ggsn, $ggsp, $gsmd, $gtmd );
  $storedsnsp{$argument} = \@returnarray;
+ print "\n";
  return @returnarray;
 }
 
