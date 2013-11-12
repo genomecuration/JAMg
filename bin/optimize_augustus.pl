@@ -354,8 +354,7 @@ if ( !$trans_matrix ) {
      }
     }
     @testlisttargets = ();
-    print "$metaparnames[$idx]: checking values "
-      . join( "\t", @testlist ) . "\n";
+    print "$metaparnames[$idx]: " . join( "\t", @testlist ) . "\n";
     foreach my $testvalue (@testlist) {
      $testmeta[$idx] = $testvalue;    # set the parameter to the testvalue
      @snsp = evalsnsp(@testmeta);
@@ -376,8 +375,8 @@ if ( !$trans_matrix ) {
       $finished = 0;
      }
     }
-    print "values  " . join( "\t", @testlist ) . "\n";
-    print "targets " . join( "\t", @testlisttargets ) . "\n";
+    print "values  " . join( "\t", @testlist ) . "\n" if @testlist;
+    print "targets " . join( "\t", @testlisttargets ) . "\n" if @testlisttargets;
     if ( $finished == 0 ) {
 
      # determine whether further improvements are possible at all
@@ -549,6 +548,8 @@ if ( !$notrain ) {
  }
 }
 
+&process_cmd("rm -rf $output_directory");
+
 sub evalsnsp {
 ################################################
 # evalsnsp: determine the values
@@ -573,7 +574,6 @@ sub evalsnsp {
   #print "argument:$argument\n";
   # check if accuracy has already been computed for this parameter combination
   if ( exists( $storedsnsp{$argument} ) ) {
-   print "retreive accuracy from previous computation";
    return @{ $storedsnsp{$argument} };
   }
  }
