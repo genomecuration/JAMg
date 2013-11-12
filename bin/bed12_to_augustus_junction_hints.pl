@@ -119,9 +119,9 @@ OUTER: while ( my $ln = <STDIN> ) {
     . $type . "\t"
     . $start . "\t"
     . $stop . "\t"
-    . $data[4] . "\t"
+    . $data[4] 
     . "\t$strand\t.\tsrc=JR;pri=$priority;grp="
-    . $data[3] . "\n";
+    . $data[3] . ";\n";
  }
  else {
   print BEDJUNCTIONS $ln . "\n";
@@ -136,9 +136,9 @@ OUTER: while ( my $ln = <STDIN> ) {
      . $type . "\t"
      . $start . "\t"
      . $stop . "\t"
-     . $data[4] . "\t"
+     . $data[4] 
      . "\t$strand\t.\tsrc=JR;pri=$priority;grp="
-     . $data[3] . "\n";
+     . $data[3] . ";\n";
   }
 
   #introns
@@ -151,11 +151,10 @@ OUTER: while ( my $ln = <STDIN> ) {
      . $type . "\t"
      . $start . "\t"
      . $stop . "\t"
-     . $data[4] . "\t"
-
-     . "\t$strand\t.\tsrc=JR;pri=$priority;grp=" . $data[3] . "\n";
+     . $data[4] 
+     . "\t$strand\t.\tsrc=JR;pri=$priority;grp="
+      . $data[3] . ";\n";
   }
  }
 }
 close BEDJUNCTIONS;
-
