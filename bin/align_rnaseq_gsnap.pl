@@ -137,11 +137,10 @@ foreach my $file ( sort @files ) {
  $file_align_cmd .=
    " --split-output=gsnap.$base --read-group-id=$group_id $file $pair ";
  &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
-   unless (    -s "gsnap.$base.concordant_uniq"
-            || -s "gsnap.$base.concordant_uniq.bam" );
+   unless (    -s "gsnap.$base.concordant_uniq"  || -s "gsnap.$base.concordant_uniq.bam" );
  unless ( -s "gsnap.$base.concordant_uniq.bam" ) {
   &process_cmd(
-"$samtools_exec view -u -T $genome gsnap.$base.concordant_uniq > gsnap.$base.concordant_uniq.tmp | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory gsnap.$base.concordant_uniq.tmp gsnap.$base.concordant_uniq"
+"$samtools_exec view -u -T $genome gsnap.$base.concordant_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - gsnap.$base.concordant_uniq"
   );
   &process_cmd("$samtools_exec index gsnap.$base.concordant_uniq.bam");
   print LOG "\ngsnap.$base.concordant_uniq.bam:\n";
@@ -152,7 +151,7 @@ foreach my $file ( sort @files ) {
  }
  unless ( -s "gsnap.$base.concordant_mult.bam" ) {
   &process_cmd(
-"$samtools_exec view -u -T $genome gsnap.$base.concordant_mult > gsnap.$base.concordant_mult.tmp | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory gsnap.$base.concordant_mult.tmp gsnap.$base.concordant_mult"
+"$samtools_exec view -u -T $genome gsnap.$base.concordant_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - gsnap.$base.concordant_mult"
   );
   &process_cmd("$samtools_exec index gsnap.$base.concordant_mult.bam");
   print LOG "\ngsnap.$base.concordant_mult.bam:\n";
@@ -223,7 +222,7 @@ sub check_program() {
 }
 
 sub samtools_version_check() {
- $samtools_exec = shift;
+ my $samtools_exec = shift;
  my @version_lines = `$samtools_exec 2>&1`;
  foreach my $ln (@version_lines) {
   if ( $ln =~ /^Version:\s+\d+\.(\d+).(\d+)/i ) {
