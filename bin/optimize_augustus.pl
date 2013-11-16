@@ -987,20 +987,15 @@ sub reverseMatrix {
 }
 
 sub got_interrupt_signal {
-
- print STDERR "$0 was interrupted.\n";
- if ($trans_matrix) {
-  if ( -s $trans_matrix . ".curopt" ) {
+ if ($trans_matrix && -s $trans_matrix . ".curopt" ) {
    system("cp $trans_matrix.curopt $trans_matrix");
-   print STDERR "I replaced the transition matrix in $trans_matrix "
+   warn "I replaced the transition matrix in $trans_matrix "
      . "with the currently optimal matrix.\n";
-  }
  }
  else {
-  print STDERR
-    "\nPlease retrain augustus with the new parameters using etraining.\n";
+  warn "\nPlease retrain augustus with the new parameters using etraining.\n";
  }
- exit(1);
+ die "$0 was interrupted.\n";
 }
 
 sub check_options() {

@@ -115,14 +115,13 @@ my ( $metaextrinsic_hash_ref, $cfg_extra, $basic_cfg ) =
 #######################################################################################
 my $extrinsic_iteration_counter : shared;
 $extrinsic_iteration_counter = int(0);
+my $todo = int(0); # count how many searches we are going to do.
 
-my $found_improvement = 0;
 my $thread_helper     = new Thread_helper($cpus);
 my $thread            = threads->create('evalsnsp');
 $thread_helper->add_thread($thread);
 
-# count how many searches we are going to do.
-my $todo = int(0);
+
 foreach my $src ( keys %sources_that_need_to_be_checked ) {
  next if $src eq 'M';
  foreach my $feat (@feature_headers) {
@@ -184,13 +183,17 @@ if (@failed_threads) {
  exit(1);
 }
 
-my @results = `grep Accuracy $output_directory/*log | sort -rnk 11")`;
+### FINISHED
+
+my @results = `grep Accuracy $output_directory/*log | sort -rnk 11`;
+if (!$results[0]){
+ die "No output files produced. This is weird, maybe you requested it to stop or something else happened? Report please!\n";
+}
 if ( scalar(@results) == $todo ) {
  print "Done and all good!\n";
 }
 else {
- print
-"Done but something happened, not all results may have been completed ($todo != "
+ print "Done but something happened, not all results may have been completed ($todo != "
    . scalar(@results) . ")!\n";
 }
 

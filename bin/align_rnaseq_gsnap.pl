@@ -25,7 +25,8 @@ Optional:
  -intron_size :i     Maximum intron length (def. 70,000)
  -cpus :i            Number of CPUs/threads (def. 10)
  -help
- 
+ -pattern            Pattern for automatching left pair files with *$pattern*.fastq (defaults to _1_)
+ -nofail             Don't print out failures (I/O friendlyness if sparse hits expected). Otherwise captured as FASTQ
 
 =cut
 
@@ -50,8 +51,10 @@ my $genome_dbname;
 # 'harm_csiro4b_unmasked';
 my $intron_length = 70000;
 my $cpus = 10;
-my $memory = '30G';
+my $memory = '35G';
 my ($intron_splice_db,$help);
+my $pattern = '_1_';
+my $nofails;
 
 &GetOptions(
              'fasta:s'       => \$genome,
@@ -61,7 +64,9 @@ my ($intron_splice_db,$help);
              'intron_size:i'  => \$intron_length,
              'cpus|threads:i' => \$cpus,
              'memory:s'      => \$memory,
-             'help'          => \$help
+             'help'          => \$help,
+	     'pattern:s'    => \$pattern,
+	     'nofail'       => \$nofails
 );
 
 pod2usage if $help;
@@ -69,7 +74,14 @@ pod2usage "No genome FASTA\n" unless $genome && -s $genome;
 pod2usage "No GMAP genome database name\n" unless $genome_dbname;
 pod2usage "GMAP database does not exist: $gmap_dir\n" unless -d $gmap_dir;
 
-my @files = glob("*_1_*fastq");
+$memory = ~s/([A-Z])$//;
+my $suff = $1 ? $1 : '';
+$memory = sprintf("%.2f", ($memory / $cpus)). $suff;  # samtools sort uses -memory per CPU 
+
+my $pattern2 = $pattern;
+$pattern2=~s/1/2/;
+
+my @files = glob("*$pattern*.fastq");
 push( @files, @ARGV );
 my @verified_files;
 for ( my $i = 0 ; $i < @files ; $i++ ) {
@@ -83,22 +95,22 @@ for ( my $i = 0 ; $i < @files ; $i++ ) {
 @files = @verified_files;
 die "No files found!\n" unless @files;
 
-my $build_cmd =
-"$gmap_build_exec -D $gmap_dir -d $genome_dbname -T /tmp/pap056 -k 13 -b 10 -q 1 -e 0 --no-sarray $genome >/dev/null";
-my $align_cmd =
-"$gsnap_exec --use-sarray=0 -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus  --pairmax-rna=$intron_length  --localsplicedist=$intron_length -N 1 -Q --npaths=50 --format=sam --sam-use-0M --no-sam-headers --fails-as-input ";
+my $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -T /tmp/pap056 -k 13 -b 10 -q 1 -e 0 --no-sarray $genome >/dev/null";
+my $align_cmd = "$gsnap_exec --use-sarray=0 -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus  --pairmax-rna=$intron_length  --localsplicedist=$intron_length -N 1 -Q --npaths=50 --format=sam --sam-use-0M --no-sam-headers ";
+$align_cmd .= " --nofails " if $nofails;
+$align_cmd .= " --fails-as-input " if !$nofails;
 $align_cmd .= " -s $intron_splice_db " if $intron_splice_db;
 
 foreach my $file ( sort @files ) {
  my $pair = $file;
- $pair =~ s/_1_/_2_/;
+ $pair =~ s/$pattern/$pattern2/;
  next if $pair eq $file;
  unless ( -s $pair ) {
   warn "Didn't find pair of $file. Skipping\n";
   next;
  }
  my $base = basename($file);
- $base =~ s/_1_.+//;
+ $base =~ s/$pattern.+//;
  my $group_id = $base;
  $base .= "_vs_$genome_dbname";
  if ( -s "gsnap.$base.log" ) {
@@ -113,18 +125,24 @@ foreach my $file ( sort @files ) {
  &process_cmd($build_cmd) unless -d $gmap_dir .'/'. $genome_dbname;
  my $file_align_cmd = $align_cmd;
  $file_align_cmd .= " --split-output=gsnap.$base --read-group-id=$group_id $file $pair ";
- &process_cmd($file_align_cmd) unless ( -s "gsnap.$base.concordant_uniq" || -s "gsnap.$base.concordant_uniq.bam" );
+ &process_cmd($file_align_cmd,'.',"gsnap.$base*") unless ( -s "gsnap.$base.concordant_uniq" || -s "gsnap.$base.concordant_uniq.bam" );
  unless ( -s "gsnap.$base.concordant_uniq.bam" ) {
-  &process_cmd("$samtools_exec view -u -T $genome gsnap.$base.concordant_uniq|$samtools_exec sort -@ $cpus -l 9 -m $memory - gsnap.$base.concordant_uniq");
+  &process_cmd("$samtools_exec view -u -T $genome gsnap.$base.concordant_uniq > gsnap.$base.concordant_uniq.tmp");
+  &process_cmd("$samtools_exec sort -@ $cpus -l 9 -m $memory gsnap.$base.concordant_uniq.tmp gsnap.$base.concordant_uniq");
+  unlink("gsnap.$base.concordant_uniq.tmp");
   &process_cmd("$samtools_exec index gsnap.$base.concordant_uniq.bam");
   print LOG "\ngsnap.$base.concordant_uniq.bam:\n";
   &process_cmd("$samtools_exec flagstat gsnap.$base.concordant_uniq.bam >> gsnap.$base.log");
+  unlink("gsnap.$base.concordant_uniq");
  }
  unless ( -s "gsnap.$base.concordant_mult.bam" ) {
-  &process_cmd("$samtools_exec view -u -T $genome gsnap.$base.concordant_mult|$samtools_exec sort -@ $cpus -l 9 -m $memory - gsnap.$base.concordant_mult");
+  &process_cmd("$samtools_exec view -u -T $genome gsnap.$base.concordant_mult > gsnap.$base.concordant_mult.tmp");
+  &process_cmd("$samtools_exec sort -@ $cpus -l 9 -m $memory gsnap.$base.concordant_mult.tmp gsnap.$base.concordant_mult");
+  &process_cmd("gsnap.$base.concordant_mult.tmp");
   &process_cmd("$samtools_exec index gsnap.$base.concordant_mult.bam");
   print LOG "\ngsnap.$base.concordant_mult.bam:\n";
   &process_cmd("$samtools_exec flagstat gsnap.$base.concordant_mult.bam >> gsnap.$base.log");
+  unlink("gsnap.$base.concordant_mult");
  }
  unless ( -s "gsnap.$base.concordant_uniq_mult.bam" ) {
   &process_cmd("$samtools_exec merge -@ $cpus  -l 9 gsnap.$base.concordant_uniq_mult.bam gsnap.$base.concordant_uniq.bam gsnap.$base.concordant_mult.bam");
@@ -139,13 +157,14 @@ foreach my $file ( sort @files ) {
 
 ########################################
 sub process_cmd {
- my ( $cmd, $dir ) = @_;
+ my ( $cmd,$dir, $delete_pattern ) = @_;
  print &mytime . "CMD: $cmd\n"     if $debug;
  print LOG &mytime . "CMD: $cmd\n" if $debug;
- chdir($dir)                       if $dir;
+ chdir($dir) if $dir;
  my $ret = system($cmd);
  if ( $ret && $ret != 256 ) {
   chdir($cwd) if $dir;
+  &process_cmd_delete_fails($dir,$delete_pattern) if $delete_pattern;
   die "Error, cmd died with ret $ret\n";
  }
  chdir($cwd) if $dir;
@@ -191,4 +210,13 @@ sub samtools_version_check(){
    #print "Good: Samtools version 1.19+ found\n";
   }
  }
+}
+
+
+sub process_cmd_delete_fails {
+ my $dir = shift;
+ my $pattern = shift;
+ my @delete = glob($dir."/".$pattern);
+ foreach (@delete){unlink $_;}
+ die "\nBreak requested while $dir/$pattern was being processed. Unfinished output deleted.\n"; 
 }

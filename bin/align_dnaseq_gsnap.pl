@@ -23,7 +23,8 @@ Optional:
  -gmap_dir :s        Where the GMAP databases are meant to live (def. /databases/gmap)
  -cpus :i            Number of CPUs/threads (def. 10)
  -help
- 
+ -pattern            Pattern for automatching left pair files with *$pattern*.fastq (defaults to _1_)
+ -nofail             Don't print out failures (I/O friendlyness if sparse hits expected). Otherwise captured as FASTQ
 
 =cut
 
@@ -47,7 +48,7 @@ my $genome;
 my $genome_dbname;
 # 'harm_csiro4b_unmasked';
 my $cpus = 10;
-my $memory = '15G';
+my $memory = '35G';
 my ($help);
 my $pattern = '_1_';
 my $nofails;
@@ -67,6 +68,10 @@ pod2usage if $help;
 pod2usage "No genome FASTA\n" unless $genome && -s $genome;
 pod2usage "No GMAP genome database name\n" unless $genome_dbname;
 pod2usage "GMAP database does not exist: $gmap_dir\n" unless -d $gmap_dir;
+
+$memory = ~s/([A-Z])$//;
+my $suff = $1 ? $1 : '';
+$memory = sprintf("%.2f", ($memory / $cpus)). $suff;  # samtools sort uses -memory per CPU 
 
 my $pattern2 = $pattern;
 $pattern2=~s/1/2/;
