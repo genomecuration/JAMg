@@ -73,8 +73,11 @@ pod2usage "No GMAP genome database name\n" unless $genome_dbname;
 pod2usage "GMAP database does not exist: $gmap_dir\n" unless -d $gmap_dir;
 
 my $samtools_sort_CPUs = int( $cpus / 2 ) > 2 ? int( $cpus / 2 ) : 2;
-$memory = ~s/([A-Z])$//;
-my $suff = $1 ? $1 : '';
+my $suff = "";
+if ($memory =~s/([A-Z])$//){
+ $suff = $1;
+}
+
 $memory =
   sprintf( "%.2f", ( $memory / $samtools_sort_CPUs ) )
   . $suff;    # samtools sort uses -memory per CPU
@@ -133,12 +136,8 @@ foreach my $file ( sort @files ) {
             || -s "gsnap.$base.concordant_uniq.bam" );
  unless ( -s "gsnap.$base.concordant_uniq.bam" ) {
   &process_cmd(
-"$samtools_exec view -u -T $genome gsnap.$base.concordant_uniq > gsnap.$base.concordant_uniq.tmp"
+"$samtools_exec view -u -T $genome gsnap.$base.concordant_uniq > gsnap.$base.concordant_uniq.tmp | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory gsnap.$base.concordant_uniq.tmp gsnap.$base.concordant_uniq"
   );
-  &process_cmd(
-"$samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory gsnap.$base.concordant_uniq.tmp gsnap.$base.concordant_uniq"
-  );
-  unlink("gsnap.$base.concordant_uniq.tmp");
   &process_cmd("$samtools_exec index gsnap.$base.concordant_uniq.bam");
   print LOG "\ngsnap.$base.concordant_uniq.bam:\n";
   &process_cmd(
@@ -148,12 +147,8 @@ foreach my $file ( sort @files ) {
  }
  unless ( -s "gsnap.$base.concordant_mult.bam" ) {
   &process_cmd(
-"$samtools_exec view -u -T $genome gsnap.$base.concordant_mult > gsnap.$base.concordant_mult.tmp"
+"$samtools_exec view -u -T $genome gsnap.$base.concordant_mult > gsnap.$base.concordant_mult.tmp | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory gsnap.$base.concordant_mult.tmp gsnap.$base.concordant_mult"
   );
-  &process_cmd(
-"$samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory gsnap.$base.concordant_mult.tmp gsnap.$base.concordant_mult"
-  );
-  &process_cmd("gsnap.$base.concordant_mult.tmp");
   &process_cmd("$samtools_exec index gsnap.$base.concordant_mult.bam");
   print LOG "\ngsnap.$base.concordant_mult.bam:\n";
   &process_cmd(
