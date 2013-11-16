@@ -1,0 +1,49 @@
+Alexie's Illumina preprocessing pipeline; no warranty but we use it...
+complaints to alexie@butterflybase.org
+
+Identifies rRNA, contaminants, trims in a standard fashion etc. Maintains read pairs.
+
+Uses pbzip2, kanga, samtools
+Optionally: Trimmomatic, fastqc
+
+$ preprocess_illumina.pl <infile> <infile2> etc 
+
+or for pairs:
+$ preprocess_illumina.pl -paired <infile1> <infile2>
+
+see
+$ perldoc preprocess_illumina.pl
+or code within
+$ vim preprocess_illumina.pl
+
+
++++++++++++++++++++++++++
+Programs used:
+
+Kanga
+Stephen S, Cullerne D, Spriggs A, Helliwell C, Lovell D, Taylor JM
+BioKanga: A suite of high performance bioinformatics applications. in preparation 2012
+[http://code.google.com/p/biokanga/]
+
+Trimmomatic
+http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/Trimmomatic-0.22.zip
+Lohse M, Bolger AM, Nagel A, Fernie AR, Lunn JE, Stitt M, Usadel B. RobiNA: a
+user-friendly, integrated software solution for RNA-Seq-based transcriptomics.
+Nucleic Acids Res. 2012 Jul;40(Web Server issue):W622-7.
+
+pbzip2
+Jeff Gilchrist
+http://compression.ca
+Debian/Ubuntu:
+apt-get install pbzip2
+
+samtools
+Heng Li
+http://samtools.sourceforge.net
+Debian/Ubuntu:
+apt-get install samtools
+
+fastqc
+simon.andrews@babraham.ac.uk
+http://www.bioinformatics.bbsrc.ac.uk
+
