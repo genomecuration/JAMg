@@ -49,13 +49,8 @@
     'stop_qc'     => Stop after QC of untrimmed file (e.g. in order to specify -trim_5 or -qtrim)
     'backup'      => If bz2 files provided, then re-compress them using parallel-bzip2 (e.g. if source is Baylor)
 
-NB: Warning: I find that Trimmomatic fails with very large files (30Gb). If it happens for you, consider splitting them or spending 40minutes fixing it each time
 
-For RNA-Seq, either
- a) I check the FASTQC report of the processed data and trim the beginning low complexity regions (hexamer priming) and also I'm more conservative for the ends; i.e. after build_illumina_mates has finished, I ran Trimmomatic:
-trim last base TRAILING:10 ; trim first X low complexity bases HEADCROP: X (if Trimmomatic says reads have been discarded, don't forget to re-run build_illumina_mates)
- b) use -stop_qc and look at the untrimmed file before picking -trim_5 / -qtrim. 
- I use option (a) when I have a lot of read sets to preprocess (e.g. overnight), (b) when I can wait for the QC
+Alexie tip: For RNA-Seq, I check the FASTQC report of the processed data but do not trim the beginning low complexity regions (hexamer priming) as some tests with TrinityRNAseq did not show improvement (the opposite in fact).
 
 =head1 DEPENDECIES
 
