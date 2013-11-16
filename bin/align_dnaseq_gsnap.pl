@@ -36,7 +36,8 @@ use Getopt::Long;
 use Time::localtime;
 use File::Basename;
 
-my ( $gmap_build_exec, $gsnap_exec,$samtools_exec ) = &check_program( "gmap_build", "gsnap","samtools" );
+my ( $gmap_build_exec, $gsnap_exec, $samtools_exec ) =
+  &check_program( "gmap_build", "gsnap", "samtools" );
 &samtools_version_check($samtools_exec);
 
 my $debug = 1;
@@ -44,24 +45,26 @@ my $cwd   = `pwd`;
 chomp($cwd);
 my $gmap_dir = '/databases/gmap/';
 my $genome;
+
 # '/archive/pap056/work/assembly_qc/harm_csiro4b/assembly_csiro4b.scaffolds.public.fsa';
 my $genome_dbname;
+
 # 'harm_csiro4b_unmasked';
-my $cpus = 10;
+my $cpus   = 10;
 my $memory = '35G';
 my ($help);
 my $pattern = '_1_';
 my $nofails;
 
 &GetOptions(
-             'fasta:s'       => \$genome,
-             'dbname:s'      => \$genome_dbname,
-             'gmap_dir:s'    => \$gmap_dir,
+             'fasta:s'        => \$genome,
+             'dbname:s'       => \$genome_dbname,
+             'gmap_dir:s'     => \$gmap_dir,
              'cpus|threads:i' => \$cpus,
-             'memory:s'      => \$memory,
-             'help'          => \$help,
-	     'pattern:s'    => \$pattern,
-	     'nofail'       => \$nofails
+             'memory:s'       => \$memory,
+             'help'           => \$help,
+             'pattern:s'      => \$pattern,
+             'nofail'         => \$nofails
 );
 
 pod2usage if $help;
@@ -69,12 +72,15 @@ pod2usage "No genome FASTA\n" unless $genome && -s $genome;
 pod2usage "No GMAP genome database name\n" unless $genome_dbname;
 pod2usage "GMAP database does not exist: $gmap_dir\n" unless -d $gmap_dir;
 
+my $samtools_sort_CPUs = int( $cpus / 2 ) > 2 ? int( $cpus / 2 ) : 2;
 $memory = ~s/([A-Z])$//;
 my $suff = $1 ? $1 : '';
-$memory = sprintf("%.2f", ($memory / $cpus)). $suff;  # samtools sort uses -memory per CPU 
+$memory =
+  sprintf( "%.2f", ( $memory / $samtools_sort_CPUs ) )
+  . $suff;    # samtools sort uses -memory per CPU
 
 my $pattern2 = $pattern;
-$pattern2=~s/1/2/;
+$pattern2 =~ s/1/2/;
 
 my @files = glob("*$pattern*.fastq");
 push( @files, @ARGV );
@@ -90,9 +96,11 @@ for ( my $i = 0 ; $i < @files ; $i++ ) {
 @files = @verified_files;
 die "No files found!\n" unless @files;
 
-my $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -T /tmp/pap056 -k 13 -b 10 -q 1 -e 0 $genome >/dev/null";
-my $align_cmd = "$gsnap_exec -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=50 --format=sam --sam-use-0M --no-sam-headers ";
-$align_cmd .= " --nofails " if $nofails;
+my $build_cmd =
+"$gmap_build_exec -D $gmap_dir -d $genome_dbname -T /tmp/pap056 -k 13 -b 10 -q 1 -e 0 $genome >/dev/null";
+my $align_cmd =
+"$gsnap_exec -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=50 --format=sam --sam-use-0M --no-sam-headers ";
+$align_cmd .= " --nofails "        if $nofails;
 $align_cmd .= " --fails-as-input " if !$nofails;
 
 foreach my $file ( sort @files ) {
@@ -109,56 +117,75 @@ foreach my $file ( sort @files ) {
  $base .= "_vs_$genome_dbname";
  if ( -s "gsnap.$base.log" ) {
   open( LOG, "gsnap.$base.log" );
- my @log = <LOG>;
+  my @log = <LOG>;
   close LOG;
   next if $log[-1] && $log[-1] =~ /^GSNAP Completed/;
   my @del = glob("gsnap.$base.*");
   foreach (@del) { unlink($_); }
  }
  open( LOG, ">gsnap.$base.log" );
- &process_cmd($build_cmd) unless -d $gmap_dir .'/'. $genome_dbname;
+ &process_cmd($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
  my $file_align_cmd = $align_cmd;
- $file_align_cmd .= " --split-output=gsnap.$base --read-group-id=$group_id $file $pair ";
- &process_cmd($file_align_cmd,'.',"gsnap.$base*") unless ( -s "gsnap.$base.concordant_uniq" || -s "gsnap.$base.concordant_uniq.bam" );
+ $file_align_cmd .=
+   " --split-output=gsnap.$base --read-group-id=$group_id $file $pair ";
+ &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
+   unless (    -s "gsnap.$base.concordant_uniq"
+            || -s "gsnap.$base.concordant_uniq.bam" );
  unless ( -s "gsnap.$base.concordant_uniq.bam" ) {
-  &process_cmd("$samtools_exec view -u -T $genome gsnap.$base.concordant_uniq > gsnap.$base.concordant_uniq.tmp");
-  &process_cmd("$samtools_exec sort -@ $cpus -l 9 -m $memory gsnap.$base.concordant_uniq.tmp gsnap.$base.concordant_uniq");
+  &process_cmd(
+"$samtools_exec view -u -T $genome gsnap.$base.concordant_uniq > gsnap.$base.concordant_uniq.tmp"
+  );
+  &process_cmd(
+"$samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory gsnap.$base.concordant_uniq.tmp gsnap.$base.concordant_uniq"
+  );
   unlink("gsnap.$base.concordant_uniq.tmp");
   &process_cmd("$samtools_exec index gsnap.$base.concordant_uniq.bam");
   print LOG "\ngsnap.$base.concordant_uniq.bam:\n";
-  &process_cmd("$samtools_exec flagstat gsnap.$base.concordant_uniq.bam >> gsnap.$base.log");
+  &process_cmd(
+    "$samtools_exec flagstat gsnap.$base.concordant_uniq.bam >> gsnap.$base.log"
+  );
   unlink("gsnap.$base.concordant_uniq");
  }
  unless ( -s "gsnap.$base.concordant_mult.bam" ) {
-  &process_cmd("$samtools_exec view -u -T $genome gsnap.$base.concordant_mult > gsnap.$base.concordant_mult.tmp");
-  &process_cmd("$samtools_exec sort -@ $cpus -l 9 -m $memory gsnap.$base.concordant_mult.tmp gsnap.$base.concordant_mult");
+  &process_cmd(
+"$samtools_exec view -u -T $genome gsnap.$base.concordant_mult > gsnap.$base.concordant_mult.tmp"
+  );
+  &process_cmd(
+"$samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory gsnap.$base.concordant_mult.tmp gsnap.$base.concordant_mult"
+  );
   &process_cmd("gsnap.$base.concordant_mult.tmp");
   &process_cmd("$samtools_exec index gsnap.$base.concordant_mult.bam");
   print LOG "\ngsnap.$base.concordant_mult.bam:\n";
-  &process_cmd("$samtools_exec flagstat gsnap.$base.concordant_mult.bam >> gsnap.$base.log");
+  &process_cmd(
+    "$samtools_exec flagstat gsnap.$base.concordant_mult.bam >> gsnap.$base.log"
+  );
   unlink("gsnap.$base.concordant_mult");
  }
  unless ( -s "gsnap.$base.concordant_uniq_mult.bam" ) {
-  &process_cmd("$samtools_exec merge -@ $cpus  -l 9 gsnap.$base.concordant_uniq_mult.bam gsnap.$base.concordant_uniq.bam gsnap.$base.concordant_mult.bam");
+  &process_cmd(
+"$samtools_exec merge -@ $cpus  -l 9 gsnap.$base.concordant_uniq_mult.bam gsnap.$base.concordant_uniq.bam gsnap.$base.concordant_mult.bam"
+  );
   &process_cmd("$samtools_exec index gsnap.$base.concordant_uniq_mult.bam");
   print LOG "\ngsnap.$base.concordant_uniq_mult.bam:\n";
-  &process_cmd("$samtools_exec flagstat gsnap.$base.concordant_uniq_mult.bam >> gsnap.$base.log");
+  &process_cmd(
+"$samtools_exec flagstat gsnap.$base.concordant_uniq_mult.bam >> gsnap.$base.log"
+  );
  }
- 
+
  print LOG "\nGSNAP Completed!\n";
  close LOG;
 }
 
 ########################################
 sub process_cmd {
- my ( $cmd,$dir, $delete_pattern ) = @_;
+ my ( $cmd, $dir, $delete_pattern ) = @_;
  print &mytime . "CMD: $cmd\n"     if $debug;
  print LOG &mytime . "CMD: $cmd\n" if $debug;
- chdir($dir) if $dir;
+ chdir($dir)                       if $dir;
  my $ret = system($cmd);
  if ( $ret && $ret != 256 ) {
   chdir($cwd) if $dir;
-  &process_cmd_delete_fails($dir,$delete_pattern) if $delete_pattern;
+  &process_cmd_delete_fails( $dir, $delete_pattern ) if $delete_pattern;
   die "Error, cmd died with ret $ret\n";
  }
  chdir($cwd) if $dir;
@@ -195,22 +222,23 @@ sub check_program() {
  return @paths;
 }
 
-sub samtools_version_check(){
+sub samtools_version_check() {
  $samtools_exec = shift;
  my @version_lines = `$samtools_exec 2>&1`;
- foreach my $ln (@version_lines){
-  if ($ln=~/^Version:\s+\d+\.(\d+).(\d+)/i){
+ foreach my $ln (@version_lines) {
+  if ( $ln =~ /^Version:\s+\d+\.(\d+).(\d+)/i ) {
    die "Samtools version 1.19+ is needed\n" unless $1 >= 1 && $2 >= 19;
+
    #print "Good: Samtools version 1.19+ found\n";
   }
  }
 }
 
-
 sub process_cmd_delete_fails {
- my $dir = shift;
+ my $dir     = shift;
  my $pattern = shift;
- my @delete = glob($dir."/".$pattern);
- foreach (@delete){unlink $_;}
- die "\nBreak requested while $dir/$pattern was being processed. Unfinished output deleted.\n"; 
+ my @delete  = glob( $dir . "/" . $pattern );
+ foreach (@delete) { unlink $_; }
+ die
+"\nBreak requested while $dir/$pattern was being processed. Unfinished output deleted.\n";
 }
