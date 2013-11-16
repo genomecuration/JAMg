@@ -1,0 +1,9 @@
+#!/bin/bash
+#PBS -l select=1:ncpus=2:mem=20gb:NodeType=any -l walltime=20:00:00 -V
+#PBS -N trMd -A sf-CSIRO
+cd $PBS_O_WORKDIR
+
+INDEX_PADDED=`printf "%03d" 0`
+
+ParaFly -CPU 1 -v -c medium_trinity_GG.cmds.$INDEX_PADDED -failed_cmds medium_trinity_GG.cmds.$INDEX_PADDED.failed
+
