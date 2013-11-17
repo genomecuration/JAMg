@@ -55,6 +55,7 @@ my (
      $notrain,     $trans_table,      $genemodel,
      $min_coding,  $hint_file,        $verbose
 );
+$|=1;
 $rounds      = 1;
 $pstep       = 5;
 $cpus        = 1;
@@ -115,12 +116,11 @@ my ( $metaextrinsic_hash_ref, $cfg_extra, $basic_cfg ) =
 #######################################################################################
 my $extrinsic_iteration_counter : shared;
 $extrinsic_iteration_counter = int(0);
-my $todo = int(0); # count how many searches we are going to do.
 
 my $thread_helper     = new Thread_helper($cpus);
 my $thread            = threads->create('evalsnsp');
 $thread_helper->add_thread($thread);
-
+my $todo =int(1);
 
 foreach my $src ( keys %sources_that_need_to_be_checked ) {
  next if $src eq 'M';
@@ -168,6 +168,7 @@ foreach my $src ( keys %sources_that_need_to_be_checked ) {
       $cfg->{$src}->{$feat}->{'value'}    = $value;
       $cfg->{'bonus'}->{$feat}->{'value'} = $bonus;
       $cfg->{'malus'}->{$feat}->{'value'} = $malus;
+      sleep(2);
       my $thread = threads->create( 'write_extrinsic_cfg', $cfg, $cfg_extra );
       $thread_helper->add_thread($thread);
      }
@@ -199,7 +200,7 @@ else {
 
 my $basic_file = "$output_directory/no_hints.prediction.log";
 if ( -s $basic_file ) {
- my $first_accuracy = `grep Accuracy $basic_file")`;
+ my $first_accuracy = `grep Accuracy $basic_file`;
  if ($first_accuracy) {
   $first_accuracy =~ /Target:\s([\.\d]+)/;
   my $first_target = $1;
@@ -209,13 +210,16 @@ if ( -s $basic_file ) {
 }
 if ( $results[0] =~ /^([^:]+)/ ) {
  my $file          = $1;
- my $best_accuracy = `grep Accuracy $file")`;
+ my $best_accuracy = `grep Accuracy $file`;
  $best_accuracy =~ /Target:\s([\.\d]+)/;
  my $best_target = $1;
  print
 "Best config file is found in $file with target $best_target\n$best_accuracy";
 }
 
+
+################################################################################################################
+################################################################################################################
 sub evalsnsp {
  my $extrinsic_file = shift;
  my ( $cbsn, $cbsp, $cesn, $cesp, $cgsn, $cgsp, $csmd, $ctmd ) =
@@ -388,7 +392,7 @@ sub write_extrinsic_cfg() {
  close OUT;
 
  my $target = &evalsnsp($species_extrinsic_file);
-
+ print "\r$extrinsic_iteration_counter/$todo    ";
 }
 
 sub parse_extrinsic_meta() {

@@ -78,8 +78,8 @@ if ($memory =~s/([A-Z])$//){
  $suff = $1;
 }
 
-$memory =
-  sprintf( "%.2f", ( $memory / $samtools_sort_CPUs ) )
+$memory = int(( $memory / $samtools_sort_CPUs ) ) < 1 ? '1G' :
+  int(  ( $memory / $samtools_sort_CPUs ) )
   . $suff;    # samtools sort uses -memory per CPU
 
 my $pattern2 = $pattern;
@@ -123,8 +123,8 @@ foreach my $file ( sort @files ) {
   my @log = <LOG>;
   close LOG;
   next if $log[-1] && $log[-1] =~ /^GSNAP Completed/;
-  my @del = glob("gsnap.$base.*");
-  foreach (@del) { unlink($_); }
+#  my @del = glob("gsnap.$base.*");
+#  foreach (@del) { unlink($_); }
  }
  open( LOG, ">gsnap.$base.log" );
  &process_cmd($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;

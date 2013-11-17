@@ -82,8 +82,9 @@ my $suff = "";
 if ($memory =~s/([A-Z])$//){
  $suff = $1;
 }
-$memory =
-  sprintf( "%.2f", ( $memory / $samtools_sort_CPUs ) )
+
+$memory = int(( $memory / $samtools_sort_CPUs ) ) < 1 ? '1G' :
+  int(  ( $memory / $samtools_sort_CPUs ) )
   . $suff;    # samtools sort uses -memory per CPU
 
 my $pattern2 = $pattern;
@@ -128,8 +129,8 @@ foreach my $file ( sort @files ) {
   my @log = <LOG>;
   close LOG;
   next if $log[-1] && $log[-1] =~ /^GSNAP Completed/;
-  my @del = glob("gsnap.$base.*");
-  foreach (@del) { unlink($_); }
+#  my @del = glob("gsnap.$base.*");
+#  foreach (@del) { unlink($_); }
  }
  open( LOG, ">gsnap.$base.log" );
  &process_cmd($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
@@ -137,7 +138,8 @@ foreach my $file ( sort @files ) {
  $file_align_cmd .=
    " --split-output=gsnap.$base --read-group-id=$group_id $file $pair ";
  &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
-   unless (    -s "gsnap.$base.concordant_uniq"  || -s "gsnap.$base.concordant_uniq.bam" );
+   unless (    -s "gsnap.$base.concordant_uniq"
+            || -s "gsnap.$base.concordant_uniq.bam" );
  unless ( -s "gsnap.$base.concordant_uniq.bam" ) {
   &process_cmd(
 "$samtools_exec view -u -T $genome gsnap.$base.concordant_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - gsnap.$base.concordant_uniq"
