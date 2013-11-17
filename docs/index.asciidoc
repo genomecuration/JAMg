@@ -1,0 +1,15 @@
+= Just Annotate My Genome (JAMg) =
+
+
+
+The software was created http://tiny.cc/alexie_pap_csiro/[Alexie Papanicolaou] at the http://www.csiro.au/[Commonwealth Scientific and Industrial Research Organisation] (CSIRO) with brilliant coding assistance from http://www.broadinstitute.org/~bhaas/[Brian Haas] at the http://broadinstitute.org[Broad Institute]. Even though Alexie does not use other genome annotation pipelines, JAMg does not aim to replace other genome annotation pipelines (e.g. each sequencing center has its own) but it does aim to support nascent genome annotators and (ultimately) educate its users about genome annotation in general.
+
+
+== Obtaining JAMg ==
+
+
+== Running JAMg ==
+
+
+
+
