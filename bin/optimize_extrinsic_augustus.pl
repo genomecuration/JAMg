@@ -275,7 +275,7 @@ sub run_evaluation {
   &process_cmd($augustus_cmd);
   if ( $pred_out && -s $pred_out ) {
    my @eval_results = &parse_evaluation($pred_out);
-   $target = sprintf( "%.4f", &gettarget(@eval_results) );
+   $target = sprintf( "%.4f", &estimate_accuracy(@eval_results) );
    open( TLOG, '>' . $pred_out . '.log' );
    print TLOG "#Accuracy: "
      . join( ", ", @eval_results )
@@ -294,24 +294,37 @@ sub run_evaluation {
  return $target;
 }
 
-sub gettarget {
+sub estimate_accuracy {
  ######################################################################################
-# gettarget: get an optimization target value from
+# from Mario:
+# estimate_accuracy: get an optimization target value from
 # base sn, base sp, exon sn, exon sp, gene sn, gene sp, tss medianDiff, tts medianDiff
 # feel free to change the weights
  ######################################################################################
-
+ my $switch; # trialling for higher specificity
  my ( $bsn, $bsp, $esn, $esp, $gsn, $gsp, $smd, $tmd ) = @_;
- return ( 3 * $bsn +
-          3 * $bsp +
-          4 * $esn +
-          4 * $esp +
-          2 * $gsn +
-          2 * $gsp +
-          40 / ( $smd + 40 ) +
-          40 / ( $tmd + 40 ) ) / 20;
-
- #   return (3*$bsn + 9*$bsp + 4*$esn + 12*$esp + 2*$gsn + 6*$gsp)/36;
+ if ( $switch ) {
+  return (
+   3 * $bsn +
+     3 * $bsp +
+     4 * $esn +
+     4 * $esp +
+     2 * $gsn +
+     2 * $gsp +
+     1 * (40 / ( $smd + 40 )) +
+     1 * (40 / ( $tmd + 40 ))
+  ) / 20;
+ }
+ else {
+  return ( 
+   3 * $bsn + 
+   9 * $bsp + 
+   4 * $esn + 
+   12 * $esp + 
+   2 * $gsn + 
+   6 * $gsp 
+  ) / 36;
+ }
 }
 
 sub printmetavalues {
