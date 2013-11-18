@@ -303,7 +303,7 @@ sub estimate_accuracy {
  ######################################################################################
  my $switch; # trialling for higher specificity
  my ( $bsn, $bsp, $esn, $esp, $gsn, $gsp, $smd, $tmd ) = @_;
- if ( $switch ) {
+ if ( !$switch ) {
   return (
    3 * $bsn +
      3 * $bsp +
