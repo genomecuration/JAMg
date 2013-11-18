@@ -259,38 +259,39 @@ sub parse_evaluation() {
 sub run_evaluation {
  my $extrinsic_file = shift;
 
- my $pred_out;
+ my ( $pred_out, $augustus_cmd, $target );
  if ( $extrinsic_file && -s $extrinsic_file ) {
   $pred_out = $extrinsic_file;
   $pred_out =~ s/.cfg/.prediction/;
-  &process_cmd(
-"$augustus_exec --genemodel=complete --species=$species --alternatives-from-evidence=true --AUGUSTUS_CONFIG_PATH=$config_path --extrinsicCfgFile=$extrinsic_file --hintsfile=$hint_file $common_parameters $optimize_gb > $pred_out 2>/dev/null"
-  ) unless -s $pred_out . '.log';
+  $augustus_cmd =
+"$augustus_exec --genemodel=complete --species=$species --alternatives-from-evidence=true --AUGUSTUS_CONFIG_PATH=$config_path --extrinsicCfgFile=$extrinsic_file --hintsfile=$hint_file $common_parameters $optimize_gb > $pred_out 2>/dev/null";
  }
  else {
   $pred_out = $output_directory . '/no_hints.prediction';
-  &process_cmd(
-"$augustus_exec --genemodel=complete --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $common_parameters $optimize_gb > $pred_out 2>/dev/null"
-  ) unless -s $pred_out . '.log';
+  $augustus_cmd =
+"$augustus_exec --genemodel=complete --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $common_parameters $optimize_gb > $pred_out 2>/dev/null";
  }
- if ( $pred_out && -s $pred_out ) {
-  my @eval_results = &parse_evaluation($pred_out);
-  my $target = sprintf( "%.4f", &gettarget(@eval_results) );
-  open( TLOG, '>' . $pred_out . '.log' );
-  print TLOG "#Accuracy: "
-    . join( ", ", @eval_results )
-    . "; Target: $target\n";
-  if ($extrinsic_file) {
-   open( IN, $extrinsic_file );
-   while ( my $ln = <IN> ) { print TLOG $ln; }
-   close IN;
+ unless ( -s $pred_out . '.log' ) {
+  &process_cmd($augustus_cmd);
+  if ( $pred_out && -s $pred_out ) {
+   my @eval_results = &parse_evaluation($pred_out);
+   $target = sprintf( "%.4f", &gettarget(@eval_results) );
+   open( TLOG, '>' . $pred_out . '.log' );
+   print TLOG "#Accuracy: "
+     . join( ", ", @eval_results )
+     . "; Target: $target\n";
+   if ($extrinsic_file) {
+    open( IN, $extrinsic_file );
+    while ( my $ln = <IN> ) { print TLOG $ln; }
+    close IN;
+   }
+   close TLOG;
   }
-  close TLOG;
-  return $target;
+  else {
+   warn "Augustus failed to produce $pred_out\n.";
+  }
  }
- else {
-  warn "Failed to produce $pred_out\n.";
- }
+ return $target;
 }
 
 sub gettarget {
@@ -348,7 +349,7 @@ sub check_options() {
 }
 
 sub write_extrinsic_cfg() {
- my $extrinsic_ref          = shift; 
+ my $extrinsic_ref          = shift;
  my $cfg_extra              = shift;
  my $species_extrinsic_file = $output_directory . "/extrinsic.cfg";
  if ($extrinsic_ref) {
