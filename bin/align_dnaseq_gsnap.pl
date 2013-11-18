@@ -55,6 +55,7 @@ my $memory = '35G';
 my ($help);
 my $pattern = '_1_';
 my $nofails;
+my $pe_distance = 10000;
 
 &GetOptions(
              'fasta:s'        => \$genome,
@@ -64,7 +65,8 @@ my $nofails;
              'memory:s'       => \$memory,
              'help'           => \$help,
              'pattern:s'      => \$pattern,
-             'nofail'         => \$nofails
+             'nofail'         => \$nofails,
+             'distance:i'     => \$pe_distance
 );
 
 pod2usage if $help;
@@ -102,7 +104,7 @@ die "No files found!\n" unless @files;
 my $build_cmd =
 "$gmap_build_exec -D $gmap_dir -d $genome_dbname -T /tmp/pap056 -k 13 -b 10 -q 1 -e 0 $genome >/dev/null";
 my $align_cmd =
-"$gsnap_exec -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=50 --format=sam --sam-use-0M --no-sam-headers ";
+"$gsnap_exec -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=50 --format=sam --sam-use-0M --no-sam-headers --pairmax-dna=$pe_distance ";
 $align_cmd .= " --nofails "        if $nofails;
 $align_cmd .= " --fails-as-input " if !$nofails;
 
@@ -136,7 +138,7 @@ foreach my $file ( sort @files ) {
             || -s "gsnap.$base.concordant_uniq.bam" );
  unless ( -s "gsnap.$base.concordant_uniq.bam" ) {
   &process_cmd(
-"$samtools_exec view -u -T $genome gsnap.$base.concordant_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - gsnap.$base.concordant_uniq"
+"$samtools_exec view -h -u -T $genome gsnap.$base.concordant_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - gsnap.$base.concordant_uniq"
   );
   &process_cmd("$samtools_exec index gsnap.$base.concordant_uniq.bam");
   print LOG "\ngsnap.$base.concordant_uniq.bam:\n";
@@ -147,7 +149,7 @@ foreach my $file ( sort @files ) {
  }
  unless ( -s "gsnap.$base.concordant_mult.bam" ) {
   &process_cmd(
-"$samtools_exec view -u -T $genome gsnap.$base.concordant_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - gsnap.$base.concordant_mult"
+"$samtools_exec view -h -u -T $genome gsnap.$base.concordant_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - gsnap.$base.concordant_mult"
   );
   &process_cmd("$samtools_exec index gsnap.$base.concordant_mult.bam");
   print LOG "\ngsnap.$base.concordant_mult.bam:\n";

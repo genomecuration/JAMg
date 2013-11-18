@@ -142,7 +142,7 @@ foreach my $file ( sort @files ) {
             || -s "gsnap.$base.concordant_uniq.bam" );
  unless ( -s "gsnap.$base.concordant_uniq.bam" ) {
   &process_cmd(
-"$samtools_exec view -u -T $genome gsnap.$base.concordant_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - gsnap.$base.concordant_uniq"
+"$samtools_exec view -h -u -T $genome gsnap.$base.concordant_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - gsnap.$base.concordant_uniq"
   );
   &process_cmd("$samtools_exec index gsnap.$base.concordant_uniq.bam");
   print LOG "\ngsnap.$base.concordant_uniq.bam:\n";
@@ -153,7 +153,7 @@ foreach my $file ( sort @files ) {
  }
  unless ( -s "gsnap.$base.concordant_mult.bam" ) {
   &process_cmd(
-"$samtools_exec view -u -T $genome gsnap.$base.concordant_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - gsnap.$base.concordant_mult"
+"$samtools_exec view -h -u -T $genome gsnap.$base.concordant_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - gsnap.$base.concordant_mult"
   );
   &process_cmd("$samtools_exec index gsnap.$base.concordant_mult.bam");
   print LOG "\ngsnap.$base.concordant_mult.bam:\n";

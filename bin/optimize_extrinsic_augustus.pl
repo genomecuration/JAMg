@@ -55,11 +55,11 @@ my (
      $notrain,     $trans_table,      $genemodel,
      $min_coding,  $hint_file,        $verbose
 );
-$|=1;
+$|           = 1;
 $rounds      = 1;
 $pstep       = 5;
 $cpus        = 1;
-$exec_dir = $ENV{'AUGUSTUS_PATH'} . '/bin' if $ENV{'AUGUSTUS_PATH'};
+$exec_dir    = $ENV{'AUGUSTUS_PATH'} . '/bin' if $ENV{'AUGUSTUS_PATH'};
 $config_path = $ENV{'AUGUSTUS_PATH'} . '/config' if $ENV{'AUGUSTUS_PATH'};
 $config_path = $ENV{'AUGUSTUS_CONFIG_PATH'} if $ENV{'AUGUSTUS_CONFIG_PATH'};
 
@@ -88,7 +88,6 @@ my ($common_parameters) = '';
 # globals
 &check_options();
 my ( $augustus_exec, $etrain_exec ) = &check_program( 'augustus', 'etraining' );
-my %storedsnsp;
 my $cwd = `pwd`;
 chomp($cwd);
 my $be_silent =
@@ -96,7 +95,7 @@ my $be_silent =
 my @feature_order =
   qw/start stop tss tts ass dss exonpart exon intronpart intron CDSpart CDS UTRpart UTR irpart nonexonpart genicpart/;
 
-print "Started: ". &mytime."\n";
+print "Started: " . &mytime . "\n";
 
 # we only need to train once
 system("cat $optimize_gb $training_set > train.set 2>/dev/null");
@@ -117,10 +116,10 @@ my ( $metaextrinsic_hash_ref, $cfg_extra, $basic_cfg ) =
 my $extrinsic_iteration_counter : shared;
 $extrinsic_iteration_counter = int(0);
 
-my $thread_helper     = new Thread_helper($cpus);
-my $thread            = threads->create('evalsnsp');
+my $thread_helper = new Thread_helper($cpus);
+my $thread        = threads->create('run_evaluation');
 $thread_helper->add_thread($thread);
-my $todo =int(1);
+my $todo = int(1);
 
 foreach my $src ( keys %sources_that_need_to_be_checked ) {
  next if $src eq 'M';
@@ -187,14 +186,16 @@ if (@failed_threads) {
 ### FINISHED
 
 my @results = `grep Accuracy $output_directory/*log | sort -rnk 11`;
-if (!$results[0]){
- die "No output files produced. This is weird, maybe you requested it to stop or something else happened? Report please!\n";
+if ( !$results[0] ) {
+ die
+"No output files produced. This is weird, maybe you requested it to stop or something else happened? Report please!\n";
 }
 if ( scalar(@results) == $todo ) {
  print "Done and all good!\n";
 }
 else {
- print "Done but something happened, not all results may have been completed ($todo != "
+ print
+"Done but something happened, not all results may have been completed ($todo != "
    . scalar(@results) . ")!\n";
 }
 
@@ -217,60 +218,32 @@ if ( $results[0] =~ /^([^:]+)/ ) {
 "Best config file is found in $file with target $best_target\n$best_accuracy";
 }
 
-
 ################################################################################################################
 ################################################################################################################
-sub evalsnsp {
- my $extrinsic_file = shift;
+sub parse_evaluation() {
+ my $pred_out = shift;
  my ( $cbsn, $cbsp, $cesn, $cesp, $cgsn, $cgsp, $csmd, $ctmd ) =
    ( int(0), int(0), int(0), int(0), int(0), int(0), int(0), int(0) );
 
- #print "argument:$argument\n";
- # check if accuracy has already been computed for this parameter combination
-
- my $pred_out;
- if ( $extrinsic_file && -s $extrinsic_file ) {
-  $pred_out = $extrinsic_file;
-  $pred_out =~ s/.cfg/.prediction/;
-  if ( $storedsnsp{$pred_out} ) {
-   print "Retrieving accuracy from previous computation ";
-   return @{ $storedsnsp{$extrinsic_file} };
+ open( PRED, $pred_out );
+ while ( my $ln = <PRED> ) {
+  if ( $ln =~ /nucleotide level \| +(\S+) \| +(\S+) \|$/ ) {
+   ( $cbsn, $cbsp ) = ( $1, $2 );
   }
-  &process_cmd(
-"$augustus_exec --genemodel=complete --species=$species --alternatives-from-evidence=true --AUGUSTUS_CONFIG_PATH=$config_path --extrinsicCfgFile=$extrinsic_file --hintsfile=$hint_file $common_parameters $optimize_gb > $pred_out 2>/dev/null"
-  );
- }
- else {
-  $pred_out = $output_directory . '/no_hints.prediction';
-  if ( $storedsnsp{$pred_out} ) {
-   print "Retrieving accuracy from previous computation ";
-   return @{ $storedsnsp{$extrinsic_file} };
+  elsif ( $ln =~ /exon level \|.*-- \| +(\S+) \| +(\S+) \|$/ ) {
+   ( $cesn, $cesp ) = ( $1, $2 );
   }
-  &process_cmd(
-"$augustus_exec --genemodel=complete --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $common_parameters $optimize_gb > $pred_out 2>/dev/null"
-  );
- }
- if ( -s $pred_out ) {
-  open( PRED, $pred_out );
-  while (<PRED>) {
-   if (/nucleotide level \| +(\S+) \| +(\S+) \|$/) {
-    ( $cbsn, $cbsp ) = ( $1, $2 );
-   }
-   if (/exon level \|.*-- \| +(\S+) \| +(\S+) \|$/) {
-    ( $cesn, $cesp ) = ( $1, $2 );
-   }
-   if (/gene level \|.* \| +(\S+) \| +(\S+) \|$/) {
-    ( $cgsn, $cgsp ) = ( $1, $2 );
-   }
-   if (/TSS \|.* \|.* \|.* \| +(\S+) \|$/) {
-    $csmd = $1;
-   }
-   if (/TTS \|.* \|.* \|.* \| +(\S+) \|$/) {
-    $ctmd = $1;
-   }
+  elsif ( $ln =~ /gene level \|.* \| +(\S+) \| +(\S+) \|$/ ) {
+   ( $cgsn, $cgsp ) = ( $1, $2 );
   }
-  close(PRED);
+  elsif ( $ln =~ /TSS \|.* \|.* \|.* \| +(\S+) \|$/ ) {
+   $csmd = $1;
+  }
+  elsif ( $ln =~ /TTS \|.* \|.* \|.* \| +(\S+) \|$/ ) {
+   $ctmd = $1;
+  }
  }
+ close(PRED);
  $cbsn = $cbsn ? $cbsn : int(0);
  $cbsp = $cbsp ? $cbsp : int(0);
  $cesn = $cesn ? $cesn : int(0);
@@ -280,16 +253,44 @@ sub evalsnsp {
  $csmd = $csmd ? $csmd : int(0);
  $ctmd = $ctmd ? $ctmd : int(0);
 
- my @snsp = ( $cbsn, $cbsp, $cesn, $cesp, $cgsn, $cgsp, $csmd, $ctmd );
- $storedsnsp{$pred_out} = \@snsp;
- my $target = sprintf( "%.4f", &gettarget(@snsp) );
- open( TLOG, '>' . $pred_out . '.log' );
- print TLOG "#Accuracy: " . join( ", ", @snsp ) . "; Target: $target\n";
- close TLOG;
- system("cat $extrinsic_file >> $pred_out.log") if ($extrinsic_file);
+ return ( $cbsn, $cbsp, $cesn, $cesp, $cgsn, $cgsp, $csmd, $ctmd );
+}
 
- return ($target);
+sub run_evaluation {
+ my $extrinsic_file = shift;
 
+ my $pred_out;
+ if ( $extrinsic_file && -s $extrinsic_file ) {
+  $pred_out = $extrinsic_file;
+  $pred_out =~ s/.cfg/.prediction/;
+  &process_cmd(
+"$augustus_exec --genemodel=complete --species=$species --alternatives-from-evidence=true --AUGUSTUS_CONFIG_PATH=$config_path --extrinsicCfgFile=$extrinsic_file --hintsfile=$hint_file $common_parameters $optimize_gb > $pred_out 2>/dev/null"
+  ) unless -s $pred_out . '.log';
+ }
+ else {
+  $pred_out = $output_directory . '/no_hints.prediction';
+  &process_cmd(
+"$augustus_exec --genemodel=complete --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $common_parameters $optimize_gb > $pred_out 2>/dev/null"
+  ) unless -s $pred_out . '.log';
+ }
+ if ( $pred_out && -s $pred_out ) {
+  my @eval_results = &parse_evaluation($pred_out);
+  my $target = sprintf( "%.4f", &gettarget(@eval_results) );
+  open( TLOG, '>' . $pred_out . '.log' );
+  print TLOG "#Accuracy: "
+    . join( ", ", @eval_results )
+    . "; Target: $target\n";
+  if ($extrinsic_file) {
+   open( IN, $extrinsic_file );
+   while ( my $ln = <IN> ) { print TLOG $ln; }
+   close IN;
+  }
+  close TLOG;
+  return $target;
+ }
+ else {
+  warn "Failed to produce $pred_out\n.";
+ }
 }
 
 sub gettarget {
@@ -341,13 +342,13 @@ sub check_options() {
    if ($min_coding);
  $cpus = 1 if !$cpus || $cpus < 1;
  $output_directory = "tmp_opt_extrinsic_$species";
- &process_cmd("rm -rf $output_directory;mkdir $output_directory");
+ mkdir($output_directory) unless -d $output_directory;
  die unless -d $output_directory;
 
 }
 
 sub write_extrinsic_cfg() {
- my $extrinsic_ref          = shift;
+ my $extrinsic_ref          = shift; 
  my $cfg_extra              = shift;
  my $species_extrinsic_file = $output_directory . "/extrinsic.cfg";
  if ($extrinsic_ref) {
@@ -355,43 +356,46 @@ sub write_extrinsic_cfg() {
   $species_extrinsic_file .= ".$extrinsic_iteration_counter";
   $extrinsic_iteration_counter++;
  }
- open( OUT, ">$species_extrinsic_file" ) || die;
- print OUT "[SOURCES]\n";
- my $prn;
 
- foreach my $src ( keys %{$extrinsic_ref} ) {
-  $prn .= $src . ' ' unless $src eq 'bonus' || $src eq 'malus';
- }
- chop($prn);
- $prn .= "\n";
- $prn .= $cfg_extra . "\n\n" if $cfg_extra;
- $prn .= "[GENERAL]\n";
+ unless ( -s $species_extrinsic_file ) {
 
- foreach my $feature (@feature_order) {
-  my $bonus =
-      $extrinsic_ref->{'bonus'}->{$feature}->{'value'}
-    ? $extrinsic_ref->{'bonus'}->{$feature}->{'value'}
-    : 1;
-  my $malus =
-      $extrinsic_ref->{'malus'}->{$feature}->{'value'}
-    ? $extrinsic_ref->{'malus'}->{$feature}->{'value'}
-    : 1;
-  $prn .= $feature . "\t$bonus $malus ";
-  $prn .= "\t" if length($feature) <= 7;
-  $prn .= "\tM 1 " . $extrinsic_ref->{'M'}->{$feature}->{'value'};
+  open( OUT, ">$species_extrinsic_file" ) || die;
+  print OUT "[SOURCES]\n";
+  my $prn;
 
-  foreach my $source ( keys %{$extrinsic_ref} ) {
-   next if $source eq 'bonus' || $source eq 'malus' || $source eq 'M';
-   my $multiplier = $extrinsic_ref->{$source}->{$feature}->{'value'}
-     || die "No bonus found for $source $feature\n";
-   $prn .= "\t$source 1 $multiplier";
+  foreach my $src ( keys %{$extrinsic_ref} ) {
+   $prn .= $src . ' ' unless $src eq 'bonus' || $src eq 'malus';
   }
+  chop($prn);
   $prn .= "\n";
- }
- print OUT $prn . "\n";
- close OUT;
+  $prn .= $cfg_extra . "\n\n" if $cfg_extra;
+  $prn .= "[GENERAL]\n";
 
- my $target = &evalsnsp($species_extrinsic_file);
+  foreach my $feature (@feature_order) {
+   my $bonus =
+       $extrinsic_ref->{'bonus'}->{$feature}->{'value'}
+     ? $extrinsic_ref->{'bonus'}->{$feature}->{'value'}
+     : 1;
+   my $malus =
+       $extrinsic_ref->{'malus'}->{$feature}->{'value'}
+     ? $extrinsic_ref->{'malus'}->{$feature}->{'value'}
+     : 1;
+   $prn .= $feature . "\t$bonus $malus ";
+   $prn .= "\t" if length($feature) <= 7;
+   $prn .= "\tM 1 " . $extrinsic_ref->{'M'}->{$feature}->{'value'};
+
+   foreach my $source ( keys %{$extrinsic_ref} ) {
+    next if $source eq 'bonus' || $source eq 'malus' || $source eq 'M';
+    my $multiplier = $extrinsic_ref->{$source}->{$feature}->{'value'}
+      || die "No bonus found for $source $feature\n";
+    $prn .= "\t$source 1 $multiplier";
+   }
+   $prn .= "\n";
+  }
+  print OUT $prn . "\n";
+  close OUT;
+ }
+ my $target = &run_evaluation($species_extrinsic_file);
  print "\r$extrinsic_iteration_counter/$todo    ";
 }
 
