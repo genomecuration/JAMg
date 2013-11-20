@@ -2315,7 +2315,8 @@ sub run_exonerate() {
 		}
 		if ($peptide_file) {
 			unless ($no_rerun_exonerate) {
-
+				my $aat_score = $same_species ? 400 : 80;
+				my $aat_word = $same_species ? 5 : 4; # five is much faster than default and 3 is much slower. 
 				print "Preparing/running AAT...\n";
 				my $matrix_file = "$aatpackage/../matrices/BS";
 				die "Cannot find AAT's matrices/BS as $matrix_file\n"
@@ -2323,8 +2324,8 @@ sub run_exonerate() {
 				foreach my $genome_file (@$files_ref) {
 					next if $genome_file =~ /\.aat\./ || -d $genome_file;
 					push( @commands,
-"$aatpackage/dps $genome_file $peptide_file $aatpackage/../matrices/BS  -f 400 -i 30 -a $intron_size > $genome_file.aat.d ;"
-						  . "$aatpackage/ext $genome_file.aat.d -f 400 > $genome_file.aat.ext ;"
+"$aatpackage/dps $genome_file $peptide_file $aatpackage/../matrices/BS -c 300000 -f $aat_score -w $aat_word -i 30 -a $intron_size > $genome_file.aat.d ;"
+						  . "$aatpackage/ext $genome_file.aat.d -f $aat_score > $genome_file.aat.ext ;"
 						  . "$aatpackage/extCollapse.pl $genome_file.aat.ext > $genome_file.aat.extCol ;"
 						  . "$aatpackage/filter $genome_file.aat.extCol -c 1 > $genome_file.aat.filter ; rm -f $genome_file.aat.d $genome_file.aat.ext $genome_file.aat.extCol \n"
 					) unless -s "$genome_file.aat.filter";
@@ -2382,16 +2383,16 @@ sub run_exonerate() {
 			  unless -s $fasta_contigs && -s $fasta_contigs . '.annotations';
 
 			unless ($no_rerun_exonerate) {
-
+				my $aat_score = $same_species ? 200 : 80;
+				my $aat_o = $similar_fraction - 20;
+				my $aat_p = $identical_fraction - 20;
 				print "Preparing/running AAT...\n";
 				foreach my $genome_file (@$files_ref) {
 					next if $genome_file =~ /\.aat\./ || -d $genome_file;
 					push(
 						@commands,
-"$aatpackage/dds $genome_file $fasta_contigs -o 75 -p 75 -c 30000 -f 200 -i 30 -a $intron_size > $genome_file.aat.d ;"
-
-#   "$aatpackage/dps $genome_file $transdecoder_peptides $aatpackage/../matrices/BS  -f 400 -i 30 -a $intron_size > $genome_file.aat.d ;"
-						  . "$aatpackage/ext $genome_file.aat.d -f 400 > $genome_file.aat.ext ;"
+"$aatpackage/dds $genome_file $fasta_contigs -o $aat_o -p $aat_p -c 300000 -f $aat_score -i 30 -a $intron_size > $genome_file.aat.d ;"
+						  . "$aatpackage/ext $genome_file.aat.d -f $aat_score > $genome_file.aat.ext ;"
 						  . "$aatpackage/extCollapse.pl $genome_file.aat.ext > $genome_file.aat.extCol ;"
 						  . "$aatpackage/filter $genome_file.aat.extCol -c 1 > $genome_file.aat.filter ; rm -f $genome_file.aat.d $genome_file.aat.ext $genome_file.aat.extCol \n"
 					) unless -s "$genome_file.aat.filter";
