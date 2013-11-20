@@ -185,7 +185,7 @@ if (@failed_threads) {
 
 ### FINISHED
 
-my @results = `grep Accuracy $output_directory/*log | sort -rnk 11`;
+my @results = `grep Accuracy $output_directory/*log | sort -rnk 2`;
 if ( !$results[0] ) {
  die
 "No output files produced. This is weird, maybe you requested it to stop or something else happened? Report please!\n";
@@ -201,22 +201,22 @@ else {
 
 my $basic_file = "$output_directory/no_hints.prediction.log";
 if ( -s $basic_file ) {
- my $first_accuracy = `grep Accuracy $basic_file`;
- if ($first_accuracy) {
-  $first_accuracy =~ /Target:\s([\.\d]+)/;
-  my $first_target = $1;
+ my $first_log = `grep Accuracy $basic_file`;
+ if ($first_log) {
+  $first_log =~ /Accuracy:\s([\.\d]+)/;
+  my $first_accuracy = $1;
   print
-"Without any extrinsic evidence the target was $first_target\n$first_accuracy";
+"Without any extrinsic evidence the accuracy was $first_accuracy\n$first_log";
  }
 }
 if ( $results[0] =~ /^([^:]+)/ ) {
  my $file          = $1;
- my $best_accuracy = `grep Accuracy $file`;
- $best_accuracy =~ /Target:\s([\.\d]+)/;
- my $best_target = $1;
- print "Best config file is found in $file with target $best_target\n$best_accuracy\n";
+ my $best_log = `grep Accuracy $file`;
+ $best_log =~ /Accuracy:\s([\.\d]+)/;
+ my $best_accuracy = $1;
+ print "Best config file is found in $file with accuracy $best_accuracy\n$best_log\n";
  print "You may however want to run this command and see if there is a config file that performs better in any specific statistic\n";
- print "\tgrep Acc $output_directory/*log | sort -nk11\n";
+ print "\tgrep Acc $output_directory/*log | sort -nk 2\n";
 }
 
 ################################################################################################################
@@ -290,19 +290,19 @@ sub run_evaluation {
  unless ( -s $pred_out.'.log' ) {
   if ( $pred_out && -s $pred_out ) {
    my @eval_results = &parse_evaluation($pred_out);
-   my ($target,$results_ref) = &estimate_accuracy(@eval_results) ;
-   $target = sprintf( "%.4f", $target );
+   my ($accuracy,$results_ref) = &estimate_accuracy(@eval_results) ;
+   $accuracy = sprintf( "%.4f", $accuracy );
    open( TLOG, '>' . $pred_out . '.log' );
-   print TLOG "#Accuracy: "
+   print TLOG "#Accuracy: $accuracy; "
      . join( ", ", @$results_ref )
-     . "; Target: $target\n";
+     . "\n";
    if ($extrinsic_file) {
     open( IN, $extrinsic_file );
     while ( my $ln = <IN> ) { print TLOG $ln; }
     close IN;
    }
    close TLOG;
-   return $target;
+   return $accuracy;
   }
   else {
    warn "Augustus failed to produce $pred_out\n.";
@@ -313,9 +313,9 @@ sub run_evaluation {
 sub estimate_accuracy {
  my $switch; # trialling for higher specificity
  my ( $bsn, $bsp, $esn, $esp, $gsn, $gsp, $smd, $tmd ) = @_;
- my $target =int(0);
+ my $accuracy =int(0);
  if ( !$switch ) {
-  $target = (
+  $accuracy = (
    3 * $bsn +
      3 * $bsp +
      4 * $esn +
@@ -327,7 +327,7 @@ sub estimate_accuracy {
   ) / 20;
  }
  else {
-  $target = ( 
+  $accuracy = ( 
    3 * $bsn + 
    9 * $bsp + 
    4 * $esn + 
@@ -338,7 +338,7 @@ sub estimate_accuracy {
  }
  my @results = ( "Base_SeNsitivity:".$bsn, "Base_SPecificity:".$bsp, "Exon_SeNsitivity:".$esn, "Exon_SPecificity;".$esp, "Gene_SeNsitivity:".$gsn, "Gene_SPecificity:".$gsp, "UTR_5':".$smd, "UTR_3':".$tmd );
 
- return ($target,\@results);
+ return ($accuracy,\@results);
 
 }
 
@@ -424,7 +424,7 @@ sub write_extrinsic_cfg() {
   print OUT $prn . "\n";
   close OUT;
  }
- my $target = &run_evaluation($species_extrinsic_file);
+ my $accuracy = &run_evaluation($species_extrinsic_file);
  print "\r$extrinsic_iteration_counter/$todo    ";
 }
 
