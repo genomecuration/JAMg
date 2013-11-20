@@ -167,7 +167,7 @@ foreach my $src ( keys %sources_that_need_to_be_checked ) {
       $cfg->{$src}->{$feat}->{'value'}    = $value;
       $cfg->{'bonus'}->{$feat}->{'value'} = $bonus;
       $cfg->{'malus'}->{$feat}->{'value'} = $malus;
-      sleep(3);
+      sleep(1);
       my $thread = threads->create( 'write_extrinsic_cfg', $cfg, $cfg_extra );
       $thread_helper->add_thread($thread);
      }
@@ -245,12 +245,12 @@ sub parse_evaluation() {
   }
  }
  close(PRED);
- $cbsn = $cbsn ? $cbsn : int(0);
- $cbsp = $cbsp ? $cbsp : int(0);
- $cesn = $cesn ? $cesn : int(0);
- $cesp = $cesp ? $cesp : int(0);
- $cgsn = $cgsn ? $cgsn : int(0);
- $cgsp = $cgsp ? $cgsp : int(0);
+ $cbsn = $cbsn ? sprintf( "%.3f",$cbsn) : int(0);
+ $cbsp = $cbsp ? sprintf( "%.3f",$cbsp) : int(0);
+ $cesn = $cesn ? sprintf( "%.3f",$cesn) : int(0);
+ $cesp = $cesp ? sprintf( "%.3f",$cesp) : int(0);
+ $cgsn = $cgsn ? sprintf( "%.3f",$cgsn) : int(0);
+ $cgsp = $cgsp ? sprintf( "%.3f",$cgsp) : int(0);
  $csmd = $csmd ? $csmd : int(0);
  $ctmd = $ctmd ? $ctmd : int(0);
 
