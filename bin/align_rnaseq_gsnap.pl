@@ -27,6 +27,7 @@ Optional:
  -help
  -pattern            Pattern for automatching left pair files with *$pattern*.fastq (defaults to _1_)
  -nofail             Don't print out failures (I/O friendlyness if sparse hits expected). Otherwise captured as FASTQ
+ -suffix             Build/use suffix array (fast, downweights SNPs, use for non-polymorphic genomes)
 
 =cut
 
@@ -58,7 +59,7 @@ my $memory        = '35G';
 my ( $intron_splice_db, $help );
 my $pattern = '_1_';
 my $nofails;
-
+my $suffix;
 &GetOptions(
              'fasta:s'        => \$genome,
              'dbname:s'       => \$genome_dbname,
@@ -69,7 +70,8 @@ my $nofails;
              'memory:s'       => \$memory,
              'help'           => \$help,
              'pattern:s'      => \$pattern,
-             'nofail'         => \$nofails
+             'nofail'         => \$nofails,
+		'suffix'        => \$suffix,
 );
 
 pod2usage if $help;
@@ -104,10 +106,16 @@ for ( my $i = 0 ; $i < @files ; $i++ ) {
 @files = @verified_files;
 die "No files found!\n" unless @files;
 
-my $build_cmd =
-"$gmap_build_exec -D $gmap_dir -d $genome_dbname -T /tmp/pap056 -k 13 -b 10 -q 1 -e 0 --no-sarray $genome >/dev/null";
-my $align_cmd =
-"$gsnap_exec --use-sarray=0 -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus  --pairmax-rna=$intron_length  --localsplicedist=$intron_length -N 1 -Q --npaths=50 --format=sam --sam-use-0M --no-sam-headers ";
+
+my ($build_cmd,$align_cmd);
+if ($suffix){
+ $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -T /tmp/pap056 -k 13 -b 10 -q 1 -e 0 $genome >/dev/null";
+ $align_cmd ="$gsnap_exec -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus  --pairmax-rna=$intron_length  --localsplicedist=$intron_length -N 1 -Q --npaths=50 --format=sam --sam-use-0M --no-sam-headers ";
+}else{
+ $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -T /tmp/pap056 -k 13 -b 10 -q 1 -e 0 --no-sarray $genome >/dev/null";
+ $align_cmd ="$gsnap_exec --use-sarray=0 -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus  --pairmax-rna=$intron_length  --localsplicedist=$intron_length -N 1 -Q --npaths=50 --format=sam --sam-use-0M --no-sam-headers ";
+}
+
 $align_cmd .= " --nofails "            if $nofails;
 $align_cmd .= " --fails-as-input "     if !$nofails;
 $align_cmd .= " -s $intron_splice_db " if $intron_splice_db;

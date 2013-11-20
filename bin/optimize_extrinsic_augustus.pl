@@ -141,7 +141,7 @@ foreach my $src ( keys %sources_that_need_to_be_checked ) {
 }
 
 print "Will search for $todo parameters with $cpus CPUs\n";
-sleep(3);
+sleep(1);
 
 foreach my $src ( keys %sources_that_need_to_be_checked ) {
  next if $src eq 'M';
@@ -167,7 +167,7 @@ foreach my $src ( keys %sources_that_need_to_be_checked ) {
       $cfg->{$src}->{$feat}->{'value'}    = $value;
       $cfg->{'bonus'}->{$feat}->{'value'} = $bonus;
       $cfg->{'malus'}->{$feat}->{'value'} = $malus;
-      sleep(2);
+      sleep(3);
       my $thread = threads->create( 'write_extrinsic_cfg', $cfg, $cfg_extra );
       $thread_helper->add_thread($thread);
      }
@@ -214,8 +214,9 @@ if ( $results[0] =~ /^([^:]+)/ ) {
  my $best_accuracy = `grep Accuracy $file`;
  $best_accuracy =~ /Target:\s([\.\d]+)/;
  my $best_target = $1;
- print
-"Best config file is found in $file with target $best_target\n$best_accuracy";
+ print "Best config file is found in $file with target $best_target\n$best_accuracy\n";
+ print "You may however want to run this command and see if there is a config file that performs better in any specific statistic\n";
+ print "\tgrep Acc $output_directory/*log | sort -nk11\n";
 }
 
 ################################################################################################################
@@ -256,29 +257,44 @@ sub parse_evaluation() {
  return ( $cbsn, $cbsp, $cesn, $cesp, $cgsn, $cgsp, $csmd, $ctmd );
 }
 
+sub check_prediction_finished(){
+	my $file = shift;
+	my $todelete = shift;
+	my $check = `tail -n 3 $file|head -n 1`;
+	if ($check !~/^# total time/){
+		unlink($file);
+		unlink($todelete);
+	}
+}
+
 sub run_evaluation {
  my $extrinsic_file = shift;
 
- my ( $pred_out, $augustus_cmd, $target );
+ my ( $pred_out, $augustus_cmd);
  if ( $extrinsic_file && -s $extrinsic_file ) {
   $pred_out = $extrinsic_file;
   $pred_out =~ s/.cfg/.prediction/;
+  &check_prediction_finished($pred_out,$pred_out.'.log');
   $augustus_cmd =
 "$augustus_exec --genemodel=complete --species=$species --alternatives-from-evidence=true --AUGUSTUS_CONFIG_PATH=$config_path --extrinsicCfgFile=$extrinsic_file --hintsfile=$hint_file $common_parameters $optimize_gb > $pred_out 2>/dev/null";
  }
  else {
   $pred_out = $output_directory . '/no_hints.prediction';
+  &check_prediction_finished($pred_out,$pred_out.'.log');
   $augustus_cmd =
 "$augustus_exec --genemodel=complete --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $common_parameters $optimize_gb > $pred_out 2>/dev/null";
  }
- unless ( -s $pred_out . '.log' ) {
-  &process_cmd($augustus_cmd);
+
+ &process_cmd($augustus_cmd) unless -s $pred_out;
+
+ unless ( -s $pred_out.'.log' ) {
   if ( $pred_out && -s $pred_out ) {
    my @eval_results = &parse_evaluation($pred_out);
-   $target = sprintf( "%.4f", &estimate_accuracy(@eval_results) );
+   my ($target,$results_ref) = &estimate_accuracy(@eval_results) ;
+   $target = sprintf( "%.4f", $target );
    open( TLOG, '>' . $pred_out . '.log' );
    print TLOG "#Accuracy: "
-     . join( ", ", @eval_results )
+     . join( ", ", @$results_ref )
      . "; Target: $target\n";
    if ($extrinsic_file) {
     open( IN, $extrinsic_file );
@@ -286,25 +302,20 @@ sub run_evaluation {
     close IN;
    }
    close TLOG;
+   return $target;
   }
   else {
    warn "Augustus failed to produce $pred_out\n.";
   }
  }
- return $target;
 }
 
 sub estimate_accuracy {
- ######################################################################################
-# from Mario:
-# estimate_accuracy: get an optimization target value from
-# base sn, base sp, exon sn, exon sp, gene sn, gene sp, tss medianDiff, tts medianDiff
-# feel free to change the weights
- ######################################################################################
  my $switch; # trialling for higher specificity
  my ( $bsn, $bsp, $esn, $esp, $gsn, $gsp, $smd, $tmd ) = @_;
+ my $target =int(0);
  if ( !$switch ) {
-  return (
+  $target = (
    3 * $bsn +
      3 * $bsp +
      4 * $esn +
@@ -316,7 +327,7 @@ sub estimate_accuracy {
   ) / 20;
  }
  else {
-  return ( 
+  $target = ( 
    3 * $bsn + 
    9 * $bsp + 
    4 * $esn + 
@@ -325,6 +336,10 @@ sub estimate_accuracy {
    6 * $gsp 
   ) / 36;
  }
+ my @results = ( "Base_SeNsitivity:".$bsn, "Base_SPecificity:".$bsp, "Exon_SeNsitivity:".$esn, "Exon_SPecificity;".$esp, "Gene_SeNsitivity:".$gsn, "Gene_SPecificity:".$gsp, "UTR_5':".$smd, "UTR_3':".$tmd );
+
+ return ($target,\@results);
+
 }
 
 sub printmetavalues {

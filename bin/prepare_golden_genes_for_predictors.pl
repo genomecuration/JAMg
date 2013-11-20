@@ -54,7 +54,7 @@ Other options:
     -stop_exonerate           => Stop after exonerate finishes.
     -stop_golden              => Stop after sorting out which alignments were very good. Use it to prevent checks for Augustus/snap/BioPerl etc
     -minorf :i                => Minimum size of ORF (and therefore amino acids; def. 290 bp)
-    -mismatch_cutoff :i       => Minimum number of mismatches in exonerate (def 10)
+    -mismatch_cutoff :i       => Maximum number of mismatches allowed in exonerate (def 10)
     -same_species             => Contigs/proteins and genome is the same species
     -norefine                 => Don't use -refine for exonerate
     -norerun                  => Don't re-run exonerate (assume it already exists as [input file].exonerate.results

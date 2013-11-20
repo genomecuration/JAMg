@@ -25,6 +25,7 @@ Optional:
  -help
  -pattern            Pattern for automatching left pair files with *$pattern*.fastq (defaults to _1_)
  -nofail             Don't print out failures (I/O friendlyness if sparse hits expected). Otherwise captured as FASTQ
+ -suffix             Build/use suffix array (fast, downweights SNPs, use for non-polymorphic genomes)
 
 =cut
 
@@ -56,7 +57,7 @@ my ($help);
 my $pattern = '_1_';
 my $nofails;
 my $pe_distance = 10000;
-
+my $suffix;
 &GetOptions(
              'fasta:s'        => \$genome,
              'dbname:s'       => \$genome_dbname,
@@ -66,7 +67,8 @@ my $pe_distance = 10000;
              'help'           => \$help,
              'pattern:s'      => \$pattern,
              'nofail'         => \$nofails,
-             'distance:i'     => \$pe_distance
+             'distance:i'     => \$pe_distance,
+             'suffix'        => \$suffix,
 );
 
 pod2usage if $help;
@@ -101,10 +103,16 @@ for ( my $i = 0 ; $i < @files ; $i++ ) {
 @files = @verified_files;
 die "No files found!\n" unless @files;
 
-my $build_cmd =
-"$gmap_build_exec -D $gmap_dir -d $genome_dbname -T /tmp/pap056 -k 13 -b 10 -q 1 -e 0 $genome >/dev/null";
-my $align_cmd =
-"$gsnap_exec -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=50 --format=sam --sam-use-0M --no-sam-headers --pairmax-dna=$pe_distance ";
+my ($build_cmd,$align_cmd);
+
+if ($suffix){
+ $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -T /tmp/pap056 -k 13 -b 10 -q 1 -e 0 $genome >/dev/null";
+ $align_cmd = "$gsnap_exec -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=50 --format=sam --sam-use-0M --no-sam-headers --pairmax-dna=$pe_distance ";
+}else{
+ $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -T /tmp/pap056 -k 13 -b 10 -q 1 -e 0 --no-sarray $genome >/dev/null";
+ $align_cmd = "$gsnap_exec --use-sarray=0 -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=50 --format=sam --sam-use-0M --no-sam-headers --pairmax-dna=$pe_distance ";
+}
+
 $align_cmd .= " --nofails "        if $nofails;
 $align_cmd .= " --fails-as-input " if !$nofails;
 
