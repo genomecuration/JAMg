@@ -1968,7 +1968,7 @@ sub parse_transdecoder_gene_gff3() {
 	my %contigs_used;
 	$/ = "\n\n";
 	open( TRANSDECODER, $transdecoder_gff ) || die;
-	open( TROUT, "> $transdecoder_contig" );
+	open( TROUT, ">$transdecoder_contig" );
 	while ( my $record = <TRANSDECODER> ) {
 		chomp($record);
 		my @lines     = split( "\n", $record );

@@ -18,7 +18,7 @@ LIBS    =
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
- meaPath.o exoncand.o randseqaccess.o orthoexon.o phylotree.o orthograph.o speciesgraph.o\
+ meaPath.o exoncand.o randseqaccess.o \
   genomicMSA.o geneMSA.o fasta.o
 ifdef COMPGENEPRED
 	OBJS += parser/parse.o scanner/lex.o contTimeMC.o compgenepred.o
@@ -555,11 +555,9 @@ exoncand.o : \
 
 compgenepred.o : \
 	../include/compgenepred.hh \
-	../include/orthograph.hh \
 	../include/mea.hh \
         ../include/genomicMSA.hh \
         ../include/geneMSA.hh \
-	../include/orthoexon.hh \
 	../include/namgene.hh \
        compgenepred.cc
 
@@ -569,30 +567,15 @@ randseqaccess.o : \
        ../include/table_structure.h \
        randseqaccess.cc
 
-orthoexon.o : \
-	../include/orthoexon.hh \
-	../include/exoncand.hh \
-	../include/projectio.hh \
-	../include/orthograph.hh \
-	../include/types.hh \
-	orthoexon.cc
-
-orthograph.o : \
-	../include/orthograph.hh \
-	../include/mea.hh \
-	orthograph.cc
-
 genomicMSA.o : \
 	../include/genomicMSA.hh \
 	../include/exoncand.hh \
-	../include/orthoexon.hh \
 	genomicMSA.cc
 
 geneMSA.o : \
 	../include/geneMSA.hh \
 	../include/genomicMSA.hh \
 	../include/exoncand.hh \
-	../include/orthoexon.hh \
 	../include/intronmodel.hh \
 	../include/namgene.hh \
 	geneMSA.cc
@@ -604,12 +587,6 @@ parser/parse.o: \
 scanner/lex.o: \
 	scanner/scanner.ih \
 	scanner/lex.cc
-
-phylotree.o: \
-	../include/phylotree.hh \
-	parser/parser.h \
-	../include/properties.hh\
-	phylotree.cc
 
 speciesgraph.o: \
 	../include/speciesgraph.hh \

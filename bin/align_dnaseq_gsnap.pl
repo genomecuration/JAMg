@@ -26,6 +26,7 @@ Optional:
  -pattern            Pattern for automatching left pair files with *$pattern*.fastq (defaults to _1_)
  -nofail             Don't print out failures (I/O friendlyness if sparse hits expected). Otherwise captured as FASTQ
  -suffix             Build/use suffix array (fast, downweights SNPs, use for non-polymorphic genomes)
+ -distance :i        Paired end distance
 
 =cut
 
