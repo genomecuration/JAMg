@@ -44,6 +44,21 @@ Others (expert):
  --trans_matrix       Optimize the transition matrix file s. s must be the transition file used. e.g. ../species/nt/generic/generic_trans_shadow_partial.pbl
  --matrix_constraints     A file with try list, normed list and bindings
 
+=head1 AUTHORS
+
+ Alexie Papanicolaou
+
+        CSIRO Ecosystem Sciences
+        alexie@butterflybase.org
+
+=head1 DISCLAIMER & LICENSE
+
+Copyright 2012-2014 the Commonwealth Scientific and Industrial Research Organization. 
+This software is released under the Mozilla Public License v.2.
+
+It is provided "as is" without warranty of any kind.
+You can find the terms and conditions at http://www.mozilla.org/MPL/2.0.
+
 
 =cut
 

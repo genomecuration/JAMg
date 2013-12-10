@@ -31,6 +31,20 @@ Optional parameters:
  --genemodel              Augustus genemodel parameter
  --notrain                The training step (etraining) is omitted. Use this if the HMM is already trained. This program does not optimize the HMM
 
+=head1 AUTHORS
+
+ Alexie Papanicolaou
+
+        CSIRO Ecosystem Sciences
+        alexie@butterflybase.org
+
+=head1 DISCLAIMER & LICENSE
+
+Copyright 2012-2014 the Commonwealth Scientific and Industrial Research Organization. 
+This software is released under the Mozilla Public License v.2.
+
+It is provided "as is" without warranty of any kind.
+You can find the terms and conditions at http://www.mozilla.org/MPL/2.0.
 
 =cut
 

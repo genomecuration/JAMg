@@ -63,18 +63,17 @@ $ RepeatMasker -e abblast -pa 35 -s -species insecta -no_is -gccalc -gff  -xsmal
 
  Alexie Papanicolaou
 
-        1 CSIRO Ecosystem Sciences, GPO 1700, Canberra 2601, Australia
+        CSIRO Ecosystem Sciences
         alexie@butterflybase.org
-        
- Many thanks/credit to B. Haas (The Broad) for code bundled in Trinity-RNA-Seq
 
 =head1 DISCLAIMER & LICENSE
 
-This software is released under the GNU General Public License version 3 (GPLv3).
+Copyright 2012-2014 the Commonwealth Scientific and Industrial Research Organization. 
+This software is released under the Mozilla Public License v.2.
+
 It is provided "as is" without warranty of any kind.
-You can find the terms and conditions at http://www.opensource.org/licenses/gpl-3.0.html.
-Please note that incorporating the whole software or parts of its code in proprietary software
-is prohibited under the current license.
+You can find the terms and conditions at http://www.mozilla.org/MPL/2.0.
+
 
 =head1 BUGS & LIMITATIONS
 

@@ -44,6 +44,22 @@
   GFF3 with exonpart and intronpart
  scaffold_0      RNASeq        intronpart      1262    1414    .       -       .       src=JR;pri=5;grp=readname
 
+=head1 AUTHORS
+
+ Alexie Papanicolaou
+
+        CSIRO Ecosystem Sciences
+        alexie@butterflybase.org
+
+=head1 DISCLAIMER & LICENSE
+
+Copyright 2012-2014 the Commonwealth Scientific and Industrial Research Organization. 
+This software is released under the Mozilla Public License v.2.
+
+It is provided "as is" without warranty of any kind.
+You can find the terms and conditions at http://www.mozilla.org/MPL/2.0.
+
+
 =cut
 
 use strict;

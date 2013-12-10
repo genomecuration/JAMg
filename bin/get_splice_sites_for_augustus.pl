@@ -15,6 +15,21 @@
         'hint:s' =>\$hint_file,
         'fasta:'s =>\$fasta_file
 
+=head1 AUTHORS
+
+ Alexie Papanicolaou
+
+        CSIRO Ecosystem Sciences
+        alexie@butterflybase.org
+
+=head1 DISCLAIMER & LICENSE
+
+Copyright 2012-2014 the Commonwealth Scientific and Industrial Research Organization. 
+This software is released under the Mozilla Public License v.2.
+
+It is provided "as is" without warranty of any kind.
+You can find the terms and conditions at http://www.mozilla.org/MPL/2.0.
+
 =cut
 
 use strict;
@@ -24,7 +39,7 @@ use Getopt::Long;
 use Pod::Usage;
 
 use FindBin;
-use lib ("$FindBin::RealBin/PerlLib");
+use lib ("$FindBin::RealBin/../PerlLib");
 use Fasta_reader;
 
 my ($hint_file,$fasta_file);

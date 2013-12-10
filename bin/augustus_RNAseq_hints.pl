@@ -21,6 +21,22 @@ Create hint files for Augustus using RNASeq/EST. One is junction reads (excellen
  -genome|fasta s  The genome assembly FASTA file.
  -strandness   i  If RNAseq is directional, provide direction: 0 for unknown (default); or 1 for + strand; -1 for - strand
 
+=head1 AUTHORS
+
+ Alexie Papanicolaou
+
+        CSIRO Ecosystem Sciences
+        alexie@butterflybase.org
+
+=head1 DISCLAIMER & LICENSE
+
+Copyright 2012-2014 the Commonwealth Scientific and Industrial Research Organization. 
+This software is released under the Mozilla Public License v.2.
+
+It is provided "as is" without warranty of any kind.
+You can find the terms and conditions at http://www.mozilla.org/MPL/2.0.
+
+
 =cut
 
 use strict;
