@@ -567,9 +567,9 @@ main(argc, argv) int argc; char *argv[];
     if (!strcmp(argv[k], "-w"))
     {
       wordsize = (k+1 < argc)? atoi(argv[k+1]) : 0;
-      if (wordsize < 11)
+      if (wordsize > 5)
       {
-        fatal("Word size must be at least 11");
+        fatal("Word size must be no more than 5");
       }    
       continue;
     }

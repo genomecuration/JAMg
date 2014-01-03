@@ -158,7 +158,7 @@ use Getopt::Long;
 use Pod::Usage;
 use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
-$ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
+$ENV{PATH} = "$RealBin:$RealBin/../3rd_party/bin/:".$ENV{PATH};
 
 use Digest::SHA qw/sha1_hex/;
 use Data::Dumper;
@@ -229,7 +229,10 @@ GetOptions(
 	'nodataprint'             => \$nodataprint,
 	'augustus_dir:s'          => \$augustus_dir
 );
-pod2usage "A required file is missing"
+
+pod2usage "No genome found\n" unless ( $genome_file && -s $genome_file );
+
+pod2usage "A required input file is missing\n"
   unless (
 	( $exonerate_file && -s $exonerate_file )
 	|| (   $transdecoder_gff
@@ -240,9 +243,12 @@ pod2usage "A required file is missing"
 		&& -s $transdecoder_peptides )
 	|| ( $peptide_file && -s $peptide_file )
 	|| ( $mrna_file    && -s $mrna_file )
-  )
-  && ( $genome_file
-	&& -s $genome_file );
+  );
+
+die "Max intron size (-intron) cannot be 0!\n" unless $intron_size && $intron_size > 0;
+die "CPUs (-cpu or -thread) cannot be 0!\n" unless $threads && $threads > 0;
+
+
 die "Cannot have both TransDecoder and peptides\n"
   if $transdecoder_gff && $peptide_file;
 die "cDNA mode is only used without peptides\n" if $peptide_file && $is_cdna;
@@ -2320,13 +2326,13 @@ sub run_exonerate() {
 				my $aat_score = $same_species ? 400 : 80;
 				my $aat_word = $same_species ? 5 : 4; # five is much faster than default and 3 is much slower. 
 				print "Preparing/running AAT...\n";
-				my $matrix_file = "$aatpackage/../matrices/BS";
+				my $matrix_file = "$aatpackage/matrices/BS";
 				die "Cannot find AAT's matrices/BS as $matrix_file\n"
 				  unless -s $matrix_file;
 				foreach my $genome_file (@$files_ref) {
 					next if $genome_file =~ /\.aat\./ || -d $genome_file;
 					push( @commands,
-"$aatpackage/dps $genome_file $peptide_file $aatpackage/../matrices/BS -c 300000 -f $aat_score -w $aat_word -i 30 -a $intron_size > $genome_file.aat.d ;"
+"$aatpackage/dps $genome_file $peptide_file $matrix_file -c 300000 -f $aat_score -w $aat_word -i 30 -a $intron_size > $genome_file.aat.d ;"
 						  . "$aatpackage/ext $genome_file.aat.d -f $aat_score > $genome_file.aat.ext ;"
 						  . "$aatpackage/extCollapse.pl $genome_file.aat.ext > $genome_file.aat.extCol ;"
 						  . "$aatpackage/filter $genome_file.aat.extCol -c 1 > $genome_file.aat.filter ; rm -f $genome_file.aat.d $genome_file.aat.ext $genome_file.aat.extCol \n"
