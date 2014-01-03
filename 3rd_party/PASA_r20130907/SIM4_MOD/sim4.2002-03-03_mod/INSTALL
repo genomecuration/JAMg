@@ -1,0 +1,11 @@
+Each distributed version of sim4 will be unpacked into
+a directory whose name contains that version string.
+For example, sim4.2000-03-13.  Make a note of this
+version when you fetch the tar file.
+
+To compile:
+
+	gunzip < sim4.[version].tar.gz | tar -xf -
+	cd sim4.[version]
+	make
+

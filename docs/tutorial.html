@@ -1,0 +1,1048 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+<meta name="generator" content="AsciiDoc 8.6.6" />
+<title>Just Annotate My Genome (JAMg) tutorial</title>
+<style type="text/css">
+/* Shared CSS for AsciiDoc xhtml11 and html5 backends */
+
+/* Default font. */
+body {
+  font-family: Georgia,serif;
+}
+
+/* Title font. */
+h1, h2, h3, h4, h5, h6,
+div.title, caption.title,
+thead, p.table.header,
+#toctitle,
+#author, #revnumber, #revdate, #revremark,
+#footer {
+  font-family: Arial,Helvetica,sans-serif;
+}
+
+body {
+  margin: 1em 5% 1em 5%;
+}
+
+a {
+  color: blue;
+  text-decoration: underline;
+}
+a:visited {
+  color: fuchsia;
+}
+
+em {
+  font-style: italic;
+  color: navy;
+}
+
+strong {
+  font-weight: bold;
+  color: #083194;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #527bbd;
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+}
+
+h1, h2, h3 {
+  border-bottom: 2px solid silver;
+}
+h2 {
+  padding-top: 0.5em;
+}
+h3 {
+  float: left;
+}
+h3 + * {
+  clear: left;
+}
+h5 {
+  font-size: 1.0em;
+}
+
+div.sectionbody {
+  margin-left: 0;
+}
+
+hr {
+  border: 1px solid silver;
+}
+
+p {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+ul, ol, li > p {
+  margin-top: 0;
+}
+ul > li     { color: #aaa; }
+ul > li > * { color: black; }
+
+pre {
+  padding: 0;
+  margin: 0;
+}
+
+#author {
+  color: #527bbd;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+#email {
+}
+#revnumber, #revdate, #revremark {
+}
+
+#footer {
+  font-size: small;
+  border-top: 2px solid silver;
+  padding-top: 0.5em;
+  margin-top: 4.0em;
+}
+#footer-text {
+  float: left;
+  padding-bottom: 0.5em;
+}
+#footer-badges {
+  float: right;
+  padding-bottom: 0.5em;
+}
+
+#preamble {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+}
+div.imageblock, div.exampleblock, div.verseblock,
+div.quoteblock, div.literalblock, div.listingblock, div.sidebarblock,
+div.admonitionblock {
+  margin-top: 1.0em;
+  margin-bottom: 1.5em;
+}
+div.admonitionblock {
+  margin-top: 2.0em;
+  margin-bottom: 2.0em;
+  margin-right: 10%;
+  color: #606060;
+}
+
+div.content { /* Block element content. */
+  padding: 0;
+}
+
+/* Block element titles. */
+div.title, caption.title {
+  color: #527bbd;
+  font-weight: bold;
+  text-align: left;
+  margin-top: 1.0em;
+  margin-bottom: 0.5em;
+}
+div.title + * {
+  margin-top: 0;
+}
+
+td div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content + div.title {
+  margin-top: 0.0em;
+}
+
+div.sidebarblock > div.content {
+  background: #ffffee;
+  border: 1px solid #dddddd;
+  border-left: 4px solid #f0f0f0;
+  padding: 0.5em;
+}
+
+div.listingblock > div.content {
+  border: 1px solid #dddddd;
+  border-left: 5px solid #f0f0f0;
+  background: #f8f8f8;
+  padding: 0.5em;
+}
+
+div.quoteblock, div.verseblock {
+  padding-left: 1.0em;
+  margin-left: 1.0em;
+  margin-right: 10%;
+  border-left: 5px solid #f0f0f0;
+  color: #888;
+}
+
+div.quoteblock > div.attribution {
+  padding-top: 0.5em;
+  text-align: right;
+}
+
+div.verseblock > pre.content {
+  font-family: inherit;
+  font-size: inherit;
+}
+div.verseblock > div.attribution {
+  padding-top: 0.75em;
+  text-align: left;
+}
+/* DEPRECATED: Pre version 8.2.7 verse style literal block. */
+div.verseblock + div.attribution {
+  text-align: left;
+}
+
+div.admonitionblock .icon {
+  vertical-align: top;
+  font-size: 1.1em;
+  font-weight: bold;
+  text-decoration: underline;
+  color: #527bbd;
+  padding-right: 0.5em;
+}
+div.admonitionblock td.content {
+  padding-left: 0.5em;
+  border-left: 3px solid #dddddd;
+}
+
+div.exampleblock > div.content {
+  border-left: 3px solid #dddddd;
+  padding-left: 0.5em;
+}
+
+div.imageblock div.content { padding-left: 0; }
+span.image img { border-style: none; }
+a.image:visited { color: white; }
+
+dl {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+dt {
+  margin-top: 0.5em;
+  margin-bottom: 0;
+  font-style: normal;
+  color: navy;
+}
+dd > *:first-child {
+  margin-top: 0.1em;
+}
+
+ul, ol {
+    list-style-position: outside;
+}
+ol.arabic {
+  list-style-type: decimal;
+}
+ol.loweralpha {
+  list-style-type: lower-alpha;
+}
+ol.upperalpha {
+  list-style-type: upper-alpha;
+}
+ol.lowerroman {
+  list-style-type: lower-roman;
+}
+ol.upperroman {
+  list-style-type: upper-roman;
+}
+
+div.compact ul, div.compact ol,
+div.compact p, div.compact p,
+div.compact div, div.compact div {
+  margin-top: 0.1em;
+  margin-bottom: 0.1em;
+}
+
+tfoot {
+  font-weight: bold;
+}
+td > div.verse {
+  white-space: pre;
+}
+
+div.hdlist {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+div.hdlist tr {
+  padding-bottom: 15px;
+}
+dt.hdlist1.strong, td.hdlist1.strong {
+  font-weight: bold;
+}
+td.hdlist1 {
+  vertical-align: top;
+  font-style: normal;
+  padding-right: 0.8em;
+  color: navy;
+}
+td.hdlist2 {
+  vertical-align: top;
+}
+div.hdlist.compact tr {
+  margin: 0;
+  padding-bottom: 0;
+}
+
+.comment {
+  background: yellow;
+}
+
+.footnote, .footnoteref {
+  font-size: 0.8em;
+}
+
+span.footnote, span.footnoteref {
+  vertical-align: super;
+}
+
+#footnotes {
+  margin: 20px 0 20px 0;
+  padding: 7px 0 0 0;
+}
+
+#footnotes div.footnote {
+  margin: 0 0 5px 0;
+}
+
+#footnotes hr {
+  border: none;
+  border-top: 1px solid silver;
+  height: 1px;
+  text-align: left;
+  margin-left: 0;
+  width: 20%;
+  min-width: 100px;
+}
+
+div.colist td {
+  padding-right: 0.5em;
+  padding-bottom: 0.3em;
+  vertical-align: top;
+}
+div.colist td img {
+  margin-top: 0.3em;
+}
+
+@media print {
+  #footer-badges { display: none; }
+}
+
+#toc {
+  margin-bottom: 2.5em;
+}
+
+#toctitle {
+  color: #527bbd;
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-top: 1.0em;
+  margin-bottom: 0.1em;
+}
+
+div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+div.toclevel2 {
+  margin-left: 2em;
+  font-size: 0.9em;
+}
+div.toclevel3 {
+  margin-left: 4em;
+  font-size: 0.9em;
+}
+div.toclevel4 {
+  margin-left: 6em;
+  font-size: 0.9em;
+}
+
+span.aqua { color: aqua; }
+span.black { color: black; }
+span.blue { color: blue; }
+span.fuchsia { color: fuchsia; }
+span.gray { color: gray; }
+span.green { color: green; }
+span.lime { color: lime; }
+span.maroon { color: maroon; }
+span.navy { color: navy; }
+span.olive { color: olive; }
+span.purple { color: purple; }
+span.red { color: red; }
+span.silver { color: silver; }
+span.teal { color: teal; }
+span.white { color: white; }
+span.yellow { color: yellow; }
+
+span.aqua-background { background: aqua; }
+span.black-background { background: black; }
+span.blue-background { background: blue; }
+span.fuchsia-background { background: fuchsia; }
+span.gray-background { background: gray; }
+span.green-background { background: green; }
+span.lime-background { background: lime; }
+span.maroon-background { background: maroon; }
+span.navy-background { background: navy; }
+span.olive-background { background: olive; }
+span.purple-background { background: purple; }
+span.red-background { background: red; }
+span.silver-background { background: silver; }
+span.teal-background { background: teal; }
+span.white-background { background: white; }
+span.yellow-background { background: yellow; }
+
+span.big { font-size: 2em; }
+span.small { font-size: 0.6em; }
+
+span.underline { text-decoration: underline; }
+span.overline { text-decoration: overline; }
+span.line-through { text-decoration: line-through; }
+
+
+/*
+ * xhtml11 specific
+ *
+ * */
+
+tt {
+  font-family: monospace;
+  font-size: inherit;
+  color: navy;
+}
+
+div.tableblock {
+  margin-top: 1.0em;
+  margin-bottom: 1.5em;
+}
+div.tableblock > table {
+  border: 3px solid #527bbd;
+}
+thead, p.table.header {
+  font-weight: bold;
+  color: #527bbd;
+}
+p.table {
+  margin-top: 0;
+}
+/* Because the table frame attribute is overriden by CSS in most browsers. */
+div.tableblock > table[frame="void"] {
+  border-style: none;
+}
+div.tableblock > table[frame="hsides"] {
+  border-left-style: none;
+  border-right-style: none;
+}
+div.tableblock > table[frame="vsides"] {
+  border-top-style: none;
+  border-bottom-style: none;
+}
+
+
+/*
+ * html5 specific
+ *
+ * */
+
+.monospaced {
+  font-family: monospace;
+  font-size: inherit;
+  color: navy;
+}
+
+table.tableblock {
+  margin-top: 1.0em;
+  margin-bottom: 1.5em;
+}
+thead, p.tableblock.header {
+  font-weight: bold;
+  color: #527bbd;
+}
+p.tableblock {
+  margin-top: 0;
+}
+table.tableblock {
+  border-width: 3px;
+  border-spacing: 0px;
+  border-style: solid;
+  border-color: #527bbd;
+  border-collapse: collapse;
+}
+th.tableblock, td.tableblock {
+  border-width: 1px;
+  padding: 4px;
+  border-style: solid;
+  border-color: #527bbd;
+}
+
+table.tableblock.frame-topbot {
+  border-left-style: hidden;
+  border-right-style: hidden;
+}
+table.tableblock.frame-sides {
+  border-top-style: hidden;
+  border-bottom-style: hidden;
+}
+table.tableblock.frame-none {
+  border-style: hidden;
+}
+
+th.tableblock.halign-left, td.tableblock.halign-left {
+  text-align: left;
+}
+th.tableblock.halign-center, td.tableblock.halign-center {
+  text-align: center;
+}
+th.tableblock.halign-right, td.tableblock.halign-right {
+  text-align: right;
+}
+
+th.tableblock.valign-top, td.tableblock.valign-top {
+  vertical-align: top;
+}
+th.tableblock.valign-middle, td.tableblock.valign-middle {
+  vertical-align: middle;
+}
+th.tableblock.valign-bottom, td.tableblock.valign-bottom {
+  vertical-align: bottom;
+}
+
+
+/*
+ * manpage specific
+ *
+ * */
+
+body.manpage h1 {
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  border-top: 2px solid silver;
+  border-bottom: 2px solid silver;
+}
+body.manpage h2 {
+  border-style: none;
+}
+body.manpage div.sectionbody {
+  margin-left: 3em;
+}
+
+@media print {
+  body.manpage div#toc { display: none; }
+}
+</style>
+<script type="text/javascript">
+/*<![CDATA[*/
+var asciidoc = {  // Namespace.
+
+/////////////////////////////////////////////////////////////////////
+// Table Of Contents generator
+/////////////////////////////////////////////////////////////////////
+
+/* Author: Mihai Bazon, September 2002
+ * http://students.infoiasi.ro/~mishoo
+ *
+ * Table Of Content generator
+ * Version: 0.4
+ *
+ * Feel free to use this script under the terms of the GNU General Public
+ * License, as long as you do not remove or alter this notice.
+ */
+
+ /* modified by Troy D. Hanson, September 2006. License: GPL */
+ /* modified by Stuart Rackham, 2006, 2009. License: GPL */
+
+// toclevels = 1..4.
+toc: function (toclevels) {
+
+  function getText(el) {
+    var text = "";
+    for (var i = el.firstChild; i != null; i = i.nextSibling) {
+      if (i.nodeType == 3 /* Node.TEXT_NODE */) // IE doesn't speak constants.
+        text += i.data;
+      else if (i.firstChild != null)
+        text += getText(i);
+    }
+    return text;
+  }
+
+  function TocEntry(el, text, toclevel) {
+    this.element = el;
+    this.text = text;
+    this.toclevel = toclevel;
+  }
+
+  function tocEntries(el, toclevels) {
+    var result = new Array;
+    var re = new RegExp('[hH]([2-'+(toclevels+1)+'])');
+    // Function that scans the DOM tree for header elements (the DOM2
+    // nodeIterator API would be a better technique but not supported by all
+    // browsers).
+    var iterate = function (el) {
+      for (var i = el.firstChild; i != null; i = i.nextSibling) {
+        if (i.nodeType == 1 /* Node.ELEMENT_NODE */) {
+          var mo = re.exec(i.tagName);
+          if (mo && (i.getAttribute("class") || i.getAttribute("className")) != "float") {
+            result[result.length] = new TocEntry(i, getText(i), mo[1]-1);
+          }
+          iterate(i);
+        }
+      }
+    }
+    iterate(el);
+    return result;
+  }
+
+  var toc = document.getElementById("toc");
+  if (!toc) {
+    return;
+  }
+
+  // Delete existing TOC entries in case we're reloading the TOC.
+  var tocEntriesToRemove = [];
+  var i;
+  for (i = 0; i < toc.childNodes.length; i++) {
+    var entry = toc.childNodes[i];
+    if (entry.nodeName == 'div'
+     && entry.getAttribute("class")
+     && entry.getAttribute("class").match(/^toclevel/))
+      tocEntriesToRemove.push(entry);
+  }
+  for (i = 0; i < tocEntriesToRemove.length; i++) {
+    toc.removeChild(tocEntriesToRemove[i]);
+  }
+
+  // Rebuild TOC entries.
+  var entries = tocEntries(document.getElementById("content"), toclevels);
+  for (var i = 0; i < entries.length; ++i) {
+    var entry = entries[i];
+    if (entry.element.id == "")
+      entry.element.id = "_toc_" + i;
+    var a = document.createElement("a");
+    a.href = "#" + entry.element.id;
+    a.appendChild(document.createTextNode(entry.text));
+    var div = document.createElement("div");
+    div.appendChild(a);
+    div.className = "toclevel" + entry.toclevel;
+    toc.appendChild(div);
+  }
+  if (entries.length == 0)
+    toc.parentNode.removeChild(toc);
+},
+
+
+/////////////////////////////////////////////////////////////////////
+// Footnotes generator
+/////////////////////////////////////////////////////////////////////
+
+/* Based on footnote generation code from:
+ * http://www.brandspankingnew.net/archive/2005/07/format_footnote.html
+ */
+
+footnotes: function () {
+  // Delete existing footnote entries in case we're reloading the footnodes.
+  var i;
+  var noteholder = document.getElementById("footnotes");
+  if (!noteholder) {
+    return;
+  }
+  var entriesToRemove = [];
+  for (i = 0; i < noteholder.childNodes.length; i++) {
+    var entry = noteholder.childNodes[i];
+    if (entry.nodeName == 'div' && entry.getAttribute("class") == "footnote")
+      entriesToRemove.push(entry);
+  }
+  for (i = 0; i < entriesToRemove.length; i++) {
+    noteholder.removeChild(entriesToRemove[i]);
+  }
+
+  // Rebuild footnote entries.
+  var cont = document.getElementById("content");
+  var spans = cont.getElementsByTagName("span");
+  var refs = {};
+  var n = 0;
+  for (i=0; i<spans.length; i++) {
+    if (spans[i].className == "footnote") {
+      n++;
+      var note = spans[i].getAttribute("data-note");
+      if (!note) {
+        // Use [\s\S] in place of . so multi-line matches work.
+        // Because JavaScript has no s (dotall) regex flag.
+        note = spans[i].innerHTML.match(/\s*\[([\s\S]*)]\s*/)[1];
+        spans[i].innerHTML =
+          "[<a id='_footnoteref_" + n + "' href='#_footnote_" + n +
+          "' title='View footnote' class='footnote'>" + n + "</a>]";
+        spans[i].setAttribute("data-note", note);
+      }
+      noteholder.innerHTML +=
+        "<div class='footnote' id='_footnote_" + n + "'>" +
+        "<a href='#_footnoteref_" + n + "' title='Return to text'>" +
+        n + "</a>. " + note + "</div>";
+      var id =spans[i].getAttribute("id");
+      if (id != null) refs["#"+id] = n;
+    }
+  }
+  if (n == 0)
+    noteholder.parentNode.removeChild(noteholder);
+  else {
+    // Process footnoterefs.
+    for (i=0; i<spans.length; i++) {
+      if (spans[i].className == "footnoteref") {
+        var href = spans[i].getElementsByTagName("a")[0].getAttribute("href");
+        href = href.match(/#.*/)[0];  // Because IE return full URL.
+        n = refs[href];
+        spans[i].innerHTML =
+          "[<a href='#_footnote_" + n +
+          "' title='View footnote' class='footnote'>" + n + "</a>]";
+      }
+    }
+  }
+},
+
+install: function(toclevels) {
+  var timerId;
+
+  function reinstall() {
+    asciidoc.footnotes();
+    if (toclevels) {
+      asciidoc.toc(toclevels);
+    }
+  }
+
+  function reinstallAndRemoveTimer() {
+    clearInterval(timerId);
+    reinstall();
+  }
+
+  timerId = setInterval(reinstall, 500);
+  if (document.addEventListener)
+    document.addEventListener("DOMContentLoaded", reinstallAndRemoveTimer, false);
+  else
+    window.onload = reinstallAndRemoveTimer;
+}
+
+}
+asciidoc.install();
+/*]]>*/
+</script>
+</head>
+<body class="article">
+<div id="header">
+<h1>Just Annotate My Genome (JAMg) tutorial</h1>
+<span id="author">Alexie Papanicolaou Author Name</span><br />
+<span id="email"><tt>&lt;<a href="mailto:alexie@butterflybase.org">alexie@butterflybase.org</a>&gt;</tt></span><br />
+<span id="revnumber">version RC1,</span>
+<span id="revdate">December 2013</span>
+</div>
+<div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph"><p>A tutorial for Just_Annotate_My_genome using <em>Drosophila melanogaster</em>, a small amount (50 million pairs) of RNA-Seq and public Sanger sequences.</p></div>
+<div class="paragraph"><p>In modern projects you will have substantially more RNA-Seq (at least 150 million, i.e. one HiSeq lane) and probably little to no Sanger/454 sequences. However, this makes the tutorial shorter and shows how even established genomes can be annotated (it is also a shameless plug for <a href="http://insectacentral.org">InsectaCentral</a>.</p></div>
+<div class="paragraph"><p>This tutorial assumes you know how to use a (ba)sh Linux shell, can create and navigate through directories. In the tutorial we don&#8217;t create any special directories, but in real-world scenarios you would. You&#8217;d also keep a log of what you&#8217;ve done (and why), keeping track if something didn&#8217;t work. If it was a bug from our side, please let us know (but first ask your system administrator if you don&#8217;t know how to use Linux too well). I also assume you know not to overload your server(s) in terms of CPUs and I/O (hard disk) or network bandwidth. Use <em>top</em> to see if you caused such a bottleneck.</p></div>
+<div class="paragraph"><p>Further, in this tutorial we are skipping a step: aligning <em>known proteins</em> to the genome. Because our tutorial uses <em>Drosophila melanogaster</em>, if we did that then we would be essentially using the official annotations so we wouldn&#8217;t be able to <em>validate</em> the procedure. In a real-world scenario, you would follow the <a href="procedure.html#foreign_proteins">procedure</a> to align known proteins of your choice. More tips on using JAMg with real-world scenario will be scattered through out this tutorial.</p></div>
+<div class="paragraph"><p>Steps that share a number can be run in parallel:</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_step_0_configure_and_em_download_em_example_data">Step 0: Configure and <em>download</em> example data</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>I&#8217;m assuming you&#8217;ve downloaded the software from somewhere and unpacked it. The next step is to store the path in an environmental variable so you can copy-paste for the rest of the tutorial. Also we will export any other parameters that are species specific and we will use for the rest of the tutorial. You will also need to run <em>make</em> which make take some time (unzipping files etc) but it ought to be un-attended (any errors will cause it to crash).</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #0000FF">export</span></span> <span style="color: #009900">JAMG_PATH</span><span style="color: #990000">=</span><span style="color: #009900">$HOME</span>/software/jamg <span style="font-style: italic"><span style="color: #9A1900"># or wherever you installed it.</span></span>
+<span style="font-weight: bold"><span style="color: #0000FF">export</span></span> <span style="color: #009900">INTRON_SIZE</span><span style="color: #990000">=</span><span style="color: #993399">70000</span> <span style="font-style: italic"><span style="color: #9A1900"># maximum size of intron.</span></span>
+<span style="font-weight: bold"><span style="color: #0000FF">export</span></span> <span style="color: #009900">GENOME_PATH</span><span style="color: #990000">=</span><span style="color: #009900">$PWD</span>/dmel-all-r<span style="color: #993399">5.53</span><span style="color: #990000">.</span>fasta
+<span style="font-weight: bold"><span style="color: #0000FF">export</span></span> <span style="color: #009900">GENOME_NAME</span><span style="color: #990000">=</span>dmel-all-r<span style="color: #993399">5.53</span> <span style="font-style: italic"><span style="color: #9A1900"># just a base name for our genome</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># number of CPUs to use for the local machine. Always at least one less than the number of available CPUs:</span></span>
+<span style="font-weight: bold"><span style="color: #0000FF">export</span></span> <span style="color: #009900">LOCAL_CPUS</span><span style="color: #990000">=</span><span style="color: #993399">5</span>
+<span style="font-weight: bold"><span style="color: #0000FF">export</span></span> <span style="color: #009900">MAX_MEMORY_G</span><span style="color: #990000">=</span><span style="color: #993399">100</span> <span style="font-style: italic"><span style="color: #9A1900"># maximum amount of memory to use in Gb</span></span>
+cd <span style="color: #009900">$JAMG_PATH</span>
+make <span style="font-style: italic"><span style="color: #9A1900"># will install the various software, including RepeatMasker</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># Go to www.giriinst.org and install the repeat library in $JAMG_PATH/3rd_party/RepeatMasker</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># Run configure. Use the RMBlast NCBI option when asked about an engine (the engine is in $JAMG_PATH/3rd_party/RepeatMasker/ncbi-blast)</span></span>
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/RepeatMasker/configure</tt></pre></div></div>
+<div class="paragraph"><p>Finally, we also assume you have correctly installed PASA (and mySQL) to work with your computing environment. Prepare the configuration file
+cp $JAMG_PATH/3rd_party/PASA/pasa_conf/pasa.CONFIG.template $JAMG_PATH/3rd_party/PASA/pasa_conf/conf.txt
+# Edit conf.txt and set the values for these MySQL database settings:
+# MYSQLSERVER=(your mysql server name)
+# MYSQL_RO_USER=(mysql read-only username)
+# MYSQL_RO_PASSWORD=(mysql read-only password)
+# MYSQL_RW_USER=(mysql all privileges username)
+# MYSQL_RW_PASSWORD=(mysql all privileges password)
+vim $JAMG_PATH/3rd_party/PASA/pasa_conf/conf.txt</p></div>
+<div class="paragraph"><p>How we can get some RNA-Seq data? Well we can download them from NCBI and run the following script to pre-process them:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>mkdir RNAseq<span style="color: #990000">;</span> cd RNAseq
+<span style="font-style: italic"><span style="color: #9A1900"># we have installed Aspera and the sra_sdk from NCBI</span></span>
+ascp <span style="color: #990000">\</span>
+ anonftp@ftp-trace<span style="color: #990000">.</span>ncbi<span style="color: #990000">.</span>nlm<span style="color: #990000">.</span>nih<span style="color: #990000">.</span>gov<span style="color: #990000">:</span>/sra/sra-instant/reads/ByRun/sra/SRR/SRR<span style="color: #993399">023</span>/SRR<span style="color: #993399">023199</span> <span style="color: #990000">\</span>
+ anonftp@ftp-trace<span style="color: #990000">.</span>ncbi<span style="color: #990000">.</span>nlm<span style="color: #990000">.</span>nih<span style="color: #990000">.</span>gov<span style="color: #990000">:</span>/sra/sra-instant/reads/ByRun/sra/SRR/SRR<span style="color: #993399">023</span>/SRR<span style="color: #993399">023502</span> <span style="color: #990000">\</span>
+ anonftp@ftp-trace<span style="color: #990000">.</span>ncbi<span style="color: #990000">.</span>nlm<span style="color: #990000">.</span>nih<span style="color: #990000">.</span>gov<span style="color: #990000">:</span>/sra/sra-instant/reads/ByRun/sra/SRR/SRR<span style="color: #993399">023</span>/SRR<span style="color: #993399">023504</span> <span style="color: #990000">\</span>
+ anonftp@ftp-trace<span style="color: #990000">.</span>ncbi<span style="color: #990000">.</span>nlm<span style="color: #990000">.</span>nih<span style="color: #990000">.</span>gov<span style="color: #990000">:</span>/sra/sra-instant/reads/ByRun/sra/SRR/SRR<span style="color: #993399">023</span>/SRR<span style="color: #993399">023538</span> <span style="color: #990000">\</span>
+ anonftp@ftp-trace<span style="color: #990000">.</span>ncbi<span style="color: #990000">.</span>nlm<span style="color: #990000">.</span>nih<span style="color: #990000">.</span>gov<span style="color: #990000">:</span>/sra/sra-instant/reads/ByRun/sra/SRR/SRR<span style="color: #993399">023</span>/SRR<span style="color: #993399">023539</span> <span style="color: #990000">\</span>
+ anonftp@ftp-trace<span style="color: #990000">.</span>ncbi<span style="color: #990000">.</span>nlm<span style="color: #990000">.</span>nih<span style="color: #990000">.</span>gov<span style="color: #990000">:</span>/sra/sra-instant/reads/ByRun/sra/SRR/SRR<span style="color: #993399">023</span>/SRR<span style="color: #993399">023540</span> <span style="color: #990000">\</span>
+ anonftp@ftp-trace<span style="color: #990000">.</span>ncbi<span style="color: #990000">.</span>nlm<span style="color: #990000">.</span>nih<span style="color: #990000">.</span>gov<span style="color: #990000">:</span>/sra/sra-instant/reads/ByRun/sra/SRR/SRR<span style="color: #993399">767</span>/SRR<span style="color: #993399">767611</span> <span style="color: #990000">\</span>
+ anonftp@ftp-trace<span style="color: #990000">.</span>ncbi<span style="color: #990000">.</span>nlm<span style="color: #990000">.</span>nih<span style="color: #990000">.</span>gov<span style="color: #990000">:</span>/sra/sra-instant/reads/ByRun/sra/SRR/SRR<span style="color: #993399">767</span>/SRR<span style="color: #993399">767619</span> <span style="color: #990000">\</span>
+ anonftp@ftp-trace<span style="color: #990000">.</span>ncbi<span style="color: #990000">.</span>nlm<span style="color: #990000">.</span>nih<span style="color: #990000">.</span>gov<span style="color: #990000">:</span>/sra/sra-instant/reads/ByRun/sra/SRR/SRR<span style="color: #993399">767</span>/SRR<span style="color: #993399">767621</span> <span style="color: #990000">\</span>
+ anonftp@ftp-trace<span style="color: #990000">.</span>ncbi<span style="color: #990000">.</span>nlm<span style="color: #990000">.</span>nih<span style="color: #990000">.</span>gov<span style="color: #990000">:</span>/sra/sra-instant/reads/ByRun/sra/SRR/SRR<span style="color: #993399">767</span>/SRR<span style="color: #993399">767623</span> <span style="color: #990000">\</span>
+ <span style="color: #990000">.</span>
+find <span style="color: #990000">.</span> -name <span style="color: #FF0000">"*sra"</span> -exec fastq-dump --split-spot --split-files --skip-technical -F -Q <span style="color: #993399">33</span> -W -T -R pass <span style="color: #FF0000">'{}'</span> <span style="color: #990000">\;</span>
+find <span style="color: #990000">.</span> -name <span style="color: #FF0000">"*sra"</span> -delete <span style="font-style: italic"><span style="color: #9A1900"># delete primary data if you don't need the backup</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># quality pre-process:</span></span>
+find <span style="color: #990000">.</span> -name <span style="color: #FF0000">"pass"</span> -type d -exec <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/preprocess_reads/preprocess_illumina<span style="color: #990000">.</span>pl <span style="color: #990000">\</span>
+ -cdna -no_screen -paired <span style="color: #FF0000">'{}/1/fastq'</span> <span style="color: #FF0000">'{}/2/fastq'</span> <span style="color: #990000">\;</span>
+<span style="font-style: italic"><span style="color: #9A1900"># let's see what we produced:</span></span>
+ls -l SRR<span style="color: #990000">*</span>/pass<span style="color: #990000">/</span><span style="color: #993399">1</span>/fastq<span style="color: #990000">.</span>trimmomatic<span style="color: #990000">.</span>bz2 <span style="font-style: italic"><span style="color: #9A1900"># All 'left' files of a pair</span></span>
+ls -l SRR<span style="color: #990000">*</span>/pass<span style="color: #990000">/</span><span style="color: #993399">2</span>/fastq<span style="color: #990000">.</span>trimmomatic<span style="color: #990000">.</span>bz2 <span style="font-style: italic"><span style="color: #9A1900"># 'right' files of a pair</span></span>
+ls -l SRR<span style="color: #990000">*</span>/pass<span style="color: #990000">/?</span>/fastq<span style="color: #990000">.</span>unpaired<span style="color: #990000">.</span>bz2 <span style="font-style: italic"><span style="color: #9A1900"># remnant unpaired files when the pair has been discarded</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># let's rename them to something easier to use.</span></span>
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/preprocess_reads/rename_SRA_sra_fastq<span style="color: #990000">.</span>pl
+ls -l <span style="color: #990000">*.</span>trimmomatic<span style="color: #990000">.</span>bz2
+bunzip2 -k <span style="color: #990000">*.</span>trimmomatic<span style="color: #990000">.</span>bz2 <span style="font-style: italic"><span style="color: #9A1900"># highly recommend pbzip2 -d</span></span></tt></pre></div></div>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<img src="./images/icons/tip.png" alt="Tip" />
+</td>
+<td class="content">if you want to use the traditional Trinity RNASeq way of creating input files, you can do this (but we will not use it for this tutorial):</td>
+</tr></table>
+</div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>pbzip2 -dck SRR<span style="color: #990000">*</span>/pass<span style="color: #990000">/</span><span style="color: #993399">1</span>/fastq<span style="color: #990000">.</span>trimmomatic<span style="color: #990000">.</span>bz2 <span style="color: #990000">&gt;</span> drosoph_ALL<span style="color: #990000">.</span>Left<span style="color: #990000">.</span>fastq
+pbzip2 -dck SRR<span style="color: #990000">*</span>/pass<span style="color: #990000">/</span><span style="color: #993399">2</span>/fastq<span style="color: #990000">.</span>trimmomatic<span style="color: #990000">.</span>bz2 <span style="color: #990000">&gt;</span> drosoph_ALL<span style="color: #990000">.</span>Right<span style="color: #990000">.</span>fastq
+pbzip2 -dck SRR<span style="color: #990000">*</span>/pass<span style="color: #990000">/?</span>/fastq<span style="color: #990000">.</span>unpaired<span style="color: #990000">.</span>bz2 <span style="color: #990000">&gt;&gt;</span> drosoph_ALL<span style="color: #990000">.</span>Left<span style="color: #990000">.</span>fastq <span style="font-style: italic"><span style="color: #9A1900"># unpaired remnants can go to any file</span></span></tt></pre></div></div>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<img src="./images/icons/tip.png" alt="Tip" />
+</td>
+<td class="content">We can also use 454 and Sanger data! Then go to <a href="http://insectacentral.org/genes4all/download/request">InsectaCentral</a> and download a FASTA of all <em>Drosophila melanogaster</em> (Diptera:Drosophilidae) contigs. This is a MIRA assembly of all Sanger and 454 data that was available for D. melanogaster at the time. For the tutorial we&#8217;ll assume you saved them as <em>D_melanogaster_ICcontigs.fsa</em>.</td>
+</tr></table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_step_1a_repeatmask_and_em_identify_untranscribed_coding_exons_em">Step 1a: RepeatMask and <em>identify untranscribed coding exons</em></h2>
+<div class="sectionbody">
+<div class="paragraph"><p>In this step you will check if there are any domains that are coding. This will provide evidence even in the absence
+of RNA-Seq data. The script will also run RepeatMasker the output of which we will use later on.</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>mkdir exon_search<span style="color: #990000">;</span> cd exon_search
+<span style="font-style: italic"><span style="color: #9A1900"># MPI with many hosts; localhost (morgan) uses 5 threads for repeatmasker</span></span>
+<span style="color: #009900">$JAMG_PATH</span>/bin/prepare_domain_exon_annotation<span style="color: #990000">.</span>pl -verbose -genome <span style="color: #009900">$GENOME_PATH</span> <span style="color: #990000">\</span>
+ -repthreads <span style="color: #009900">$LOCAL_CPUS</span> -engine mpi -hosts morgan<span style="color: #990000">:</span><span style="color: #993399">5</span>-haldane<span style="color: #993399">3</span><span style="color: #990000">:</span><span style="color: #993399">12</span>-haldane<span style="color: #993399">2</span><span style="color: #990000">:</span><span style="color: #993399">10</span>-haldane<span style="color: #993399">1</span><span style="color: #990000">:</span><span style="color: #993399">5</span>-haldane<span style="color: #993399">4</span><span style="color: #990000">:</span><span style="color: #993399">12</span> -mpi <span style="color: #993399">44</span> <span style="color: #990000">\</span>
+ -uniprot_db <span style="color: #009900">$JAMG_PATH</span>/databases/hhblits/refseq_insecta_march13_just_useful <span style="color: #990000">\</span>
+ -scratch /dev/shm<span style="color: #990000">/</span><span style="color: #009900">$USER</span>
+<span style="font-style: italic"><span style="color: #9A1900"># OR  MPI with a single local host and 5 CPUs</span></span>
+<span style="color: #009900">$JAMG_PATH</span>/bin/prepare_domain_exon_annotation<span style="color: #990000">.</span>pl -verbose -genome <span style="color: #009900">$GENOME_PATH</span> <span style="color: #990000">\</span>
+ -repthreads <span style="color: #009900">$LOCAL_CPUS</span> -engine localmpi -mpi <span style="color: #009900">$LOCAL_CPUS</span> <span style="color: #990000">\</span>
+ -uniprot_db <span style="color: #009900">$JAMG_PATH</span>/databases/hhblits/refseq_insecta_march13_just_useful <span style="color: #990000">\</span>
+ -scratch /dev/shm<span style="color: #990000">/</span><span style="color: #009900">$USER</span>
+ls <span style="color: #990000">*</span>hints <span style="font-style: italic"><span style="color: #9A1900"># should be two files</span></span></tt></pre></div></div>
+<div class="paragraph"><p>Purely FYI: in my local cluster environment using MPI with 44 CPUs and the databases copied to /dev/shm (first command above), this step took 36h (36h and 17 minutes to be exact). The network speed used for MPI was a bottleneck (we just have 10gb Ethernet not infiniband).</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_step_1b_assembly_transcriptome_to_create_em_high_quality_gene_models_em">Step 1b: Assembly transcriptome to create <em>high-quality gene models</em></h2>
+<div class="sectionbody">
+<div class="paragraph"><p>While the previous step is running, prepare TDN and TGG assemblies (Trinity de-novo and Trinity genome-guided) for the RNA-seq data.</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>mkdir Trinity_assemblies<span style="color: #990000">;</span> cd Trinity_assemblies
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/trinityrnaseq/Trinity<span style="color: #990000">.</span>pl --seqType fq --min_kmer_cov <span style="color: #993399">2</span> <span style="color: #990000">\</span>
+ --left <span style="color: #990000">../*</span>1_fastq<span style="color: #990000">.</span>trimmomatic <span style="color: #990000">../*</span>_unpaired_fastq<span style="color: #990000">.</span>trimmomatic --right <span style="color: #990000">../*</span>_2_fastq<span style="color: #990000">.</span>trimmomatic <span style="color: #990000">\</span>
+ --output TDN --JM <span style="color: #FF0000">"$MAX_MEMORY_G"</span>G --CPU <span style="color: #009900">$LOCAL_CPUS</span> --full_cleanup <span style="color: #990000">|&amp;</span> tee tdn<span style="color: #990000">.</span>log <span style="font-style: italic"><span style="color: #9A1900"># expected output is a Trinity.fasta</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># the above will take some time. First step is unzipping all the input files before JellyFish start running</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># In parallel prepare for TGG. First align the reads to the genome:</span></span>
+mkdir TGG<span style="color: #990000">;</span> cd TGG
+<span style="color: #009900">$JAMG_PATH</span>/bin/align_rnaseq_gsnap<span style="color: #990000">.</span>pl -fasta <span style="color: #009900">$GENOME_PATH</span> -dbname <span style="color: #009900">$GENOME_NAME</span> -cpus <span style="color: #009900">$LOCAL_CPUS</span> <span style="color: #990000">\</span>
+ -nofail -suffix -input_dir <span style="color: #990000">../../</span> <span style="color: #990000">|&amp;</span> tee tgg<span style="color: #990000">.</span>log</tt></pre></div></div>
+<div class="paragraph"><p>In the above we have prepared the input for TDN and TGG (Trinity de-novo and Trinity Genome-guided). For this tutorial, for TDN we use <em>--min_kmer_cov 2</em> because it saves time and resources but in a real world scenario of annotating a genome, don&#8217;t use it if you don&#8217;t have to. For TGG we use <em>-suffix</em> because we don&#8217;t expect any substantial polymorphism for Drosophila melanogaster. If you have a species with polymorphism then don&#8217;t use <em>-suffix</em>. Once the alignment of the RNASeq is complete we can continue with the TGG process. Some files will be mapped multiple times. We know that Drosophila is well assembled so these RNASeq are almost certainly repeats, for this tutorial we will not use them.</p></div>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<img src="./images/icons/caution.png" alt="Caution" />
+</td>
+<td class="content">In NGS-derived assemblies, it is not uncommon to have <em>haplotype</em> scaffolds (see the Heliconius genome paper), for that reason we would keep them but decrease the <em>-path_number</em> option of <em>align_rnaseq_gsnap</em> from the default of 50 to something that is expected for your assembly (e.g. 4). See the files TGG/*.concordant_mult_xs for read pairs that map to higher than -path_number paths.</td>
+</tr></table>
+</div>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<img src="./images/icons/tip.png" alt="Tip" />
+</td>
+<td class="content">For parallelization with computing clusters, you could create <em>one directory for each paired readset</em> and run align_rnaseq_gsnap.pl on each node.</td>
+</tr></table>
+</div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-style: italic"><span style="color: #9A1900"># grab all the outputs for Drosophila</span></span>
+cd TGG
+<span style="font-style: italic"><span style="color: #9A1900"># prepare files for TGN, splitting them to those that will take a very long time/resources, medium and very short</span></span>
+<span style="color: #009900">$JAMG_PATH</span>/bin/prepare_trinity_genome_assembly_pbs<span style="color: #990000">.</span>pl -files <span style="color: #990000">./*.</span>concordant_uniq<span style="color: #990000">.</span>bam -intron <span style="color: #009900">$INTRON_SIZE</span>
+<span style="font-style: italic"><span style="color: #9A1900"># First, we can create a coverage file of the RNAseq alignments that we will use let on for Augustus.</span></span>
+<span style="color: #009900">$JAMG_PATH</span>/bin/augustus_RNAseq_hints<span style="color: #990000">.</span>pl -bam RNASeq_TGG_input<span style="color: #990000">.</span>bam -genome <span style="color: #009900">$GENOME_PATH</span> <span style="font-style: italic"><span style="color: #9A1900"># RNASeq_TGG_input.bam is from prepare_trinity_genome_assembly_pbs.pl above</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># Second we can start assemblying the TGG data:</span></span>
+ls <span style="color: #990000">./*.</span>cmds <span style="font-style: italic"><span style="color: #9A1900"># what needs to be run.</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># these will complete rather quickly and need small amounts of RAM; but there are lots, so it will be I/O limited.</span></span>
+ParaFly -CPU <span style="color: #009900">$LOCAL_CPUS</span> -c small_trinity_GG<span style="color: #990000">.</span>cmds
+<span style="font-style: italic"><span style="color: #9A1900"># these will take a bit longer and need a bit more memory. They are often repeats in normal RNASeq projects but in projects with billions of reads then can be just highly expressed genes</span></span>
+ParaFly -CPU <span style="color: #009900">$LOCAL_CPUS</span> -c medium_trinity_GG<span style="color: #990000">.</span>cmds</tt></pre></div></div>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<img src="./images/icons/note.png" alt="Note" />
+</td>
+<td class="content">Very rarely, <em>large_trinity_GG.cmds</em> will exist, especially from very large RNASeq projects. They are probably repeats or very highly expressed genes. They can take days to complete and their value is debatable. I recommend you use Trinity&#8217;s kmer data reduction algorithm. Currently this has to be done manually.</td>
+</tr></table>
+</div>
+<div class="paragraph"><p>Once TGG and TDN are complete, we can integrate TGG and TDN using <a href="http://pasa.sourceforge.net/">PASA2</a>.</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>find TGG/Dir_<span style="color: #990000">*</span>  -name <span style="color: #FF0000">"*inity.fasta"</span> <span style="color: #990000">|</span> <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/trinityrnaseq/util/GG_trinity_accession_incrementer<span style="color: #990000">.</span>pl <span style="color: #990000">&gt;</span> Trinity_GG<span style="color: #990000">.</span>fasta
+cat TDN/Trinity<span style="color: #990000">.</span>fasta Trinity_GG<span style="color: #990000">.</span>fasta <span style="color: #990000">&gt;</span> transcripts<span style="color: #990000">.</span>fasta
+cat TDN/Trinity<span style="color: #990000">.</span>fasta <span style="color: #990000">|</span> <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/misc_utilities/accession_extractor<span style="color: #990000">.</span>pl <span style="color: #990000">&gt;</span> tdn<span style="color: #990000">.</span>accs
+<span style="font-style: italic"><span style="color: #9A1900"># prepare a PASA assembly configuration (separate from the PASA-wide configuration you did in the beginning)</span></span>
+cp <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/pasa_conf/pasa<span style="color: #990000">.</span>alignAssembly<span style="color: #990000">.</span>Template<span style="color: #990000">.</span>txt alignAssembly<span style="color: #990000">.</span>config
+<span style="font-style: italic"><span style="color: #9A1900"># Edit the alignAssembly.config and give the database a unique name, set the following:</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># MYSQLDB=jamg_drosie_tutorial</span></span>
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/bin/seqclean transcripts<span style="color: #990000">.</span>fasta -c <span style="color: #009900">$LOCAL_CPUS</span> -n <span style="color: #993399">10000</span>
+<span style="font-style: italic"><span style="color: #9A1900"># first use -x to check everything is OK create a list of commands that will be run with PASA:</span></span>
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/scripts/Launch_PASA_pipeline<span style="color: #990000">.</span>pl -c alignAssembly<span style="color: #990000">.</span>config -C -R <span style="color: #990000">\</span>
+ -g <span style="color: #009900">$GENOME_PATH</span> --MAX_INTRON_LENGTH <span style="color: #009900">$max_intron_length</span> <span style="color: #990000">\</span>
+ --ALIGNERS blat<span style="color: #990000">,</span>gmap --TRANSDECODER --CPU <span style="color: #009900">$LOCAL_CPUS</span> <span style="color: #990000">\</span>
+ -T -t transcripts<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>clean -u transcripts<span style="color: #990000">.</span>fasta <span style="color: #990000">\</span>
+ --TDN tdn<span style="color: #990000">.</span>accs -x <span style="color: #990000">&gt;</span> pasa<span style="color: #990000">.</span>alignAssembly<span style="color: #990000">.</span>commands<span style="color: #990000">.</span>to<span style="color: #990000">.</span>run
+<span style="font-style: italic"><span style="color: #9A1900"># Now run it.</span></span>
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/scripts/Launch_PASA_pipeline<span style="color: #990000">.</span>pl -c alignAssembly<span style="color: #990000">.</span>config -C -R <span style="color: #990000">\</span>
+ -g <span style="color: #009900">$GENOME_PATH</span> --MAX_INTRON_LENGTH <span style="color: #009900">$max_intron_length</span> <span style="color: #990000">\</span>
+ --ALIGNERS blat<span style="color: #990000">,</span>gmap --TRANSDECODER --CPU <span style="color: #009900">$LOCAL_CPUS</span> <span style="color: #990000">\</span>
+ -T -t transcripts<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>clean -u transcripts<span style="color: #990000">.</span>fasta <span style="color: #990000">\</span>
+ --TDN tdn<span style="color: #990000">.</span>accs</tt></pre></div></div>
+<div class="paragraph"><p>This will take some time, about a day. In real-world scenarios, we run the alignment steps separately on a cluster and use the <em>-s</em> and <em>-e</em> options to determine which steps shown in <em>pasa.alignAssembly.commands.to.run</em> will be run on which computer or cluster.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_step_1c_run_de_novo_predictors_that_require_no_training">Step 1c: run de-novo predictors that require no training</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>There are some predictors that use no training at all.</p></div>
+<div class="paragraph"><p>GeneMarkES is one such example:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="color: #009900">$HOME</span>/software/genemark/gm_es_bp_linux64_v2<span style="color: #990000">.</span>3e/gmes/gm_es<span style="color: #990000">.</span>pl <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>masked <span style="color: #990000">|</span>tee genemark<span style="color: #990000">.</span>log</tt></pre></div></div>
+<div class="paragraph"><p>GeneMark will take some time, about overnight. Note that we used the masked version of our genome. Always use a masked version unless you&#8217;re using Augustus (for which we will specify the repeat co-ordinates separately).</p></div>
+<div class="paragraph"><p>Another tool (under development) is Gavin Huttley&#8217;s <em>projection</em> approach. This approach takes a well annotated genome and <em>projects</em> its gene models to your un-annotated genome. We will not use it for this tutorial but see the <a href="procedure.html#projection">procedure</a> on how to use it.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_step_2a_acquire_a_em_golden_sub_set_em_of_gene_models">Step 2a: Acquire a <em>golden sub-set</em> of gene models</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>For phase 2, we assume you have completed the PASA step</p></div>
+<div class="paragraph"><p>We require to identify some gene models that are complete and of very high quality. These can be use downstream to train our de-novo predictors. Traditionally, fewer than 100 genes have been used but this was a limitation of the availability of data. In this part we can identify <em>1000s</em> of such golden models but we will only use a subset: some we will keep for validation of the output.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_step_2b_train_and_em_run_de_novo_predictors_em_that_need_no_evidence">Step 2b: Train and <em>run de-novo predictors</em> that need no evidence</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Some predictors like SNAP and GlimmerHMM can use evidence as an option but they (GlimmerHMM at least) takes longer and the results in a small test I did were not as good as without adding additional weights. Regardless, we first need to train them using our golden gene sets from above.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_step_2c_em_prepare_evidence_em_for_augustus_and_train">Step 2c: <em>Prepare evidence</em> for Augustus and train</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>blah</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>todo</tt></pre></div></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_step_3_em_run_augustus_em">Step 3: <em>Run Augustus</em></h2>
+<div class="sectionbody">
+<div class="paragraph"><p>For phase 3, we assume you have completed all of the previous steps (except perhaps running the other de-novo predictors)</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>todo</tt></pre></div></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_step_4_integrate_with_evidencemodeller_and_add_rna_seq_supported_utr">Step 4: Integrate with EvidenceModeller and add RNA-seq supported UTR</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Phase 4 requires all of the previous phases to have been completed.</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>todo</tt></pre></div></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_step_5a_funcational_annotation_with_jamp">Step 5a: Funcational annotation with JAMp</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Phase 5 is required if you are happy with your annotation and now you&#8217;d like to manually curate it.</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>todo</tt></pre></div></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_step_5b_deploy_webapollo">Step 5b: Deploy WebApollo</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>blah</p></div>
+</div>
+</div>
+</div>
+<div id="footnotes"><hr /></div>
+<div id="footer">
+<div id="footer-text">
+Version RC1<br />
+Last updated 2014-01-01 23:28:23 EST
+</div>
+</div>
+</body>
+</html>

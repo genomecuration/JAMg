@@ -64,6 +64,10 @@ while (<XNT>) {
     my $end = $f[4];
     my $score = $f[5];
     my $strand = $f[6];
+#    if ($strand eq '-') {
+#	$start++; # exonerate has a weird coordinate system
+#	$end++;
+#    } # apparently this has changed with exonerate versions and it is now standard
     if ($end < $start) {
 	my $tmp = $start;
 	$start = $end;
@@ -74,7 +78,7 @@ while (<XNT>) {
 	if ($end - $start + 1 >= $minintronlen && $end - $start + 1 <= $maxintronlen){
 	    print HINTS "$seqname\t$prgsrc\tintron\t$start\t$end\t$score\t$strand\t.\tsrc=$source;grp=$prot;pri=$priority\n";
 	}
-    } elsif ($type =~/cds/i) {
+    } elsif ($type eq "cds") {
 	$start += $CDSpart_cutoff;
 	$end -= $CDSpart_cutoff;
 	if ($start > $end) {

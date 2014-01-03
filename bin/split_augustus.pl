@@ -2,6 +2,10 @@
 
 use strict;
 use warnings;
+use FindBin qw($RealBin);
+use lib ("$RealBin/../PerlLib");
+$ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
+
 my $in = shift||die;
 mkdir('hints') || die ("hints directory already exists\n");
 open (IN,$in)||die;

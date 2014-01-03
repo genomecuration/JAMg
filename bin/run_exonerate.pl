@@ -91,7 +91,7 @@ use List::Util 'shuffle';
 
 use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
-$ENV{PATH} .= ":$RealBin";
+$ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 use CdbTools;
 
 my (

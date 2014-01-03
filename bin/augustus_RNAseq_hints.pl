@@ -1,6 +1,5 @@
 #!/usr/bin/env perl
 
-
 =pod
 
 =head1 TODO
@@ -17,9 +16,23 @@ run test with 100 genes, not 390+
 
 Create hint files for Augustus using RNASeq/EST. One is junction reads (excellent for introns), the other is RNASeq/EST coverage
 
+Mandatory options:
+
  -bam|in       s  The input BAM file (co-ordinate sorted).
  -genome|fasta s  The genome assembly FASTA file.
+
+Other options:
+
  -strandness   i  If RNAseq is directional, provide direction: 0 for unknown (default); or 1 for + strand; -1 for - strand
+ -min_score        i  Minimum score for parsing (defaults to 20)
+ -window           i  Window size for coverage graph (defaults to 50)
+ -background_fold  i  Background (defaults to 4), see perldoc
+
+=head1 DESCRIPTION
+
+Background: The problem of getting the intron boundary correct is that rnaseq doesn't go to 0 at the intron, but continues at a background level.
+For that reason, stop if it is -background_fold times lower than a previous 'good' value
+
 
 =head1 AUTHORS
 
@@ -48,7 +61,7 @@ use Pod::Usage;
 use File::Basename;
 use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
-$ENV{PATH} .= ":$RealBin";
+$ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 
 my ( $samtools_exec, $bedtools_exec ) =
   &check_program( 'samtools', 'bedtools' );

@@ -66,6 +66,9 @@ use strict;
 use warnings;
 use Pod::Usage;
 use Getopt::Long;
+use FindBin qw($RealBin);
+use lib ("$RealBin/../PerlLib");
+$ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 
 my $min_exon_size = 50;
 my $min_score     = 30;

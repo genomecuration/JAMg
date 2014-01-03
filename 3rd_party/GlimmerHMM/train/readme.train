@@ -1,0 +1,54 @@
+# Copyright (c) 2004  by  Mihaela Pertea.
+
+Train GlimmerHMM module.
+
+To use this trainning module, first run make in this directory, and than call
+trainGlimmerHMM with the parameters specified below.
+
+  Usage:
+    trainGlimmerHMM <mfasta_file> <exon_file> [optional_parameters]
+
+    <mfasta_file> is a multifasta file containing the sequences for training
+                  with the usual format:
+
+                  >seq1
+                  AGTCGTCGCTAGCTAGCTAGCATCGAGTCTTTTCGATCGAGGACTAGACTT
+                  CTAGCTAGCTAGCATAGCATACGAGCATATCGGTCATGAGACTGATTGGGC
+                  >seq2
+                  TTTAGCTAGCTAGCATAGCATACGAGCATATCGGTAGACTGATTGGGTTTA
+                  TGCGTTA
+
+    <exon_file>  is a file with the exon coordinates relative to the sequences
+                 contained in the <mfasta_file>; different genes are separated
+                 by a blank line; I am assuming a format like below:
+
+                 seq1 5 15
+                 seq1 20 34
+
+                 seq1 50 48
+                 seq1 45 36
+
+                 seq2 17 20
+
+                 In this example seq1 has two genes: one on the direct strand 
+                 and another one on the complementary strand
+
+    [optional_parameters]
+
+     -i i1,i2,...,in 
+                isochores to be considered (e.g. if two isochores are desired 
+		between 0-40% GC content and 40-100% then the option should 
+		be: -i 0,40,100; 
+		default	is -i 0,100 )
+    -f val     	val = average value of upstream UTR region if known
+    -l val     	val = average value of downstream UTR region if known                
+    -n val     	val = average value of intergenic region if known
+
+After running trainGlimmerHMM, a directory will be created in the directory 
+where you ran the traininning procedure from. This directory will be called
+TrainGlimmM[data][time] where [data] and [time] specify the data and the 
+time when the directory was created. This directory contains the training 
+parameters needed by GlimmerHMM to run. A log file named after the name of 
+the diretory will be also created specifying some of the default 
+parameters set for GlimmerHMM.
+

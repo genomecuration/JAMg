@@ -57,8 +57,9 @@ use Time::localtime;
 use IO::File;
 use threads;
 use threads::shared;
-use FindBin;
-use lib ( $FindBin::RealBin . '/../PerlLib' );
+use FindBin qw($RealBin);
+use lib ("$RealBin/../PerlLib");
+$ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 use Thread_helper;
 
 my (

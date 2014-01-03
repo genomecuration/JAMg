@@ -1,0 +1,135 @@
+Please report bugs to:
+
+ Alexie Papanicolaou
+
+        1 CSIRO Ecosystem Sciences, GPO 1700, Canberra 2601, Australia
+        alexie@butterflybase.org
+
+=============================================================================================================
+LEGALESE
+
+LICENSE
+This software is released under the Apache License v2. See the file LICENSE. This Open-Source LICENSE gives you 
+certain rights under certain terms for using the software, please respect them.
+
+
+This software contains or links code from the following software each of which falls under the a particular notice.
+
+== The following tools contributed code which may have been modified.
+
+PASA (PerlLib)
+==============
+http://pasa.sourceforge.net/
+Copyright (c) 2012, The Broad Institute, Inc. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+         Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+         Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+         Neither the name of the Broad Institute nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.**
+
+THIS SOFTWARE IS PROVIDED BY THE BROAD INSTITUTE  ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE BROAD INSTITUTE 
+BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES(INCLUDING, BUT NOT LIMITED TO, 
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+== The following tools are linked/aggregated without modifications unless mentioned:
+
+Perl modules
+============
+Are linked and licensed under the Artistic License v1 or v2 depending on your Perl version
+http://www.perl.org
+
+cdbtools
+========
+Artistic License 
+http://compbio.dfci.harvard.edu/tgi/software/
+http://compbio.dfci.harvard.edu/tgi/software/artistic.html
+The Gene Index Project and tools is supported in part by funding from the US Department of Energy, Grant #DE-FG02-99ER62852, 
+and the US National Science Foundation, Grant #DBI-9983070. Additional funds are provided by the US National Science Foundation through grants #DBI-9813392 and #DBI-9975866.
+
+snap
+====
+Is distributed under the MIT license.
+http://korflab.ucdavis.edu/software.html
+
+glimmerhmm
+==========
+Copyright (c) 2005  by  Mihaela Pertea. Artistic License
+http://ccb.jhu.edu/software/glimmerhmm/‎
+
+augustus
+========
+Is distributed under the Artistic license
+http://augustus.gobics.de/
+
+gmap
+====
+See 3rd_party/gmap/COPYING and 3rd_party/gmap/NOTICE
+http://research-pub.gene.com/gmap/
+
+RepeatMasker
+============
+See http://www.repeatmasker.org, distributed under license (3rd_party/RepeatMasker/license.txt).
+Also included already are the RMBLAST and BLAST+ executables from NCBI (which are in the Public Domain, see License in 3rd_party/RepeatMasker/ncbi-blast)
+ftp://ftp.ncbi.nlm.nih.gov/blast/executables/rmblast/LATEST/ncbi-rmblastn-2.2.28-x64-linux.tar.gz
+ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/ncbi-blast-2.2.28+-x64-linux.tar.gz
+
+geneid
+======
+http://genome.crg.es/software/geneid
+Distributed under GPL's aggregation terms:
+
+A compilation of a covered work with other separate and independent
+works, which are not by their nature extensions of the covered work,
+and which are not combined with it such as to form a larger program,
+in or on a volume of a storage or distribution medium, is called an
+"aggregate" if the compilation and its resulting copyright are not
+used to limit the access or legal rights of the compilation's users
+beyond what the individual works permit.  Inclusion of a covered work
+in an aggregate does not cause this License to apply to the other
+parts of the aggregate. [http://www.gnu.org/licenses/gpl.html]
+
+Samtools
+========
+Distributed under GPL's aggregation terms
+http://samtools.sourceforge.net/
+We modified the Makefile to not install the LIBCURSES GUI
+
+Bedtools
+========
+Distributed under GPL's aggregation terms
+http://code.google.com/p/bedtools
+
+hhsuite/hhblits
+===============
+Distributed under GPL's aggregation terms
+ftp://toolkit.genzentrum.lmu.de/pub/HHblits/
+
+parafly, transdecoder and aatpackage, preprocess_reads, PASA
+============================================================
+See open licenses. We're also the (co-)authors of these software:
+See 3rd_party/PASA/LICENSE
+See 3rd_party/parafly/LICENSE
+See 3rd_party/aatpackage/LICENSE
+See 3rd_party/transdecoder/LICENSE
+See 3rd_party/preprocess_reads/LICENSE
+http://sourceforge.net/projects/pasa
+http://sourceforge.net/projects/parafly
+http://sourceforge.net/projects/aatpackage
+http://sourceforge.net/projects/transdecoder
+http://sourceforge.net/projects/preprocess_reads
+
+
+
+The PHP/Java Bridge PHP library (WebApollo/ws/Java)
+===============================
+Compiled from JavaBridge.inc.
+Copyright (C) 2003-2009 Jost Boekemeier.
+Distributed under the MIT license, see Options.inc for details.
+

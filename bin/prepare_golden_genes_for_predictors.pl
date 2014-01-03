@@ -158,7 +158,7 @@ use Getopt::Long;
 use Pod::Usage;
 use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
-$ENV{PATH} .= ":$RealBin";
+$ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 
 use Digest::SHA qw/sha1_hex/;
 use Data::Dumper;

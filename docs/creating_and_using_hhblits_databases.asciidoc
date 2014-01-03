@@ -1,0 +1,45 @@
+= Just Annotate My Genome (JAMg) HHblits info
+:Author:    Alexie Papanicolaou Author Name
+:Email:     alexie@butterflybase.org
+:Date:      December 2013
+:Revision:  RC1
+
+
+== creating a new database
+
+data:
+ftp.ncbi.nlm.nih.gov #/refseq/release
+http://www.uniprot.org/downloads
+
+kclust
+ftp://toolkit.genzentrum.lmu.de/pub/
+
+dependency
+psipred
+kalign
+
+HHsearch editing the Source: 
+hhconsensus need to be compliled with the right psipred path so that -addss works (not in readme)
+
+I did all of the following in /tmp (memory i.e /dev/shm)
+
+run cd-hit to remove redundancy (nr90 to nr99)
+
+~/software/kClust_src/kClust -i all_fungal_proteins.nr95 -d . -M 20000 -s 2.33  
+
+~/software/kClust_src/kClust_mkAln -c '/usr/bin/kalign -f fasta  -i $infile -o $outfile' -d . -cl ~/software/kClust_src/kClust -consdb fungal_proteomes_50kclust --write-add-header --no-pseudo-headers
+
+find alignments -name "*fas" -exec echo "~/software/hhsuite-2.0.15/bin/hhconsensus -i '{}' -o '{}.a3m' -M first -addss >/dev/null 2>&1 "  \;  > commands
+
+ParaFly -CPU 10  -c commands
+
+mkdir out_a3m
+find alignments -name "*a3m" -exec mv '{}' $PWD/out_a3m/ \; 
+
+hhblitsdb.pl -ia3m out_a3m -o ~/databases/hhsearch/fungal_50kclus -v 1 -cpu 8
+
+DONE, database input for hhblits is ~/databases/genomes/fungal_50kclus
+delete all tmp/intermediate files 
+
+
+== running hhblits

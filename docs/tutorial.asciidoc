@@ -1,0 +1,215 @@
+= Just Annotate My Genome (JAMg) tutorial
+:Author:    Alexie Papanicolaou Author Name
+:Email:     alexie@butterflybase.org
+:Date:      December 2013
+:Revision:  RC1
+
+A tutorial for Just_Annotate_My_genome using 'Drosophila melanogaster', a small amount (50 million pairs) of RNA-Seq and public Sanger sequences.
+
+In modern projects you will have substantially more RNA-Seq (at least 150 million, i.e. one HiSeq lane) and probably little to no Sanger/454 sequences. However, this makes the tutorial shorter and shows how even established genomes can be annotated (it is also a shameless plug for http://insectacentral.org[InsectaCentral].
+
+This tutorial assumes you know how to use a (ba)sh Linux shell, can create and navigate through directories. In the tutorial we don't create any special directories, but in real-world scenarios you would. You'd also keep a log of what you've done (and why), keeping track if something didn't work. If it was a bug from our side, please let us know (but first ask your system administrator if you don't know how to use Linux too well). I also assume you know not to overload your server(s) in terms of CPUs and I/O (hard disk) or network bandwidth. Use 'top' to see if you caused such a bottleneck.
+
+Further, in this tutorial we are skipping a step: aligning 'known proteins' to the genome. Because our tutorial uses 'Drosophila melanogaster', if we did that then we would be essentially using the official annotations so we wouldn't be able to 'validate' the procedure. In a real-world scenario, you would follow the link:procedure.html#foreign_proteins[procedure] to align known proteins of your choice. More tips on using JAMg with real-world scenario will be scattered through out this tutorial.
+
+Steps that share a number can be run in parallel:
+
+== Step 0: Configure and 'download' example data
+I'm assuming you've downloaded the software from somewhere and unpacked it. The next step is to store the path in an environmental variable so you can copy-paste for the rest of the tutorial. Also we will export any other parameters that are species specific and we will use for the rest of the tutorial. You will also need to run 'make' which make take some time (unzipping files etc) but it ought to be un-attended (any errors will cause it to crash).
+
+[source,bash]
+export JAMG_PATH=$HOME/software/jamg # or wherever you installed it.
+export INTRON_SIZE=70000 # maximum size of intron.
+export GENOME_PATH=$PWD/dmel-all-r5.53.fasta
+export GENOME_NAME=dmel-all-r5.53 # just a base name for our genome
+# number of CPUs to use for the local machine. Always at least one less than the number of available CPUs:
+export LOCAL_CPUS=5 
+export MAX_MEMORY_G=100 # maximum amount of memory to use in Gb
+cd $JAMG_PATH
+make # will install the various software, including RepeatMasker
+# Go to www.giriinst.org and install the repeat library in $JAMG_PATH/3rd_party/RepeatMasker
+# Run configure. Use the RMBlast NCBI option when asked about an engine (the engine is in $JAMG_PATH/3rd_party/RepeatMasker/ncbi-blast)
+$JAMG_PATH/3rd_party/RepeatMasker/configure
+
+Finally, we also assume you have correctly installed PASA (and mySQL) to work with your computing environment. Prepare the configuration file
+cp $JAMG_PATH/3rd_party/PASA/pasa_conf/pasa.CONFIG.template $JAMG_PATH/3rd_party/PASA/pasa_conf/conf.txt
+# Edit conf.txt and set the values for these MySQL database settings:
+# MYSQLSERVER=(your mysql server name)
+# MYSQL_RO_USER=(mysql read-only username)
+# MYSQL_RO_PASSWORD=(mysql read-only password)
+# MYSQL_RW_USER=(mysql all privileges username)
+# MYSQL_RW_PASSWORD=(mysql all privileges password)
+vim $JAMG_PATH/3rd_party/PASA/pasa_conf/conf.txt
+
+How we can get some RNA-Seq data? Well we can download them from NCBI and run the following script to pre-process them:
+
+[source,bash]
+mkdir RNAseq; cd RNAseq
+# we have installed Aspera and the sra_sdk from NCBI
+ascp \
+ anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR023/SRR023199 \
+ anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR023/SRR023502 \
+ anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR023/SRR023504 \
+ anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR023/SRR023538 \
+ anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR023/SRR023539 \
+ anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR023/SRR023540 \
+ anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR767/SRR767611 \
+ anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR767/SRR767619 \
+ anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR767/SRR767621 \
+ anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR767/SRR767623 \
+ .
+find . -name "*sra" -exec fastq-dump --split-spot --split-files --skip-technical -F -Q 33 -W -T -R pass '{}' \;
+find . -name "*sra" -delete # delete primary data if you don't need the backup
+# quality pre-process:
+find . -name "pass" -type d -exec $JAMG_PATH/3rd_party/preprocess_reads/preprocess_illumina.pl \
+ -cdna -no_screen -paired '{}/1/fastq' '{}/2/fastq' \;
+# let's see what we produced:
+ls -l SRR*/pass/1/fastq.trimmomatic.bz2 # All 'left' files of a pair
+ls -l SRR*/pass/2/fastq.trimmomatic.bz2 # 'right' files of a pair
+ls -l SRR*/pass/?/fastq.unpaired.bz2 # remnant unpaired files when the pair has been discarded
+# let's rename them to something easier to use.
+$JAMG_PATH/3rd_party/preprocess_reads/rename_SRA_sra_fastq.pl
+ls -l *.trimmomatic.bz2
+bunzip2 -k *.trimmomatic.bz2 # highly recommend pbzip2 -d
+
+TIP: if you want to use the traditional Trinity RNASeq way of creating input files, you can do this (but we will not use it for this tutorial):
+[source,bash]
+pbzip2 -dck SRR*/pass/1/fastq.trimmomatic.bz2 > drosoph_ALL.Left.fastq
+pbzip2 -dck SRR*/pass/2/fastq.trimmomatic.bz2 > drosoph_ALL.Right.fastq
+pbzip2 -dck SRR*/pass/?/fastq.unpaired.bz2 >> drosoph_ALL.Left.fastq # unpaired remnants can go to any file
+
+TIP: We can also use 454 and Sanger data! Then go to http://insectacentral.org/genes4all/download/request[InsectaCentral] and download a FASTA of all 'Drosophila melanogaster' (Diptera:Drosophilidae) contigs. This is a MIRA assembly of all Sanger and 454 data that was available for D. melanogaster at the time. For the tutorial we'll assume you saved them as 'D_melanogaster_ICcontigs.fsa'.
+
+== Step 1a: RepeatMask and 'identify untranscribed coding exons'
+In this step you will check if there are any domains that are coding. This will provide evidence even in the absence
+of RNA-Seq data. The script will also run RepeatMasker the output of which we will use later on. 
+
+[source,bash]
+mkdir exon_search; cd exon_search
+# MPI with many hosts; localhost (morgan) uses 5 threads for repeatmasker
+$JAMG_PATH/bin/prepare_domain_exon_annotation.pl -verbose -genome $GENOME_PATH \
+ -repthreads $LOCAL_CPUS -engine mpi -hosts morgan:5-haldane3:12-haldane2:10-haldane1:5-haldane4:12 -mpi 44 \
+ -uniprot_db $JAMG_PATH/databases/hhblits/refseq_insecta_march13_just_useful \
+ -scratch /dev/shm/$USER
+# OR  MPI with a single local host and 5 CPUs
+$JAMG_PATH/bin/prepare_domain_exon_annotation.pl -verbose -genome $GENOME_PATH \
+ -repthreads $LOCAL_CPUS -engine localmpi -mpi $LOCAL_CPUS \
+ -uniprot_db $JAMG_PATH/databases/hhblits/refseq_insecta_march13_just_useful \
+ -scratch /dev/shm/$USER
+ls *hints # should be two files
+
+Purely FYI: in my local cluster environment using MPI with 44 CPUs and the databases copied to /dev/shm (first command above), this step took 36h (36h and 17 minutes to be exact). The network speed used for MPI was a bottleneck (we just have 10gb Ethernet not infiniband).
+
+== Step 1b: Assembly transcriptome to create 'high-quality gene models'
+While the previous step is running, prepare TDN and TGG assemblies (Trinity de-novo and Trinity genome-guided) for the RNA-seq data.
+
+[source,bash]
+mkdir Trinity_assemblies; cd Trinity_assemblies
+$JAMG_PATH/3rd_party/trinityrnaseq/Trinity.pl --seqType fq --min_kmer_cov 2 \
+ --left ../*1_fastq.trimmomatic ../*_unpaired_fastq.trimmomatic --right ../*_2_fastq.trimmomatic \
+ --output TDN --JM "$MAX_MEMORY_G"G --CPU $LOCAL_CPUS --full_cleanup |& tee tdn.log # expected output is a Trinity.fasta
+# the above will take some time. First step is unzipping all the input files before JellyFish start running
+# In parallel prepare for TGG. First align the reads to the genome:
+mkdir TGG; cd TGG
+$JAMG_PATH/bin/align_rnaseq_gsnap.pl -fasta $GENOME_PATH -dbname $GENOME_NAME -cpus $LOCAL_CPUS \
+ -nofail -suffix -input_dir ../../ |& tee tgg.log
+
+In the above we have prepared the input for TDN and TGG (Trinity de-novo and Trinity Genome-guided). For this tutorial, for TDN we use '--min_kmer_cov 2' because it saves time and resources but in a real world scenario of annotating a genome, don't use it if you don't have to. For TGG we use '-suffix' because we don't expect any substantial polymorphism for Drosophila melanogaster. If you have a species with polymorphism then don't use '-suffix'. Once the alignment of the RNASeq is complete we can continue with the TGG process. Some files will be mapped multiple times. We know that Drosophila is well assembled so these RNASeq are almost certainly repeats, for this tutorial we will not use them. The overall process above will take about 24h if you're doing both in parallel and using 5 CPUs for TDN and 10 CPUs for TGG.
+
+CAUTION: In NGS-derived assemblies, it is not uncommon to have 'haplotype' scaffolds (see the Heliconius genome paper), for that reason we would keep them but decrease the '-path_number' option of 'align_rnaseq_gsnap' from the default of 50 to something that is expected for your assembly (e.g. 4). See the files TGG/*.concordant_mult_xs for read pairs that map to higher than -path_number paths.
+
+TIP: For parallelization with computing clusters, you could create 'one directory for each paired readset' and run align_rnaseq_gsnap.pl on each node.
+
+[source,bash]
+# grab all the outputs for Drosophila
+cd TGG
+# prepare files for TGN, splitting them to those that will take a very long time/resources, medium and very short
+$JAMG_PATH/bin/prepare_trinity_genome_assembly_pbs.pl -files ./*.concordant_uniq.bam -intron $INTRON_SIZE
+# First, we can create a coverage file of the RNAseq alignments that we will use let on for Augustus. 
+$JAMG_PATH/bin/augustus_RNAseq_hints.pl -bam RNASeq_TGG_input.bam -genome $GENOME_PATH # RNASeq_TGG_input.bam is from prepare_trinity_genome_assembly_pbs.pl above
+# Second we can start assemblying the TGG data:
+ls ./*.cmds # what needs to be run. 
+# these will complete rather quickly and need small amounts of RAM; but there are lots, so it will be I/O limited.
+ParaFly -CPU $LOCAL_CPUS -c small_trinity_GG.cmds 
+# these will take a bit longer and need a bit more memory. They are often repeats in normal RNASeq projects but in projects with billions of reads then can be just highly expressed genes
+ParaFly -CPU $LOCAL_CPUS -c medium_trinity_GG.cmds 
+
+NOTE: Very rarely, 'large_trinity_GG.cmds' will exist, especially from very large RNASeq projects. They are probably repeats or very highly expressed genes. They can take days to complete and their value is debatable. I recommend you use Trinity's kmer data reduction algorithm. Currently this has to be done manually.
+ 
+Once TGG and TDN are complete, we can integrate TGG and TDN using http://pasa.sourceforge.net/[PASA2].
+
+[source,bash]
+find TGG/Dir_* -name "*inity.fasta" | $JAMG_PATH/3rd_party/trinityrnaseq/util/GG_trinity_accession_incrementer.pl > Trinity_GG.fasta
+cat TDN/Trinity.fasta Trinity_GG.fasta > transcripts.fasta
+cat TDN/Trinity.fasta | $JAMG_PATH/3rd_party/PASA/misc_utilities/accession_extractor.pl > tdn.accs
+# prepare a PASA assembly configuration (separate from the PASA-wide configuration you did in the beginning)
+cp $JAMG_PATH/3rd_party/PASA/pasa_conf/pasa.alignAssembly.Template.txt alignAssembly.config
+# Edit the alignAssembly.config and give the database a unique name, set the following:
+# MYSQLDB=jamg_drosie_tutorial
+$JAMG_PATH/3rd_party/bin/seqclean transcripts.fasta -c $LOCAL_CPUS -n 10000 
+# first use -x to check everything is OK create a list of commands that will be run with PASA:
+$JAMG_PATH/3rd_party/PASA/scripts/Launch_PASA_pipeline.pl -c alignAssembly.config -C -R \
+ -g $GENOME_PATH --MAX_INTRON_LENGTH $max_intron_length \
+ --ALIGNERS blat,gmap --TRANSDECODER --CPU $LOCAL_CPUS \
+ -T -t transcripts.fasta.clean -u transcripts.fasta \
+ --TDN tdn.accs -x > pasa.alignAssembly.commands.to.run
+# Now run it.
+$JAMG_PATH/3rd_party/PASA/scripts/Launch_PASA_pipeline.pl -c alignAssembly.config -C -R \
+ -g $GENOME_PATH --MAX_INTRON_LENGTH $max_intron_length \
+ --ALIGNERS blat,gmap --TRANSDECODER --CPU $LOCAL_CPUS \
+ -T -t transcripts.fasta.clean -u transcripts.fasta \
+ --TDN tdn.accs
+
+This will take some time, about two days with the 2 alignment steps ('blat' and 'gmap') taking the longest. In real-world or mission critical scenarios, we can run the alignment steps separately on a cluster and use the '-s' and '-e' options to determine which steps shown in 'pasa.alignAssembly.commands.to.run' will be run on which computer or cluster.
+ 
+== Step 1c: run de-novo predictors that require no training
+There are some predictors that use no training at all. 
+
+GeneMarkES is one such example:
+
+[source,bash]
+$HOME/software/genemark/gm_es_bp_linux64_v2.3e/gmes/gm_es.pl $GENOME_PATH.masked |tee genemark.log
+
+GeneMark will take some time, about overnight. Note that we used the masked version of our genome. Always use a masked version unless you're using Augustus (for which we will specify the repeat co-ordinates separately).
+
+Another tool (under development) is Gavin Huttley's 'projection' approach. This approach takes a well annotated genome and 'projects' its gene models to your un-annotated genome. We will not use it for this tutorial but see the link:procedure.html#projection[procedure] on how to use it.
+
+== Step 2a: Acquire a 'golden sub-set' of gene models
+For phase 2, we assume you have completed the PASA step
+
+We require to identify some gene models that are complete and of very high quality. These can be use downstream to train our de-novo predictors. Traditionally, fewer than 100 genes have been used but this was a limitation of the availability of data. In this part we can identify '1000s' of such golden models but we will only use a subset: some we will keep for validation of the output.
+
+
+== Step 2b: Train and 'run de-novo predictors' that need no evidence
+Some predictors like SNAP and GlimmerHMM can use evidence as an option but they (GlimmerHMM at least) takes longer and the results in a small test I did were not as good as without adding additional weights. Regardless, we first need to train them using our golden gene sets from above. 
+
+
+
+== Step 2c: 'Prepare evidence' for Augustus and train
+blah
+
+[source,bash]
+todo
+
+== Step 3: 'Run Augustus'
+For phase 3, we assume you have completed all of the previous steps (except perhaps running the other de-novo predictors)
+
+[source,bash]
+todo
+
+== Step 4: Integrate with EvidenceModeller and add RNA-seq supported UTR
+Phase 4 requires all of the previous phases to have been completed.
+
+[source,bash]
+todo
+
+== Step 5a: Funcational annotation with JAMp
+Phase 5 is required if you are happy with your annotation and now you'd like to manually curate it.
+
+[source,bash]
+todo
+
+== Step 5b: Deploy WebApollo
+blah
+
+

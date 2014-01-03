@@ -1,0 +1,77 @@
+#!/usr/bin/env perl
+
+use FindBin;
+use lib ($FindBin::Bin);
+use Pasa_init;
+use Pasa_conf;
+use Mysql_connect;
+use strict;
+use DBI;
+use Ath1_cdnas;
+use Getopt::Std;
+
+use vars qw ($opt_M $opt_p $opt_d $opt_h $opt_S);
+
+&getopts ('M:p:S:');
+
+
+$|=1;
+our $SEE = 0;
+
+open (STDERR, "&>STDOUT");
+
+my $usage =  <<_EOH_;
+
+############################# Options ###############################
+#
+# -M MySQL database name
+# -S  Schema file path
+# -d Debug
+# 
+# -h print this option menu and quit
+#
+#   *set ENV{MYSQLBIN} to the Mysql bin path
+###################### Process Args and Options #####################
+
+_EOH_
+
+    ;
+
+if ($opt_h) {die $usage;}
+my $schemafile = $opt_S or die "Require schema file path\n\n$usage";
+my $DEBUG = $opt_d;
+
+
+my $mysql_db = $opt_M or die "need mysql db name";
+my $mysql_server = &Pasa_conf::getParam("MYSQLSERVER");
+my $user = &Pasa_conf::getParam("MYSQL_RW_USER");
+my $password = &Pasa_conf::getParam("MYSQL_RW_PASSWORD");
+my $admin_db = &Pasa_conf::getParam("PASA_ADMIN_DB");
+
+## Create the database
+$admin_db = ""; # just forcing a connection.
+my $dbproc = &connect_to_db($mysql_server,$admin_db,$user,$password);
+my $query = "create database $mysql_db";
+&RunMod($dbproc, $query);
+$dbproc->disconnect;
+
+
+
+## Populate the database structure and static data.
+my $mysql = "mysql";
+
+# if $mysql_server includes :port then remove and add as port
+$mysql_server=~s/:(\d+)$//;
+my $port = $1;
+
+my $cmd = "$mysql  -D$mysql_db -h$mysql_server -u$user -p$password -e \"source $schemafile\"";
+if ($port) {
+    $cmd .= " --port=$port ";
+}
+
+my $result = system $cmd;
+if ($result) {
+    die "CMD: $cmd failed.\n";
+}
+
+exit(0);

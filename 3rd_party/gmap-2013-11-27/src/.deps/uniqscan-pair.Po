@@ -1,0 +1,272 @@
+uniqscan-pair.o: pair.c config.h pair.h bool.h genomicpos.h \
+ /usr/include/stdlib.h /usr/include/features.h \
+ /usr/include/bits/predefs.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-64.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/stddef.h \
+ /usr/include/sys/types.h /usr/include/bits/types.h \
+ /usr/include/bits/typesizes.h /usr/include/time.h /usr/include/endian.h \
+ /usr/include/bits/endian.h /usr/include/bits/byteswap.h \
+ /usr/include/sys/select.h /usr/include/bits/select.h \
+ /usr/include/bits/sigset.h /usr/include/bits/time.h \
+ /usr/include/sys/sysmacros.h /usr/include/bits/pthreadtypes.h \
+ /usr/include/alloca.h /usr/include/bits/stdlib.h types.h uintlist.h \
+ chrnum.h iit-read-univ.h /usr/include/stdio.h /usr/include/libio.h \
+ /usr/include/_G_config.h /usr/include/wchar.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/stdarg.h \
+ /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
+ /usr/include/bits/stdio.h /usr/include/bits/stdio2.h list.h \
+ univinterval.h iit-read.h interval.h sequence.h /usr/include/zlib.h \
+ /usr/include/zconf.h /usr/include/zlibdefs.h /usr/include/unistd.h \
+ /usr/include/bits/posix_opt.h /usr/include/bits/confname.h getopt.h \
+ /usr/include/bits/unistd.h bzip2.h reader.h genome.h access.h mode.h \
+ chimera.h stage3.h sense.h stage2.h oligoindex.h intlist.h diagpool.h \
+ diag.h /usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/emmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/xmmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/mmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/mm_malloc.h pairpool.h \
+ stopwatch.h pairdef.h splicetrie.h splicetrie_build.h compress.h \
+ dynprog.h substring.h shortread.h resulthr.h /usr/include/string.h \
+ /usr/include/xlocale.h /usr/include/bits/string.h \
+ /usr/include/bits/string2.h /usr/include/bits/string3.h \
+ /usr/include/math.h /usr/include/bits/huge_val.h \
+ /usr/include/bits/huge_valf.h /usr/include/bits/huge_vall.h \
+ /usr/include/bits/inf.h /usr/include/bits/nan.h \
+ /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h \
+ /usr/include/bits/mathinline.h /usr/include/ctype.h assert.h except.h \
+ /usr/include/setjmp.h /usr/include/bits/setjmp.h \
+ /usr/include/bits/setjmp2.h mem.h comp.h complement.h intron.h listdef.h \
+ separator.h scores.h segmentpos.h chrom.h translation.h maxent.h \
+ maxent_hr.h mapq.h stage3hr.h samflags.h samprint.h
+
+config.h:
+
+pair.h:
+
+bool.h:
+
+genomicpos.h:
+
+/usr/include/stdlib.h:
+
+/usr/include/features.h:
+
+/usr/include/bits/predefs.h:
+
+/usr/include/sys/cdefs.h:
+
+/usr/include/bits/wordsize.h:
+
+/usr/include/gnu/stubs.h:
+
+/usr/include/gnu/stubs-64.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/stddef.h:
+
+/usr/include/sys/types.h:
+
+/usr/include/bits/types.h:
+
+/usr/include/bits/typesizes.h:
+
+/usr/include/time.h:
+
+/usr/include/endian.h:
+
+/usr/include/bits/endian.h:
+
+/usr/include/bits/byteswap.h:
+
+/usr/include/sys/select.h:
+
+/usr/include/bits/select.h:
+
+/usr/include/bits/sigset.h:
+
+/usr/include/bits/time.h:
+
+/usr/include/sys/sysmacros.h:
+
+/usr/include/bits/pthreadtypes.h:
+
+/usr/include/alloca.h:
+
+/usr/include/bits/stdlib.h:
+
+types.h:
+
+uintlist.h:
+
+chrnum.h:
+
+iit-read-univ.h:
+
+/usr/include/stdio.h:
+
+/usr/include/libio.h:
+
+/usr/include/_G_config.h:
+
+/usr/include/wchar.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/stdarg.h:
+
+/usr/include/bits/stdio_lim.h:
+
+/usr/include/bits/sys_errlist.h:
+
+/usr/include/bits/stdio.h:
+
+/usr/include/bits/stdio2.h:
+
+list.h:
+
+univinterval.h:
+
+iit-read.h:
+
+interval.h:
+
+sequence.h:
+
+/usr/include/zlib.h:
+
+/usr/include/zconf.h:
+
+/usr/include/zlibdefs.h:
+
+/usr/include/unistd.h:
+
+/usr/include/bits/posix_opt.h:
+
+/usr/include/bits/confname.h:
+
+getopt.h:
+
+/usr/include/bits/unistd.h:
+
+bzip2.h:
+
+reader.h:
+
+genome.h:
+
+access.h:
+
+mode.h:
+
+chimera.h:
+
+stage3.h:
+
+sense.h:
+
+stage2.h:
+
+oligoindex.h:
+
+intlist.h:
+
+diagpool.h:
+
+diag.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/emmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/xmmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/mmintrin.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/mm_malloc.h:
+
+pairpool.h:
+
+stopwatch.h:
+
+pairdef.h:
+
+splicetrie.h:
+
+splicetrie_build.h:
+
+compress.h:
+
+dynprog.h:
+
+substring.h:
+
+shortread.h:
+
+resulthr.h:
+
+/usr/include/string.h:
+
+/usr/include/xlocale.h:
+
+/usr/include/bits/string.h:
+
+/usr/include/bits/string2.h:
+
+/usr/include/bits/string3.h:
+
+/usr/include/math.h:
+
+/usr/include/bits/huge_val.h:
+
+/usr/include/bits/huge_valf.h:
+
+/usr/include/bits/huge_vall.h:
+
+/usr/include/bits/inf.h:
+
+/usr/include/bits/nan.h:
+
+/usr/include/bits/mathdef.h:
+
+/usr/include/bits/mathcalls.h:
+
+/usr/include/bits/mathinline.h:
+
+/usr/include/ctype.h:
+
+assert.h:
+
+except.h:
+
+/usr/include/setjmp.h:
+
+/usr/include/bits/setjmp.h:
+
+/usr/include/bits/setjmp2.h:
+
+mem.h:
+
+comp.h:
+
+complement.h:
+
+intron.h:
+
+listdef.h:
+
+separator.h:
+
+scores.h:
+
+segmentpos.h:
+
+chrom.h:
+
+translation.h:
+
+maxent.h:
+
+maxent_hr.h:
+
+mapq.h:
+
+stage3hr.h:
+
+samflags.h:
+
+samprint.h:

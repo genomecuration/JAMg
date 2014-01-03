@@ -1,17 +1,131 @@
-= Just Annotate My Genome (JAMg) =
+= Just Annotate My Genome (JAMg) info
+:Author:    Alexie Papanicolaou Author Name
+:Email:     alexie@butterflybase.org
+:Date:      December 2013
+:Revision:  RC1
 
-== Intro ==
+== Introduction
+
 An increased number of genomes are being made public but few individual research are willing to take ownership of their own data. Indeed, the current model is for genome sequences to be handled by sequencing centers or large bioinformatic repositories (RefSeq or Ensembl). Even though using these widely used and standardized repositories and center is an excellent model to decrease the cost of completing a genome project, this comes at a cost. First, these groups have in-house pipelines built and customized for the projects that financially support them (i.e. small genomes of microbial human pathogens and largely fully complete genomes such as Drosophila or human) rather than say a highly polymorphic species from a natural ecosystem. Second, the lack of a robust funding model means that these repositories are do not have the resources to offer community-wide support and customization of a pipeline. Third, and perhaps most importantly, these centers and repositories usually lack the domain expertise associated with the biology of the species.
 
-For these (and perhaps others?) reasons, genome consortia that have access to genomicists (or PhD students and post-docs willing to learn) are either collaborating with bioinformatic laboratories or investing in their own annotation capability. This endeveavour has been greatly helped by the public availability of the tools used by the repositories and sequencing centers (e.g. GMOD, Ensembl and sequencing-center specific platforms such as those from the Broad Institute). The GMOD project specifically specializes in compact, user friendly solutions that _just_work_. For example, MAKER requires a few minutes of configuration (and a few days or even weeks of computing) to deliver a standardized annotation for gene models. At the other side of the spectrum, Ensembl delivers a comprehensive solution, database and informatic pipelines that - in the hands of a highly-trained bioinformatician - can deliver the same depth and level of annotation as that used by the EBI. There really is no a solution that fits in-between. There is also almost no software that also wishes to educate the user rather than offering a black box. Finally, there is no solution that we know of that can also functionally annotate the genome (a la BLAST2GO but free) and then link the concept of gene model (feature) annotation with functional annotation. 
+For these (and perhaps others?) reasons, genome consortia that have access to genomicists (or PhD students and post-docs willing to learn) are either collaborating with bioinformatic laboratories or investing in their own annotation capability. This endeveavour has been greatly helped by the public availability of the tools used by the repositories and sequencing centers (e.g. GMOD, Ensembl and sequencing-center specific platforms such as those from the Broad Institute). The GMOD project specifically specializes in compact, user friendly solutions that _just_work_. For example, MAKER requires a few minutes of configuration to deliver a standardized annotation for gene models. At the other side of the spectrum, Ensembl delivers a comprehensive solution, database and informatic pipelines that - in the hands of a highly-trained bioinformatician - can deliver the same depth and level of annotation as that used by the EBI. There really is no a solution that fits in-between. There is also almost no software that also wishes to educate the user rather than offering a black box. Finally, there is no solution that we know of that can also functionally annotate the genome (a la BLAST2GO but free) and then link the concept of gene model (feature) annotation with functional annotation. 
 
-The JAMg software was created to address the issue of creating gene models (feature annotation) and was built by http://tiny.cc/alexie_pap_csiro/[Alexie Papanicolaou] at the http://www.csiro.au/[Commonwealth Scientific and Industrial Research Organisation] (CSIRO) with some brilliant support from http://www.broadinstitute.org/~bhaas/[Brian Haas] at the http://broadinstitute.org[Broad Institute]. The software and manual are written so that to guide the annotation process so that users can follow the process closely. Even though with JAMg you will not need another genome annotation pipeline, JAMg does not aim to replace other genome annotation pipelines (e.g. each sequencing center has its own): it does aim to support nascent genome annotators and (ultimately) educate its users about genome annotation in general. As part of our Just_Annotate series, JAMg links with JAMp and WebApollo to provide a first solution for users wishing to go from genome assembly to deriving biological hypotheses.
+The JAMg software was created to address the issue of creating gene models (feature annotation) and was built by http://tiny.cc/alexie_pap_csiro/[Alexie Papanicolaou] at the http://www.csiro.au/[Commonwealth Scientific and Industrial Research Organisation] (CSIRO) with some brilliant support from http://www.broadinstitute.org/~bhaas/[Brian Haas] at the http://broadinstitute.org[Broad Institute]. The software and manual are written so that to guide the annotation process so that users can follow the process closely. Even though with JAMg you will not need another genome annotation pipeline, JAMg does not aim to replace other genome annotation pipelines (e.g. each sequencing center has its own): it does aim to support nascent genome annotators and (ultimately) educate its users about genome annotation in general. As part of our Just_Annotate series, JAMg links with http://jamps.sourceforge.net/[JAMp] and WebApollo to provide a first solution for users wishing to go from genome assembly to deriving biological hypotheses.
 
-JAMg is far from being a comprehensive solution (see Plugins needed) but it is modular and an open-source software and like our other software we invite the community to provide not only feedback but also additional functionality and suggestions on how to improve it.
+=== Genome annotation
 
-== Obtaining JAMg ==
-JAMg is currently available from the http://tiny.cc/alexie_pap_csiro/[author].
+When genome biologists talk about annotation they can mean one of two things: *feature annotation* is identifying which parts of the genome are coding, the structure of the gene (where does each exon and ORF start & end) and identifying any alternative splicing events. This allows us to build a database of transcripts and proteins for the entire species and the field of de-novo gene prediction (e.g. SNAP, Augustus, GeneMark etc) is a good example of the output. The second definition of annotation is *functional annotation*: what does a particular gene actually do. The Gene Ontology consortium is a good example of a group of scientists that deliver functional annotation knowledge: they read the literature and integrate it with any _in-silico_ information that may exist. Alternatively, pure _in-silico_ information (e.g. BLAST to a known protein) can deliver some information via inference. 
+
+*Feature annotation* is a mature field and an excellent example of the interdisciplinary use of maths, computer science and biology. There are a number of de-novo gene predictors (each with its strengths and weaknesses) and all rely on building a predictive model that is applied genome-wide (see http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3207268/[Haas et al 2011]). The use of models (such as Hidden Markov Models) trained by a handful of known sequences has performed exceptionally well as it seems that - as far as it is known - that species (or taxa) have a remarkable specific way of constructing their coding seqeunce (e.g. taxon-specific codon usage). However, it is naturally prone to a high rate of false positives (type II errors). The problem is a direct result of a large search space (millions of letters) that contain a dispersed and relatively small amount of signal (e.g. can be as low as 10 % of the total). Type I errors are less likely to occur because of the characteristics of coding sequences (we have a well understood structure such as a start, stop, no stop codons in the middle, exon/intron splice sites etc). Type II errors, however, occur when a stretch of stop-codon-free sequence looks coding but in fact it isn't (either because it never was or it has become a pseudogene - worse still with modern genome sequencing: it could be a misassembly). Further, even if a gene model is predicted, it is not possible to identify the actual transcripts generated by this gene unless we have some external information: known transcripts from other species or transcriptomes. Finally, the ability to annotate UTR features is limited: the paucity of conserved signals and variability in the sequence complexity makes it difficult even though correct prediction of a long UTR (even if approximatelly correct) prevents from false positives being predicted in those regions.
+
+These two lines of evidence can help improve both the accuracy of genome annotation and construct the exact transcripts produced. The known transcripts can be from the same (e.g. http://trinityrnaseq.sourceforge.net/[de-novo transcript assembly]) or a related species (that has been annotated - but see below for ''propagation of annotation error''). There are disadvantages to both approaches: the former relies on the transcript being actually expressed and correctly reconstructed, the latter requires the gene to be sufficiently conserved - a situation that will improve as we sequence and annotate more species. Most de-novo gene predictors do not or only mildly support such external evidence (they use it to add some weight on some predictions). A bright exception is AUGUSTUS which - if used correctly - has the in-built feature of using such lines of evidence to weight predictions, join exons into a single gene and identify alternative transcription events (via the use of 'junction reads').
+
+Further, even before the availability of such external evidence, an approach - used widely - is the use multiple de-novo gene predictors and use a voting mechanism (e.g. GLEAN or EvidenceModeller). These tools have the ability to bring together not only gene predictions but other lines of evidence (such as manually curated genes) and build a 'consensus gene set'. Finally, even though we can use transcript evidence to guide gene prediction (and with AUGUSTUS also transcript prediction), once gene prediction is complete that transcript evidence must then be incorporated back into the consensus gene set, enabling us to identify more alternative transcripts and - now that we know what are the ORFs of the transcripts - accurately identify their UTR features. After manual inspection and correction of errors (i.e. curation), the biologist can subsequently repeat the entire process to deliver incrementally improved genome annotations. Alternatively, if multiple species are available, they can annotate an entire taxon and having purging obvious errors and low quality data, run a second annotation round informed with high quality models.
+
+ _TODO_ improve clarity of some sentences
+
+=== Propagation of annotation error and curation
+
+ (which happen often due to Type II error)... _TODO_ 
+
+=== Do we need another approach?
+Because of some characteristics, it can be easier to identify genes in compact genomes, those that lack introns (e.g. bacteria), lack duplicated in-tandem paralogues, exhibit little alternative splicing and have limited amount of repetitive sequence and within-species polymorphism (e.g. _Drosophila_, _C. elegans_ and _Arabidobsis_) in relation to the average. Further, a very high quality genome assembly (ie. 'finished') will increase the chances of correct modelling and full ascertainment of a gene family. Finally, the sequencing of a diversity of relatively close related species (e.g. mammals) can vastly improve the accuracy since a conserved signal is more likely to be functional (such as coding) than not. For that reason, model species tend to be well annotated: they were picked to be models of the genome era because of some of the mentioned characteristics. 
+
+However, researchers use myriads of species as models for specific questions in medicine & physiology, ecology & agriculture, evolution and other basic sciences. I call the former models 'resource-rich models' (because they are good resources) and the latter 'question-rich models' (because they can be used to answer particular questions). We have now reached the most exciting times were any question-rich model can be elevated to a resource-rich model using the vastly decreased costs of sequencing (one of the major secondary benefits of the Human Genome Project activities). Unfortunately, removing one bottleneck always exposes another. In this case the bottleneck is the bioinformatic analysis of these genomes, whether it is their assembly, annotation (both types) or other downstream experimentation.
+
+To respond to this bottleneck, sequencing centers have developed their own in-house pipelines. The http://gmod.org[GMOD] consortium has also develop a pipeline (MAKER) that standardizes and simplifies de-novo gene prediction. MAKER is exceptional in that it requires only a few minutes of a bioinformatician's time (but weeks of computational time) and is the first software that brought gene prediction beyond the sequencing centers, standardized its use and linked with curation software such as Apollo. We found, however, that MAKER had some issues that did not suit our purpose: first because it didn't offer much control on how the pipeline was run and it was too much of a black box (see commentary in Science http://www.sciencemag.org/content/340/6134/814[Joppa et al 2013]) so that without any incentitive to undestand gene prediction users rarely understood why certain tools were run (and therefore they couldn't make a decision later on). More importantly, however, we found that MAKER doesn't have an approach to train the de-novo gene predictors (the users has to do that on their own but that is not part of the pipeline and in practice MAKER users rarely do) and it made poor use of transcript evidence. Also when we first started working on this MAKER - because it was such a black box pipeline - was too slow and didn't perform well on a HPC environment even though improvements have been made. In any case, basically we started with MAKER but I was dissatisfied with its performance for purely selfish reasons (basically it couldn't annotate our gene family of interest...!). The other problem we came across was that most de-novo predictors (except Augustus) were poorly documented or, worse, unsupported. With poor documentation, it was excruciating trying to find out how to use them (every single software had its own file format!) and I don't think anyone ought to have to go through that again.
 
 
+Having said that, there are some sequencing centers (such as the Broad) that have established complicated platforms, with extensive Quality control (QC). These however are really intended for internal use and we could find a single package that could deliver the best of both worlds without freaking out already over-worked bioinformaticians. So we set out to create a new approach to genome annotation that was educational, high quality, and contained as much capability was needed without being too much of a strain to bioinformaticians. We invested considerable time picking different software, but the modularity of our approach does not exclude incorporating any other approaches and software (including MAKER's output). Our aim was 'not' to create a point and click pipeline but a platform that even a bioinformatician - who is a capable user of bioinformatics but has never annotated - can pick up relatively quickly and deliver the highest possible quality of annotation. 
+
+We call our platform Just_Annotate_My_genome (JAMg) and we hope you find it useful. In case you're wondering, we considered following the model of ARGO but JAMg sounds better than JAMFg (and also I've run out of 50 cent coins).
+
+=== Intended audience
+
+In particular, our audience are early career scientists who have 'ownership' of their species and understand that annotation errors will have detrimental effects on their downstream experiments. Naturally, the output of any platform will depend on the data and effort invested but we feel that our approach will deliver the better possible results given the data.
+
+The software is not particularly useful to career bioinformaticians who have to churn dozens of genomes for a living but have no (scientific) interest in the underlying content. Other tools, such as MAKER or some sequencing center pipelines may be more appropriate high-throughput, one-size-fits-all methods.
+
+== Just_Annotate_My_genome
+
+=== What is JAMg for?
+JAMg is focused on delivering a process for feature annotation for all the species that are not 'model species'. It links to another bit of software, http://jamps.sourceforge.net/[Just_Annotate_My_proteins (JAMp)] that functionally annotates proteins. JAMg is far from being a comprehensive solution (see Plugins needed) but it is a modular and an open-source software and like our other software we invite the community to provide not only feedback but also additional functionality and suggestions on how to improve it.
+
+=== Obtaining JAMg
+ 
+Currently only distributed through the author. It not published. We really appreciate any comments and feedback you can provide, so please do no matter how minor you think they are (e.g. typos in this document).
+
+We support only 64bit Linux (Ubuntu preferred) but users should feel free try other platforms. Repositories such as that from Ubuntu allow users to quickly install secondary software such as samtools.
+
+We found it painful to have to find and install all the various bit of software that are needed. For that reason, we distribute a number of 3rd party software (see 3rd_party) within the distribute to facilitate installation (often under the Agglomeration terms of GPL) but we assume that users have a 64bit Linux Operating System.
+ 
+=== Running JAMg
+
+First, read the description of the JAMg link:procedure.html[procedure].
+Then, read the link:tutorial.html[tutorial].  
+
+
+=== Components and dependencies
+
+[[software]]
+JAMg (and any gene annotation) really shines for species for which you have raw RNA-Seq (or other transcriptome) data but it can work without it too.
+
+These software are core to the way JAMg works:
+
+* ftp://toolkit.genzentrum.lmu.de/pub/HHblits[HHblits] used to identify transposable elements and domains not captured by transcriptomes (i.e. not expressed)
+* http://bioinf.uni-greifswald.de/augustus/[Augustus] our de-novo gene predictor of choice
+* http://www.repeatmasker.org‎[RepeatMasker]
+* http://apollo.berkeleybop.org/[WebApollo]
+
+And our other software:
+
+* http://pasa.sourceforge.net/[PASA2] (unpublished version 2): incorporate transcriptome information
+* http://trinityrnaseq.sourceforge.net/[Trinity RNA-Seq]: Arguably, the best de-novo RNA-seq assembler out there.
+* http://transdecoder.sourceforge.net[TransDecoder]: protein prediction from RNA-Seq assemblies, bundled in PASA2 so no need to install it separately.
+* http://aatpackage.sourceforge.net[aatpackage]: a simple and fast way to align proteins to a genome
+* http://evidencemodeler.sourceforge.net[EvidenceModeller]: constructs consensus gene sets
+* https://sourceforge.net/projects/justpreprocessmyreads[Just_Preprocess_My_reads]: a simple way of pre-processing and QCing RNA-Seq
+* http://jamps.sourceforge.net[JAMp]: functional annotation of your predicted proteins
+
+These dependencies exist due to the above software (on Ubuntu you can install them with apt-get):
+
+* http://www.molecularevolution.org/software/genomics/gmap[GMAP and GSNAP]
+* https://code.google.com/p/bedtools/‎[bedtools]
+* http://samtools.sourceforge.net/‎[samtools]
+* http://users.soe.ucsc.edu/~kent/src/blatSrc.zip[blat]
+* Tomcat and Apache webserver
+
+
+Further, we currently support these optional components:
+
+* http://exon.biology.gatech.edu/[GeneMark]: de-novo predictor without any training
+* http://genome.crg.es/software/geneid/[geneid]: no longer supported by authors
+* http://korflab.ucdavis.edu/software.html‎[snap]: SNAP from Ian Korf
+* http://ccb.jhu.edu/software/glimmerhmm/‎[Glimmer]: no longer supported by authors
+
+
+All of the above software are installed with 
+[source,bash]
+make all
+
+except for blat, WebApollo, Tomcat, Apache and the optional http://topaz.gatech.edu/license_download.cgi[GeneMarkES]. You will need to manually install those. You also agree that it is your responsibility to abide by the various license agreements.
+
+See 3rd_party/WebApollo for our webservices, you will need a specific version of WebApollo.
+
+=== Wishlist
+ 
+* Implementing GMAP on top of aatpackage for identifying high quality subset.
+* Tutorials and videos
+
+=== The Team
+
+Alexie Papanicolaou^1^ and Brian Haas^2^ +
+   ^1^ CSIRO Ecosystem Sciences, GPO 1700, Canberra 2601, Australia +
+   ^2^ The Broad Institute, Cambridge, MA, USA +
+   alexie@butterflybase.org
+
+ Copyright CSIRO 2013-2014.
+ This software is released under the Mozilla Public License v.2. You can find the terms and conditions at http://www.mozilla.org/MPL/2.0.
+ It is provided "as is" without warranty of any kind.
 
 

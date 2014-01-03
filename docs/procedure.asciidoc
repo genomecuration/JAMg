@@ -1,0 +1,286 @@
+= Just Annotate My Genome (JAMg) procedure
+:Author:    Alexie Papanicolaou Author Name
+:Email:     alexie@butterflybase.org
+:Date:      December 2013
+:Revision:  RC1
+
+== Workflow
+
+=== Overview
+JAMg works by generating and then combining different lines of evidence to construct one comprehensive gene set. You manually curate this gene set and over time you can incrementally improve it by running some of the aspects of the workflow. The core components are:
+
+* 'Augustus' for de-novo gene prediction (guided by evidence); also finds some alternative transcripts
+* 'PASA2' for high quality gene prediction using transcriptomes (Sanger, 454, Illumina etc). Used to train Augustus above
+* http://www.repeatmasker.org/RMDownload.html[RepeatMasker] to identify some repeats. 
+** We recommend you install RMBlast as it is the easiest to use (and free). You will also need the TRF program as they recommend on the above website.
+** A good repeat library is important so make sure you have a registration to http://www.girinst.org[RepBase].
+* 'HHblits' to comprehensively identify transposable elements and other nasties that wreck havoc in annotation
+** also used to identify protein domains and inform Augustus that a region is coding
+* If you have a closely related species, then you can use a new projection algoritm from Huttley et al (in prep)
+* Any other gene predictor or other lines of evidence; we support:
+** 'SNAP'
+** 'geneid'
+** 'GlimmerHMM'
+** 'GENEMARK-ES'
+** 'MAKER' (perceived as our competitor but well, why not)
+** Something else we are not aware of (email us but basically if you can produce a GFF/GTF then you're good)
+
+Then:
+
+* EvidenceModeller that brings the above together before another round of PASA2 post-processing
+* WebApollo on your webserver to view all of the above lines of evidence and manually curate the genes
+* JAMp to functionally annotate your predicted proteins and (in near future) integrate any downstream experiments
+
+
+=== Preparing for the workflow
+
+==== Installing pre-requisites
+
+For the rest of the instructions, I'll assume your genome FASTA file is 'genome.fasta' and the scripts are in an environmental variable called *JAMG_PATH*.
+[source,bash]
+export JAMG_PATH=$HOME/software/jamg
+ls -l $JAMG # try it
+
+. First you need to install the link:index.html#software[required software]. PASA might be slightly challenging if you have never used mySQL before. We distribute most of the software you will need under 3rd_party (when licensed to do so). To automatically install things, use this 'make' command.
+
+[source,bash]
+cd $JAMG_PATH
+make all # will install all utilities
+
+You will then still need to install blat, Apache/Tomcat and WebApollo (see 3rd_party/WebApollo/README for instructions on the later)
+
+==== Input files
+
+. 'Reference':
+The main input to JAMg is, simply put, a well-assembled genome, in upper-case FASTA format, without any (soft)masking. Then you will benefit from some RNA-Seq. Finally, you will need a high performance computing (HPC) environment, preferably with MPI enabled (a standard in all modern HPCs). Your main server (at least) should also have sufficient disk space for processing the RNA-Seq data. Trinity RNA-Seq doesn't require vast amounts of RAM, especially if you choose to use the kmer-reduction algorithm.
+
+. 'Evidence':
+If you have not generated any transcriptomes, read xref:sequencing-data[Sequencing data] below. For this document, I will assume you have not undertaken any transcriptome assembly (with Trinity or other) yet. We will run it here. If you have already performed a 'de-novo' one, then you will still to perform a 'genome-guided' one and keep the alignment .bam files. Otherwise, you will still require the raw RNA-Seq. If you have all that, then feel free to skip those steps.
+You may also have non-RNA-seq transcriptome data, such as 454, Sanger or other full length sequences. Use MIRA to make a de-novo assembly of them if you haven't already assembled them. Don't use raw 454 data with PASA. If you also have RNA-Seq, you could provide the Illumina data to MIRA if you are brave but providing any Trinity assemblies would be better (it will allow the 454 to be better assembled). If you don't that's fine, PASA will integrate them using the genome as a reference.
+Also, there is a script 'download_my_sequences.pl' that you can use to download any public data found in GenBank for your species of interest but it is not very well tested.
+
+[source,bash]
+$JAMG_PATH/bin/download_my_sequences.pl -t Insecta -t fasta -m protein #=> downloads Insecta proteins
+$JAMG_PATH/bin/download_my_sequences.pl -s "Drosophila melanogaster" -m cDNA -f fasta #=> Downloads all D. melanogaster cDNA sequences
+
+So to recap you need:
+
+* one genome sequence in FASTA format
+* some raw transcriptome data (RNA-Seq preferred, see 'Sequencing data' below). Diversity is more important than quantity
+* any public sequences for your species or other Sanger/454 data you may have
+** If it is 454 then assemble them with MIRA first.
+** If you have Illumina and 454, run a de-novo Trinity assembly with the Illumina data and a MIRA assembly with the Trinity contigs and the 454 raw data.
+* a high-performance computing (HPC) environment and knowing how to use it.
+* this software installed on a server that can access the HPC
+
+If your genome has a lot of small scaffolds, you can use the following command to keep scaffolds above a certain size:
+[source,bash]
+$JAMG_PATH/bin/trim_fasta_all.pl -i $GENOME_FASTA -out $GENOME_FASTA.10000 -length 9999
+
+=== Familiarize with the software, read some literature and being aware of limitations of 'de-novo' prediction
+
+First, I suggest you try out the software that we didn't produce but you will be using. Learn what RepeatMasker (and RepBase) or HHblits is for... If you're having issues installing or running them, then please let the respective authors know, it's unlikely we can help.
+
+Also, I recommend you read a couple of papers. You may want to learn a bit of the theory if you thus inclined but for the average bioinformatician, these two papers will be more than sufficient (if you read them you may know more than the average person running these software).
+
+. Yandell, M. & Ence, D., 2012. A beginner’s guide to eukaryotic genome annotation. Nature reviews. Genetics, 13(5), pp.329–42. Available at: http://www.ncbi.nlm.nih.gov/pubmed/22510764
+. Haas, B., Zeng, Q. & Pearson, M., 2011. Approaches to fungal genome annotation. Mycology, 2(3), pp.118–141. Available at: http://www.tandfonline.com/doi/abs/10.1080/21501203.2011.606851
+
+Also you may want to practice with our link:tutorial.html[tutorial] before proceeding. That way you will know if you're doing something wrong, if the software is not behaving as it should (i.e. a bug) or there is something peculiar about your data. It would not be unlikely if your HPC environment and our software are not compatible, in that case ask you system administrator to let us know.
+
+== Annotation, step by step
+
+You may follow any of the following steps in any order, at times you can even accomplish them in parallel. See the link:tutorial.html[tutorial] for inspiration. Leave Augustus for the end, just before EvidenceModeller.
+
+.Preparing the evidence
+* 'Exon identification': Using your genome FASTA, run the script 'prepare_domain_exon_annotation.pl'. This script will run RepeatMasker on your genome, and explore if any ORF is coding for a protein. It does this by first extracting all putative ORFs that have enough amino acids (stretches of Ns, as in gaps, will be translated to X. We don't like those...). Then for each putative ORF it will search against a transposon database and then against a database of known proteins. 
++
+TIP: If you have already run RepeatMasker that is ok, make sure that a file that is called genome.fasta.masked is in the same directory as genome.fasta. It will continue with the ORF exploration.
++
+You can choose which 'known protein' database to use after the transposons. It can be the entire Uniprot distributed with HHblits or one of the taxon-specific databases we provide from RefSeq. These databases are in the folder databases/hhblits/. This script can make use of MPI so that if you have a computing PC-Farm (i.e. no batch system) you can do this:
++
+[source,bash]
+$JAMG_PATH/bin/prepare_domain_exon_annotation.pl -genome genome.fasta -verbose \
+ -uniprot_db $JAMG_PATH/databases/hhblits/refseq_insecta_march13_just_useful \
+ -trans $JAMG_PATH/databases/hhblits/transposons \
+ -engine mpi -hosts morgan:5-haldane3:12-haldane2:10-haldane1:5-haldane4:12 -mpi 44 \
+ -scratch /dev/shm/$USER
++
+The last option '-scratch', tells the program to copy all the database files to every node's local memory. You can use any local directory (/tmp/$USER or a scratch) but be careful you have enough space (and memory). Remember that /dev/shm and some /tmp use the computer's local memory (not hard disk). That's very fast but it will use RAM. Our computers have 48Gb of RAM each and that is far more than needed (depending on database size, estimate 1-5Gb per MPI process). Not including this option means that the databases will be read over the network. That's fine if your network connection is fast, unsaturated and the databases are small. Otherwise, decrease the number of processes, find another computing environment or use a smaller database.
++
+WARNING: '-engine' option has a number of possible options. We've tested 'mpi' and 'localmpi' and routinely use 'PBS'. The 'cluster' option splits the input into segments and produces command files for you to run (we haven't tested it). See xref:MPI[MPI help].
++
+Once 'prepare_domain_exon_annotation.pl' is complete, you can provide the .hint files to Augustus (eventually).
++
+* 'RNA-Seq processing': essentially you will be following the process outline http://pasa.sourceforge.net/#A_RNASeq[here]. Briefly:
+** Choose the maximum intron expected in your species (in base pairs). For the rest of these instructions, we will store in the env. variable $MAX_INTRON_SIZE:
++
+[source,bash]
+export MAX_INTRON_SIZE=70000
+export LOCAL_CPUS=4 # example number of CPUs to use
++
+** Do some mild trimming of your sequences, see 3rd_party/preprocess_reads (you can use the -noscreen option to improve speed).
+** Prepare Trinity RNA-Seq 'de-novo' assemblies (a.k.a. TDN) with all the data concatanated (separately for -left and -right for paired end; any additional single end reads can be concatanated to the -left).
+** Prepare http://trinityrnaseq.sourceforge.net/genome_guided_trinity.html[Trinity RNA-Seq genome-guided assemblies] (a.k.a. TGG) with the same input data.
+*** Make sure you *keep the aligment .bam files*. We will use them down the line.
+*** If you are assembling transcripts from microbial genomes, make sure you use the --jaccard_clip option.
+*** If you annotating a large eukaryotic genome (e.g. mouse), feel free to use Cufflinks as well but use gsnap as an aligner, not Tophat. If your genome is compact (e.g. Drosophila, microbes), just don't...
+*** We have two scripts if you have a lot of data (e.g. a dozen lanes of HiSeq) but there is no benefit learning them if you only have a few Gb of data or are not in a hurry: 
+**** bin/prepare_trinity_genome_assembly_pbs.pl prepares everything you need for a TGG assembly. It splits the data into small, medium and large jobs so that all the small run together. Otherwise a single 'large' job will delay the entire processing, only to find out that you're assembling a highly expressed retrotransposon.
+**** 'bin/align_rnaseq_gsnap.pl' automatically run against all files that match a pattern for left and right so that you don't have to do it manually. In other words, it is for advanced users with lots of data.
+**** also 'util/trinity_gg_helper' can be used to (re)run batches of Trinity-guided assemblies on a PBS cluster. 
+*** This is the last command you will need for the genome-guided part:
++
+[source,bash]
+# store what is TDN output
+$JAMG_PATH/3rd_party/PASA/misc_utilities/accession_extractor.pl < Trinity_denovo.fasta > tdn.accs
+# prepare TGG output
+$JAMG_PATH/bin/prepare_trinity_genome_assembly_pbs.pl -files ./*.concordant_uniq.bam -intron $MAX_INTRON_SIZE
+ls *cmds # Run each one using your method of choice, e.g. ParaFly
+find Dir_*  -name "*inity.fasta" | $JAMG_PATH/3rd_party/trinityrnaseq/util/GG_trinity_accession_incrementer.pl > Trinity_GG.fasta
+# compile TGG and TDN outputs into one file.
+cat Trinity_denovo.fasta Trinity_GG.fasta > transcripts.fasta
++
+** Before we continue with the assembly, we ought to prepare the RNA-Seq files for use with Augustus later on. In particular we want to know the coverage, which exons are joined together, where are the introns etc
+*** First, converting the BAM alignment files of RNA-Seq to something that Augustus can appreciate.
++
+[source,bash]
+$JAMG_PATH/bin/augustus_RNAseq_hints.pl 
++
+*** Second, identifying the intron/exon junction reads
++
+[source,bash]
++
+** Now follow the PASA http://pasa.sourceforge.net/[guidelines] to assemble them as transcripts.
++
+[source,bash]
+# identify poly-a tails using SeqClean
+$JAMG_PATH/3rd_party/bin/seqclean transcripts.fasta -c $LOCAL_CPUS -n 10000 
+$JAMG_PATH/3rd_party/PASA/scripts/Launch_PASA_pipeline.pl -c alignAssembly.config -C -R -g genome.fasta \
+ --ALIGNERS blat,gmap --TRANSDECODER --CPU $LOCAL_CPUS \
+ -T -t transcripts.fasta.clean -u transcripts.fasta \
+ --TDN tdn.accs
++
+CAUTION: If your gene density is high and you expect transcripts from neighboring genes to often overlap in their UTR regions (e.g. fungi), you can perform more stringent clustering of alignments by adding '--stringent_alignment_overlap 30.0'. 
++
+*** If your RNA-seq was single-stranded (used the --sslib option) then add the PASA option '--transcribed_is_aligned_orient'.
+*** I'm not patient person, so I run the blat and gmap separately on a cluster with dozens of CPUs. You can use the '-x', '-s' and '-e' options to control which steps of the pipeline to perform. We recommend this only to people who are/want to be expert as it can take sometime to get used to.
+*** If you have 50 million read pairs, the entire process should be done in a day. If you have > 1 billion read pairs then the PASA step will not be that much slower (a few days) but your Trinity assembly will take a considerable time. Consider assembling by library or using the kmer normalization technique.
+*** The output file of interest is the one matching '*.assemblies.fasta', let us assume it is called 'my.assemblies.fasta' from now on.
+* 'Gene models for training and evaluation': Identify a subset of you gene data that is of high quality (this process diverges from the standard PASA approach):
+** The standard PASA approach is to use the genome and a perl script to convert 'my.assemblies.fasta' into gene models. Here instead we will use another perl to not only produce gene models but also identify those that can be used for 'de-novo' gene prediction (including generating the different file formats these predictors expect). First, though, you will have to run TransDecoder:
++
+[source,bash]
+$JAMG_PATH/3rd_party/transdecoder/TransDecoder -t "my.assemblies.fasta" \
+ --search_pfam $JAMG_PATH/3rd_party/transdecoder/pfam/Pfam-AB.hmm.bin
++
+** Once that is complete use the 'prepare_golden_genes_for_predictors.pl' script to prepare the various files.
+** This script uses exonerate with an initial step with the AATPACKAGE for finding the approximate regions. Exonerate works better if it knows that certain regions are repetitive so we will create a soft-(repeat)masked version of your genome using bedtools.
+*** 'ALEXIE TODO: add transposon hhblits search to mask'
++
+[source,bash]
+maskFastaFromBed -soft -fi genome.fasta -fo genome.fasta.masked.soft -bed genome.fasta.out.gff # this last file is the output from RepeatMasker
+$JAMG_PATH/bin/prepare_golden_genes_for_predictors.pl -genome genome.fasta.masked -softmasked genome.fasta.masked.soft \
+ -same_species -augustus $JAMG_PATH/3rd_party/augustus/bin \
+ -intron $MAX_INTRON_SIZE -cpu 10 -norefine
++
+*** I find that -norefine is quicker and makes little difference (but as always I could be wrong).
++
+TIP: Currently the AATPACKAGE and exonerate work rather well. They also very well for 'foreign proteins' (i.e. from another species), just make sure you remove the -same_species parameter from above. In a future version, I'm thinking of integrating a GMAP step (on top or instead of aatpackage or even exonerate) for this step of mapping within the same species (GMAP will not perform between species).
++
+* 'Optional': Run de-novo gene predictors that don't require external evidence (all but Augustus).
+** For almost all gene predictors, use the RepeatMasked genome (.masked, above). 
+** GeneMark-ES does not require any training but you should still use the repeatmasked genome. You also need to install (and accept the license) of GeneMark. Genemark will take a couple of days to complete.
++
+[source,bash]
+genemark/gm_es_bp_linux64_v2.3e/gmes/gm_es.pl genome.fasta.masked  # use --BP ON if you're working on fungi 
++
+** For geneid, glimmerhmm and snap, you can train them using the output of prepare_golden_genes_for_predictors.pl (see below for each software)
+** Glimmerhmm and snap can use external evidence but when we run a validation we saw that they performed less well than without any evidence. We're not experts of the software and there is no documentation so some optimization might be necessary.
++
+[source,bash]
+to add example
++
+** [[projection]]If we have a closely species that is well annotated, a good approach is to 'project' that genome's gene models to our unannotated one. This can be achieved as such:
+[source,bash]
+#TODO Gavin:
+create_projections.py -reference annotated_genome.fasta -genes [annotated_genome.gff3|annotated_genome.genbank] -genome new_genome.fasta -out new_genome.gff3
++
+* [[foreign_proteins]] 'Foreign proteins'
+** Pick a species or taxon, download data, align
+*** First get some foreign proteins from a taxon that makes sense, or go to UniProt.org and download something appropriate. To bulk download you can use the download_my_sequences script. Then you can align them to your genome using some kind of cutoff (your guess will depend on the data and will be as good as mine).
++
+[source,bash]
+$JAMG_PATH/bin/download_my_sequences.pl -t Insecta -t fasta -m protein #=> downloads Insecta proteins
+$JAMG_PATH/bin/prepare_golden_genes_for_predictors.pl -genome genome.fasta.masked -softmasked genome.fasta.masked.soft \
+ -augustus $JAMG_PATH/3rd_party/augustus/bin \
+ -identical 40 -similar 70 -mismatch_cutoff 100 -stop_golden \
+ -intron $MAX_INTRON_SIZE -cpu 10 -norefine
++
+* 'Running Augustus'
+* 'Creating a consensus gene set'
+* 'Adding UTR and alternative splicing'
+* 'Functional annotation' with JAMPs
+* 'Setting up WebApollo'
+** Adding more data to WebApollo
++
+[source,bash]
+genome_gaps_to_bed.pl 
++
+* 'Where do I go from here?'
+
+== [[seeking-help]] General info and help
+
+TIP: Every perl script in JAMg has a 'PerlDoc' so that you can do this to read the manual.
+
+[source,bash]
+perldoc prepare_domain_exon_annotation.pl # the complete manual 
+prepare_domain_exon_annotation.pl # or short info
+Usage:
+    Mandatory
+     -fasta|genome|in :s   => FASTA file of genome
+     -engine          :s   => How to run hhblits: none, local, localmpi, PBS or cluster (def. localmpi)
+     -transposon_db   :s   => HHblits transposon database (provided)
+     -uniprot_db      :s   => HHblits Uniprot database (see ftp://toolkit.genzentrum.lmu.de/pub/HH-suite/databases/hhsuite_dbs)
+     -hosts           :s   => Only for -engine mpi: a definition for which hosts to use in the format hostname1:number_of_cpus-hostname2:number_of_cpus, e.g. localhost:5-remote:5
+
+TIP: You don't have to type the entire argument, the first few unique letters will be enough. The pipe character (|) tells you that -fasta or -genome (or -in) can be used interchangebly. The :s or :i above means that we expect a string or integer to be the argument. Remember to quote (") strings that have spaces in them. When in doubt use the defaults.
+
+
+
+.[[MPI]]How to prepare for MPI
+* MPI is free. We recommend openMPI but we also support MPICH2. You can install it from repositories, e.g. on Debian/Ubuntu:
++
+[source,bash]
+apt-get install openmpi-bin
++
+* Tell FFINDEX where the shared libraries are. FFINDEX is installed as part of transdecoder
+  You ought to include it in your $HOME/.bashrc or your sys-admin can copy the libraries in a system-wide path.
++
+[source,bash]
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$JAMG_PATH/3rd_party/transdecoder/util/lib64/
+
+
+.[[sequencing-data]]Sequencing data
+To make the most of the annotation platform you will need some RNA-Seq. Generally speaking, the more is better but beyond a certain point, any added value decreases. If you have the ability to design your genome/transcriptome sequencing before you've reached this stage then, first of all, "Well Done"(TM)! Too often sequencing is undertaken with little understanding of the needs of the downstream processes... Second, your genome assembly will greatly benefit from long-range mate pair libraries, long reads (such as Pac-Bio) or optical mapping (if working on bacteria or have lots of cash). The reason for this is that your ability to fully ascertain gene families that have paralogues will only be as good as your feature annotation, and you feature annotation cannot be better than the underlying genome assembly sequence for those regions. Third, for your transcriptome diversity of tissue/life stages is key to acquiring sequencing of us many diverse tissues as possible. Be particularly careful if you wish to identify lowly expressed genes: even with tissue specific libraries, you may need to sequence deeply (the literature is your friend). The most difficult class of genes to annotate are rapidly evolving and lowly expressed genes since you will then have to rely solely on the de-novo prediction but the protein domain search above will be of great help.
+
+.Glossary
+Reference sequence::
+ A contiguous, relatively long, sequence that is used to anchor other sequences or features
+Feature::
+ In this context, an annotation of a reference sequence that has start and stop co-ordinates (e.g. a gene). It can have sub-features (e.g. exons). Usually we just use the term 'feature'' for sub-features too.
+
+.FAQ
+link:mailto:alexie@butterflybase.org[Email us] one!
+
+
+
+
+
+
+
+
+
+
+
+

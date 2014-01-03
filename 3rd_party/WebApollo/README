@@ -1,0 +1,26 @@
+Webservices
+===========
+The /ws directory needs to go your /var/lib/tomcat7/webapps directory
+
+* You need to install SignalP-4.1 as 
+ws/signalp-4.1
+
+* MAFFT binaries as
+ws/mafft_bin
+
+* you will need JmolApplet.jar jalview.js and jalviewApplet.jar to be placed as 
+ws/jalview.js ws/JmolApplet.jar ws/jalviewApplet.jar
+
+* You can place profiles in ws/profiles/ as FASTA alignments (e.g. via mafft, see examples)
+
+
+AnnotTrack.js
+This file belongs to WebApollo version 22 Nov 2013: https://apollo-web.googlecode.com/files/WebApollo-2013-11-22.tgz
+
+It goes here (backup the original):
+/var/lib/tomcat7/webapps/WebApollo/jbrowse/plugins/WebApollo/js/View/Track/
+
+It adds the webservices. Feel free to edit as you see fit.
+
+
+BTW, we're assuming you have Tomcat 7 (if that wasn't obvious already)

@@ -16,6 +16,9 @@ $|=1;		# autoflush
 use strict;
 use Getopt::Long;
 use Pod::Usage;
+use FindBin qw($RealBin);
+use lib ("$RealBin/../PerlLib");
+$ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 
 my ($file2split,$splitfiledir);
 my $depth=1;

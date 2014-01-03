@@ -111,14 +111,10 @@ while (<GFFFILE>) {
         $genename = $1;
     } elsif ($grp =~ m/Parent=([^;]+)/){
         $genename = $1;
-    } elsif ($grp =~/ID=([^;]+)/){
-        $genename = $1;
     } else {
         $genename = $grp;
     }
-    if ($type =~ /^exon$/i){
-	next;
-    }elsif ($type =~ /mRNA/i){
+    if ($type =~ /mrna/i || $type =~ /^exon$/i){
         $fkey = "mRNA";
         $mrnaNumber++;
     } elsif ($type =~ /cds/i || $type =~ /coding_exon/i){

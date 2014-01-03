@@ -1,0 +1,1 @@
+gsnap-popcount.o: popcount.c

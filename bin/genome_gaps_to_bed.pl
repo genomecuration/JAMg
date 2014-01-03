@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 
 =pod
 
@@ -33,7 +33,12 @@ You can find the terms and conditions at http://www.mozilla.org/MPL/2.0.
 =cut
 
 use strict;
+use warnings;
 use Pod::Usage;
+use FindBin qw($RealBin);
+use lib ("$RealBin/../PerlLib");
+$ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
+
 
 my $cwd = `pwd`;
 chomp($cwd);

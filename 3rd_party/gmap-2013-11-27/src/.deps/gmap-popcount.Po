@@ -1,0 +1,1 @@
+gmap-popcount.o: popcount.c

@@ -9,8 +9,8 @@ align_rnaseq_gsnap.pl
 
 Run GSNAP on lots of RNASeq data.
 
-Will automatically run against all files that match "*_[12]_*fastq" and any files given in the command line.
-Pairs are matched using the _[12]_ Files must only have one _1_ or _2_ pattern in their filename.
+Will automatically run against all files that match a pattern, eg if -pattern is '_1_' then "*_[12]_*" and also any files given in the command line.
+Pairs are matched using the _[12]_ Files must only have one of _1_ or _2_ in their filename. The pattern can be changed with -pattern1 and -pattern2.
 
 Mandatory:
 
@@ -20,13 +20,16 @@ Mandatory:
  
 Optional:
 
- -gmap_dir :s        Where the GMAP databases are meant to live (def. /databases/gmap)
+ -input_dir :s       Directory with read files (defaults to current working directory)
+ -gmap_dir :s        Where the GMAP databases are meant to live (def. ~/databases/gmap)
  -cpus :i            Number of CPUs/threads (def. 10)
  -help
- -pattern            Pattern for automatching left pair files with *$pattern*.fastq (defaults to _1_)
+ -pattern1            Pattern for automatching left pair files with *$pattern*.fastq (defaults to '_1_')
+ -pattern2            Pattern for automatching right pair (defaults to '_2_')
  -nofail             Don't print out failures (I/O friendlyness if sparse hits expected). Otherwise captured as FASTQ
  -suffix             Build/use suffix array (fast, downweights SNPs, use for non-polymorphic genomes)
  -distance :i        Paired end distance
+ -path_number        Maximum number of hits for the read pair. If more that these many hits, then nothing is returned (defaults to 50)
 
 =head1 AUTHORS
 
@@ -53,39 +56,36 @@ use Pod::Usage;
 use Getopt::Long;
 use Time::localtime;
 use File::Basename;
+use FindBin qw($RealBin);
+use lib ("$RealBin/../PerlLib");
+$ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 
 my ( $gmap_build_exec, $gsnap_exec, $samtools_exec ) =
   &check_program( "gmap_build", "gsnap", "samtools" );
 &samtools_version_check($samtools_exec);
-
-my $debug = 1;
+my ($input_dir,$pattern2,$debug,$genome,$genome_dbname,$nofails,$suffix,$help);
 my $cwd   = `pwd`;
 chomp($cwd);
-my $gmap_dir = '/databases/gmap/';
-my $genome;
-
-# '/archive/pap056/work/assembly_qc/harm_csiro4b/assembly_csiro4b.scaffolds.public.fsa';
-my $genome_dbname;
-
-# 'harm_csiro4b_unmasked';
+my $gmap_dir = $ENV{'HOME'}.'/databases/gmap/';
+my $repeat_path_number = 50;
 my $cpus   = 10;
 my $memory = '35G';
-my ($help);
 my $pattern = '_1_';
-my $nofails;
 my $pe_distance = 10000;
-my $suffix;
 &GetOptions(
+             'debug'         => \$debug,
              'fasta:s'        => \$genome,
              'dbname:s'       => \$genome_dbname,
              'gmap_dir:s'     => \$gmap_dir,
              'cpus|threads:i' => \$cpus,
              'memory:s'       => \$memory,
              'help'           => \$help,
-             'pattern:s'      => \$pattern,
+             'pattern1:s'      => \$pattern,
+             'pattern2:s'      => \$pattern2,
              'nofail'         => \$nofails,
              'distance:i'     => \$pe_distance,
              'suffix'        => \$suffix,
+             'path_number:i' => \$repeat_path_number,
 );
 
 pod2usage if $help;
@@ -93,6 +93,7 @@ pod2usage "No genome FASTA\n" unless $genome && -s $genome;
 pod2usage "No GMAP genome database name\n" unless $genome_dbname;
 pod2usage "GMAP database does not exist: $gmap_dir\n" unless -d $gmap_dir;
 
+$input_dir = $cwd unless $input_dir;
 my $samtools_sort_CPUs = int( $cpus / 2 ) > 2 ? int( $cpus / 2 ) : 2;
 my $suff = "";
 if ($memory =~s/([A-Z])$//){
@@ -103,13 +104,16 @@ $memory = int(( $memory / $samtools_sort_CPUs ) ) < 1 ? '1G' :
   int(  ( $memory / $samtools_sort_CPUs ) )
   . $suff;    # samtools sort uses -memory per CPU
 
-my $pattern2 = $pattern;
-$pattern2 =~ s/1/2/;
+unless ($pattern2){
+        $pattern2 = $pattern;
+        $pattern2 =~ s/1/2/;
+}
 
-my @files = glob("*$pattern*.fastq");
+my @files = glob("$input_dir/*$pattern*");
 push( @files, @ARGV );
 my @verified_files;
 for ( my $i = 0 ; $i < @files ; $i++ ) {
+ next if $files[$i] =~/\.bz2$/ || $files[$i] =~/\.gz$/;
  if ( -s $files[$i] ) {
   push( @verified_files, $files[$i] );
  }
@@ -123,11 +127,11 @@ die "No files found!\n" unless @files;
 my ($build_cmd,$align_cmd);
 
 if ($suffix){
- $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -T /tmp/pap056 -k 13 -b 10 -q 1 -e 0 $genome >/dev/null";
- $align_cmd = "$gsnap_exec -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=50 --format=sam --sam-use-0M --no-sam-headers --pairmax-dna=$pe_distance ";
+ $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -T /tmp/\$USER -k 13 -b 10 -q 1 -e 0 $genome >/dev/null";
+ $align_cmd = "$gsnap_exec -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam --sam-use-0M --no-sam-headers --pairmax-dna=$pe_distance ";
 }else{
- $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -T /tmp/pap056 -k 13 -b 10 -q 1 -e 0 --no-sarray $genome >/dev/null";
- $align_cmd = "$gsnap_exec --use-sarray=0 -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=50 --format=sam --sam-use-0M --no-sam-headers --pairmax-dna=$pe_distance ";
+ $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -T /tmp/\$USER -k 13 -b 10 -q 1 -e 0 --no-sarray $genome >/dev/null";
+ $align_cmd = "$gsnap_exec --use-sarray=0 -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam --sam-use-0M --no-sam-headers --pairmax-dna=$pe_distance ";
 }
 
 $align_cmd .= " --nofails "        if $nofails;
@@ -202,7 +206,6 @@ foreach my $file ( sort @files ) {
 sub process_cmd {
  my ( $cmd, $dir, $delete_pattern ) = @_;
  print &mytime . "CMD: $cmd\n"     if $debug;
- print LOG &mytime . "CMD: $cmd\n" if $debug;
  chdir($dir)                       if $dir;
  my $ret = system($cmd);
  if ( $ret && $ret != 256 ) {
@@ -211,7 +214,6 @@ sub process_cmd {
   die "Error, cmd died with ret $ret\n";
  }
  chdir($cwd) if $dir;
- print LOG "Done\n";
  return;
 }
 

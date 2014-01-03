@@ -37,9 +37,9 @@ use warnings;
 use Data::Dumper;
 use Getopt::Long;
 use Pod::Usage;
-
-use FindBin;
-use lib ("$FindBin::RealBin/../PerlLib");
+use FindBin qw($RealBin);
+use lib ("$RealBin/../PerlLib");
+$ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 use Fasta_reader;
 
 my ($hint_file,$fasta_file);

@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl
 
 #############################################################
 # optimize_augustus
@@ -12,7 +12,6 @@
 #############################################################
 
 use strict;
-use warnings;
 use IO::File;
 
 my %cmdpars = ( 'species'              => '',
@@ -138,7 +137,7 @@ my $pars="";
 if ($cmdpars{"UTR"} eq "on"){
     $pars="--UTR=on";
 }
-if ($cmdpars{"translation_table"} && $cmdpars{"translation_table"} > 1){
+if ($cmdpars{"translation_table"} > 1){
     $pars = $pars." --translation_table=".$cmdpars{"translation_table"};
 }
 if (length($cmdpars{"genemodel"}) > 1){
@@ -179,7 +178,7 @@ if (!$got_ForkManager && $cmdpars{'cpus'} > 1){
 
 my $optdir = "tmp_opt_$cmdpars{'species'}";
 system("rm -rf $optdir;mkdir $optdir");
-#opendir(TMPDIR, $optdir) or die ("Could not open $optdir");
+opendir(TMPDIR, $optdir) or die ("Could not open $optdir");
 
 # Split train.gb into k_fold equal portions
 print "Splitting training file into $cmdpars{'kfold'} buckets...\n";
@@ -649,7 +648,7 @@ if ($cmdpars{'noTrainPars'} eq ''){
     if ($cmdpars{'onlytrain'} ne ''){
 	system ("cat $cmdpars{'onlytrain'} >> $optdir/curtrain");
     }
-    my $cmd = "etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir --/genbank/verbosity=0 $optdir/curtrain $pars $modelrestrict";
+    my $cmd = "etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $be_silent $optdir/curtrain $pars $modelrestrict";
     print "$cmd\n";
     system($cmd);
     system("rm -f $optdir/curtrain");
@@ -704,11 +703,10 @@ sub evalsnsp {
 		system ("cat $cmdpars{'onlytrain'} >> $optdir/curtrain");
 	    }
 	    if ($cmdpars{'noTrainPars'} eq '') {# no need to retrain if the trans matrix is optimized or this option is otherwise explicitly set.
-		system("$cmdpars{'aug_exec_dir'}etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $be_silent $modelrestrict $optdir/curtrain 2>/dev/null");
+		system("$cmdpars{'aug_exec_dir'}etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $be_silent $modelrestrict $optdir/curtrain");
 	    }
 	    
-#	    system("$cmdpars{'aug_exec_dir'}augustus --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $optdir/curtest > $optdir/predictions.txt 2>/dev/null");
-	    system("$cmdpars{'aug_exec_dir'}augustus --genemodel=complete --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $optdir/curtest > $optdir/predictions.txt 2>/dev/null");
+	    system("$cmdpars{'aug_exec_dir'}augustus --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $optdir/curtest > $optdir/predictions.txt");
 	    
 	    open (PRED, "<$optdir/predictions.txt");
 	    while (<PRED>){
@@ -747,7 +745,7 @@ sub evalsnsp {
 	}
     } else { # parallel
 	my $pm = new Parallel::ForkManager($cmdpars{'cpus'});
-OUTER:	for (my $k=1; $k<=$cmdpars{"kfold"}; $k++) {
+	for (my $k=1; $k<=$cmdpars{"kfold"}; $k++) {
 	    # fork and return the pid for the child:
 	    my $pid = $pm->start and next;
 	    # this part is done in parallel by the child process
@@ -765,7 +763,7 @@ OUTER:	for (my $k=1; $k<=$cmdpars{"kfold"}; $k++) {
 		$pblinfiles = ""; # training did not take place, so the $pbloutfiles have not beeen created and cannot be used for prediction
 	    }
 	    
-	    system("$cmdpars{'aug_exec_dir'}augustus --genemodel=complete --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $pblinfiles $optdir/bucket$k.gb > $optdir/predictions-$k.txt 2>/dev/null");
+	    system("$cmdpars{'aug_exec_dir'}augustus --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $pblinfiles $optdir/bucket$k.gb > $optdir/predictions-$k.txt");
 	    print "$k ";
 	    
 	    $pm->finish; # terminate the child process
@@ -794,15 +792,7 @@ OUTER:	for (my $k=1; $k<=$cmdpars{"kfold"}; $k++) {
 	    close(PRED);
 	
 	    if ($cbsn eq "" || $cbsp eq "" ||$cesn eq "" ||$cesp eq "" ||$cgsn eq "" ||$cgsp eq "") {
-		warn ("Could not read the accuracy values out of predictions.txt when processing bucket $k.");
-		$cbsn=int(0);
-		$cbsp=int(0);
-		$cesn=int(0);
-		$cesp=int(0);
-		$cgsn=int(0);
-		$cgsp=int(0);
-                $csmd=int(0);
-		$ctmd=int(0);
+		die ("Could not read the accuracy values out of predictions.txt when processing bucket $k.");
 	    }
 	    #print "accuracy on bucket$k: $cbsn, $cbsp, $cesn, $cesp, $cgsn, $cgsp, $csmd, $ctmd\n";
 	    $gbsn += $cbsn;
@@ -1329,7 +1319,7 @@ sub roundVector {
     }
     # in case the rounding changed the sum a little, adjust the largest element only
     if ($newsum != $roundedsum){
-	$_[$maxel] += $roundedsum-$newsum;
+	@_[$maxel] += $roundedsum-$newsum;
     }
 }
 

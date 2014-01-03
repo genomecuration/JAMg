@@ -1,5 +1,8 @@
 #!/usr/bin/env perl
 
+# TODO : reverse transcriptase and transposons from uniref
+# change to refseq_insect?
+
 =head1 NAME
 
 prepare_domain_exon_annotation.pl
@@ -27,7 +30,7 @@ Optional
  -no_transposon        => Don't search for transposon hits. See above.
 
  -help                 => This help text and some more info
- -debug                => Print out every command before it is executed.
+ -verbose                => Print out every command before it is executed.
  
 =head1 NOTES
             
@@ -37,14 +40,18 @@ Requires EMBOSS tools (getorf), RepeatMasker and HHblits (installed and in path)
 
 For local, it shouldn't be more than the number of CPUs on your local box. for cluster, it should be the number of nodes you'd like to use
 
-If a ffindex-powered HHblits run stops half-way, you can restart by using the original input file and specifying transposon or uniprot, e.g.:
-ffindex_gather.sh masked.exons.aa.trim transposon 
+If a ffindex-powered HHblits run stops prematurely, you can restart by using the original input file and specifying transposon or uniprot, e.g.:
+
+ ffindex_gather.sh masked.exons.aa.trim transposon 
+ mv masked.exons.aa.trim.db.idx masked.exons.aa.trim.db.idx.orig
+ ln -s masked.exons.aa.trim.db.idx.notdone masked.exons.aa.trim.db.idx
+
+Now the index will tell ffindex to only process what hasn't been done. Repeat the above procedure to capture the final output to a single file
 
 =cut
 
 use strict;
 use warnings;
-use Data::Dumper;
 use Getopt::Long;
 use Pod::Usage;
 use File::Basename;
@@ -52,13 +59,13 @@ use List::Util 'shuffle';
 use POSIX qw(ceil);
 use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
-$ENV{PATH} .= ":$RealBin";
+$ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 use Fasta_reader;
 use Thread_helper;
 
 my (
      $genome,          $circular,          $repeatmasker_options,
-     $mpi_host_string, $help,              $debug,
+     $mpi_host_string, $help,              $verbose,
      $scratch_dir,     $no_uniprot_search, $no_transposon_search
 );
 my $minsize       = 150;
@@ -80,7 +87,7 @@ GetOptions(
             'transposon_db:s'   => \$transposon_db,
             'uniprot_db:s'      => \$uniprot_db,
             'hosts:s'           => \$mpi_host_string,
-            'debug'             => \$debug,
+            'verbose'             => \$verbose,
             'help'              => \$help,
             'scratch:s'         => \$scratch_dir,
             'no_uniprot'        => \$no_uniprot_search,
@@ -205,7 +212,7 @@ sub check_program() {
 
 sub process_cmd {
  my ($cmd) = @_;
- print "CMD: $cmd\n" if $debug;
+ print "CMD: $cmd\n" if $verbose;
  my $ret = system($cmd);
  if ( $ret && $ret != 256 ) {
   die "Error, cmd died with ret $ret\n";
@@ -288,7 +295,7 @@ PROTEIN_FILE=$exons.aa.trim
 DB=$transposon_db
 
 if [ ! -e \$PROTEIN_FILE.db ]; then
- $ffindex_from_fasta_exec \$PROTEIN_FILE.db \$PROTEIN_FILE.db.idx \$PROTEIN_FILE
+ $ffindex_from_fasta_exec -s \$PROTEIN_FILE.db \$PROTEIN_FILE.db.idx \$PROTEIN_FILE
  mv \$PROTEIN_FILE.db.idx \$PROTEIN_FILE.db.idx.orig ; cp \$PROTEIN_FILE.db.idx.orig \$PROTEIN_FILE.db.idx.orig.notdone; ln -s \$PROTEIN_FILE.db.idx.orig.notdone \$PROTEIN_FILE.db.idx
 fi
 
@@ -305,11 +312,11 @@ export OMP_NUM_THREADS=1
 cd \$PBS_O_WORKDIR
 cat \${PBS_NODEFILE} > workers.\$PBS_JOBID.mpi
 \$MPIRUN_EXEC \$MPIRUN_ARGS $ffindex_apply_mpi_exec \\
-  -d \"\$1\"_transposon.db \\
-  -i \"\$1\"_transposon.db.idx \\
+  -d \"\$1\".transposon.db \\
+  -i \"\$1\".transposon.db.idx \\
   \$1 \\
   \$1.idx \\
-  -- $hhblits_exec -maxmem 3 -d \$3 -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1e-5 -E 1E-05 -id 80 -p 80 -z 0 -b 0 -v 0 -B 3 -Z 3
+  -- $hhblits_exec -maxmem 3 -d \$3 -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1e-5 -E 1E-05 -id 80 -p 80 -z 0 -b 0 -v 0 -B 3 -Z 3 2>/dev/null
 ";
   close SCRIPT;
 
@@ -322,7 +329,7 @@ PROTEIN_FILE=$exons.aa.trim
 DB=$uniprot_db
 
 if [ ! -e \$PROTEIN_FILE.db ]; then
- $ffindex_from_fasta_exec \$PROTEIN_FILE.db \$PROTEIN_FILE.db.idx \$PROTEIN_FILE
+ $ffindex_from_fasta_exec -s \$PROTEIN_FILE.db \$PROTEIN_FILE.db.idx \$PROTEIN_FILE
  mv \$PROTEIN_FILE.db.idx \$PROTEIN_FILE.db.idx.orig ; cp \$PROTEIN_FILE.db.idx.orig \$PROTEIN_FILE.db.idx.orig.notdone; ln -s \$PROTEIN_FILE.db.idx.orig.notdone \$PROTEIN_FILE.db.idx
 fi
 
@@ -339,11 +346,11 @@ export OMP_NUM_THREADS=1
 cd \$PBS_O_WORKDIR
 cat \${PBS_NODEFILE} > workers.\$PBS_JOBID.mpi
 \$MPIRUN_EXEC \$MPIRUN_ARGS $ffindex_apply_mpi_exec \\
-  -d \"\$1\"_uniprot.db \\
-  -i \"\$1\"_uniprot.db.idx \\
+  -d \"\$1\".uniprot.db \\
+  -i \"\$1\".uniprot.db.idx \\
   \$1 \\
   \$1.idx \\
-  -- $hhblits_exec -maxmem 5 -d \$3 -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1e-5 -E 1E-05 -id 80 -p 80 -z 0 -b 0 -v 0 -B 3 -Z 3
+  -- $hhblits_exec -maxmem 5 -d \$3 -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1e-5 -E 1E-05 -id 80 -p 80 -z 0 -b 0 -v 0 -B 3 -Z 3 2>/dev/null
 ";
   close SCRIPT;
  }
@@ -360,39 +367,37 @@ sub prepare_localmpi() {
  unless ($no_transposon_search) {
   print "Transposon database...\n";
   &process_cmd(
-"$ffindex_from_fasta_exec $exons.aa.trim.db $exons.aa.trim.db.idx $exons.aa.trim"
+"$ffindex_from_fasta_exec -s $exons.aa.trim.db $exons.aa.trim.db.idx $exons.aa.trim"
   ) if !-s "$exons.aa.trim.db";
   my $number_of_entries = `wc -l < $exons.aa.trim.db.idx`;
   chomp($number_of_entries);
   print "Processing $number_of_entries entries with $hhblits_cpus threads...\n";
   my $transposon_cmd =
-"$mpirun_exec -n $hhblits_cpus $ffindex_apply_mpi_exec -d $exons.aa.trim_transposon.db -i $exons.aa.trim_transposon.db.idx $exons.aa.trim.db $exons.aa.trim.db.idx  \\
- -- $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0
+"$mpirun_exec -n $hhblits_cpus $ffindex_apply_mpi_exec -d $exons.aa.trim.transposon.db -i $exons.aa.trim.transposon.db.idx $exons.aa.trim.db $exons.aa.trim.db.idx  \\
+ -- $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 2>/dev/null
  ";
-  &process_cmd($transposon_cmd);
+  &process_cmd($transposon_cmd) unless $number_of_entries == 0 || -s "hhr.$exons.aa.trim.transposon.db" ;
  }
- my $transposon_results = &parse_hhr( "$exons.aa.trim_transposon.db",
-                                      70, 1e-3, 1e-6, 100, 50, 30, 'yes' )
-   if -s "$exons.aa.trim_transposon.db";
+ my $transposon_results = &parse_hhr( "$exons.aa.trim.transposon", 70, 1e-3, 1e-6, 100, 50, 30, 'yes' );
  my $noreps_fasta = &remove_transposons( "$exons.aa.trim", $transposon_results )
    if $transposon_results;
 
  unless ($no_uniprot_search) {
   print "Uniprot database...\n";
   &process_cmd(
-"$ffindex_from_fasta_exec $noreps_fasta.db $noreps_fasta.db.idx $noreps_fasta"
+"$ffindex_from_fasta_exec -s $noreps_fasta.db $noreps_fasta.db.idx $noreps_fasta"
   ) if !-s "$noreps_fasta.db";
   my $number_of_entries = `wc -l < $noreps_fasta.db.idx`;
   chomp($number_of_entries);
   print
 "Processing $number_of_entries entries with $hhblits_cpus threads for uniprot...\n";
   my $uniprot_cmd =
-"$mpirun_exec -n $hhblits_cpus $ffindex_apply_mpi_exec -d $exons.aa.trim_uniprot.db -i $exons.aa.trim_uniprot.db.idx $exons.aa.trim.db $exons.aa.trim.db.idx  \\
- -- $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0
+"$mpirun_exec -n $hhblits_cpus $ffindex_apply_mpi_exec -d $noreps_fasta.uniprot.db -i $noreps_fasta.uniprot.db.idx $noreps_fasta.db $noreps_fasta.db.idx  \\
+ -- $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 2>/dev/null
  ";
 
-  &process_cmd($uniprot_cmd);
-  &parse_hhr( "$exons.aa.trim_uniprot.db", 70, 1e-3, 1e-6, 100, 50, 30 );
+  &process_cmd($uniprot_cmd)  unless $number_of_entries == 0 || -s "hhr.$noreps_fasta.uniprot.db";
+  &parse_hhr( "$noreps_fasta.uniprot", 70, 1e-3, 1e-6, 100, 50, 30 );
  }
 }
 
@@ -445,28 +450,24 @@ sub prepare_mpi() {
  unless ($no_transposon_search) {
   print "Transposon database...\n";
   &process_cmd(
-"$ffindex_from_fasta_exec $exons.aa.trim.db $exons.aa.trim.db.idx $exons.aa.trim"
+"$ffindex_from_fasta_exec -s $exons.aa.trim.db $exons.aa.trim.db.idx $exons.aa.trim"
   ) if !-s "$exons.aa.trim.db";
   my $number_of_entries = `wc -l < $exons.aa.trim.db.idx`;
   chomp($number_of_entries);
-  print
-"Processing $number_of_entries entries with $hhblits_cpus threads for transposons...\n";
-  &process_cmd(
-"$mpirun_exec -machinefile $workers_file -n $hhblits_cpus $ffindex_apply_mpi_exec -d $exons.aa.trim_transposon.db -i $exons.aa.trim_transposon.db.idx $exons.aa.trim.db $exons.aa.trim.db.idx  \\
- -- $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0
- "
-  );
+  print "Processing $number_of_entries entries with $hhblits_cpus threads for transposons...\n";
+  &process_cmd("$mpirun_exec -machinefile $workers_file -n $hhblits_cpus $ffindex_apply_mpi_exec -d $exons.aa.trim.transposon.db -i $exons.aa.trim.transposon.db.idx $exons.aa.trim.db $exons.aa.trim.db.idx  \\
+ -- $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 2>/dev/null
+ ") unless $number_of_entries == 0 || -s "hhr.$exons.aa.trim.transposon.db" ;
  }
- my $transposon_results = &parse_hhr( "$exons.aa.trim_transposon.db",
-                                      70, 1e-3, 1e-6, 100, 50, 30, 'yes' )
-   if -s "$exons.aa.trim_transposon.db";
+ my $transposon_results = &parse_hhr( "$exons.aa.trim.transposon", 70, 1e-3, 1e-6, 100, 50, 30, 'yes' );
+ 
  my $noreps_fasta = &remove_transposons( "$exons.aa.trim", $transposon_results )
    if $transposon_results;
 
  unless ($no_uniprot_search) {
   print "Uniprot database...\n";
   &process_cmd(
-"$ffindex_from_fasta_exec $noreps_fasta.db $noreps_fasta.db.idx $noreps_fasta"
+"$ffindex_from_fasta_exec -s $noreps_fasta.db $noreps_fasta.db.idx $noreps_fasta"
   ) if !-s "$noreps_fasta.db";
   my $number_of_entries = `wc -l < $noreps_fasta.db.idx`;
   chomp($number_of_entries);
@@ -474,13 +475,15 @@ sub prepare_mpi() {
 "Processing $number_of_entries entries with $hhblits_cpus threads for uniprot...\n";
 
   &process_cmd(
-"$mpirun_exec -machinefile $workers_file -n $hhblits_cpus $ffindex_apply_mpi_exec -d $exons.aa.trim_uniprot.db -i $exons.aa.trim_uniprot.db.idx $noreps_fasta.db $noreps_fasta.db.idx  \\
- -- $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0
+"$mpirun_exec -machinefile $workers_file -n $hhblits_cpus $ffindex_apply_mpi_exec -d $noreps_fasta.uniprot.db -i $noreps_fasta.uniprot.db.idx $noreps_fasta.db $noreps_fasta.db.idx  \\
+ -- $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 2>/dev/null
  "
-  );
-  &parse_hhr( "$exons.aa.trim_uniprot.db", 70, 1e-3, 1e-6, 100, 50, 30 );
+  ) unless $number_of_entries == 0 || -s "hhr.$noreps_fasta.uniprot.db";
+  &parse_hhr( "$noreps_fasta.uniprot", 70, 1e-3, 1e-6, 100, 50, 30 );
  }
- if ($scratch_dir) {
+ 
+ 
+ if ($scratch_dir ) {
   foreach my $worker (sort keys %hash ) {
    print "Removing $transposon_db from $worker scratch\n";
    &process_cmd("rm -f $worker:$transposon_db*");
@@ -496,8 +499,9 @@ sub remove_transposons() {
  my $fasta_file  = shift;
  my $result_file = shift;
  my $out_fasta   = "$fasta_file.norep";
+ return $out_fasta if -s $out_fasta; 
  my %transposon_hits;
- open( IN, "$exons.aa.trim_transposon.db.results" );
+ open( IN, $result_file );
  while ( my $ln = <IN> ) {
   if ( $ln =~ /^(\S+)/ ) {
    $transposon_hits{$1} = 1;
@@ -517,7 +521,7 @@ sub remove_transposons() {
   $id =~ /^(\S+)/;
   my $lid = $1;
   next if $transposon_hits{$1};
-  print OUT "$id\n" . join( "\n", @lines ) . "\n";
+  print OUT ">$id\n" . join( "\n", @lines ) . "\n";
  }
  close FASTA;
  close OUT;
@@ -527,11 +531,13 @@ sub remove_transposons() {
 }
 
 sub remove_zero_bytes() {
- my $file    = shift;
- my $outfile = "hhr.$file";
- my $delete  = shift;
- &process_cmd("cat $file* | tr -d '\\000' > hhr.$file");
- system("rm -f $file*") if $delete;
+ my $infile    = shift;
+ my $outfile = "hhr.$infile.db";
+ return $outfile if (-s $outfile);
+ &process_cmd("cat $infile*.idx* > $outfile.idx");
+ system("rm -f $infile*.idx*");
+ &process_cmd("cat $infile* | tr -d '\\000' > $outfile");
+ system("rm -f $infile*");
  return $outfile;
 }
 
@@ -555,25 +561,25 @@ sub prepare_local() {
  my $thread_helper = new Thread_helper($hhblits_cpus);
  my ( @transposon_cmds, @uniprot_cmds );
  foreach my $fasta (@fasta_files) {
-  &process_cmd("$ffindex_from_fasta_exec $fasta.db $fasta.db.idx $fasta")
+  &process_cmd("$ffindex_from_fasta_exec -s $fasta.db $fasta.db.idx $fasta")
     unless -s "$fasta.db";
   my $number_of_entries = `wc -l < $fasta.db.idx`;
   chomp($number_of_entries);
 
-  unless ( -s "$fasta.hhblits.transposon.cmds" || $no_transposon_search ) {
+  unless ( -s "$fasta.hhblits.transposon.cmds" || $no_transposon_search || $number_of_entries == 0 ) {
    open( CMD, ">$fasta.hhblits.transposon.cmds" );
    for ( my $i = 1 ; $i <= $number_of_entries ; $i++ ) {
     print CMD
-"$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0  >> $fasta.transposons.hhr\n";
+"$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0  >> $fasta.transposons.hhr 2>/dev/null\n"; 
    }
    close CMD;
   }
 
-  unless ( -s "$fasta.hhblits.uniprot.cmds" || $no_uniprot_search ) {
+  unless ( -s "$fasta.hhblits.uniprot.cmds" || $no_uniprot_search || $number_of_entries == 0) {
    open( CMD, ">$fasta.hhblits.uniprot.cmds" );
    for ( my $i = 1 ; $i <= $number_of_entries ; $i++ ) {
     print CMD
-"$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 >> $fasta.uniprot.hhr\n";
+"$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 >> $fasta.uniprot.hhr 2>/dev/null\n";
    }
    close CMD;
   }
@@ -641,14 +647,14 @@ sub prepare_cluster() {
    &partition_transcript_db( "$exons.aa.trim", 'exons_hhsearch' );
 
  foreach my $fasta (@fasta_files) {
-  &process_cmd("$ffindex_from_fasta_exec $fasta.db $fasta.db.idx $fasta");
+  &process_cmd("$ffindex_from_fasta_exec -s $fasta.db $fasta.db.idx $fasta");
   my $number_of_entries = `wc -l < $fasta.db.idx`;
   chomp($number_of_entries);
-  unless ($no_transposon_search) {
+  unless ($no_transposon_search || $number_of_entries == 0) {
    open( CMD, ">$fasta.hhblits.transposon.cmds" );
    for ( my $i = 1 ; $i <= $number_of_entries ; $i++ ) {
     print CMD
-"$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 2 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 >> $fasta.transposons.hhr\n";
+"$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 2 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 >> $fasta.transposons.hhr 2>/dev/null\n";
    }
    close CMD;
   }
@@ -656,7 +662,7 @@ sub prepare_cluster() {
    open( CMD, ">$fasta.hhblits.uniprot.cmds" );
    for ( my $i = 1 ; $i <= $number_of_entries ; $i++ ) {
     print CMD
-"$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 2 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 >> $fasta.uniprot.hhr\n";
+"$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 2 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 >> $fasta.uniprot.hhr 2>/dev/null\n";
    }
    close CMD;
   }
@@ -728,12 +734,15 @@ sub parse_hhr() {
  my ( $infile, $homology_prob_cut, $eval_cut, $pval_cut, $score_cut,
       $align_col_cut, $template_aln_size_cut, $is_repeat )
    = @_;
+
+ $infile = &remove_zero_bytes( $infile);
+ my $outfile = "$infile.results";
+ return $outfile if (-s $outfile);  
+ print "Post-processing $infile\n";   
  my $min_filesize = 500;
  my ( $qcounter, %hits, %hit_counter );
 
- next unless -s $infile && ( -s $infile ) >= $min_filesize;
- $infile = &remove_zero_bytes( $infile, 'yes' );
- my $outfile = "$infile.results";
+ die "Can't find $infile or it is too small\n" unless -s $infile && ( -s $infile ) >= $min_filesize;
 
  open( IN, $infile ) || die($!);
  open( OUT,     ">$outfile" );
@@ -742,24 +751,15 @@ sub parse_hhr() {
  open( GFF3,    ">$outfile.gff3" );
  open( HINTS,   ">$outfile.hints" );
 
- my $query = <IN>;
- $qcounter++;
- chomp($query);
- $query =~ s/^Query\s+(\S+)//;
- my $id = $1;
- $id =~ s/_\d+$// if $id;
- my $reverse = $query =~ /REVERSE SENSE/ ? 1 : 0;
- $query =~ /\[(\d+)\s\-\s(\d+)\]/;
- my $start = $1 && $1 =~ /^(\d+)$/ ? $1 : int(0);
- my $stop  = $2 && $2 =~ /^(\d+)$/ ? $2 : int(0);
+ my ($query,$id,$reverse,$start,$stop);
 
  while ( my $ln = <IN> ) {
   if ( $ln =~ /^\W*Query\s+(\S+)/ ) {
    $qcounter++;
-   $query = $ln;
-   $id    = $1;
+   $query = $1;
+   $id    = $query;
    $id =~ s/_\d+$//;
-   $reverse = $ln =~ /REVERSE SENSE/ ? 1 : 0;
+   $reverse = ($ln =~ /REVERSE SENSE/) ? 1 : 0;
    $ln =~ /\[(\d+)\s\-\s(\d+)\]/;
    $start = $1 && $1 =~ /^(\d+)$/ ? $1 : int(0);
    $stop  = $2 && $2 =~ /^(\d+)$/ ? $2 : int(0);
@@ -810,7 +810,7 @@ sub parse_hhr() {
     next if $score_cut && $score_cut > $score;
     next if $alignment_length < $align_col_cut;
     next if $template_aln_size < $template_aln_size_cut;
-    $hits{$id}++;
+    $hits{$query}++;
     my ( $gff_start, $gff_end );
     if ( !$reverse ) {
      $gff_start = $start + ( 3 * $aa_start ) - 1;
@@ -853,7 +853,7 @@ sub parse_hhr() {
   }
  }
  close IN;
- foreach my $id (%hits) {
+ foreach my $id (sort keys %hits) {
   print OUT $id . "\n";
  }
  close OUT;
