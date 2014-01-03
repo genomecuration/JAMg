@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-all: prep_pfam ffindex parafly cdhit
+all: ffindex parafly cdhit
 
 parafly:
 	cd 3rd_party/parafly && ./configure --prefix=`pwd`/../../util && $(MAKE) install
