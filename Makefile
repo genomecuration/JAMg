@@ -1,25 +1,38 @@
 SHELL := /bin/bash
 
 all: 
-	cd 3rd_party/cdbtools/cdbfasta && $(MAKE) && cp cdbfasta ../../../bin/ && cp cdbyank ../../../bin/
-	cd 3rd_party/parafly && ./configure --prefix=`pwd`/../../ && $(MAKE) install
-	cd 3rd_party/aatpackage && ./configure --prefix=`pwd`/../../ && $(MAKE) install && cp bin/* ../../bin/
-	chmod a+rx bin/*
+	cd 3rd_party/cdbtools/cdbfasta && $(MAKE) && cp cdbfasta ../../bin/ && cp cdbyank ../../bin/ && $(MAKE) clean
+	cd 3rd_party/parafly && ./configure --prefix=`pwd`/../ && $(MAKE) install
+	cd 3rd_party/aatpackage && ./configure --prefix=`pwd`/../ && $(MAKE) install && cp bin/* ../bin/ && $(MAKE) clean
+	cd 3rd_party/preprocess_reads && $(MAKE) 3rd_party
+	cd 3rd_party/PASA && $(MAKE) && cd seqclean && find . -name "*.tar.gz" -exec tar xzf '{}' \; && cd mdust && $(MAKE) && cd ../psx && $(MAKE) && cd ../trimpoly && $(MAKE) && cd .. && find . -type f -executable -exec cp -u '{}' ../../bin/ \;
 	cd 3rd_party/transdecoder && $(MAKE)
-	cd 3rd_party/augustus && $(MAKE)
+	cd 3rd_party/trinityrnaseq && $(MAKE)
+	cd 3rd_party/RepeatMasker && echo "I will download TRF from http://tandem.bu.edu/trf. You must read and accept their (v. short) license (see http://tandem.bu.edu/trf/trf.license.html) otherwise exit now:" && sleep 5 && echo "The author of this software grants to any individual or organization the right to use and to make an unlimited number of copies of this software. You may not de-compile, disassemble, reverse engineer, or modify the software. This software cannot be sold, incorporated into commercial software or redistributed. The author of this software accepts no responsibility for damages resulting from the use of this software and makes no warranty or representation, either express or implied, including but not limited to, any implied warranty of merchantability or fitness for a particular purpose. This software is provided as is, and the user assumes all risks when using it." && sleep 10 && wget http://tandem.bu.edu/trf/downloads/trf407b.linux64 && ln -s trf407b.linux64 trf && chmod +x trf && echo "I will configure RepeatMasker. Use the RMBlast NCBI option when asked 'Add a Search Engine', the files are in `pwd`/ncbi-blast"
+	cd 3rd_party/augustus && $(MAKE) && cp bin/* ../bin/
 	cd 3rd_party/geneid && $(MAKE)
-	cd 3rd_party/snap && $(MAKE) && cp fathom ../../bin/
-	cd 3rd_party/gmap && ./configure --prefix=`pwd`/../../ --with-gmapdb=`pwd`/../../databases/ && $(MAKE) && $(MAKE) check && $(MAKE) install
+	cd 3rd_party/GlimmerHMM/sources && $(MAKE)
+	cd 3rd_party/snap && $(MAKE) && cp fathom ../bin/
+	cd 3rd_party/gmap && ./configure --prefix=`pwd`/../ --with-gmapdb=`pwd`/../../databases/gmap/ && $(MAKE) && $(MAKE) check && $(MAKE) install
+	cd 3rd_party/samtools && $(MAKE) && cp samtools ../bin/ && $(MAKE) clean
+	cd 3rd_party/bedtools && $(MAKE) && cp bin/* ../bin/ && $(MAKE) clean
+	cd databases/hhblits && echo "Uncompressing databases, this may take a while..." find . -name "*tar.bz2" -exec tar -xjf '{}' \;
+	chmod a+rx bin/* 3rd_party/bin/*
 clean:
 	rm -f bin/cdb* && cd 3rd_party/cdbtools/cdbfasta && $(MAKE) clean
 	rm -f bin/ParaFly && cd 3rd_party/parafly && $(MAKE) clean
-	cd bin && rm -f fathom dds dps ext filter gap2 nap show AAT.pl AAT_btab_to_alignment_gff3.pl alignment_gff3_to_bed_format.pl extCollapse.pl atoiindex cmetindex dbsnp_iit fa_coords get-genome gff3_* gmap* gsnap* gtf_* iit_* gvf_iit md_coords psl_* snpindex uniqscan uniqscanl vcf_iit && cd ../3rd_party/aatpackage && $(MAKE) clean
 	cd 3rd_party/snap && $(MAKE) clean
 	cd 3rd_party/transdecoder && $(MAKE) clean
 	cd 3rd_party/augustus && $(MAKE) clean
 	cd 3rd_party/geneid && $(MAKE) clean
 	cd 3rd_party/snap && $(MAKE) clean
-	cd 3rd_party/gmap && $(MAKE) clean && rm -fr autom4te.cache config.log
+	cd 3rd_party/gmap && $(MAKE) clean
+	cd 3rd_party/samtools && $(MAKE) clean
+	cd 3rd_party/bedtools && $(MAKE) clean
+	cd 3rd_party/GlimmerHMM/sources && rm -f *.o
+	cd 3rd_party/PASA && $(MAKE) clean && cd seqclean && rm -rf mdust psx seqclean trimpoly
+	cd 3rd_party/aatpackage && $(MAKE) clean
+	cd 3rd_party/bin && rm -fr *
 	cd test_suite && bash cleanme.sh
 
 test:

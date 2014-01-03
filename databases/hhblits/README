@@ -1,3 +1,10 @@
-We recommend you download and use the latest UniRef/UniProt database from 
+One could download and use the latest UniRef/UniProt database from 
 ftp://toolkit.genzentrum.lmu.de/pub/HH-suite/databases/hhsuite_dbs
 
+but then you will want to remove the hypothetical and transposons from it.
+See get_seqs_from_ffindex_index.pl in util directory
+
+Alternatively, you can use these databases here. They have been produced
+using refseq and kclust. In the case of fungi, hypotheticals are left in
+because they constituted half the database (seems most fungal data are 
+hypothetical!)
