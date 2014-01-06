@@ -138,7 +138,7 @@ In the above we have prepared the input for TDN and TGG (Trinity de-novo and Tri
 
 CAUTION: In NGS-derived assemblies, it is not uncommon to have 'haplotype' scaffolds (see the Heliconius genome paper), for that reason we would keep them but decrease the '-path_number' option of 'align_rnaseq_gsnap' from the default of 50 to something that is expected for your assembly (e.g. 4). See the files TGG/*.concordant_mult_xs for read pairs that map to higher than -path_number paths.
 
-TIP: For parallelization with computing clusters, you could create 'one directory for each paired readset' and run align_rnaseq_gsnap.pl on each node.
+TIP: For parallelization with computing clusters, you can use the -commands_only option and create a text file that has one line worth of commands for each input. You can then use the unix command 'split' or ParaFly to run it on a cluster.
 
 [source,bash]
 # grab all the outputs for Drosophila

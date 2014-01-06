@@ -130,6 +130,9 @@ export LOCAL_CPUS=4 # example number of CPUs to use
 *** We have two scripts if you have a lot of data (e.g. a dozen lanes of HiSeq) but there is no benefit learning them if you only have a few Gb of data or are not in a hurry: 
 **** bin/prepare_trinity_genome_assembly_pbs.pl prepares everything you need for a TGG assembly. It splits the data into small, medium and large jobs so that all the small run together. Otherwise a single 'large' job will delay the entire processing, only to find out that you're assembling a highly expressed retrotransposon.
 **** 'bin/align_rnaseq_gsnap.pl' automatically run against all files that match a pattern for left and right so that you don't have to do it manually. In other words, it is for advanced users with lots of data.
++
+TIP: For parallelization with computing clusters, you can use the -commands_only option and create a text file that has one line worth of commands for each input. You can then use the unix command 'split' or ParaFly to run it on a cluster.
++
 **** also 'util/trinity_gg_helper' can be used to (re)run batches of Trinity-guided assemblies on a PBS cluster. 
 *** This is the last command you will need for the genome-guided part:
 +

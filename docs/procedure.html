@@ -870,6 +870,14 @@ bin/prepare_trinity_genome_assembly_pbs.pl prepares everything you need for a TG
 <p>
 <em>bin/align_rnaseq_gsnap.pl</em> automatically run against all files that match a pattern for left and right so that you don&#8217;t have to do it manually. In other words, it is for advanced users with lots of data.
 </p>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<img src="./images/icons/tip.png" alt="Tip" />
+</td>
+<td class="content">For parallelization with computing clusters, you can use the -commands_only option and create a text file that has one line worth of commands for each input. You can then use the unix command <em>split</em> or ParaFly to run it on a cluster.</td>
+</tr></table>
+</div>
 </li>
 <li>
 <p>
@@ -1192,7 +1200,7 @@ Feature
 <div id="footer">
 <div id="footer-text">
 Version RC1<br />
-Last updated 2014-01-03 23:28:52 EST
+Last updated 2014-01-06 20:33:04 EST
 </div>
 </div>
 </body>
