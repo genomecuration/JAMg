@@ -2288,6 +2288,42 @@ sub run_exonerate() {
 	  )
 	{
 		my $genome_dir = basename($genome_file) . '_dir';
+
+		my $aat_command_file = "./" . basename($genome_dir) . ".commands";
+		my $exonerate_command_file = "run_exonerate_commands.cmd";
+		# check if previous exonerate run exists and if so run it?
+		unless ($no_rerun_exonerate) {
+			if (
+				-s $aat_command_file
+				&& (
+					!-s $aat_command_file . '.completed'
+					|| ( -s $aat_command_file !=
+						-s $aat_command_file . '.completed' )
+				)
+			  )
+			{
+				print "Re-processing with AAT\n";
+				&process_cmd(
+"$parafly_exec -shuffle -CPU $threads -c $aat_command_file -failed_cmds $aat_command_file.failed -v 2>&1 |grep -v 'successfully completed'"
+				);
+			}elsif (-s $exonerate_command_file && (
+                                        !-s $exonerate_command_file . '.completed'
+                                        || ( -s $exonerate_command_file !=
+                                                -s $exonerate_command_file . '.completed' )
+                                )
+                          )
+                        {
+                                print "Re-processing with exonerate\n";
+                                &process_cmd(
+"$parafly_exec -shuffle -CPU $threads -c $exonerate_command_file -failed_cmds $exonerate_command_file.failed -v 2>&1 |grep -v 'successfully completed'"
+                                );
+                        }
+			
+
+		}
+
+		$no_rerun_exonerate = 1	if (-s $exonerate_command_file && -s $exonerate_command_file . '.completed' && ( -s $exonerate_command_file == -s $exonerate_command_file . '.completed' ));
+
 		my $files_ref;
 		if ( -d $genome_dir ) {
 			my @genome_files = glob( $genome_dir . "/*" );
@@ -2302,27 +2338,11 @@ sub run_exonerate() {
 		  ? $transdecoder_gff . '.exonerate.results'
 		  : $peptide_file . '.exonerate.results';
 		my @commands;
-		my $aat_command_file = "./" . basename($genome_dir) . ".commands";
 
-		# check if previous exonerate run exists and if so run it?
-		unless ($no_rerun_exonerate) {
-			if (
-				-s $aat_command_file
-				&& (
-					!-s $aat_command_file . '.completed'
-					|| ( -s $aat_command_file !=
-						-s $aat_command_file . '.completed' )
-				)
-			  )
-			{
-				print "Processing with AAT\n";
-				&process_cmd(
-"$parafly_exec -shuffle -CPU $threads -c run_exonerate_commands.cmd -failed_cmds run_exonerate_commands.cmd.failed -v 2>&1 |grep -v 'successfully completed'"
-				);
-			}
-		}
+
 		if ($peptide_file) {
 			unless ($no_rerun_exonerate) {
+				unless (-s $aat_command_file && -s $aat_command_file . '.completed' && ( -s $aat_command_file == -s $aat_command_file . '.completed')){
 				my $aat_score = $same_species ? 400 : 80;
 				my $aat_word = $same_species ? 5 : 4; # five is much faster than default and 3 is much slower. 
 				print "Preparing/running AAT...\n";
@@ -2341,10 +2361,10 @@ sub run_exonerate() {
 				open( CMD, ">$aat_command_file" );
 				print CMD shuffle(@commands);
 				close CMD;
-				&process_cmd(
-"$parafly_exec -shuffle -CPU $threads -c $aat_command_file -v -failed_cmds $aat_command_file.failed"
-				);
+				&process_cmd("$parafly_exec -shuffle -CPU $threads -c $aat_command_file -v -failed_cmds $aat_command_file.failed");
+				}
 				system("find $genome_dir -empty -delete");
+				
 				print "Running exonerate...\n";
 				unlink($exonerate_file);
 				my $exonerate_options =
@@ -2363,8 +2383,7 @@ sub run_exonerate() {
 			}
 		}
 		else {
-			print
-"Processing transdecoder output via AAT and exonerate to produce output $exonerate_file\n";
+			print "Processing transdecoder output via AAT and exonerate to produce output $exonerate_file\n";
 			print "Finding contigs from transdecoder...\n";
 			my $fasta_contigs = "$transdecoder_gff.contigs";
 			if ($transdecoder_peptides) {
@@ -2387,10 +2406,12 @@ sub run_exonerate() {
 					$transdecoder_assembly_file )
 				  unless -s $fasta_contigs;
 			}
+			
 			die "Could not create $fasta_contigs\n"
 			  unless -s $fasta_contigs && -s $fasta_contigs . '.annotations';
 
 			unless ($no_rerun_exonerate) {
+ 			 unless (-s $aat_command_file && -s $aat_command_file . '.completed' && ( -s $aat_command_file == -s $aat_command_file . '.completed')){
 				my $aat_score = $same_species ? 200 : 80;
 				my $aat_o = $similar_fraction - 20;
 				my $aat_p = $identical_fraction - 20;
@@ -2399,7 +2420,7 @@ sub run_exonerate() {
 					next if $genome_file =~ /\.aat\./ || -d $genome_file;
 					push(
 						@commands,
-"$aatpackage/dds $genome_file $fasta_contigs -o $aat_o -p $aat_p -c 300000 -f $aat_score -i 30 -a $intron_size > $genome_file.aat.d ;"
+						    "$aatpackage/dds $genome_file $fasta_contigs -o $aat_o -p $aat_p -c 300000 -f $aat_score -i 30 -a $intron_size > $genome_file.aat.d ;"
 						  . "$aatpackage/ext $genome_file.aat.d -f $aat_score > $genome_file.aat.ext ;"
 						  . "$aatpackage/extCollapse.pl $genome_file.aat.ext > $genome_file.aat.extCol ;"
 						  . "$aatpackage/filter $genome_file.aat.extCol -c 1 > $genome_file.aat.filter ; rm -f $genome_file.aat.d $genome_file.aat.ext $genome_file.aat.extCol \n"
@@ -2408,13 +2429,11 @@ sub run_exonerate() {
 				open( CMD, ">$aat_command_file" );
 				print CMD shuffle(@commands);
 				close CMD;
-				&process_cmd(
-"$parafly_exec -shuffle -CPU $threads -c $aat_command_file -v -failed_cmds $aat_command_file.failed"
-				);
+				&process_cmd("$parafly_exec -shuffle -CPU $threads -c $aat_command_file -v -failed_cmds $aat_command_file.failed");
+			 } 
 				system("find $genome_dir -empty -delete");
 				print "Running exonerate...\n";
-				my $exonerate_options =
-" -minorf $minorf -annotation $fasta_contigs.annotations -in $fasta_contigs -separate -aat $genome_dir/*filter -threads $threads -intron_max $intron_size $same_species ";
+				my $exonerate_options = " -minorf $minorf -annotation $fasta_contigs.annotations -in $fasta_contigs -separate -aat $genome_dir/*filter -threads $threads -intron_max $intron_size $same_species ";
 				$exonerate_options .= " -softmask -ref $softmasked_genome "
 				  if ($softmasked_genome);
 				$exonerate_options .= " -ref $genome_file "
@@ -2441,3 +2460,4 @@ sub wrap_text() {
 	$string =~ s/(.{0,$wrap_length})/$1\n/g;
 	return $string;
 }
+

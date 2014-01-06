@@ -1,5 +1,5 @@
 = Just Annotate My Genome (JAMg) info
-:Author:    Alexie Papanicolaou Author Name
+:Author:    Alexie Papanicolaou
 :Email:     alexie@butterflybase.org
 :Date:      December 2013
 :Revision:  RC1

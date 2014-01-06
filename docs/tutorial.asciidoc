@@ -1,5 +1,5 @@
 = Just Annotate My Genome (JAMg) tutorial
-:Author:    Alexie Papanicolaou Author Name
+:Author:    Alexie Papanicolaou
 :Email:     alexie@butterflybase.org
 :Date:      December 2013
 :Revision:  RC1
@@ -19,12 +19,22 @@ I'm assuming you've downloaded the software from somewhere and unpacked it. The 
 
 [source,bash]
 export JAMG_PATH=$HOME/software/jamg # or wherever you installed it.
-export INTRON_SIZE=70000 # maximum size of intron.
+export MAX_INTRON_LENGTH=70000 # maximum size of intron.
 export GENOME_PATH=$PWD/dmel-all-r5.53.fasta
 export GENOME_NAME=dmel-all-r5.53 # just a base name for our genome
 # number of CPUs to use for the local machine. Always at least one less than the number of available CPUs:
 export LOCAL_CPUS=5 
 export MAX_MEMORY_G=100 # maximum amount of memory to use in Gb
+
+These ought to be project specific so if you store the above in a file you can use this command to import them in your environment. That way you don't have to type them every time and you will also remember what you used.
+
+[source,bash]
+vim env_vash.sh # add the above data
+ . ./env_vash.sh # that is a dot in the beginning
+
+Continuing with the installation:
+
+[source,bash]
 cd $JAMG_PATH
 make # will install the various software, including RepeatMasker
 # Go to www.giriinst.org and install the repeat library in $JAMG_PATH/3rd_party/RepeatMasker
@@ -53,10 +63,6 @@ ascp \
  anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR023/SRR023538 \
  anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR023/SRR023539 \
  anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR023/SRR023540 \
- anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR767/SRR767611 \
- anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR767/SRR767619 \
- anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR767/SRR767621 \
- anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR767/SRR767623 \
  .
 find . -name "*sra" -exec fastq-dump --split-spot --split-files --skip-technical -F -Q 33 -W -T -R pass '{}' \;
 find . -name "*sra" -delete # delete primary data if you don't need the backup
@@ -80,6 +86,15 @@ pbzip2 -dck SRR*/pass/?/fastq.unpaired.bz2 >> drosoph_ALL.Left.fastq # unpaired 
 
 TIP: We can also use 454 and Sanger data! Then go to http://insectacentral.org/genes4all/download/request[InsectaCentral] and download a FASTA of all 'Drosophila melanogaster' (Diptera:Drosophilidae) contigs. This is a MIRA assembly of all Sanger and 454 data that was available for D. melanogaster at the time. For the tutorial we'll assume you saved them as 'D_melanogaster_ICcontigs.fsa'.
 
+TIP: If you want to increase the amount of data for this tutorial (and i.e are willing to wait much longer, then you can download these data which were used for testing JAMg). This will increase TGG's run time by 4 days and TDN by about half a day.
+[source,bash]
+ascp \
+anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR767/SRR767611 \
+ anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR767/SRR767619 \
+ anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR767/SRR767621 \
+ anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR767/SRR767623 \
+.
+
 == Step 1a: RepeatMask and 'identify untranscribed coding exons'
 In this step you will check if there are any domains that are coding. This will provide evidence even in the absence
 of RNA-Seq data. The script will also run RepeatMasker the output of which we will use later on. 
@@ -96,9 +111,14 @@ $JAMG_PATH/bin/prepare_domain_exon_annotation.pl -verbose -genome $GENOME_PATH \
  -repthreads $LOCAL_CPUS -engine localmpi -mpi $LOCAL_CPUS \
  -uniprot_db $JAMG_PATH/databases/hhblits/refseq_insecta_march13_just_useful \
  -scratch /dev/shm/$USER
-ls *hints # should be two files
+ls ./*hints # should be two files
 
 Purely FYI: in my local cluster environment using MPI with 44 CPUs and the databases copied to /dev/shm (first command above), this step took 36h (36h and 17 minutes to be exact). The network speed used for MPI was a bottleneck (we just have 10gb Ethernet not infiniband).
+
+Now apply the repeatmasking output file $GENOME_PATH.out.gff to create a 'soft'masked file that we will use later on:
+
+[source,bash]
+maskFastaFromBed -soft -fi $GENOME_PATH -fo $GENOME_PATH.softmasked -bed $GENOME_PATH.out.gff
 
 == Step 1b: Assembly transcriptome to create 'high-quality gene models'
 While the previous step is running, prepare TDN and TGG assemblies (Trinity de-novo and Trinity genome-guided) for the RNA-seq data.
@@ -114,7 +134,7 @@ mkdir TGG; cd TGG
 $JAMG_PATH/bin/align_rnaseq_gsnap.pl -fasta $GENOME_PATH -dbname $GENOME_NAME -cpus $LOCAL_CPUS \
  -nofail -suffix -input_dir ../../ |& tee tgg.log
 
-In the above we have prepared the input for TDN and TGG (Trinity de-novo and Trinity Genome-guided). For this tutorial, for TDN we use '--min_kmer_cov 2' because it saves time and resources but in a real world scenario of annotating a genome, don't use it if you don't have to. For TGG we use '-suffix' because we don't expect any substantial polymorphism for Drosophila melanogaster. If you have a species with polymorphism then don't use '-suffix'. Once the alignment of the RNASeq is complete we can continue with the TGG process. Some files will be mapped multiple times. We know that Drosophila is well assembled so these RNASeq are almost certainly repeats, for this tutorial we will not use them. The overall process above will take about 24h if you're doing both in parallel and using 5 CPUs for TDN and 10 CPUs for TGG.
+In the above we have prepared the input for TDN and TGG (Trinity de-novo and Trinity Genome-guided). For this tutorial, for TDN we use '--min_kmer_cov 2' because it saves time and resources but in a real world scenario of annotating a genome, don't use it if you don't have to. For TGG we use '-suffix' because we don't expect any substantial polymorphism for Drosophila melanogaster. If you have a species with polymorphism then don't use '-suffix'. Once the alignment of the RNASeq is complete we can continue with the TGG process. Some files will be mapped multiple times. We know that Drosophila is well assembled so these RNASeq are almost certainly repeats, for this tutorial we will not use them. The overall process above will take about 16-24h if you're doing both in parallel and using 5 CPUs for TDN and 10 CPUs for TGG.
 
 CAUTION: In NGS-derived assemblies, it is not uncommon to have 'haplotype' scaffolds (see the Heliconius genome paper), for that reason we would keep them but decrease the '-path_number' option of 'align_rnaseq_gsnap' from the default of 50 to something that is expected for your assembly (e.g. 4). See the files TGG/*.concordant_mult_xs for read pairs that map to higher than -path_number paths.
 
@@ -124,7 +144,7 @@ TIP: For parallelization with computing clusters, you could create 'one director
 # grab all the outputs for Drosophila
 cd TGG
 # prepare files for TGN, splitting them to those that will take a very long time/resources, medium and very short
-$JAMG_PATH/bin/prepare_trinity_genome_assembly_pbs.pl -files ./*.concordant_uniq.bam -intron $INTRON_SIZE
+$JAMG_PATH/bin/prepare_trinity_genome_assembly_pbs.pl -files ./*.concordant_uniq.bam -intron $MAX_INTRON_LENGTH
 # First, we can create a coverage file of the RNAseq alignments that we will use let on for Augustus. 
 $JAMG_PATH/bin/augustus_RNAseq_hints.pl -bam RNASeq_TGG_input.bam -genome $GENOME_PATH # RNASeq_TGG_input.bam is from prepare_trinity_genome_assembly_pbs.pl above
 # Second we can start assemblying the TGG data:

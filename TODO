@@ -1,3 +1,8 @@
 To add 
  * FAQ
  * Worked out example on Drosophila melanogaster
+ 
+ALEXIE TODO: add transposon hhblits search to maskFastaFromBed step
+
+#TODO Gavin:
+create_projections.py -reference annotated_genome.fasta -genes [annotated_genome.gff3|annotated_genome.genbank] -genome new_genome.fasta -out new_genome.gff3

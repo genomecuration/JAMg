@@ -1,5 +1,5 @@
 = Just Annotate My Genome (JAMg) procedure
-:Author:    Alexie Papanicolaou Author Name
+:Author:    Alexie Papanicolaou
 :Email:     alexie@butterflybase.org
 :Date:      December 2013
 :Revision:  RC1
@@ -41,13 +41,15 @@ For the rest of the instructions, I'll assume your genome FASTA file is 'genome.
 export JAMG_PATH=$HOME/software/jamg
 ls -l $JAMG # try it
 
-. First you need to install the link:index.html#software[required software]. PASA might be slightly challenging if you have never used mySQL before. We distribute most of the software you will need under 3rd_party (when licensed to do so). To automatically install things, use this 'make' command.
+First you need to install the link:index.html#software[required software]. PASA might be slightly challenging if you have never used mySQL before. We distribute most of the software you will need under 3rd_party (when licensed to do so). To automatically install things, use this 'make' command.
 
 [source,bash]
 cd $JAMG_PATH
 make all # will install all utilities
 
 You will then still need to install blat, Apache/Tomcat and WebApollo (see 3rd_party/WebApollo/README for instructions on the later)
+
+For the rest of this document, I use some environmental variables as shortcuts as above for $JAMG_PATH. For example, LOCAL_CPUS is the number of CPUs to use, MAX_INTRON_LENGTH is the maximum length an intron is expected to be, GENOME_PATH is the path to the genome assembly and GENOME_NAME is just a friendly name for the genome (without any spaces). As shown in the tutorial, you can set your own and it is a handy trick to store them in a file so you remember what were those values.
 
 ==== Input files
 
@@ -95,12 +97,12 @@ You may follow any of the following steps in any order, at times you can even ac
 .Preparing the evidence
 * 'Exon identification': Using your genome FASTA, run the script 'prepare_domain_exon_annotation.pl'. This script will run RepeatMasker on your genome, and explore if any ORF is coding for a protein. It does this by first extracting all putative ORFs that have enough amino acids (stretches of Ns, as in gaps, will be translated to X. We don't like those...). Then for each putative ORF it will search against a transposon database and then against a database of known proteins. 
 +
-TIP: If you have already run RepeatMasker that is ok, make sure that a file that is called genome.fasta.masked is in the same directory as genome.fasta. It will continue with the ORF exploration.
+TIP: If you have already run RepeatMasker that is ok, make sure that a file that is called $GENOME_PATH.masked is in the same directory as $GENOME_PATH. It will continue with the ORF exploration.
 +
 You can choose which 'known protein' database to use after the transposons. It can be the entire Uniprot distributed with HHblits or one of the taxon-specific databases we provide from RefSeq. These databases are in the folder databases/hhblits/. This script can make use of MPI so that if you have a computing PC-Farm (i.e. no batch system) you can do this:
 +
 [source,bash]
-$JAMG_PATH/bin/prepare_domain_exon_annotation.pl -genome genome.fasta -verbose \
+$JAMG_PATH/bin/prepare_domain_exon_annotation.pl -genome $GENOME_PATH -verbose \
  -uniprot_db $JAMG_PATH/databases/hhblits/refseq_insecta_march13_just_useful \
  -trans $JAMG_PATH/databases/hhblits/transposons \
  -engine mpi -hosts morgan:5-haldane3:12-haldane2:10-haldane1:5-haldane4:12 -mpi 44 \
@@ -113,10 +115,10 @@ WARNING: '-engine' option has a number of possible options. We've tested 'mpi' a
 Once 'prepare_domain_exon_annotation.pl' is complete, you can provide the .hint files to Augustus (eventually).
 +
 * 'RNA-Seq processing': essentially you will be following the process outline http://pasa.sourceforge.net/#A_RNASeq[here]. Briefly:
-** Choose the maximum intron expected in your species (in base pairs). For the rest of these instructions, we will store in the env. variable $MAX_INTRON_SIZE:
+** Choose the maximum intron expected in your species (in base pairs). For the rest of these instructions, we will store in the env. variable $MAX_INTRON_LENGTH:
 +
 [source,bash]
-export MAX_INTRON_SIZE=70000
+export MAX_INTRON_LENGTH=70000
 export LOCAL_CPUS=4 # example number of CPUs to use
 +
 ** Do some mild trimming of your sequences, see 3rd_party/preprocess_reads (you can use the -noscreen option to improve speed).
@@ -135,7 +137,7 @@ export LOCAL_CPUS=4 # example number of CPUs to use
 # store what is TDN output
 $JAMG_PATH/3rd_party/PASA/misc_utilities/accession_extractor.pl < Trinity_denovo.fasta > tdn.accs
 # prepare TGG output
-$JAMG_PATH/bin/prepare_trinity_genome_assembly_pbs.pl -files ./*.concordant_uniq.bam -intron $MAX_INTRON_SIZE
+$JAMG_PATH/bin/prepare_trinity_genome_assembly_pbs.pl -files ./*.concordant_uniq.bam -intron $MAX_INTRON_LENGTH
 ls *cmds # Run each one using your method of choice, e.g. ParaFly
 find Dir_*  -name "*inity.fasta" | $JAMG_PATH/3rd_party/trinityrnaseq/util/GG_trinity_accession_incrementer.pl > Trinity_GG.fasta
 # compile TGG and TDN outputs into one file.
@@ -156,7 +158,7 @@ $JAMG_PATH/bin/augustus_RNAseq_hints.pl
 [source,bash]
 # identify poly-a tails using SeqClean
 $JAMG_PATH/3rd_party/bin/seqclean transcripts.fasta -c $LOCAL_CPUS -n 10000 
-$JAMG_PATH/3rd_party/PASA/scripts/Launch_PASA_pipeline.pl -c alignAssembly.config -C -R -g genome.fasta \
+$JAMG_PATH/3rd_party/PASA/scripts/Launch_PASA_pipeline.pl -c alignAssembly.config -C -R -g $GENOME_PATH \
  --ALIGNERS blat,gmap --TRANSDECODER --CPU $LOCAL_CPUS \
  -T -t transcripts.fasta.clean -u transcripts.fasta \
  --TDN tdn.accs
@@ -176,13 +178,12 @@ $JAMG_PATH/3rd_party/transdecoder/TransDecoder -t "my.assemblies.fasta" \
 +
 ** Once that is complete use the 'prepare_golden_genes_for_predictors.pl' script to prepare the various files.
 ** This script uses exonerate with an initial step with the AATPACKAGE for finding the approximate regions. Exonerate works better if it knows that certain regions are repetitive so we will create a soft-(repeat)masked version of your genome using bedtools.
-*** 'ALEXIE TODO: add transposon hhblits search to mask'
 +
 [source,bash]
-maskFastaFromBed -soft -fi genome.fasta -fo genome.fasta.masked.soft -bed genome.fasta.out.gff # this last file is the output from RepeatMasker
-$JAMG_PATH/bin/prepare_golden_genes_for_predictors.pl -genome genome.fasta.masked -softmasked genome.fasta.masked.soft \
+maskFastaFromBed -soft -fi $GENOME_PATH -fo $GENOME_PATH.softmasked -bed $GENOME_PATH.out.gff # this last file is the output from RepeatMasker
+$JAMG_PATH/bin/prepare_golden_genes_for_predictors.pl -genome $GENOME_PATH.masked -softmasked $GENOME_PATH.softmasked \
  -same_species -augustus $JAMG_PATH/3rd_party/augustus/bin \
- -intron $MAX_INTRON_SIZE -cpu 10 -norefine
+ -intron $MAX_INTRON_LENGTH -cpu 10 -norefine
 +
 *** I find that -norefine is quicker and makes little difference (but as always I could be wrong).
 +
@@ -193,7 +194,7 @@ TIP: Currently the AATPACKAGE and exonerate work rather well. They also very wel
 ** GeneMark-ES does not require any training but you should still use the repeatmasked genome. You also need to install (and accept the license) of GeneMark. Genemark will take a couple of days to complete.
 +
 [source,bash]
-genemark/gm_es_bp_linux64_v2.3e/gmes/gm_es.pl genome.fasta.masked  # use --BP ON if you're working on fungi 
+genemark/gm_es_bp_linux64_v2.3e/gmes/gm_es.pl $GENOME_PATH.masked  # use --BP ON if you're working on fungi 
 +
 ** For geneid, glimmerhmm and snap, you can train them using the output of prepare_golden_genes_for_predictors.pl (see below for each software)
 ** Glimmerhmm and snap can use external evidence but when we run a validation we saw that they performed less well than without any evidence. We're not experts of the software and there is no documentation so some optimization might be necessary.
@@ -203,19 +204,22 @@ to add example
 +
 ** [[projection]]If we have a closely species that is well annotated, a good approach is to 'project' that genome's gene models to our unannotated one. This can be achieved as such:
 [source,bash]
-#TODO Gavin:
 create_projections.py -reference annotated_genome.fasta -genes [annotated_genome.gff3|annotated_genome.genbank] -genome new_genome.fasta -out new_genome.gff3
 +
 * [[foreign_proteins]] 'Foreign proteins'
 ** Pick a species or taxon, download data, align
-*** First get some foreign proteins from a taxon that makes sense, or go to UniProt.org and download something appropriate. To bulk download you can use the download_my_sequences script. Then you can align them to your genome using some kind of cutoff (your guess will depend on the data and will be as good as mine).
+*** First get some foreign proteins from a taxon that makes sense. Then go to http://uniprot.org[UniProt] or ftp://ftp.ncbi.nlm.nih.gov/refseq/release/[RefSeq] and download something appropriate. Alternatively, you could bulk download some taxa you'd like to sue with the 'download_my_sequences' script. I highly recommend you use the http://weizhong-lab.ucsd.edu/cd-hit/download.php[cd-hit] program to reduce redundancy. Regardless, when you have your data, you can align them to your genome using some kind of cutoff (your guess will depend on the data and will be as good as mine).
 +
 [source,bash]
-$JAMG_PATH/bin/download_my_sequences.pl -t Insecta -t fasta -m protein #=> downloads Insecta proteins
-$JAMG_PATH/bin/prepare_golden_genes_for_predictors.pl -genome genome.fasta.masked -softmasked genome.fasta.masked.soft \
- -augustus $JAMG_PATH/3rd_party/augustus/bin \
- -identical 40 -similar 70 -mismatch_cutoff 100 -stop_golden \
- -intron $MAX_INTRON_SIZE -cpu 10 -norefine
+# download data e.g. insects/invertebrate:
+wget -c --mirror --accept=protein.faa.gz ftp://ftp.ncbi.nlm.nih.gov/refseq/release/invertebrate && gunzip -dc ftp.ncbi.nlm.nih.gov/refseq/release/invertebrate/*gz > foreign_proteins.fsa
+# OR:
+$JAMG_PATH/bin/download_my_sequences.pl -t Insecta -f fasta -m protein -out foreign_proteins.fsa # more data than RefSeq, slower
+cd-hit -c 0.90 -i foreign_proteins.fsa -o foreign_proteins.nr90 -d 0 -M 0 -T 10 # remove reduncancy to 90%
+# align data using some rather arbitrary cut-offs:
+$JAMG_PATH/bin/prepare_golden_genes_for_predictors.pl -identical 40 -similar 70 -mismatch_cutoff 100 -stop_golden \
+ -genome $GENOME_PATH.masked -softmasked $GENOME_PATH.softmasked -peptides foreign_proteins.nr90 \
+ -intron $MAX_INTRON_LENGTH -cpu $LOCAL_CPUS -norefine
 +
 * 'Running Augustus'
 * 'Creating a consensus gene set'

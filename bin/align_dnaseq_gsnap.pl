@@ -14,18 +14,19 @@ Pairs are matched using the _[12]_ Files must only have one of _1_ or _2_ in the
 
 Mandatory:
 
- -fasta :s           FASTA of genome
- -dbname :s          Name of database for GMAP. Will create if it doesn't exist.
+ -fasta          :s  FASTA of genome
+ -dbname         :s  Name of database for GMAP. Will create if it doesn't exist.
  
  
 Optional:
 
- -input_dir :s       Directory with read files (defaults to current working directory)
- -gmap_dir :s        Where the GMAP databases are meant to live (def. ~/databases/gmap)
- -cpus :i            Number of CPUs/threads (def. 10)
+ -commands_only  :s  Don't run commands, instead write them out into a file as specified by the option. Useful for preparing jobs for ParaFly
+ -input_dir      :s  Directory with read files (defaults to current working directory)
+ -gmap_dir       :s  Where the GMAP databases are meant to live (def. ~/databases/gmap)
+ -cpus           :i  Number of CPUs/threads (def. 6). I don't recommend more than 6 in a system that has 12 CPUs
  -help
- -pattern1            Pattern for automatching left pair files with *$pattern*.fastq (defaults to '_1_')
- -pattern2            Pattern for automatching right pair (defaults to '_2_')
+ -pattern1           Pattern for automatching left pair files with *$pattern*.fastq (defaults to '_1_')
+ -pattern2           Pattern for automatching right pair (defaults to '_2_')
  -nofail             Don't print out failures (I/O friendlyness if sparse hits expected). Otherwise captured as FASTQ
  -suffix             Build/use suffix array (fast, downweights SNPs, use for non-polymorphic genomes)
  -distance :i        Paired end distance
@@ -63,12 +64,12 @@ $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 my ( $gmap_build_exec, $gsnap_exec, $samtools_exec ) =
   &check_program( "gmap_build", "gsnap", "samtools" );
 &samtools_version_check($samtools_exec);
-my ($input_dir,$pattern2,$debug,$genome,$genome_dbname,$nofails,$suffix,$help);
+my ($input_dir,$pattern2,$debug,$genome,$genome_dbname,$nofails,$suffix,$help,$just_write_out_commands);
 my $cwd   = `pwd`;
 chomp($cwd);
 my $gmap_dir = $ENV{'HOME'}.'/databases/gmap/';
 my $repeat_path_number = 50;
-my $cpus   = 10;
+my $cpus   = 6;
 my $memory = '35G';
 my $pattern = '_1_';
 my $pe_distance = 10000;
@@ -86,6 +87,7 @@ my $pe_distance = 10000;
              'distance:i'     => \$pe_distance,
              'suffix'        => \$suffix,
              'path_number:i' => \$repeat_path_number,
+             'commands_only:s' => \$just_write_out_commands,
 );
 
 pod2usage if $help;
@@ -124,6 +126,7 @@ for ( my $i = 0 ; $i < @files ; $i++ ) {
 @files = @verified_files;
 die "No files found!\n" unless @files;
 
+open (CMD,">$just_write_out_commands") if $just_write_out_commands;
 my ($build_cmd,$align_cmd);
 
 if ($suffix){
@@ -200,20 +203,28 @@ foreach my $file ( sort @files ) {
 
  print LOG "\nGSNAP Completed!\n";
  close LOG;
+ print CMD "\n" if $just_write_out_commands;
 }
+close (CMD)  if $just_write_out_commands;
 
 ########################################
 sub process_cmd {
  my ( $cmd, $dir, $delete_pattern ) = @_;
  print &mytime . "CMD: $cmd\n"     if $debug;
- chdir($dir)                       if $dir;
- my $ret = system($cmd);
- if ( $ret && $ret != 256 ) {
-  chdir($cwd) if $dir;
-  &process_cmd_delete_fails( $dir, $delete_pattern ) if $delete_pattern;
-  die "Error, cmd died with ret $ret\n";
+ undef($dir) if $dir && $dir eq '.';
+ if ($just_write_out_commands){
+   print CMD "cd $dir ; $cmd ; cd $cwd;  " if $dir;
+   print CMD "$cmd; " if !$dir;
+ }else{
+   chdir($dir)                       if $dir;
+   my $ret = system($cmd);
+   if ( $ret && $ret != 256 ) {
+    chdir($cwd) if $dir;
+    &process_cmd_delete_fails( $dir, $delete_pattern ) if $delete_pattern;
+    die "Error, cmd died with ret $ret\n";
+    chdir($cwd) if $dir;
+   }
  }
- chdir($cwd) if $dir;
  return;
 }
 
