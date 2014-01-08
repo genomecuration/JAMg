@@ -3,8 +3,8 @@
 use strict;
 use warnings;
 
-use FindBin;
-use lib ("$FindBin::Bin/../../PerlLib");
+use FindBin qw($RealBin);
+use lib ("$RealBin/../../PerlLib");
 use Gene_obj;
 use GFF3_utils;
 use CdbTools;

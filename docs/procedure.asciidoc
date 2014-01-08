@@ -185,6 +185,22 @@ $JAMG_PATH/bin/prepare_golden_genes_for_predictors.pl -genome $GENOME_PATH.maske
  -intron $MAX_INTRON_LENGTH -cpu $LOCAL_CPUS -norefine
 +
 *** I find that -norefine is quicker and makes little difference (but as always I could be wrong).
+*** [[pasa-statistics]] Let's explore the output and find some statistics:
++
+[source,bash]
+$JAMG_HOME/3rd_party/PASA/misc_utilities/index_gff3_files.pl ./*.corrected.gff3.golden.gff3 >/dev/null
+$JAMG_HOME/3rd_party/PASA/misc_utilities/exon_and_intron_stats.pl ./*.corrected.gff3.golden.gff3.inx
+$JAMG_HOME/3rd_party/PASA/misc_utilities/gff3_to_feature_types.pl ./*.corrected.gff3.golden.gff3 2> /dev/null
++
+You can then use R to get for example the (median) size of introns, exons etc.
++
+[source,C]
+data<-read.csv("*.gff3.intergenes",sep="\t",header=F)
+summary(abs(data$V2-data$V3))
+//   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+//      0    1469    7025   43780   34770 1113000 
+mean(abs(data$V2-data$V3), trim=0.20)
+// [1] 12175.85   Trimmed mean
 +
 TIP: Currently the AATPACKAGE and exonerate work rather well. They also very well for 'foreign proteins' (i.e. from another species), just make sure you remove the -same_species parameter from above. In a future version, I'm thinking of integrating a GMAP step (on top or instead of aatpackage or even exonerate) for this step of mapping within the same species (GMAP will not perform between species).
 +
@@ -196,12 +212,16 @@ TIP: Currently the AATPACKAGE and exonerate work rather well. They also very wel
 $JAMG_PATH/3rd_party/genemark/gm_es_bp_linux64_v2.3e/gmes/gm_es.pl $GENOME_PATH.masked  # use --BP ON if you're working on fungi 
 +
 ** For geneid, glimmerhmm and snap, you can train them using the output of prepare_golden_genes_for_predictors.pl (see below for each software)
-** Glimmerhmm and snap can use external evidence but when we run a validation we saw that they performed less well than without any evidence. We're not experts of the software and there is no documentation so some optimization might be necessary. The input to these software is the output of prepare_golden_genes_for_predictors.pl, in particular *.zff and *.xdef (for snap) and *geneid* or *glimmer for the others. Generally, we will train with the .train. file, then we make predictions and finally we test them against the *.golden.test.gtf file.
+** Glimmerhmm and snap can use external evidence but when we run a validation we saw that they performed less well than without any evidence. We're not experts of the software and there is no documentation so some optimization might be necessary. The input to these software is the output of prepare_golden_genes_for_predictors.pl, in particular *.zff and *.xdef (for snap) and *geneid* or *glimmer for the others. Generally, we will train with the .train. file, then we make predictions and finally we test (evaluate) them against the *.golden.test.gtf file. For more details, see <<evaluation>>.
+*** SNAP:
 +
 [source,bash]
 # SNAP - specific instructions
+mkdir snap; cd snap
 #train
-mkdir snap_train ; cd snap_train # also copy/link the relevant .fasta .zff data used below:
+mkdir train ; cd train 
+# also copy/link the relevant .fasta .zff data used below
+ln -s ../../*zff* ../../*gff3.fasta .
 $JAMG_PATH/3rd_party/bin/fathom golden.train.gff3.zff golden.train.gff3.fasta -gene-stats
 $JAMG_PATH/3rd_party/bin/fathom golden.train.gff3.zff golden.train.gff3.fasta -categorize 1000
 $JAMG_PATH/3rd_party/bin/fathom -export 1000 -plus uni.ann uni.dna
@@ -209,28 +229,88 @@ $JAMG_PATH/3rd_party/bin/forge export.ann export.dna
 $JAMG_PATH/3rd_party/snap/hmm-assembler.pl Pult . > $GENOME_NAME.hmm # model to use to predict
 #predict
 mkdir snap_predict; cd snap_predict
+# create a directory where each genome sequence is in a single file. Use the softmasked repeats
 ln -s $GENOME_PATH.softmasked $GENOME_NAME.softmasked
 $JAMG_PATH/bin/splitfasta.pl -i $GENOME_NAME.softmasked
-find $GENOME_NAME.softmasked_dir1 -type f -exec sh -c 'echo "snap $GENOME_NAME.hmm $1 -lcmask -quiet > $1.snap 2>/dev/null " '  find-copy '{}' \; > snap.commands
+# prepare execution for each genome sequence
+find $GENOME_NAME.softmasked_dir1 -maxdepth 1 -type f -exec sh -c \
+ 'echo "$JAMG_PATH/3rd_party/snap/bin/snap $GENOME_NAME.hmm $1 -lcmask -quiet > $1.snap 2>/dev/null ; \
+  $JAMG_PATH/3rd_party/evidencemodeler/OtherGeneFinderTrainingGuide/SNAP/SNAP_output_to_gff3.pl $1.snap $1 > $1.snap.gff3 ; \
+  $JAMG_PATH/3rd_party/PASA/misc_utilities/gff3_to_gtf_format.pl $1.snap.gff3 $1 > $1.snap.gtf"' \
+  find-copy '{}' \; > snap.commands
 ParaFly -c snap.commands -CPU $LOCAL_CPUS -v -shuffle
-cat $GENOME_NAME.softmasked_dir1/*snap > snap.out 
-$JAMG_PATH/3rd_party/evidencemodeler/OtherGeneFinderTrainingGuide/SNAP/SNAP_output_to_gff3.pl snap.out $GENOME_PATH | $JAMG_PATH/3rd_party/PASA/misc_utilities/gff3_to_gtf_format.pl - $GENOME_PATH > snap.gtf
+cat $GENOME_NAME.softmasked_dir1/*snap.gtf > snap.gtf
 # evaluate
-$JAMG_PATH/3rd_party/eval-2.2.8/evaluate_gtf.pl -g ./*golden.test.gtf  snap.gtf > snap.eval
-# once satisfied
-rm -rf snap.out $GENOME_NAME.softmasked_dir1
+$JAMG_PATH/3rd_party/eval-2.2.8/evaluate_gtf.pl -g ./*golden.test.gtf snap.gtf > snap.eval
++
+**** If you don't like the results, you can create a new training directory and try training with fewer, or more genes. Alternatively you can use external evidence (see 'snap -help') in order to improve specificity and prevent wrong overlapping gene models from being predicted. First create an external evidence file for snap using the training genes and then run snap with an extra option:
++
+[source,bash]
+# reset input genome directory
+rm -f $GENOME_NAME.softmasked_dir1/*snap* $GENOME_NAME.softmasked_dir1/*cidx
+# prepare evidence
+$JAMG_PATH/bin/zff2hintzff.pl golden.train.gff3.zff 
+# then prepare snap with the -xdef command
+find $GENOME_NAME.softmasked_dir1 -maxdepth 1 -type f -exec sh -c \
+ 'echo "$JAMG_PATH/3rd_party/snap/bin/snap $GENOME_NAME.hmm $1 -lcmask -quiet -xdef $1.snap.evidence > $1.snap 2>/dev/null ; \
+  $JAMG_PATH/3rd_party/evidencemodeler/OtherGeneFinderTrainingGuide/SNAP/SNAP_output_to_gff3.pl $1.snap $1 > $1.snap.gff3 2>/dev/null ; \
+  $JAMG_PATH/3rd_party/PASA/misc_utilities/gff3_to_gtf_format.pl $1.snap.gff3 $1 > $1.snap.gtf 2>/dev/null"' \
+  find-copy '{}' \; > snap.commands2
+cp evidence/* $GENOME_NAME.softmasked_dir1/ # bit of a convenience hack here
+ParaFly -c snap.commands2 -CPU $LOCAL_CPUS -v -shuffle
+cat $GENOME_NAME.softmasked_dir1/*snap.gtf > snap2.gtf
+# evaluate both snap runs
+$JAMG_PATH/3rd_party/eval-2.2.8/evaluate_gtf.pl -g ./*golden.test.gtf  snap.gtf snap2.gtf > snap.eval
+# Repeat with any evidence/training data as you wish. Once you're happy, you can delete the $GENOME_NAME.softmasked_dir1 directory
+rm -rf $GENOME_NAME.softmasked_dir1
++
+**** First, I should say that the zff2hintzff.pl script has room for improvement (specifically, only the 'coding' regions are currently used). Second, if you don't want to evaluate the output and you think that the external evidence has improved matters, there is no reason why you cannot provide all the golden genes (golden.gff3.zff) as external evidence. Clearly you will not be able to have an independent test (since your 'test' genes have been included as evidence) but your aim here is to improve the annotation of a genome, not prove that a particular gene model prediction algorithm is better or worse. We will follow this procedure at the very end with Augustus et al after integrating everything with the evidencemodeler.
+*** Glimmer:
++
+[source,bash]
+# GlimmerHMM - specific instructions
+# train
+mkdir -p glimmer/train; cd glimmer/train
+ln -s ../../*glimmer* ../../*.gb.fasta .
+$JAMG_PATH/3rd_party/GlimmerHMM/train/trainGlimmerHMM \
+ ./*.train.good.gb.fasta ./*.train.good.gb.glimmer \
+ -d attempt1 >/dev/null
+cd ../
++
+**** You can provide the options '-f', '-l' and '-n' which are the average values of respectively: up- and down-stream UTR and intergenic regions. You can use <<pasa-statistics,scripts>> within PASA to get an estimate for these.
+**** Glimmer asks you set certain false positive/negative thresholds: they are found in the false. files: 'false.acc' for acceptor sites, 'false.don' for donor sites, 'false.atg' for start sites. These are thresholds and are defined in the '.cfg' file and some defaults are already stored, they are often not very good. You can opt to change these defaults in order to balance over- with under- predicting. I tend to pick something that prevents over-prediction (i.e. when false positives jumps down to something acceptable). NB: make sure you only use 'two and only two decimal places' in the cfg file. Now you can start predicting:
++
+[source,bash]
+# predict
+# create a directory where each genome sequence is in a single file. Use the hardmasked repeats
+ln -s $GENOME_PATH.masked $GENOME_NAME.masked
+$JAMG_PATH/bin/splitfasta.pl -i $GENOME_NAME.masked
+# prepare execution for each genome sequence
+find $GENOME_NAME.masked_dir1 -maxdepth 1 -type f -exec sh -c \
+ 'echo "$JAMG_PATH/3rd_party/GlimmerHMM/bin/glimmerhmm $1 train/attempt1 > $1.glimmer 2>/dev/null ; \
+  $JAMG_PATH/3rd_party/evidencemodeler/OtherGeneFinderTrainingGuide/GlimmerHMM/glimmerHMM_out_to_gff3.pl $1.glimmer $1 > $1.glimmer.gff3 2>/dev/null; \
+  $JAMG_PATH/3rd_party/PASA/misc_utilities/gff3_to_gtf_format.pl $1.glimmer.gff3 $1 > $1.glimmer.gtf 2>/dev/null "' \
+  find-copy '{}' \; > glimmer.commands 
+ParaFly -c glimmer.commands -CPU $LOCAL_CPUS -v -shuffle
+cat $GENOME_NAME.masked_dir1/*glimmer.gtf > glimmer.gtf
+# evaluate
+$JAMG_PATH/3rd_party/eval-2.2.8/evaluate_gtf.pl -g ./*golden.test.gtf  glimmer.gtf > glimmer.eval
++
+WARNING: Glimmer may crash with the very not informative 'segmentation fault'. It is usually data & system (i.e. C library) specific. As Glimmer is unsupported (i.e. they don't reply to emails) and rather old, there is little we could do. If that happens for you, try another server. If it still happens, simply don't use it.
 +
 ** [[projection]]If we have a closely species that is well annotated, a good approach is to 'project' that genome's gene models to our unannotated one. This can be achieved as such:
++
 [source,bash]
 create_projections.py -reference annotated_genome.fasta -genes [annotated_genome.gff3|annotated_genome.genbank] -genome new_genome.fasta -out new_genome.gff3
 +
 * [[foreign_proteins]] 'Foreign proteins'
 ** Pick a species or taxon, download data, align
-*** First get some foreign proteins from a taxon that makes sense. Then go to http://uniprot.org[UniProt] or ftp://ftp.ncbi.nlm.nih.gov/refseq/release/[RefSeq] and download something appropriate. Alternatively, you could bulk download some taxa you'd like to sue with the 'download_my_sequences' script. I highly recommend you use the http://weizhong-lab.ucsd.edu/cd-hit/download.php[cd-hit] program to reduce redundancy. Regardless, when you have your data, you can align them to your genome using some kind of cutoff (your guess will depend on the data and will be as good as mine).
+*** First get some foreign proteins from a taxon that makes sense. Then go to http://uniprot.org[UniProt] or ftp://ftp.ncbi.nlm.nih.gov/refseq/release/[RefSeq] and download something appropriate. Alternatively, you could bulk download some taxa you'd like to sue with the 'download_my_sequences' script. I highly recommend you use the http://weizhong-lab.ucsd.edu/cd-hit/download.php[cd-hit] program to reduce redundancy. Regardless, when you have your data, you can align them to your genome using some kind of cutoff (your guess will depend on the data and will be as good as my guess...).
 +
 [source,bash]
 # download data e.g. insects/invertebrate:
-wget -c --mirror --accept=protein.faa.gz ftp://ftp.ncbi.nlm.nih.gov/refseq/release/invertebrate && gunzip -dc ftp.ncbi.nlm.nih.gov/refseq/release/invertebrate/*gz > foreign_proteins.fsa
+wget -c --mirror --accept=protein.faa.gz ftp://ftp.ncbi.nlm.nih.gov/refseq/release/invertebrate \
+ && gunzip -dc ftp.ncbi.nlm.nih.gov/refseq/release/invertebrate/*gz > foreign_proteins.fsa
 # OR:
 $JAMG_PATH/bin/download_my_sequences.pl -t Insecta -f fasta -m protein -out foreign_proteins.fsa # more data than RefSeq, slower
 cd-hit -c 0.90 -i foreign_proteins.fsa -o foreign_proteins.nr90 -d 0 -M 0 -T 10 # remove reduncancy to 90%
@@ -285,6 +365,10 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$JAMG_PATH/3rd_party/transdecoder/util/l
 
 .[[sequencing-data]]Sequencing data
 To make the most of the annotation platform you will need some RNA-Seq. Generally speaking, the more is better but beyond a certain point, any added value decreases. If you have the ability to design your genome/transcriptome sequencing before you've reached this stage then, first of all, "Well Done"(TM)! Too often sequencing is undertaken with little understanding of the needs of the downstream processes... Second, your genome assembly will greatly benefit from long-range mate pair libraries, long reads (such as Pac-Bio) or optical mapping (if working on bacteria or have lots of cash). The reason for this is that your ability to fully ascertain gene families that have paralogues will only be as good as your feature annotation, and you feature annotation cannot be better than the underlying genome assembly sequence for those regions. Third, for your transcriptome diversity of tissue/life stages is key to acquiring sequencing of us many diverse tissues as possible. Be particularly careful if you wish to identify lowly expressed genes: even with tissue specific libraries, you may need to sequence deeply (the literature is your friend). The most difficult class of genes to annotate are rapidly evolving and lowly expressed genes since you will then have to rely solely on the de-novo prediction but the protein domain search above will be of great help.
+
+.[[evaluation]]Evaluation of gene models
+To add
+Because for evaluation we are using the entire genome, specificity will be somewhat low if your 'test' set has few genes. Basically a low specificity means that the prediction created gene models not found in your test set (as expected).
 
 .Glossary
 Reference sequence::

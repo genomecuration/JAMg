@@ -2,8 +2,8 @@
 
 use strict;
 use warnings;
-use FindBin;
-use lib qq ($FindBin::Bin);
+use FindBin qw($RealBin);
+use lib ("$RealBin/../../PerlLib:$RealBin");
 use Run_Qsub64;
 use Cwd;
 use List::Util qw (shuffle);

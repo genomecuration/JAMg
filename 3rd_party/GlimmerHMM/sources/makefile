@@ -2,7 +2,7 @@
 
 
 
-CC=g++
+CC= g++
 CFLAGS=-g
 
 all: glimmerhmm

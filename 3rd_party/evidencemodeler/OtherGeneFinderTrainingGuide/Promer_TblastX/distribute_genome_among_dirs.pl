@@ -1,7 +1,8 @@
 #!/usr/bin/env perl
 
 use strict;
-use lib ($ENV{EUK_MODULES});
+use FindBin qw($RealBin);
+use lib ("$RealBin/../../PerlLib");
 use Fasta_reader;
 
 $|++;

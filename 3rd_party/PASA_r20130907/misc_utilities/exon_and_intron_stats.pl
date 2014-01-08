@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 use FindBin;
-use lib ("$FindBin::Bin/PerlLib");
+use lib ("$FindBin::Bin/../PerlLib");
 use Gene_obj;
 use Gene_obj_indexer;
 
@@ -44,7 +44,7 @@ my $average_intron_length = sprintf ("%.2f", $intron_lengths_sum / $intron_count
 my $total_num_genes = $single_exon_gene_count + $multi_exon_gene_count;
 my $percent_single_exon = $single_exon_gene_count / $total_num_genes;
 
-printf "$single_exon_gene_count single exon genes = %.2f %\n", $percent_single_exon * 100;
+print "$single_exon_gene_count single exon genes = ".sprintf("%.2f",($percent_single_exon * 100))." %\n";
 print "$multi_exon_gene_count multi_exon_genes\n";
 
 print "CDS-exons:  count: $exon_count  average length: $average_cds_exon_length\n";

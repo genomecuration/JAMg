@@ -11,7 +11,8 @@ all:
 	cd 3rd_party/RepeatMasker && echo "I will download TRF from http://tandem.bu.edu/trf. You must read and accept their (v. short) license (see http://tandem.bu.edu/trf/trf.license.html) otherwise exit now:" && sleep 5 && echo "The author of this software grants to any individual or organization the right to use and to make an unlimited number of copies of this software. You may not de-compile, disassemble, reverse engineer, or modify the software. This software cannot be sold, incorporated into commercial software or redistributed. The author of this software accepts no responsibility for damages resulting from the use of this software and makes no warranty or representation, either express or implied, including but not limited to, any implied warranty of merchantability or fitness for a particular purpose. This software is provided as is, and the user assumes all risks when using it." && sleep 10 && wget http://tandem.bu.edu/trf/downloads/trf407b.linux64 && ln -s trf407b.linux64 trf && chmod +x trf && echo "I will configure RepeatMasker. Use the RMBlast NCBI option when asked 'Add a Search Engine', the files are in `pwd`/ncbi-blast"
 	cd 3rd_party/augustus && $(MAKE) && cp bin/* ../bin/
 	cd 3rd_party/geneid && $(MAKE)
-	cd 3rd_party/GlimmerHMM/sources && $(MAKE)
+	cd 3rd_party/cegma && $(MAKE)
+	cd 3rd_party/GlimmerHMM/sources && $(MAKE) cd train && $(MAKE)
 	cd 3rd_party/snap && $(MAKE) && cp fathom ../bin/
 	cd 3rd_party/gmap && ./configure --prefix=`pwd`/../ --with-gmapdb=`pwd`/../../databases/gmap/ && $(MAKE) && $(MAKE) check && $(MAKE) install
 	cd 3rd_party/samtools && $(MAKE) && cp samtools ../bin/ && $(MAKE) clean
@@ -25,6 +26,7 @@ clean:
 	cd 3rd_party/transdecoder && $(MAKE) clean
 	cd 3rd_party/augustus && $(MAKE) clean
 	cd 3rd_party/geneid && $(MAKE) clean
+	cd 3rd_party/cegma && $(MAKE) clean
 	cd 3rd_party/snap && $(MAKE) clean
 	cd 3rd_party/gmap && $(MAKE) clean
 	cd 3rd_party/samtools && $(MAKE) clean

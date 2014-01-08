@@ -5,7 +5,8 @@ use warnings;
 use Carp;
 use Cwd;
 
-use lib ($ENV{EUK_MODULES});
+use FindBin qw($RealBin);
+use lib ("$RealBin/../../PerlLib");
 use Fasta_reader;
 
 my $usage = "usage: $0 genomeMultiFasta GlimmerTrainingDirectory\n\n";

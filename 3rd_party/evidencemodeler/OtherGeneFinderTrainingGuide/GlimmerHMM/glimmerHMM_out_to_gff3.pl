@@ -3,7 +3,8 @@
 use strict;
 use warnings;
 
-use lib ($ENV{EUK_MODULES});
+use FindBin qw($RealBin);
+use lib ("$RealBin/../../PerlLib");
 use Gene_obj;
 use CdbTools;
 
