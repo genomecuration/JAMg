@@ -1,0 +1,385 @@
+EVidenceModeler (EVM)
+=====================
+Brian Haas <bhaas@broadinstitute.org>
+
+image:logo/evm.jpg["EVM_logo",height=100]
+
+Contents
+--------
+
+- <<A_intro, Introduction to EVM>>
+- <<Obtaining_EVM, Obtaining and Installing EVM>>
+- <<Running_EVM, Running EVM>>
+- <<Preparing_inputs, Preparing Inputs to EVM>>
+- <<Training_EVM, Training Evidence Weights>>
+- <<Evaluating_Accuracy, Evaluating Gene Prediction Accuracy>>
+- <<Referencing_EVM, Referencing EVM>>
+- <<Email_Lists, Email lists>>
+
+[[A_intro]]
+Introduction to EVM
+-------------------
+
+The EVidenceModeler (aka EVM) software combines ab intio gene predictions and protein and transcript alignments into weighted consensus gene structures.  EVM provides a flexible and intuitive framework for combining diverse evidence types into a single automated gene structure annotation system. 
+
+Inputs to EVM include the genome sequence, gene predictions and alignment data in GFF3 format, and a list of numeric weight values to be applied to each type of evidence.  The weights can be configured manually or trained for optimal performance using the training software included.
+
+[[Obtaining_EVM]]
+Obtaining and Installing EVM
+-----------------------------
+
+Download EVM at the http://sourceforge.net/projects/EVidenceModeler[EVM-sourceforge-download].  
+After downloading the software, untar-gunzip at its permanent location, ie. /usr/local/bin  This location will be referred to below as $EVM_HOME.
+
+Alternatively, retrieve the latest code from CVS:
+  cvs -d :pserver:anonymous@evidencemodeler.cvs.sourceforge.net:/cvsroot/evidencemodeler co EVidenceModeler
+ 
+
+
+- EVidenceModeler is written in Perl and may use some public libraries that could be considered nonstandard. Ensure that you have the following Perl modules installed from http://www.cpan.org[CPAN]:
+  * FindBin
+  * DB_File
+  * File::Basename
+  * Tk
+
+- To fully leverage high quality transcript alignments, you should download and install http://pasa.sf.net[PASA]
+
+- The Training software uses the following utilities: (but training is not absolutely essential... intuitively set weights work well too, so skip this first and explore it only as needed).
+   * CDB Tools for fasta sequence indexing and retrievals.  The CDB Tools cdbyank and cdbfasta are included in the PASA software distribution.  Alternatively, you can obtain them here: http://compbio.dfci.harvard.edu/tgi/software/[cdbfasta.tar.gz]
+   * iit-utilities of the GMAP software http://www.gene.com/share/gmap/src/gmap-2006-12-18.tar.gz[GMAP version 2006-12-18] for fast GFF-file range-based retrievals.  After building the GMAP software, copy the utilities iit_dump, iit_get, and iit_store to the *$EVM_HOME/training_EVM* directory. 
+   * The http://mblab.wustl.edu/software/eval/[eval] software from Michael Brent's group at WashU.  The script "evaluate_gtf.pl" of the eval package must be available from your PATH setting.
+
+
+[[Preparing_inputs]]
+Preparing Inputs to EVM
+-----------------------
+
+EVM requires genome sequences in Fasta format and all gene structures and alignment evidences described in http://www.sequenceontology.org/gff3.shtml[GFF3] format.
+
+Sample data corresponding to the Rice genome are provided in the EVM distribution and can be downloaded as EVM_sample_data_Rice.tar.gz
+
+
+The Evidence Weights File
+~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+The weights file has three columns including the evidence class, type, and weight.  The class parameter can be one of the following: ABINITIO_PREDICTION, PROTEIN, or TRANSCRIPT.  These are the only input types accepted by EVM currently.  An example weight file looks like so:
+
+
+   ABINITIO_PREDICTION      augustus       1
+   ABINITIO_PREDICTION      twinscan       1
+   ABINITIO_PREDICTION      glimmerHMM      1
+   PROTEIN         spliced_protein_alignments 1
+   PROTEIN         genewise_protein_alignments   5
+   TRANSCRIPT      spliced_transcript_alignments      1
+   TRANSCRIPT      PASA_transcript_assemblies      10
+
+The weights can be set intuitively (ie. weight(pasa) >> weight (protein) >= weight(prediction)), or weights can be <<Training_EVM, trained>> for optimal performance.  An additional evidence class OTHER_PREDICTION is provided and can be used with complete gene predictions that do not provide an indication of intergenic regions.  This class can be used with trusted forms of complete predictions.  For example, the subset of ab initio predictions that demonstrate full-length homology to known proteins can be extracted as another data tier and provided to EVM using the OTHER_PREDICTION evidence class.
+
+The GFF3 format for gene predictions (and not alignments!) should look like so:
+
+----------------------------------------------------------------------------------------------------
+Contig1 glimmerHMM      gene    57494   59941   .       +       .       ID=1.tPRED000022;Name=glimmerHMM model 1.m000022
+Contig1 glimmerHMM      mRNA    57494   59941   .       +       .       ID=1.m000022;Parent=1.tPRED000022
+Contig1 glimmerHMM      exon    57494   57706   .       +       .       ID=1.e145;Parent=1.m000022
+Contig1 glimmerHMM      CDS     57494   57706   .       +       0       ID=cds_of_1.m000022;Parent=1.m000022
+Contig1 glimmerHMM      exon    58087   58207   .       +       .       ID=1.e146;Parent=1.m000022
+Contig1 glimmerHMM      CDS     58087   58207   .       +       0       ID=cds_of_1.m000022;Parent=1.m000022
+Contig1 glimmerHMM      exon    58371   58545   .       +       .       ID=1.e147;Parent=1.m000022
+Contig1 glimmerHMM      CDS     58371   58545   .       +       1       ID=cds_of_1.m000022;Parent=1.m000022
+Contig1 glimmerHMM      exon    59118   59188   .       +       .       ID=1.e148;Parent=1.m000022
+Contig1 glimmerHMM      CDS     59118   59188   .       +       2       ID=cds_of_1.m000022;Parent=1.m000022
+Contig1 glimmerHMM      exon    59307   59941   .       +       .       ID=1.e149;Parent=1.m000022
+Contig1 glimmerHMM      CDS     59307   59941   .       +       1       ID=cds_of_1.m000022;Parent=1.m000022
+----------------------------------------------------------------------------------------------------
+
+
+[NOTE]
+Special requirements for EVM GFF3: The structure of the gene prediction format is gene->(mRNA->(exon->cds(?))(\+) )(\+) . What is meant by this is that more than one mRNA can link to a gene, and each mRNA has one or more exons, each exon having at most one CDS segment but perhaps no CDS segment if it's entirely untranslated (UTR).   The child/parent relationships between the features are indicated by the Parent= part in the 9th field.  The identifiers for gene's, mRNA's, and exon's need to be unique.  The CDS identifier does not need to be unique.  Also, if an exon is shared among two different transcripts, be sure to duplicate them and present them as distinct exon features with unique ids.  EVM doesn't consider evidence for alternative splicing.  Validate your gene predictions gff3 file using the included script: $EVM_BASE_DIR/EvmUtils/gff3_gene_prediction_file_validator.pl .  Recommended genefinders for eukaryotic genefinding include GlimmerHMM, SNAP, Augustus, GeneMarkHMM, and FGeneSH.
+
+The GFF3 format for alignments (protein or ESTs) should be described by an alternative GFF3 format that looks like so:
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     8208    8276    50.00   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 1 23
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     12661   12807   28.57   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 23 73
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     22778   22941   24.53   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 73 127
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     26872   26978   25.71   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 127 163
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     27082   27137   44.44   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 163 181
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     27227   27445   21.92   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 182 250
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     27533   27753   49.32   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 251 321
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     27998   28380   28.35   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 321 447
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     32358   32443   42.86   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 448 476
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     40501   40587   32.14   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 476 505
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     41531   41676   33.33   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 505 554
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     57112   57161   37.50   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 554 570
+
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     8392    8470    50.00   -       .       ID=match.nap.nr_minus_rice.fasta.37;Target=RF|YP_440341.1|83716234|NC_007650 196 222
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     7650    7786    26.09   -       .       ID=match.nap.nr_minus_rice.fasta.37;Target=RF|YP_440341.1|83716234|NC_007650 222 268
+
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     8386    8509    26.83   -       .       ID=match.nap.nr_minus_rice.fasta.38;Target=RF|YP_099363.1|53713371|NC_006347 1 42
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     7635    7786    24.00   -       .       ID=match.nap.nr_minus_rice.fasta.38;Target=RF|YP_099363.1|53713371|NC_006347 42 92
+
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     9390    9557    55.36   -       .       ID=match.nap.nr_minus_rice.fasta.36;Target=RF|NP_353291.1|15887610|NC_003062 48 103
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     9091    9294    53.42   -       .       ID=match.nap.nr_minus_rice.fasta.36;Target=RF|NP_353291.1|15887610|NC_003062 104 175
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     8807    8979    55.17   -       .       ID=match.nap.nr_minus_rice.fasta.36;Target=RF|NP_353291.1|15887610|NC_003062 176 234
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     8639    8725    48.28   -       .       ID=match.nap.nr_minus_rice.fasta.36;Target=RF|NP_353291.1|15887610|NC_003062 234 264
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     8386    8549    48.15   -       .       ID=match.nap.nr_minus_rice.fasta.36;Target=RF|NP_353291.1|15887610|NC_003062 264 319
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     7635    7786    30.00   -       .       ID=match.nap.nr_minus_rice.fasta.36;Target=RF|NP_353291.1|15887610|NC_003062 319 369
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+[NOTE]
+Alignments (EST or protein) provided to EVM should be spliced alignments, and not simple blast results.  Spliced alignments will provide intron-aware alignments, with evidence for intron and exon structures.  Blast will not do this.  Recommended programs for generating spliced alignments of ESTs or proteins include AAT, Exonerate, and GeneWise.   In the above format, the link between individual alignment segments of a single alignment chain are implied by all rows sharing the same identifier (ID='').  No parent/child relationships are explicitly indicated here, as is done with the gene prediction formats.
+
+
+A simple example is provided with the EVM distribution.  Larger data sets are provided on the download page.
+
+
+[[PASA_long_orfs]]
+Optional (though highly recommended) inclusion of the PASA-supported terminal exons supplement
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+After running the alignment-assembly stage of the PASA pipeline, run the following to extract all the longest ORFs from the resulting PASA alignment assemblies (*note this is sofware included in the PASA distribution):
+
+    $PASA_HOME/scripts/pasa_asmbls_to_training_set.dbi -M "$mysql_db_name:$mysql_server_name" \
+              -p "$user:$password" -g /path/to/genome/file/originally/used/by/pasa
+
+This yeilds two files: *trainingSetCandidates.fasta* and *trainingSetCandidates.gff*
+
+Run the following script to extract the terminal exons to be utilized by EVM:
+
+    $EVM_HOME/PasaUtils/retrieve_terminal_CDS_exons.pl  trainingSetCandidates.fasta trainingSetCandidates.gff \
+                             > pasa.terminal_exons.gff3
+
+[[Running_EVM]]
+Running EVM
+-----------
+
+Now that you have generated all the required inputs to EVM, you are ready to execute the system.  Running EVM involves the following steps: partitioning the inputs into smaller data sets, creating a series of commands to execute (for grid or local execution), executing EVM on each of the partitioned data sets, and finally combining the outputs.  Each of these steps is described below.
+
+Partitioning the Inputs
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The genome sequences and gff3 files are partitioned based on individual contigs, and large contigs are segmented into smaller overlapping chunks.  Partition the data like so:
+
+   $EVM_HOME/EvmUtils/partition_EVM_inputs.pl --genome genome.fasta \
+        --gene_predictions gene_predictions.gff3 --protein_alignments protein_alignments.gff3 \
+        --transcript_alignments transcript_alignments.gff3 --pasaTerminalExons pasa.terminal_exons.gff3 \
+        --segmentSize 100000 --overlapSize 10000 --partition_listing partitions_list.out
+
+To reduce memory requirements, the *--segmentSize* parameter should be set to less than 1 Mb.  The *--overlapSize* should be set to a length at least two standard deviations greater than the expected gene length, to minimize the likelihood of missing a complete gene structure within any single segment length.  
+
+A separate directory is created for every contig which houses the corresponding contig-specific subset of the data, and additional subdirectories will exist where long contigs were further processed into overlapping chunks.
+
+A summary of the partitions is provided in the *partitions_list.out* file (parameter to *--partition_listing*).  This file is used by subsequent scripts to identify all the partitioned inputs.
+
+
+Generating the EVM Command Set
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To run EVM on each of the data partitions, first create a list of commands to be executed.  Why do we create this command list instead of just executing the commands?  By creating the list of commands to be executed, we provide the ability to subsequently run these commands either locally or on the computing grid.  The choice of execution is described further below.  First, create the list of commands as follows:
+
+     $EVM_HOME/EvmUtils/write_EVM_commands.pl --genome genome.fasta --weights `pwd`/weights.txt \
+           --gene_predictions gene_predictions.gff3 --protein_alignments protein_alignments.gff3 \
+           --transcript_alignments transcript_alignments.gff3 --terminalExons pasa.terminal_exons.gff3 \
+           --output_file_name evm.out  --partitions partitions_list.out >  commands.list
+
+Use -h with this script to examine all the various options.  Additional options of interest includes:
+      
+    --stop_codons        :list of stop codons that provide valid stops (default: TAA,TGA,TAG)   
+
+For organisms such as Tetrahymena, where only a single stop codon is used as 'stop', you would define that single stop codon with the above option.  The others are read thru.
+
+	--RECURSE               :recurse into long introns to find genes that are nested within introns of other genes
+
+    --forwardStrandOnly
+    --reverseStrandOnly
+
+
+The *evm.out* parameter value above indicates the name of the output file to be written during each of the EVM executions.
+
+The commands are written to the *commands.list* file as stdout.  These commands can be executed locally or on a computing grid.  To run the commands in parallel on the grid (fastest, usually), run all the commands in the 'commands.list' file using whatever mechanism you have for running commands on your computing grid.
+
+If you would must run the commands serially and locally, run the following:
+
+     $EVM_HOME/EvmUtils/execute_EVM_commands.pl commands.list | tee run.log
+
+The exit value (0 for success) for each command is reported by stdout and captured in the *run.log* file above.
+
+Whichever method you choose, be sure that the jobs all execute successfully before proceeding.  
+
+Combining the Partitions
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The data sets corresponding to single contigs partitioned into overlapping segments must be joined into single outputs, and redundant or discrepant predictions in the overlapping regions of segments must be resolved.  This operation is performed by the following utility run like so:
+
+   $EVM_HOME/EvmUtils/recombine_EVM_partial_outputs.pl --partitions partitions_list.out --output_file_name evm.out
+
+Convert to GFF3 Format
+~~~~~~~~~~~~~~~~~~~~~~
+
+The raw output provided by EVM describes the consensus gene structures in a tab-delimited format, listing each exon with the set of evidences that fully support each exon structure. An example gene structure in this raw format is shown below:
+  
+  # EVM prediction: 80081-81514 orient(+) score(5464) noncoding_equivalent(442) raw_noncoding(2193) offset(1751)
+  80081   80104   initial+        1       3       glimmerA_ID=cds_of_1954.m01308;Parent=1954.m01308
+  80463   80561   internal+       1       3       genemarkHMM_ID=cds_of_1954.m00088;Parent=1954.m00088,glimmerA_ID=cds_of_1954.m01308;Parent=1954.m01308
+  80656   80853   internal+       1       3       gap2-GUDB.arab/arab:NP169299/match.gap2.GUDB.arab.14861313,genemarkHMM_ID=cds_of_1954.m00088;Parent=1954.m00088,genscan+_ID=cds_of_1954.m00156;Parent=1954.m00156,glimmerA_ID=cds_of_1954.m01308;Parent=1954.m01308,nap-nraa/PIR:C84824/match.nap.nraa.48729919
+  81026   81170   internal+       1       1       gap2-Ceres.arab.cdna/32440./match.gap2.Ceres.arab.cdna.24436708,gap2-GUDB.arab/arab:NP169299/match.gap2.GUDB.arab.14861314,genemarkHMM_ID=cds_of_1954.m00088;Parent=1954.m00088,genscan+_ID=cds_of_1954.m00156;Parent=1954.m00156,nap-nraa/GP:20198307/match.nap.nraa.48729935,nap-nraa/PIR:C84824/match.nap.nraa.48729925
+  81258   81514   terminal+       2       3       genemarkHMM_ID=cds_of_1954.m00088;Parent=1954.m00088,glimmerA_ID=cds_of_1954.m01308;Parent=1954.m01308
+                                                                                                                                
+This output is found as the *evm.out* (*--output_file_name* value above) in each contig directory.  The raw outputs can be converted to the standard GFF3 format like so:
+
+   $EVM_HOME/EvmUtils/convert_EVM_outputs_to_GFF3.pl  --partitions partitions_list.out --output evm.out  
+
+After running the above script, an *evm.out.gff3* file will exist in each of the contig directories.
+
+
+[[Training_EVM]]
+Training Evidence Weights
+-------------------------
+
+[NOTE]
+It's usually not worth going through this effort. If you have good evidence (excellent spliced alignments of proteins and ESTs and ab initio gene predictions that are properly trained), then you can use intuitively set weights which would work almost as good as trained weights (as shown in the EVidenceModeler publication).  
+
+You can choose weights such as:
+
+  ab initio predictions, weight = 1
+
+  protein alignments, weight = 1
+
+If you have high quality genewise alignments, perhaps weight that between 2 and 5.
+
+  alignments of ESTs from related species, weight = 1
+
+  PASA alignment assemblies, weight = 10 
+
+(the PASA structures are considered as experimental evidence for gene structure and so weighted very heavily in their favor).
+
+Many different combinations of weights give about the same performance, and when the evidence is both good and obvious, EVM should correctly leverage it wherever possible.
+
+If you decide to pursue finding more optimal weight settings, you can explore the training regime as described below, which involves running EVM many many times with different weight settings and hill climbing to identify those weights that provide the most accurate performance.
+
+
+Training EVidenceModeler involves trying to find the combination of evidence weightings that yields optimal gene modeling accuracy provided a set of known gene structures.  The end product from running the training software is simply a weights file with the optimal weight settings.  The training software requires all of the input files described above under the <<Preparing_inputs, Preparing Inputs to EVM>> section.  In addition, it requires a gff3 file containing the set of known (correct) gene structures that define a training set, plus a file containing the list of gene identifiers to identify those genes in the gff3 file that are to be used for training (this may be a subset of the known genes in the training set gff3 file).  
+
+The training set may derive from a number of sources.  You may choose to use a subset of the gene models defined by long ORFs within PASA alignment assemblies, as described <<PASA_long_orfs, above>>.  Alternatively, you may have a set of manually curated 'working' models in the annotation database that are available for training purposes.  Ideally, you would have a few hundred or so genes for training purposes and another equivalent number for evaluation.  Also, ideally, the genes used for training and evaluation would be diverse in terms of the underlying evidence supporting gene structures and represent a randomly selected set of genes from the complete genome annotation; the only caveat being that we are confident that we know the correct gene structure for this subset. 
+
+
+For our purposes, we'll refer to the training set files as *training_set.gff3* and *training_set.gene_ids* for use with the training software.
+
+Partitioning the Training Set and Evidence
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Before training the weights, the individual known genes and their corresponding evidence are splayed out into separate directories.  The evidence within 20 kb of the target gene is extracted and written to each subdirectory.  Run the following to extract the genes and their evidences as required:
+
+   $EVM_HOME/training_EVM/write_training_files.pl --template_accessions training_set.gene_ids \
+            --template_gff3_file training_set.gff3 \
+            --genome genome.fasta 
+            --evidence_gff3_files "gene_predictions.gff3,protein_alignments.gff3,transcript_alignments.gff3,pasa.terminal_exons.gff3" \
+            --flanking_region 20000
+
+
+This process creates a directory called *evm_train_dir*.  Within it are separate directories corresponding to each gene and the corresponding evidences within range of the gene.
+
+In addition, a file called *all_train.entries* is generated that lists all the directories (entries) created by the partitioning process.
+
+From the *all_train.entries* file, create two subsets, half to be used for training the weights, and the other half to be used for evaluating gene structure prediction accuracy once the training process is complete.  You can split the data like so:
+
+     # determine the number of entries:
+     wc -l all_train.entries
+
+     # take the top half for training ($half_value below is the integer value equal to half the number of total entries)
+
+     head -n$half_value all_train.entries > train.list
+
+     # take the other half for evaluation purposes:
+     tail -n$half_value all_train.entries > evaluate.list
+
+
+Using the TkGFF3 Viewer to Interrogate the Training Set
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A light-weight genome viewer utility is included in the EVM software distribution that enables you to navigate predicted gene structures in the context of the protein and transcript alignment evidences.  To view the evidence, enter one of the data directories in your evm_train_dir, and launch the viewer like so:
+
+   $EVM_HOME/TkGFF3_viewer/TkGFF3_viewer.pl --genome genome.fasta \
+        --gene_predictions_listing template.gff3,gene_predictions.gff3 \
+        --alignments_listing transcript_alignments.gff3,pasa.terminal_exons.gff3
+
+An example view is shown below:
+
+image:tkgff3_viewer.gif[TkGFF3-viewer]
+
+You can zoom in and scroll across the genome.  Mouse over the evidences to view their descriptions.  Clicking on a gene prediction evidence type will result in the consistent boundaries being highlighted, which readily identifies consistencies and descrepancies among exon boundaries provided by the various evidence types.
+
+To examine each (or some random selection) of genes in your training set, and to manually classify each as approved, disapproved, or questionable, you can run the following from the root training directory:
+
+   $EVM_HOME/training_EVM/manually_evaluate_tentative_training_set.pl
+
+This will launch the TkGFF3-viewer for each entry of your all_entries.train file, in a random order, and request that you classify each with a Y|N|? depending on your manual approval, disapproval, or claim of uncertainty.  Each entry that is reviewed is logged in a file called 'manually_classified_entries.txt'.  The 'Y'/approved entries can then be used exclusively for training and evaluation.  This is completely optional, but it does give you the greatest control over your training set.  Those entries found to be unsuitable for training, such as those containing confusing alternative splicing variants, nonconsensus splice sites, or some other strange characteristic can be identified and excluded.  
+
+
+Executing the Steps to Optimize Evidence Weights
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Weight training occurs in two stages.  In the first stage, weights are optimized for all evidence types minus the PASA alignments.  Since the PASA alignments are expected to provide perfect gene structures in most cases, including them at this phase will interfere with proper weight assignments to the other evidence types.  After obtaining optimal weights for all other evidences, we fold in the PASA alignments separately to maximize prediction accuracy wherever the PASA data is available.
+
+To begin the training process, create a weights file as described <<WeightsFile, above>>.  The weight values assigned in this file are irrelevant; include some numerical value only to create a valid weights file.  Remove the PASA alignment evidence type from the weights file so it will be ignored during this earlier training exercise.  Also, remove any other evidence types that may exist in the database but are not to be used for training purposes.  Try to keep the number of different evidence types to a minimum to reduce the complexity of the training.  Run the training software like so:
+
+  $EVM_HOME/training_EVM/train_weights.pl --genome genome.fasta --gene_predictions gene_predictions.gff3 \
+         --protein_alignments protein_alignments.gff3 --transcript_alignments transcript_alignments.gff3 \
+         --terminalExons pasa.terminal_exons.gff3 --use_fixed_genefinder_weights \
+          -w `pwd`/weights.txt --training_entries train.list | tee training.log
+
+Weight training occurs first by exploring random weight combinations among the gene predictions alone while excluding all other evidence types.  The weight combination that provided the highest combined prediction accuracy are chosen and gradient descent is used to fine tune the weight values to further improve performance.  The best weights found for the gene predictors are then fixed and remain constant throughout the remainder of the training process.  
+
+Optimal weights for the other (alignment) evidence types are found while applying the fixed gene predictor weights.  Each evidence type is first examined independently with the gene predictions but in isolation from all other evidence types, and the weight value that provides maximal performance is found using gradient descent.  After finding the isolated optimal weight value for each alignment evidence type,  the weights are further tuned by examining all alignment evidences simultaneously.  Weights are initially set to their isolated optima and they are further adjusted using gradient descent.  
+
+
+[[Evaluating_Accuracy]]
+Evaluating Gene Prediction Accuracy
+-----------------------------------
+
+Earlier we split our training set so we could train on half and evaluate accuracy on the other half.  We will now use our trained weights to compute our gene prediction accuracy using the evaluation set.  For the following, we assume the final weights are written to a file called *final_weights.txt*.
+
+
+First, compute the accuracy of the individual gene predictions like so:
+
+    $EVM_HOME/training_EVM/train_weights.pl --genome genome.fasta \
+         --gene_predictions gene_predictions.gff3 \
+         --protein_alignments protein_alignments.gff3 \
+         --transcript_alignments transcript_alignments.gff3 \
+         -w `pwd`/final_weights.txt \
+         --training_entries evaluate.list   \
+         --just_measure_other_prediction_accuracies
+
+
+The goal of EVM is to improve upon gene prediction accuracy by combining the gene predictions with transcript and protein alignments, and so the prediction accuracy for the gene predictors above should be the lower limit of the expected accuracy of EVM.
+
+Now, compute the accuracy of EVM using a combination of the various evidence types like so:
+
+    $EVM_HOME/training_EVM/evaluate_evidence_combos.pl --genome genome.fasta \
+           --weights `pwd`/weights.test \
+           --gene_predictions gene_predictions.gff3 \
+           --protein_alignments protein_alignments.gff3 \
+           --transcript_alignments transcript_alignments.gff3 \
+           --terminalExons  pasa.terminal_exons.gff3
+
+    
+EVM is run using combinations of the evidence types, such as using just the gene predictions, then just adding proteins or ests, and then trying ests + proteins + gene predictions, etc...   The exon and complete prediction accuracies are reported for each combination of evidence evaluated, and provides a best estimate for the expected prediction accruacy upon encountering new genes decorated with the various combination of evidence types.
+
+
+[[Referencing_EVM]]
+Referencing EVM
+---------------
+
+Haas et al. Automated eukaryotic gene structure annotation using EVidenceModeler and the Program to Assemble Spliced Alignments.  http://genomebiology.com/2008/9/1/R7[Genome Biology 2008, 9:R7doi:10.1186/gb-2008-9-1-r7.]
+
+[[Email_Lists]]
+Email Lists
+-----------
+
+- *evidencemodeler-announce@lists.sf.net* https://lists.sourceforge.net/lists/listinfo/evidencemodeler-announce[subscribe] for announcements of new releases.
+
+- *evidencemodeler-help@lists.sf.net* https://lists.sourceforge.net/lists/listinfo/evidencemodeler-help[subscribe] for any assistance.
+
+- or contact me directly:  *bhaas@broadinstitute.org*
+
+

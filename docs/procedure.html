@@ -875,7 +875,7 @@ bin/prepare_trinity_genome_assembly_pbs.pl prepares everything you need for a TG
 <td class="icon">
 <img src="./images/icons/tip.png" alt="Tip" />
 </td>
-<td class="content">For parallelization with computing clusters, you can use the -commands_only option and create a text file that has one line worth of commands for each input. You can then use the unix command <em>split</em> or ParaFly to run it on a cluster.</td>
+<td class="content">There is little benefit using more than 6 threads for each GSNAP (it&#8217;s actually making it slower). Also it can take &gt; 2 days to align 50 M reads but depends on the quality of the data. For high-throughput I recommend you <em>split</em> your input data into chunks and align in parallel. For parallelization with computing clusters, you can use the -commands_only option and create a text file that has one line worth of commands for each input. You can then use the unix command <em>split</em> or ParaFly to run it on a cluster.</td>
 </tr></table>
 </div>
 </li>
@@ -913,26 +913,21 @@ Before we continue with the assembly, we ought to prepare the RNA-Seq files for 
 <div class="ulist"><ul>
 <li>
 <p>
-First, converting the BAM alignment files of RNA-Seq to something that Augustus can appreciate.
+First, converting the BAM alignment files of RNA-Seq to something that Augustus can appreciate and also identify the intron/exon junction reads
 </p>
 <div class="listingblock">
 <div class="content"><!-- Generator: GNU source-highlight 3.1.3
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
-<pre><tt><span style="color: #009900">$JAMG_PATH</span>/bin/augustus_RNAseq_hints<span style="color: #990000">.</span>pl</tt></pre></div></div>
+<pre><tt><span style="color: #009900">$JAMG_PATH</span>/bin/augustus_RNAseq_hints<span style="color: #990000">.</span>pl -bam RNASeq_TGG_input<span style="color: #990000">.</span>bam -genome <span style="color: #009900">$GENOME_PATH</span> <span style="font-style: italic"><span style="color: #9A1900"># RNASeq_TGG_input.bam is from prepare_trinity_genome_assembly_pbs.pl</span></span></tt></pre></div></div>
+</li>
+</ul></div>
 </li>
 <li>
 <p>
-Second, identifying the intron/exon junction reads
+Now follow the PASA <a href="http://pasa.sourceforge.net/">guidelines</a> to assemble them as transcripts.
 </p>
-<div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.3
-by Lorenzo Bettini
-http://www.lorenzobettini.it
-http://www.gnu.org/software/src-highlite -->
-<pre><tt><span style="color: #990000">+</span>
-<span style="color: #990000">**</span> Now follow the PASA http<span style="color: #990000">:</span>//pasa<span style="color: #990000">.</span>sourceforge<span style="color: #990000">.</span>net<span style="color: #990000">/[</span>guidelines<span style="color: #990000">]</span> to assemble them as transcripts<span style="color: #990000">.</span></tt></pre></div></div>
 <div class="listingblock">
 <div class="content"><!-- Generator: GNU source-highlight 3.1.3
 by Lorenzo Bettini
@@ -952,7 +947,7 @@ http://www.gnu.org/software/src-highlite -->
 <td class="content">If your gene density is high and you expect transcripts from neighboring genes to often overlap in their UTR regions (e.g. fungi), you can perform more stringent clustering of alignments by adding <em>--stringent_alignment_overlap 30.0</em>.</td>
 </tr></table>
 </div>
-</li>
+<div class="ulist"><ul>
 <li>
 <p>
 If your RNA-seq was single-stranded (used the --sslib option) then add the PASA option <em>--transcribed_is_aligned_orient</em>.
@@ -1008,10 +1003,10 @@ This script uses exonerate with an initial step with the AATPACKAGE for finding 
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
-<pre><tt>maskFastaFromBed -soft -fi <span style="color: #009900">$GENOME_PATH</span> -fo <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>softmasked -bed <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>out<span style="color: #990000">.</span>gff <span style="font-style: italic"><span style="color: #9A1900"># this last file is the output from RepeatMasker</span></span>
+<pre><tt><span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/bin/maskFastaFromBed -soft -fi <span style="color: #009900">$GENOME_PATH</span> -fo <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>softmasked -bed <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>out<span style="color: #990000">.</span>gff <span style="font-style: italic"><span style="color: #9A1900"># this last file is the output from RepeatMasker</span></span>
 <span style="color: #009900">$JAMG_PATH</span>/bin/prepare_golden_genes_for_predictors<span style="color: #990000">.</span>pl -genome <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>masked -softmasked <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>softmasked <span style="color: #990000">\</span>
  -same_species -augustus <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/augustus/bin <span style="color: #990000">\</span>
- -intron <span style="color: #009900">$MAX_INTRON_LENGTH</span> -cpu <span style="color: #993399">10</span> -norefine</tt></pre></div></div>
+ -intron <span style="color: #009900">$MAX_INTRON_LENGTH</span> -cpu <span style="color: #009900">$LOCAL_CPUS</span> -norefine</tt></pre></div></div>
 <div class="ulist"><ul>
 <li>
 <p>
@@ -1049,7 +1044,7 @@ GeneMark-ES does not require any training but you should still use the repeatmas
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
-<pre><tt>genemark/gm_es_bp_linux64_v2<span style="color: #990000">.</span>3e/gmes/gm_es<span style="color: #990000">.</span>pl <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>masked  <span style="font-style: italic"><span style="color: #9A1900"># use --BP ON if you're working on fungi</span></span></tt></pre></div></div>
+<pre><tt><span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/genemark/gm_es_bp_linux64_v2<span style="color: #990000">.</span>3e/gmes/gm_es<span style="color: #990000">.</span>pl <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>masked  <span style="font-style: italic"><span style="color: #9A1900"># use --BP ON if you're working on fungi</span></span></tt></pre></div></div>
 </li>
 <li>
 <p>
@@ -1058,14 +1053,33 @@ For geneid, glimmerhmm and snap, you can train them using the output of prepare_
 </li>
 <li>
 <p>
-Glimmerhmm and snap can use external evidence but when we run a validation we saw that they performed less well than without any evidence. We&#8217;re not experts of the software and there is no documentation so some optimization might be necessary.
+Glimmerhmm and snap can use external evidence but when we run a validation we saw that they performed less well than without any evidence. We&#8217;re not experts of the software and there is no documentation so some optimization might be necessary. The input to these software is the output of prepare_golden_genes_for_predictors.pl, in particular <strong>.zff and *.xdef (for snap) and *geneid</strong> or *glimmer for the others. Generally, we will train with the .train. file, then we make predictions and finally we test them against the *.golden.test.gtf file.
 </p>
 <div class="listingblock">
 <div class="content"><!-- Generator: GNU source-highlight 3.1.3
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
-<pre><tt>to add example</tt></pre></div></div>
+<pre><tt><span style="font-style: italic"><span style="color: #9A1900"># SNAP - specific instructions</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">#train</span></span>
+mkdir snap_train <span style="color: #990000">;</span> cd snap_train <span style="font-style: italic"><span style="color: #9A1900"># also copy/link the relevant .fasta .zff data used below:</span></span>
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/bin/fathom golden<span style="color: #990000">.</span>train<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>zff golden<span style="color: #990000">.</span>train<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>fasta -gene-stats
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/bin/fathom golden<span style="color: #990000">.</span>train<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>zff golden<span style="color: #990000">.</span>train<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>fasta -categorize <span style="color: #993399">1000</span>
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/bin/fathom -export <span style="color: #993399">1000</span> -plus uni<span style="color: #990000">.</span>ann uni<span style="color: #990000">.</span>dna
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/bin/forge <span style="font-weight: bold"><span style="color: #0000FF">export</span></span><span style="color: #990000">.</span>ann <span style="font-weight: bold"><span style="color: #0000FF">export</span></span><span style="color: #990000">.</span>dna
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/snap/hmm-assembler<span style="color: #990000">.</span>pl Pult <span style="color: #990000">.</span> <span style="color: #990000">&gt;</span> <span style="color: #009900">$GENOME_NAME</span><span style="color: #990000">.</span>hmm <span style="font-style: italic"><span style="color: #9A1900"># model to use to predict</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">#predict</span></span>
+mkdir snap_predict<span style="color: #990000">;</span> cd snap_predict
+ln -s <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>softmasked <span style="color: #009900">$GENOME_NAME</span><span style="color: #990000">.</span>softmasked
+<span style="color: #009900">$JAMG_PATH</span>/bin/splitfasta<span style="color: #990000">.</span>pl -i <span style="color: #009900">$GENOME_NAME</span><span style="color: #990000">.</span>softmasked
+find <span style="color: #009900">$GENOME_NAME</span><span style="color: #990000">.</span>softmasked_dir1 -type f -exec sh -c <span style="color: #FF0000">'echo "snap $GENOME_NAME.hmm $1 -lcmask -quiet &gt; $1.snap 2&gt;/dev/null " '</span>  find-copy <span style="color: #FF0000">'{}'</span> <span style="color: #990000">\;</span> <span style="color: #990000">&gt;</span> snap<span style="color: #990000">.</span>commands
+ParaFly -c snap<span style="color: #990000">.</span>commands -CPU <span style="color: #009900">$LOCAL_CPUS</span> -v -shuffle
+cat <span style="color: #009900">$GENOME_NAME</span><span style="color: #990000">.</span>softmasked_dir1<span style="color: #990000">/*</span>snap <span style="color: #990000">&gt;</span> snap<span style="color: #990000">.</span>out
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/evidencemodeler/OtherGeneFinderTrainingGuide/SNAP/SNAP_output_to_gff3<span style="color: #990000">.</span>pl snap<span style="color: #990000">.</span>out <span style="color: #009900">$GENOME_PATH</span> <span style="color: #990000">|</span> <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/misc_utilities/gff3_to_gtf_format<span style="color: #990000">.</span>pl - <span style="color: #009900">$GENOME_PATH</span> <span style="color: #990000">&gt;</span> snap<span style="color: #990000">.</span>gtf
+<span style="font-style: italic"><span style="color: #9A1900"># evaluate</span></span>
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/eval-<span style="color: #993399">2.2</span><span style="color: #990000">.</span><span style="color: #993399">8</span>/evaluate_gtf<span style="color: #990000">.</span>pl -g <span style="color: #990000">./*</span>golden<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #0000FF">test</span></span><span style="color: #990000">.</span>gtf  snap<span style="color: #990000">.</span>gtf <span style="color: #990000">&gt;</span> snap<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #0000FF">eval</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># once satisfied</span></span>
+rm -rf snap<span style="color: #990000">.</span>out <span style="color: #009900">$GENOME_NAME</span><span style="color: #990000">.</span>softmasked_dir1</tt></pre></div></div>
 </li>
 <li>
 <p>
@@ -1200,7 +1214,7 @@ Feature
 <div id="footer">
 <div id="footer-text">
 Version RC1<br />
-Last updated 2014-01-06 20:33:04 EST
+Last updated 2014-01-08 19:55:40 EST
 </div>
 </div>
 </body>

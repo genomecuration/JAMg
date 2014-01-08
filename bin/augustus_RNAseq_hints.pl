@@ -18,12 +18,12 @@ Create hint files for Augustus using RNASeq/EST. One is junction reads (excellen
 
 Mandatory options:
 
- -bam|in       s  The input BAM file (co-ordinate sorted).
- -genome|fasta s  The genome assembly FASTA file.
+ -bam|in           s  The input BAM file (co-ordinate sorted).
+ -genome|fasta     s  The genome assembly FASTA file.
 
 Other options:
 
- -strandness   i  If RNAseq is directional, provide direction: 0 for unknown (default); or 1 for + strand; -1 for - strand
+ -strandness       i  If RNAseq is directional, provide direction: 0 for unknown (default); or 1 for + strand; -1 for - strand
  -min_score        i  Minimum score for parsing (defaults to 20)
  -window           i  Window size for coverage graph (defaults to 50)
  -background_fold  i  Background (defaults to 4), see perldoc

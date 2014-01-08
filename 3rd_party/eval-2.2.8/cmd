@@ -1,0 +1,4 @@
+#./evaluate_gtf.pl -g  ref.gtf li_maker?.gtf > annotations_golden_vs_maker.txt
+./evaluate_gtf.pl -g  H.armigera_chemosensory.fasta.exonerate.results.corrected.golden.gtf li_maker?.gtf > annotations_chemosensory_vs_maker.txt &
+./evaluate_gtf.pl -g  scaffold_88.ref.gtf scaffold_88_li_maker?.gtf  scaffold_88.glimmer.test?.gtf scaffold_88.nohints.gtf scaffold_88.nohmm.gtf scaffold_88.allhints.gtf snap.scaffold_88 > scaffold_88_validation.txt
+./evaluate_gtf.pl -g  scaffold_8.ref.gtf scaffold_8_li_maker?.gtf  scaffold_8.glimmer.test?.gtf scaffold_8.nohints.gtf scaffold_8.nohmm.gtf scaffold_8.allhints.gtf snap.scaffold_8 > scaffold_8_validation.txt

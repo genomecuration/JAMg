@@ -131,7 +131,7 @@ export LOCAL_CPUS=4 # example number of CPUs to use
 **** bin/prepare_trinity_genome_assembly_pbs.pl prepares everything you need for a TGG assembly. It splits the data into small, medium and large jobs so that all the small run together. Otherwise a single 'large' job will delay the entire processing, only to find out that you're assembling a highly expressed retrotransposon.
 **** 'bin/align_rnaseq_gsnap.pl' automatically run against all files that match a pattern for left and right so that you don't have to do it manually. In other words, it is for advanced users with lots of data.
 +
-TIP: For parallelization with computing clusters, you can use the -commands_only option and create a text file that has one line worth of commands for each input. You can then use the unix command 'split' or ParaFly to run it on a cluster.
+TIP: There is little benefit using more than 6 threads for each GSNAP (it's actually making it slower). Also it can take > 2 days to align 50 M reads but depends on the quality of the data. For high-throughput I recommend you 'split' your input data into chunks and align in parallel. For parallelization with computing clusters, you can use the -commands_only option and create a text file that has one line worth of commands for each input. You can then use the unix command 'split' or ParaFly to run it on a cluster.
 +
 **** also 'util/trinity_gg_helper' can be used to (re)run batches of Trinity-guided assemblies on a PBS cluster. 
 *** This is the last command you will need for the genome-guided part:
@@ -147,14 +147,10 @@ find Dir_*  -name "*inity.fasta" | $JAMG_PATH/3rd_party/trinityrnaseq/util/GG_tr
 cat Trinity_denovo.fasta Trinity_GG.fasta > transcripts.fasta
 +
 ** Before we continue with the assembly, we ought to prepare the RNA-Seq files for use with Augustus later on. In particular we want to know the coverage, which exons are joined together, where are the introns etc
-*** First, converting the BAM alignment files of RNA-Seq to something that Augustus can appreciate.
+*** First, converting the BAM alignment files of RNA-Seq to something that Augustus can appreciate and also identify the intron/exon junction reads
 +
 [source,bash]
-$JAMG_PATH/bin/augustus_RNAseq_hints.pl 
-+
-*** Second, identifying the intron/exon junction reads
-+
-[source,bash]
+$JAMG_PATH/bin/augustus_RNAseq_hints.pl -bam RNASeq_TGG_input.bam -genome $GENOME_PATH # RNASeq_TGG_input.bam is from prepare_trinity_genome_assembly_pbs.pl
 +
 ** Now follow the PASA http://pasa.sourceforge.net/[guidelines] to assemble them as transcripts.
 +
@@ -183,10 +179,10 @@ $JAMG_PATH/3rd_party/transdecoder/TransDecoder -t "my.assemblies.fasta" \
 ** This script uses exonerate with an initial step with the AATPACKAGE for finding the approximate regions. Exonerate works better if it knows that certain regions are repetitive so we will create a soft-(repeat)masked version of your genome using bedtools.
 +
 [source,bash]
-maskFastaFromBed -soft -fi $GENOME_PATH -fo $GENOME_PATH.softmasked -bed $GENOME_PATH.out.gff # this last file is the output from RepeatMasker
+$JAMG_PATH/3rd_party/bin/maskFastaFromBed -soft -fi $GENOME_PATH -fo $GENOME_PATH.softmasked -bed $GENOME_PATH.out.gff # this last file is the output from RepeatMasker
 $JAMG_PATH/bin/prepare_golden_genes_for_predictors.pl -genome $GENOME_PATH.masked -softmasked $GENOME_PATH.softmasked \
  -same_species -augustus $JAMG_PATH/3rd_party/augustus/bin \
- -intron $MAX_INTRON_LENGTH -cpu 10 -norefine
+ -intron $MAX_INTRON_LENGTH -cpu $LOCAL_CPUS -norefine
 +
 *** I find that -norefine is quicker and makes little difference (but as always I could be wrong).
 +
@@ -197,13 +193,32 @@ TIP: Currently the AATPACKAGE and exonerate work rather well. They also very wel
 ** GeneMark-ES does not require any training but you should still use the repeatmasked genome. You also need to install (and accept the license) of GeneMark. Genemark will take a couple of days to complete.
 +
 [source,bash]
-genemark/gm_es_bp_linux64_v2.3e/gmes/gm_es.pl $GENOME_PATH.masked  # use --BP ON if you're working on fungi 
+$JAMG_PATH/3rd_party/genemark/gm_es_bp_linux64_v2.3e/gmes/gm_es.pl $GENOME_PATH.masked  # use --BP ON if you're working on fungi 
 +
 ** For geneid, glimmerhmm and snap, you can train them using the output of prepare_golden_genes_for_predictors.pl (see below for each software)
-** Glimmerhmm and snap can use external evidence but when we run a validation we saw that they performed less well than without any evidence. We're not experts of the software and there is no documentation so some optimization might be necessary.
+** Glimmerhmm and snap can use external evidence but when we run a validation we saw that they performed less well than without any evidence. We're not experts of the software and there is no documentation so some optimization might be necessary. The input to these software is the output of prepare_golden_genes_for_predictors.pl, in particular *.zff and *.xdef (for snap) and *geneid* or *glimmer for the others. Generally, we will train with the .train. file, then we make predictions and finally we test them against the *.golden.test.gtf file.
 +
 [source,bash]
-to add example
+# SNAP - specific instructions
+#train
+mkdir snap_train ; cd snap_train # also copy/link the relevant .fasta .zff data used below:
+$JAMG_PATH/3rd_party/bin/fathom golden.train.gff3.zff golden.train.gff3.fasta -gene-stats
+$JAMG_PATH/3rd_party/bin/fathom golden.train.gff3.zff golden.train.gff3.fasta -categorize 1000
+$JAMG_PATH/3rd_party/bin/fathom -export 1000 -plus uni.ann uni.dna
+$JAMG_PATH/3rd_party/bin/forge export.ann export.dna
+$JAMG_PATH/3rd_party/snap/hmm-assembler.pl Pult . > $GENOME_NAME.hmm # model to use to predict
+#predict
+mkdir snap_predict; cd snap_predict
+ln -s $GENOME_PATH.softmasked $GENOME_NAME.softmasked
+$JAMG_PATH/bin/splitfasta.pl -i $GENOME_NAME.softmasked
+find $GENOME_NAME.softmasked_dir1 -type f -exec sh -c 'echo "snap $GENOME_NAME.hmm $1 -lcmask -quiet > $1.snap 2>/dev/null " '  find-copy '{}' \; > snap.commands
+ParaFly -c snap.commands -CPU $LOCAL_CPUS -v -shuffle
+cat $GENOME_NAME.softmasked_dir1/*snap > snap.out 
+$JAMG_PATH/3rd_party/evidencemodeler/OtherGeneFinderTrainingGuide/SNAP/SNAP_output_to_gff3.pl snap.out $GENOME_PATH | $JAMG_PATH/3rd_party/PASA/misc_utilities/gff3_to_gtf_format.pl - $GENOME_PATH > snap.gtf
+# evaluate
+$JAMG_PATH/3rd_party/eval-2.2.8/evaluate_gtf.pl -g ./*golden.test.gtf  snap.gtf > snap.eval
+# once satisfied
+rm -rf snap.out $GENOME_NAME.softmasked_dir1
 +
 ** [[projection]]If we have a closely species that is well annotated, a good approach is to 'project' that genome's gene models to our unannotated one. This can be achieved as such:
 [source,bash]

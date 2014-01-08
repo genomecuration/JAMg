@@ -1,0 +1,14 @@
+Package: eval-perl
+Version: 2.2.8
+Section: perl
+Priority: extra
+Architecture: i386
+Depends: perl, perl-tk, python
+Installed-Size: 504
+Maintainer: Bob Zimmermann <rpz@cse.wustl.edu>
+Source: eval
+Description: System for comparing sets of genes
+ Eval is a Perl-based system for comparing sets of genes from any source,
+ such as pure computational predictions and manual annotations. Many types
+ of analyses can be run allowing for detailed, comprehensive comparisons.
+ Results are displayed in a convenient, compact format.

@@ -1,0 +1,20 @@
+eval (2.2.8) unstable; urgency=low
+
+  * Adding chr22 example files
+  * Released version of eval 2.2.6 has a dependency on bioperl, bumping the 
+    version to eliminate this dependency
+
+ -- Robert Paul Zimmermann <rpz@cse.wustl.edu>  Tue, 20 Mar 2007 13:24:14 -0600
+
+eval (2.2.6) unstable; urgency=low
+
+  * Fixed a bug which caused validate to chrash when not enough CDS present 
+    for a full start codon.
+
+ -- Robert Paul Zimmermann <rpz@cse.wustl.edu>  Tue, 20 Mar 2007 13:24:14 -0600
+
+eval (2.2.5) unstable; urgency=low
+
+  * Initial Debian Packaging
+
+ -- Robert Paul Zimmermann <rpz@cse.wustl.edu>  Tue, 27 Feb 2007 13:24:14 -0600

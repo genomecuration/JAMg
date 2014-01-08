@@ -111,21 +111,26 @@ hhsuite/hhblits
 Distributed under GPL's aggregation terms
 ftp://toolkit.genzentrum.lmu.de/pub/HHblits/
 
-parafly, transdecoder and aatpackage, preprocess_reads, PASA
-============================================================
+parafly, transdecoder and aatpackage, preprocess_reads, PASA, evidencemodeler
+==============================================================================
 See open licenses. We're also the (co-)authors of these software:
 See 3rd_party/PASA/LICENSE
 See 3rd_party/parafly/LICENSE
 See 3rd_party/aatpackage/LICENSE
 See 3rd_party/transdecoder/LICENSE
+See 3rd_party/evidencemodeler/LICENSE
 See 3rd_party/preprocess_reads/LICENSE
 http://sourceforge.net/projects/pasa
 http://sourceforge.net/projects/parafly
 http://sourceforge.net/projects/aatpackage
 http://sourceforge.net/projects/transdecoder
+http://sourceforge.net/projects/evidencemodeler
 http://sourceforge.net/projects/preprocess_reads
 
-
+eval
+====
+Written, copywrite and maintained by Robert Paul Zimmermann <rpz@cse.wustl.edu>
+Distributed under the agglomeration terms of GPL (see eval-2.2.8/debian/copyright)
 
 The PHP/Java Bridge PHP library (WebApollo/ws/Java)
 ===============================

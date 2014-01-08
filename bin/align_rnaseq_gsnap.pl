@@ -20,7 +20,6 @@ Mandatory:
  
 Optional:
 
- -commands_only  :s  Don't run commands, instead write them out into a file as specified by the option. Useful for preparing jobs for ParaFly
  -input_dir      :s  Directory with read files (defaults to current working directory)
  -intron_db      :s  GMAP intron splice database
  -gmap_dir       :s  Where the GMAP databases are meant to live (def. ~/databases/gmap)
@@ -32,6 +31,8 @@ Optional:
  -nofail             Don't print out failures (I/O friendlyness if sparse hits expected). Otherwise captured as FASTQ
  -suffix             Build/use suffix array (fast, downweights SNPs, use for non-polymorphic genomes)
  -path_number        Maximum number of hits for the read pair. If more that these many hits, then nothing is returned (defaults to 50)
+ -commands_only  :s  Don't run commands, instead write them out into a file as specified by the option. Useful for preparing jobs for ParaFly
+ -split_input    :i  Split the input FASTQ files to these many subfiles. Good for running large RNASeq datasets. Needs -commands_only above
 
 =head1 AUTHORS
 
@@ -64,7 +65,7 @@ $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 my ( $gmap_build_exec, $gsnap_exec, $samtools_exec ) =
   &check_program( "gmap_build", "gsnap", "samtools" );
 &samtools_version_check($samtools_exec);
-my ($input_dir,$pattern2,$debug,$genome,$genome_dbname,$nofails,$suffix,$help, $intron_splice_db, $just_write_out_commands);
+my ($input_dir,$pattern2,$debug,$genome,$genome_dbname,$nofails,$suffix,$help, $intron_splice_db, $just_write_out_commands,$split_input);
 my $cwd   = `pwd`;
 chomp($cwd);
 my $gmap_dir = $ENV{'HOME'}.'/databases/gmap/';
@@ -91,13 +92,15 @@ my $pattern = '_1_';
 	     'input_dir:s'   => \$input_dir,
 	     'path_number:i' => \$repeat_path_number,
 	     'commands_only:s' => \$just_write_out_commands,
+	     'split_input:i'     => \$split_input,
 );
 
 pod2usage if $help;
 pod2usage "No genome FASTA\n" unless $genome && -s $genome;
 pod2usage "No GMAP genome database name\n" unless $genome_dbname;
 pod2usage "GMAP database does not exist: $gmap_dir\n" unless -d $gmap_dir;
-
+pod2usage "Split input requires the -commands_only option\n" if $split_input && !$just_write_out_commands;
+pod2usage "Split input cannot be more than 100\n" if $split_input && $split_input > 100;
 $input_dir = $cwd unless $input_dir;
 my $samtools_sort_CPUs = int( $cpus / 2 ) > 2 ? int( $cpus / 2 ) : 2;
 my $suff = "";
@@ -144,6 +147,8 @@ $align_cmd .= " --nofails "            if $nofails;
 $align_cmd .= " --fails-as-input "     if !$nofails;
 $align_cmd .= " -s $intron_splice_db " if $intron_splice_db;
 
+my @files_to_do;
+
 foreach my $file ( sort @files ) {
  my $pair = $file;
  $pair =~ s/$pattern/$pattern2/;
@@ -152,10 +157,42 @@ foreach my $file ( sort @files ) {
   warn "Didn't find pair of $file. Skipping\n";
   next;
  }
+ if ($split_input){
+	print "Splitting data for $file & $pair\n";
+	my $lines = `wc -l < $file`;chomp($lines);
+	my $number_of_lines = int(($lines / 4) / $split_input);
+	$number_of_lines *= 4;
+	die "Number of lines is not as expected for FASTQ ($number_of_lines / $lines)\n" unless $number_of_lines % 4 == 0;
+	system("split -a 3 -d -l $number_of_lines $file $file. ");
+	system("split -a 3 -d -l $number_of_lines $file $pair. ");
+	my @new_files = (glob("$file.0??"),glob("$pair.0??"));
+	print "\t Adding ";
+	foreach my $f (@new_files){
+		if ($f =~/$file\.\d+$/){
+			print " $f";
+			push(@files_to_do,$f);
+		}
+	}
+	print "\n";
+ }else{
+   push(@files_to_do,$file);
+ }
+}
+
+foreach my $file ( sort @files_to_do ) {
+ my $pair = $file;
+ $pair =~ s/$pattern/$pattern2/;
  my $base = basename($file);
- $base =~ s/$pattern.+//;
- my $group_id = $base;
- print "Processing $group_id\n";
+ my $group_id;
+ if ($split_input && $base=~/\.\d+$/){
+  $base =~ s/$pattern.+(\.0\d\d)$/$1/;
+  $group_id = $base;
+  $group_id =~s/\.0\d\d$//;
+ }else{
+  $base =~ s/$pattern.+//;
+  $group_id = $base;
+ }
+ print "Processing $group_id ($file)\n";
  $base .= "_vs_$genome_dbname";
  if ( -s "gsnap.$base.log" ) {
   open( LOG, "gsnap.$base.log" );
@@ -208,6 +245,7 @@ foreach my $file ( sort @files ) {
 
  print LOG "\nGSNAP Completed!\n";
  close LOG;
+ print CMD " rm -f $file $pair " if $just_write_out_commands && $split_input;
  print CMD "\n" if $just_write_out_commands;
 }
 

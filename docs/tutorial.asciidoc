@@ -20,7 +20,7 @@ I'm assuming you've downloaded the software from somewhere and unpacked it. The 
 [source,bash]
 export JAMG_PATH=$HOME/software/jamg # or wherever you installed it.
 export MAX_INTRON_LENGTH=70000 # maximum size of intron.
-export GENOME_PATH=$PWD/dmel-all-r5.53.fasta
+export GENOME_PATH=[full path to]/dmel-all-r5.53.fasta
 export GENOME_NAME=dmel-all-r5.53 # just a base name for our genome
 # number of CPUs to use for the local machine. Always at least one less than the number of available CPUs:
 export LOCAL_CPUS=5 

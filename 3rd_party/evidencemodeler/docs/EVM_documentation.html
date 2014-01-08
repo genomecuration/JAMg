@@ -1,0 +1,1013 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+<meta name="generator" content="AsciiDoc 8.6.8" />
+<title>EVidenceModeler (EVM)</title>
+<style type="text/css">
+/* Shared CSS for AsciiDoc xhtml11 and html5 backends */
+
+/* Default font. */
+body {
+  font-family: Georgia,serif;
+}
+
+/* Title font. */
+h1, h2, h3, h4, h5, h6,
+div.title, caption.title,
+thead, p.table.header,
+#toctitle,
+#author, #revnumber, #revdate, #revremark,
+#footer {
+  font-family: Arial,Helvetica,sans-serif;
+}
+
+body {
+  margin: 1em 5% 1em 5%;
+}
+
+a {
+  color: blue;
+  text-decoration: underline;
+}
+a:visited {
+  color: fuchsia;
+}
+
+em {
+  font-style: italic;
+  color: navy;
+}
+
+strong {
+  font-weight: bold;
+  color: #083194;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #527bbd;
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+}
+
+h1, h2, h3 {
+  border-bottom: 2px solid silver;
+}
+h2 {
+  padding-top: 0.5em;
+}
+h3 {
+  float: left;
+}
+h3 + * {
+  clear: left;
+}
+h5 {
+  font-size: 1.0em;
+}
+
+div.sectionbody {
+  margin-left: 0;
+}
+
+hr {
+  border: 1px solid silver;
+}
+
+p {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+ul, ol, li > p {
+  margin-top: 0;
+}
+ul > li     { color: #aaa; }
+ul > li > * { color: black; }
+
+.monospaced, code, pre {
+  font-family: "Courier New", Courier, monospace;
+  font-size: inherit;
+  color: navy;
+  padding: 0;
+  margin: 0;
+}
+
+
+#author {
+  color: #527bbd;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+#email {
+}
+#revnumber, #revdate, #revremark {
+}
+
+#footer {
+  font-size: small;
+  border-top: 2px solid silver;
+  padding-top: 0.5em;
+  margin-top: 4.0em;
+}
+#footer-text {
+  float: left;
+  padding-bottom: 0.5em;
+}
+#footer-badges {
+  float: right;
+  padding-bottom: 0.5em;
+}
+
+#preamble {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+}
+div.imageblock, div.exampleblock, div.verseblock,
+div.quoteblock, div.literalblock, div.listingblock, div.sidebarblock,
+div.admonitionblock {
+  margin-top: 1.0em;
+  margin-bottom: 1.5em;
+}
+div.admonitionblock {
+  margin-top: 2.0em;
+  margin-bottom: 2.0em;
+  margin-right: 10%;
+  color: #606060;
+}
+
+div.content { /* Block element content. */
+  padding: 0;
+}
+
+/* Block element titles. */
+div.title, caption.title {
+  color: #527bbd;
+  font-weight: bold;
+  text-align: left;
+  margin-top: 1.0em;
+  margin-bottom: 0.5em;
+}
+div.title + * {
+  margin-top: 0;
+}
+
+td div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content + div.title {
+  margin-top: 0.0em;
+}
+
+div.sidebarblock > div.content {
+  background: #ffffee;
+  border: 1px solid #dddddd;
+  border-left: 4px solid #f0f0f0;
+  padding: 0.5em;
+}
+
+div.listingblock > div.content {
+  border: 1px solid #dddddd;
+  border-left: 5px solid #f0f0f0;
+  background: #f8f8f8;
+  padding: 0.5em;
+}
+
+div.quoteblock, div.verseblock {
+  padding-left: 1.0em;
+  margin-left: 1.0em;
+  margin-right: 10%;
+  border-left: 5px solid #f0f0f0;
+  color: #888;
+}
+
+div.quoteblock > div.attribution {
+  padding-top: 0.5em;
+  text-align: right;
+}
+
+div.verseblock > pre.content {
+  font-family: inherit;
+  font-size: inherit;
+}
+div.verseblock > div.attribution {
+  padding-top: 0.75em;
+  text-align: left;
+}
+/* DEPRECATED: Pre version 8.2.7 verse style literal block. */
+div.verseblock + div.attribution {
+  text-align: left;
+}
+
+div.admonitionblock .icon {
+  vertical-align: top;
+  font-size: 1.1em;
+  font-weight: bold;
+  text-decoration: underline;
+  color: #527bbd;
+  padding-right: 0.5em;
+}
+div.admonitionblock td.content {
+  padding-left: 0.5em;
+  border-left: 3px solid #dddddd;
+}
+
+div.exampleblock > div.content {
+  border-left: 3px solid #dddddd;
+  padding-left: 0.5em;
+}
+
+div.imageblock div.content { padding-left: 0; }
+span.image img { border-style: none; }
+a.image:visited { color: white; }
+
+dl {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+dt {
+  margin-top: 0.5em;
+  margin-bottom: 0;
+  font-style: normal;
+  color: navy;
+}
+dd > *:first-child {
+  margin-top: 0.1em;
+}
+
+ul, ol {
+    list-style-position: outside;
+}
+ol.arabic {
+  list-style-type: decimal;
+}
+ol.loweralpha {
+  list-style-type: lower-alpha;
+}
+ol.upperalpha {
+  list-style-type: upper-alpha;
+}
+ol.lowerroman {
+  list-style-type: lower-roman;
+}
+ol.upperroman {
+  list-style-type: upper-roman;
+}
+
+div.compact ul, div.compact ol,
+div.compact p, div.compact p,
+div.compact div, div.compact div {
+  margin-top: 0.1em;
+  margin-bottom: 0.1em;
+}
+
+tfoot {
+  font-weight: bold;
+}
+td > div.verse {
+  white-space: pre;
+}
+
+div.hdlist {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+div.hdlist tr {
+  padding-bottom: 15px;
+}
+dt.hdlist1.strong, td.hdlist1.strong {
+  font-weight: bold;
+}
+td.hdlist1 {
+  vertical-align: top;
+  font-style: normal;
+  padding-right: 0.8em;
+  color: navy;
+}
+td.hdlist2 {
+  vertical-align: top;
+}
+div.hdlist.compact tr {
+  margin: 0;
+  padding-bottom: 0;
+}
+
+.comment {
+  background: yellow;
+}
+
+.footnote, .footnoteref {
+  font-size: 0.8em;
+}
+
+span.footnote, span.footnoteref {
+  vertical-align: super;
+}
+
+#footnotes {
+  margin: 20px 0 20px 0;
+  padding: 7px 0 0 0;
+}
+
+#footnotes div.footnote {
+  margin: 0 0 5px 0;
+}
+
+#footnotes hr {
+  border: none;
+  border-top: 1px solid silver;
+  height: 1px;
+  text-align: left;
+  margin-left: 0;
+  width: 20%;
+  min-width: 100px;
+}
+
+div.colist td {
+  padding-right: 0.5em;
+  padding-bottom: 0.3em;
+  vertical-align: top;
+}
+div.colist td img {
+  margin-top: 0.3em;
+}
+
+@media print {
+  #footer-badges { display: none; }
+}
+
+#toc {
+  margin-bottom: 2.5em;
+}
+
+#toctitle {
+  color: #527bbd;
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-top: 1.0em;
+  margin-bottom: 0.1em;
+}
+
+div.toclevel0, div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+div.toclevel2 {
+  margin-left: 2em;
+  font-size: 0.9em;
+}
+div.toclevel3 {
+  margin-left: 4em;
+  font-size: 0.9em;
+}
+div.toclevel4 {
+  margin-left: 6em;
+  font-size: 0.9em;
+}
+
+span.aqua { color: aqua; }
+span.black { color: black; }
+span.blue { color: blue; }
+span.fuchsia { color: fuchsia; }
+span.gray { color: gray; }
+span.green { color: green; }
+span.lime { color: lime; }
+span.maroon { color: maroon; }
+span.navy { color: navy; }
+span.olive { color: olive; }
+span.purple { color: purple; }
+span.red { color: red; }
+span.silver { color: silver; }
+span.teal { color: teal; }
+span.white { color: white; }
+span.yellow { color: yellow; }
+
+span.aqua-background { background: aqua; }
+span.black-background { background: black; }
+span.blue-background { background: blue; }
+span.fuchsia-background { background: fuchsia; }
+span.gray-background { background: gray; }
+span.green-background { background: green; }
+span.lime-background { background: lime; }
+span.maroon-background { background: maroon; }
+span.navy-background { background: navy; }
+span.olive-background { background: olive; }
+span.purple-background { background: purple; }
+span.red-background { background: red; }
+span.silver-background { background: silver; }
+span.teal-background { background: teal; }
+span.white-background { background: white; }
+span.yellow-background { background: yellow; }
+
+span.big { font-size: 2em; }
+span.small { font-size: 0.6em; }
+
+span.underline { text-decoration: underline; }
+span.overline { text-decoration: overline; }
+span.line-through { text-decoration: line-through; }
+
+div.unbreakable { page-break-inside: avoid; }
+
+
+/*
+ * xhtml11 specific
+ *
+ * */
+
+div.tableblock {
+  margin-top: 1.0em;
+  margin-bottom: 1.5em;
+}
+div.tableblock > table {
+  border: 3px solid #527bbd;
+}
+thead, p.table.header {
+  font-weight: bold;
+  color: #527bbd;
+}
+p.table {
+  margin-top: 0;
+}
+/* Because the table frame attribute is overriden by CSS in most browsers. */
+div.tableblock > table[frame="void"] {
+  border-style: none;
+}
+div.tableblock > table[frame="hsides"] {
+  border-left-style: none;
+  border-right-style: none;
+}
+div.tableblock > table[frame="vsides"] {
+  border-top-style: none;
+  border-bottom-style: none;
+}
+
+
+/*
+ * html5 specific
+ *
+ * */
+
+table.tableblock {
+  margin-top: 1.0em;
+  margin-bottom: 1.5em;
+}
+thead, p.tableblock.header {
+  font-weight: bold;
+  color: #527bbd;
+}
+p.tableblock {
+  margin-top: 0;
+}
+table.tableblock {
+  border-width: 3px;
+  border-spacing: 0px;
+  border-style: solid;
+  border-color: #527bbd;
+  border-collapse: collapse;
+}
+th.tableblock, td.tableblock {
+  border-width: 1px;
+  padding: 4px;
+  border-style: solid;
+  border-color: #527bbd;
+}
+
+table.tableblock.frame-topbot {
+  border-left-style: hidden;
+  border-right-style: hidden;
+}
+table.tableblock.frame-sides {
+  border-top-style: hidden;
+  border-bottom-style: hidden;
+}
+table.tableblock.frame-none {
+  border-style: hidden;
+}
+
+th.tableblock.halign-left, td.tableblock.halign-left {
+  text-align: left;
+}
+th.tableblock.halign-center, td.tableblock.halign-center {
+  text-align: center;
+}
+th.tableblock.halign-right, td.tableblock.halign-right {
+  text-align: right;
+}
+
+th.tableblock.valign-top, td.tableblock.valign-top {
+  vertical-align: top;
+}
+th.tableblock.valign-middle, td.tableblock.valign-middle {
+  vertical-align: middle;
+}
+th.tableblock.valign-bottom, td.tableblock.valign-bottom {
+  vertical-align: bottom;
+}
+
+
+/*
+ * manpage specific
+ *
+ * */
+
+body.manpage h1 {
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  border-top: 2px solid silver;
+  border-bottom: 2px solid silver;
+}
+body.manpage h2 {
+  border-style: none;
+}
+body.manpage div.sectionbody {
+  margin-left: 3em;
+}
+
+@media print {
+  body.manpage div#toc { display: none; }
+}
+
+
+</style>
+<script type="text/javascript">
+/*<![CDATA[*/
+var asciidoc = {  // Namespace.
+
+/////////////////////////////////////////////////////////////////////
+// Table Of Contents generator
+/////////////////////////////////////////////////////////////////////
+
+/* Author: Mihai Bazon, September 2002
+ * http://students.infoiasi.ro/~mishoo
+ *
+ * Table Of Content generator
+ * Version: 0.4
+ *
+ * Feel free to use this script under the terms of the GNU General Public
+ * License, as long as you do not remove or alter this notice.
+ */
+
+ /* modified by Troy D. Hanson, September 2006. License: GPL */
+ /* modified by Stuart Rackham, 2006, 2009. License: GPL */
+
+// toclevels = 1..4.
+toc: function (toclevels) {
+
+  function getText(el) {
+    var text = "";
+    for (var i = el.firstChild; i != null; i = i.nextSibling) {
+      if (i.nodeType == 3 /* Node.TEXT_NODE */) // IE doesn't speak constants.
+        text += i.data;
+      else if (i.firstChild != null)
+        text += getText(i);
+    }
+    return text;
+  }
+
+  function TocEntry(el, text, toclevel) {
+    this.element = el;
+    this.text = text;
+    this.toclevel = toclevel;
+  }
+
+  function tocEntries(el, toclevels) {
+    var result = new Array;
+    var re = new RegExp('[hH]([1-'+(toclevels+1)+'])');
+    // Function that scans the DOM tree for header elements (the DOM2
+    // nodeIterator API would be a better technique but not supported by all
+    // browsers).
+    var iterate = function (el) {
+      for (var i = el.firstChild; i != null; i = i.nextSibling) {
+        if (i.nodeType == 1 /* Node.ELEMENT_NODE */) {
+          var mo = re.exec(i.tagName);
+          if (mo && (i.getAttribute("class") || i.getAttribute("className")) != "float") {
+            result[result.length] = new TocEntry(i, getText(i), mo[1]-1);
+          }
+          iterate(i);
+        }
+      }
+    }
+    iterate(el);
+    return result;
+  }
+
+  var toc = document.getElementById("toc");
+  if (!toc) {
+    return;
+  }
+
+  // Delete existing TOC entries in case we're reloading the TOC.
+  var tocEntriesToRemove = [];
+  var i;
+  for (i = 0; i < toc.childNodes.length; i++) {
+    var entry = toc.childNodes[i];
+    if (entry.nodeName.toLowerCase() == 'div'
+     && entry.getAttribute("class")
+     && entry.getAttribute("class").match(/^toclevel/))
+      tocEntriesToRemove.push(entry);
+  }
+  for (i = 0; i < tocEntriesToRemove.length; i++) {
+    toc.removeChild(tocEntriesToRemove[i]);
+  }
+
+  // Rebuild TOC entries.
+  var entries = tocEntries(document.getElementById("content"), toclevels);
+  for (var i = 0; i < entries.length; ++i) {
+    var entry = entries[i];
+    if (entry.element.id == "")
+      entry.element.id = "_toc_" + i;
+    var a = document.createElement("a");
+    a.href = "#" + entry.element.id;
+    a.appendChild(document.createTextNode(entry.text));
+    var div = document.createElement("div");
+    div.appendChild(a);
+    div.className = "toclevel" + entry.toclevel;
+    toc.appendChild(div);
+  }
+  if (entries.length == 0)
+    toc.parentNode.removeChild(toc);
+},
+
+
+/////////////////////////////////////////////////////////////////////
+// Footnotes generator
+/////////////////////////////////////////////////////////////////////
+
+/* Based on footnote generation code from:
+ * http://www.brandspankingnew.net/archive/2005/07/format_footnote.html
+ */
+
+footnotes: function () {
+  // Delete existing footnote entries in case we're reloading the footnodes.
+  var i;
+  var noteholder = document.getElementById("footnotes");
+  if (!noteholder) {
+    return;
+  }
+  var entriesToRemove = [];
+  for (i = 0; i < noteholder.childNodes.length; i++) {
+    var entry = noteholder.childNodes[i];
+    if (entry.nodeName.toLowerCase() == 'div' && entry.getAttribute("class") == "footnote")
+      entriesToRemove.push(entry);
+  }
+  for (i = 0; i < entriesToRemove.length; i++) {
+    noteholder.removeChild(entriesToRemove[i]);
+  }
+
+  // Rebuild footnote entries.
+  var cont = document.getElementById("content");
+  var spans = cont.getElementsByTagName("span");
+  var refs = {};
+  var n = 0;
+  for (i=0; i<spans.length; i++) {
+    if (spans[i].className == "footnote") {
+      n++;
+      var note = spans[i].getAttribute("data-note");
+      if (!note) {
+        // Use [\s\S] in place of . so multi-line matches work.
+        // Because JavaScript has no s (dotall) regex flag.
+        note = spans[i].innerHTML.match(/\s*\[([\s\S]*)]\s*/)[1];
+        spans[i].innerHTML =
+          "[<a id='_footnoteref_" + n + "' href='#_footnote_" + n +
+          "' title='View footnote' class='footnote'>" + n + "</a>]";
+        spans[i].setAttribute("data-note", note);
+      }
+      noteholder.innerHTML +=
+        "<div class='footnote' id='_footnote_" + n + "'>" +
+        "<a href='#_footnoteref_" + n + "' title='Return to text'>" +
+        n + "</a>. " + note + "</div>";
+      var id =spans[i].getAttribute("id");
+      if (id != null) refs["#"+id] = n;
+    }
+  }
+  if (n == 0)
+    noteholder.parentNode.removeChild(noteholder);
+  else {
+    // Process footnoterefs.
+    for (i=0; i<spans.length; i++) {
+      if (spans[i].className == "footnoteref") {
+        var href = spans[i].getElementsByTagName("a")[0].getAttribute("href");
+        href = href.match(/#.*/)[0];  // Because IE return full URL.
+        n = refs[href];
+        spans[i].innerHTML =
+          "[<a href='#_footnote_" + n +
+          "' title='View footnote' class='footnote'>" + n + "</a>]";
+      }
+    }
+  }
+},
+
+install: function(toclevels) {
+  var timerId;
+
+  function reinstall() {
+    asciidoc.footnotes();
+    if (toclevels) {
+      asciidoc.toc(toclevels);
+    }
+  }
+
+  function reinstallAndRemoveTimer() {
+    clearInterval(timerId);
+    reinstall();
+  }
+
+  timerId = setInterval(reinstall, 500);
+  if (document.addEventListener)
+    document.addEventListener("DOMContentLoaded", reinstallAndRemoveTimer, false);
+  else
+    window.onload = reinstallAndRemoveTimer;
+}
+
+}
+asciidoc.install();
+/*]]>*/
+</script>
+</head>
+<body class="article">
+<div id="header">
+<h1>EVidenceModeler (EVM)</h1>
+</div>
+<div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph"><p><span class="image">
+<img src="logo/evm.jpg" alt="EVM_logo" height="100" />
+</span></p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_contents">Contents</h2>
+<div class="sectionbody">
+<div class="ulist"><ul>
+<li>
+<p>
+<a href="#A_intro">Introduction to EVM</a>
+</p>
+</li>
+<li>
+<p>
+<a href="#Obtaining_EVM">Obtaining and Installing EVM</a>
+</p>
+</li>
+<li>
+<p>
+<a href="#Running_EVM">Running EVM</a>
+</p>
+</li>
+<li>
+<p>
+<a href="#Preparing_inputs">Preparing Inputs to EVM</a>
+</p>
+</li>
+<li>
+<p>
+<a href="#Referencing_EVM">Referencing EVM</a>
+</p>
+</li>
+<li>
+<p>
+<a href="#Email_Lists">Email lists</a>
+</p>
+</li>
+</ul></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="A_intro">Introduction to EVM</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>The EVidenceModeler (aka EVM) software combines ab intio gene predictions and protein and transcript alignments into weighted consensus gene structures.  EVM provides a flexible and intuitive framework for combining diverse evidence types into a single automated gene structure annotation system.</p></div>
+<div class="paragraph"><p>Inputs to EVM include the genome sequence, gene predictions and alignment data in GFF3 format, and a list of numeric weight values to be applied to each type of evidence.  The weights can be configured manually.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="Obtaining_EVM">Obtaining and Installing EVM</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Download EVM at the <a href="http://sourceforge.net/projects/evidencemodeler">EVM-sourceforge-download</a>.
+After downloading the software, untar-gunzip at its permanent location, ie. /usr/local/bin  This location will be referred to below as $EVM_HOME.</p></div>
+<div class="ulist"><ul>
+<li>
+<p>
+To fully leverage high quality transcript alignments, you should download and install <a href="http://pasa.sf.net">PASA</a>
+</p>
+</li>
+</ul></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="Preparing_inputs">Preparing Inputs to EVM</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>EVM requires genome sequences in Fasta format and all gene structures and alignment evidences described in <a href="http://www.sequenceontology.org/gff3.shtml">GFF3</a> format.</p></div>
+<div class="paragraph"><p>Sample data corresponding to the Rice genome are provided in the EVM distribution and can be downloaded as EVM_sample_data_Rice.tar.gz</p></div>
+<div class="sect2">
+<h3 id="_the_evidence_weights_file">The Evidence Weights File</h3>
+<div class="paragraph"><p>The weights file has three columns including the evidence class, type, and weight.  The class parameter can be one of the following: ABINITIO_PREDICTION, PROTEIN, or TRANSCRIPT.  These are the only input types accepted by EVM currently.  An example weight file looks like so:</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><code>ABINITIO_PREDICTION      augustus       1
+ABINITIO_PREDICTION      twinscan       1
+ABINITIO_PREDICTION      glimmerHMM      1
+PROTEIN         spliced_protein_alignments 1
+PROTEIN         genewise_protein_alignments   5
+TRANSCRIPT      spliced_transcript_alignments      1
+TRANSCRIPT      PASA_transcript_assemblies      10</code></pre>
+</div></div>
+<div class="paragraph"><p>The weights can be set intuitively (ie. weight(pasa) &gt;&gt; weight (protein) &gt;= weight(prediction)).</p></div>
+<div class="paragraph"><p>You can choose weights such as:</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><code>ab initio predictions, weight = 1</code></pre>
+</div></div>
+<div class="literalblock">
+<div class="content">
+<pre><code>protein alignments, weight = 1</code></pre>
+</div></div>
+<div class="paragraph"><p>If you have high quality genewise alignments, perhaps weight that between 2 and 5.</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><code>alignments of ESTs from related species, weight = 1</code></pre>
+</div></div>
+<div class="literalblock">
+<div class="content">
+<pre><code>PASA alignment assemblies, weight = 10</code></pre>
+</div></div>
+<div class="paragraph"><p>An additional evidence class OTHER_PREDICTION is provided and can be used with complete gene predictions that do not provide an indication of intergenic regions.  This class can be used with trusted forms of complete predictions.  For example, the subset of ab initio predictions that demonstrate full-length homology to known proteins can be extracted as another data tier and provided to EVM using the OTHER_PREDICTION evidence class.</p></div>
+<div class="paragraph"><p>The GFF3 format for gene predictions (and not alignments!) should look like so:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>Contig1 glimmerHMM      gene    57494   59941   .       +       .       ID=1.tPRED000022;Name=glimmerHMM model 1.m000022
+Contig1 glimmerHMM      mRNA    57494   59941   .       +       .       ID=1.m000022;Parent=1.tPRED000022
+Contig1 glimmerHMM      exon    57494   57706   .       +       .       ID=1.e145;Parent=1.m000022
+Contig1 glimmerHMM      CDS     57494   57706   .       +       0       ID=cds_of_1.m000022;Parent=1.m000022
+Contig1 glimmerHMM      exon    58087   58207   .       +       .       ID=1.e146;Parent=1.m000022
+Contig1 glimmerHMM      CDS     58087   58207   .       +       0       ID=cds_of_1.m000022;Parent=1.m000022
+Contig1 glimmerHMM      exon    58371   58545   .       +       .       ID=1.e147;Parent=1.m000022
+Contig1 glimmerHMM      CDS     58371   58545   .       +       1       ID=cds_of_1.m000022;Parent=1.m000022
+Contig1 glimmerHMM      exon    59118   59188   .       +       .       ID=1.e148;Parent=1.m000022
+Contig1 glimmerHMM      CDS     59118   59188   .       +       2       ID=cds_of_1.m000022;Parent=1.m000022
+Contig1 glimmerHMM      exon    59307   59941   .       +       .       ID=1.e149;Parent=1.m000022
+Contig1 glimmerHMM      CDS     59307   59941   .       +       1       ID=cds_of_1.m000022;Parent=1.m000022</code></pre>
+</div></div>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">Special requirements for EVM GFF3: The structure of the gene prediction format is gene&#8594;(mRNA&#8594;(exon&#8594;cds(?))(+) )(\+) . What is meant by this is that more than one mRNA can link to a gene, and each mRNA has one or more exons, each exon having at most one CDS segment but perhaps no CDS segment if it&#8217;s entirely untranslated (UTR).   The child/parent relationships between the features are indicated by the Parent= part in the 9th field.  The identifiers for gene&#8217;s, mRNA&#8217;s, and exon&#8217;s need to be unique.  The CDS identifier does not need to be unique.  Also, if an exon is shared among two different transcripts, be sure to duplicate them and present them as distinct exon features with unique ids.  EVM doesn&#8217;t consider evidence for alternative splicing.  Validate your gene predictions gff3 file using the included script: $EVM_BASE_DIR/EvmUtils/gff3_gene_prediction_file_validator.pl .  Recommended genefinders for eukaryotic genefinding include <a href="http://www.cbcb.umd.edu/software/GlimmerHMM">GlimmerHMM</a>, <a href="http://homepage.mac.com/iankorf/">SNAP</a>, <a href="http://augustus.gobics.de/">Augustus</a>, <a href="http://exon.biology.gatech.edu/hmmchoice.html">GeneMarkHMM</a>, and <a href="http://linux1.softberry.com/berry.phtml?topic=fgenesh&amp;group=programs&amp;subgroup=gfind">FGeneSH</a>.</td>
+</tr></table>
+</div>
+<div class="paragraph"><p>The GFF3 format for alignments (protein or ESTs) should be described by an alternative GFF3 format that looks like so:</p></div>
+<div class="listingblock">
+<div class="content">
+<pre><code>Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     8208    8276    50.00   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 1 23
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     12661   12807   28.57   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 23 73
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     22778   22941   24.53   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 73 127
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     26872   26978   25.71   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 127 163
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     27082   27137   44.44   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 163 181
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     27227   27445   21.92   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 182 250
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     27533   27753   49.32   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 251 321
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     27998   28380   28.35   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 321 447
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     32358   32443   42.86   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 448 476
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     40501   40587   32.14   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 476 505
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     41531   41676   33.33   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 505 554
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     57112   57161   37.50   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 554 570
+
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     8392    8470    50.00   -       .       ID=match.nap.nr_minus_rice.fasta.37;Target=RF|YP_440341.1|83716234|NC_007650 196 222
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     7650    7786    26.09   -       .       ID=match.nap.nr_minus_rice.fasta.37;Target=RF|YP_440341.1|83716234|NC_007650 222 268
+
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     8386    8509    26.83   -       .       ID=match.nap.nr_minus_rice.fasta.38;Target=RF|YP_099363.1|53713371|NC_006347 1 42
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     7635    7786    24.00   -       .       ID=match.nap.nr_minus_rice.fasta.38;Target=RF|YP_099363.1|53713371|NC_006347 42 92
+
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     9390    9557    55.36   -       .       ID=match.nap.nr_minus_rice.fasta.36;Target=RF|NP_353291.1|15887610|NC_003062 48 103
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     9091    9294    53.42   -       .       ID=match.nap.nr_minus_rice.fasta.36;Target=RF|NP_353291.1|15887610|NC_003062 104 175
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     8807    8979    55.17   -       .       ID=match.nap.nr_minus_rice.fasta.36;Target=RF|NP_353291.1|15887610|NC_003062 176 234
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     8639    8725    48.28   -       .       ID=match.nap.nr_minus_rice.fasta.36;Target=RF|NP_353291.1|15887610|NC_003062 234 264
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     8386    8549    48.15   -       .       ID=match.nap.nr_minus_rice.fasta.36;Target=RF|NP_353291.1|15887610|NC_003062 264 319
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     7635    7786    30.00   -       .       ID=match.nap.nr_minus_rice.fasta.36;Target=RF|NP_353291.1|15887610|NC_003062 319 369</code></pre>
+</div></div>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">Alignments (EST or protein) provided to EVM should be spliced alignments, and not simple blast results.  Spliced alignments will provide intron-aware alignments, with evidence for intron and exon structures.  Blast will not do this.  Recommended programs for generating spliced alignments of ESTs or proteins include AAT, Exonerate, and GeneWise.   In the above format, the link between individual alignment segments of a single alignment chain are implied by all rows sharing the same identifier (ID='').  No parent/child relationships are explicitly indicated here, as is done with the gene prediction formats.</td>
+</tr></table>
+</div>
+<div class="paragraph"><p>A simple example is provided with the EVM distribution.  Larger data sets are provided on the download page.</p></div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="Running_EVM">Running EVM</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Now that you have generated all the required inputs to EVM, you are ready to execute the system.  Running EVM involves the following steps: partitioning the inputs into smaller data sets, creating a series of commands to execute (for grid or local execution), executing EVM on each of the partitioned data sets, and finally combining the outputs.  Each of these steps is described below.</p></div>
+<div class="sect2">
+<h3 id="_partitioning_the_inputs">Partitioning the Inputs</h3>
+<div class="paragraph"><p>The genome sequences and gff3 files are partitioned based on individual contigs, and large contigs are segmented into smaller overlapping chunks.  Partition the data like so:</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><code>$EVM_HOME/EvmUtils/partition_EVM_inputs.pl --genome genome.fasta \
+     --gene_predictions gene_predictions.gff3 --protein_alignments protein_alignments.gff3 \
+     --transcript_alignments transcript_alignments.gff3 \
+     --segmentSize 100000 --overlapSize 10000 --partition_listing partitions_list.out</code></pre>
+</div></div>
+<div class="paragraph"><p>To reduce memory requirements, the <strong>--segmentSize</strong> parameter should be set to less than 1 Mb.  The <strong>--overlapSize</strong> should be set to a length at least two standard deviations greater than the expected gene length, to minimize the likelihood of missing a complete gene structure within any single segment length.</p></div>
+<div class="paragraph"><p>A separate directory is created for every contig which houses the corresponding contig-specific subset of the data, and additional subdirectories will exist where long contigs were further processed into overlapping chunks.</p></div>
+<div class="paragraph"><p>A summary of the partitions is provided in the <strong>partitions_list.out</strong> file (parameter to <strong>--partition_listing</strong>).  This file is used by subsequent scripts to identify all the partitioned inputs.</p></div>
+</div>
+<div class="sect2">
+<h3 id="_generating_the_evm_command_set">Generating the EVM Command Set</h3>
+<div class="paragraph"><p>To run EVM on each of the data partitions, first create a list of commands to be executed.  Why do we create this command list instead of just executing the commands?  By creating the list of commands to be executed, we provide the ability to subsequently run these commands either locally or on the computing grid.  The choice of execution is described further below.  First, create the list of commands as follows:</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><code>$EVM_HOME/EvmUtils/write_EVM_commands.pl --genome genome.fasta --weights `pwd`/weights.txt \
+      --gene_predictions gene_predictions.gff3 --protein_alignments protein_alignments.gff3 \
+      --transcript_alignments transcript_alignments.gff3 \
+      --output_file_name evm.out  --partitions partitions_list.out &gt;  commands.list</code></pre>
+</div></div>
+<div class="paragraph"><p>Use -h with this script to examine all the various options.  Additional options of interest includes:</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><code>--stop_codons        :list of stop codons that provide valid stops (default: TAA,TGA,TAG)</code></pre>
+</div></div>
+<div class="paragraph"><p>For organisms such as Tetrahymena, where only a single stop codon is used as <em>stop</em>, you would define that single stop codon with the above option.  The others are read thru.</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><code>--RECURSE               :recurse into long introns to find genes that are nested within introns of other genes</code></pre>
+</div></div>
+<div class="literalblock">
+<div class="content">
+<pre><code>--forwardStrandOnly
+--reverseStrandOnly</code></pre>
+</div></div>
+<div class="paragraph"><p>The <strong>evm.out</strong> parameter value above indicates the name of the output file to be written during each of the EVM executions.</p></div>
+<div class="paragraph"><p>The commands are written to the <strong>commands.list</strong> file as stdout.  These commands can be executed locally or on a computing grid.  To run the commands in parallel on the grid (fastest, usually), run all the commands in the <em>commands.list</em> file using whatever mechanism you have for running commands on your computing grid.</p></div>
+<div class="paragraph"><p>If you would must run the commands serially and locally, run the following:</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><code>$EVM_HOME/EvmUtils/execute_EVM_commands.pl commands.list | tee run.log</code></pre>
+</div></div>
+<div class="paragraph"><p>The exit value (0 for success) for each command is reported by stdout and captured in the <strong>run.log</strong> file above.</p></div>
+<div class="paragraph"><p>Whichever method you choose, be sure that the jobs all execute successfully before proceeding.</p></div>
+</div>
+<div class="sect2">
+<h3 id="_combining_the_partitions">Combining the Partitions</h3>
+<div class="paragraph"><p>The data sets corresponding to single contigs partitioned into overlapping segments must be joined into single outputs, and redundant or discrepant predictions in the overlapping regions of segments must be resolved.  This operation is performed by the following utility run like so:</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><code>$EVM_HOME/EvmUtils/recombine_EVM_partial_outputs.pl --partitions partitions_list.out --output_file_name evm.out</code></pre>
+</div></div>
+</div>
+<div class="sect2">
+<h3 id="_convert_to_gff3_format">Convert to GFF3 Format</h3>
+<div class="paragraph"><p>The raw output provided by EVM describes the consensus gene structures in a tab-delimited format, listing each exon with the set of evidences that fully support each exon structure. An example gene structure in this raw format is shown below:</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><code># EVM prediction: 80081-81514 orient(+) score(5464) noncoding_equivalent(442) raw_noncoding(2193) offset(1751)
+80081   80104   initial+        1       3       glimmerA_ID=cds_of_1954.m01308;Parent=1954.m01308
+80463   80561   internal+       1       3       genemarkHMM_ID=cds_of_1954.m00088;Parent=1954.m00088,glimmerA_ID=cds_of_1954.m01308;Parent=1954.m01308
+80656   80853   internal+       1       3       gap2-GUDB.arab/arab:NP169299/match.gap2.GUDB.arab.14861313,genemarkHMM_ID=cds_of_1954.m00088;Parent=1954.m00088,genscan+_ID=cds_of_1954.m00156;Parent=1954.m00156,glimmerA_ID=cds_of_1954.m01308;Parent=1954.m01308,nap-nraa/PIR:C84824/match.nap.nraa.48729919
+81026   81170   internal+       1       1       gap2-Ceres.arab.cdna/32440./match.gap2.Ceres.arab.cdna.24436708,gap2-GUDB.arab/arab:NP169299/match.gap2.GUDB.arab.14861314,genemarkHMM_ID=cds_of_1954.m00088;Parent=1954.m00088,genscan+_ID=cds_of_1954.m00156;Parent=1954.m00156,nap-nraa/GP:20198307/match.nap.nraa.48729935,nap-nraa/PIR:C84824/match.nap.nraa.48729925
+81258   81514   terminal+       2       3       genemarkHMM_ID=cds_of_1954.m00088;Parent=1954.m00088,glimmerA_ID=cds_of_1954.m01308;Parent=1954.m01308</code></pre>
+</div></div>
+<div class="paragraph"><p>This output is found as the <strong>evm.out</strong> (<strong>--output_file_name</strong> value above) in each contig directory.  The raw outputs can be converted to the standard GFF3 format like so:</p></div>
+<div class="literalblock">
+<div class="content">
+<pre><code>$EVM_HOME/EvmUtils/convert_EVM_outputs_to_GFF3.pl  --partitions partitions_list.out --output evm.out  --genome genome.fasta</code></pre>
+</div></div>
+<div class="paragraph"><p>After running the above script, an <strong>evm.out.gff3</strong> file will exist in each of the contig directories.</p></div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="Referencing_EVM">Referencing EVM</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Haas et al. Automated eukaryotic gene structure annotation using EVidenceModeler and the Program to Assemble Spliced Alignments.  <a href="http://genomebiology.com/2008/9/1/R7">Genome Biology 2008, 9:R7doi:10.1186/gb-2008-9-1-r7.</a></p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="Email_Lists">Email Lists</h2>
+<div class="sectionbody">
+<div class="ulist"><ul>
+<li>
+<p>
+<a href="https://lists.sourceforge.net/lists/listinfo/evidencemodeler-users">evidencemodeler-users@lists.sf.net</a> for assistance and subscribe for announcements of new releases.
+</p>
+</li>
+</ul></div>
+</div>
+</div>
+</div>
+<div id="footnotes"><hr /></div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2013-08-13 16:04:06 EDT
+</div>
+</div>
+</body>
+</html>

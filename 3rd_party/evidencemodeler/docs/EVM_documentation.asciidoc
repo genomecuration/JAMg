@@ -1,0 +1,228 @@
+EVidenceModeler (EVM)
+=====================
+
+image:logo/evm.jpg["EVM_logo",height=100]
+
+Contents
+--------
+
+- <<A_intro, Introduction to EVM>>
+- <<Obtaining_EVM, Obtaining and Installing EVM>>
+- <<Running_EVM, Running EVM>>
+- <<Preparing_inputs, Preparing Inputs to EVM>>
+- <<Referencing_EVM, Referencing EVM>>
+- <<Email_Lists, Email lists>>
+
+[[A_intro]]
+Introduction to EVM
+-------------------
+
+The EVidenceModeler (aka EVM) software combines ab intio gene predictions and protein and transcript alignments into weighted consensus gene structures.  EVM provides a flexible and intuitive framework for combining diverse evidence types into a single automated gene structure annotation system. 
+
+Inputs to EVM include the genome sequence, gene predictions and alignment data in GFF3 format, and a list of numeric weight values to be applied to each type of evidence.  The weights can be configured manually.
+
+[[Obtaining_EVM]]
+Obtaining and Installing EVM
+-----------------------------
+
+Download EVM at the http://sourceforge.net/projects/evidencemodeler[EVM-sourceforge-download].  
+After downloading the software, untar-gunzip at its permanent location, ie. /usr/local/bin  This location will be referred to below as $EVM_HOME.
+
+- To fully leverage high quality transcript alignments, you should download and install http://pasa.sf.net[PASA]
+
+[[Preparing_inputs]]
+Preparing Inputs to EVM
+-----------------------
+
+EVM requires genome sequences in Fasta format and all gene structures and alignment evidences described in http://www.sequenceontology.org/gff3.shtml[GFF3] format.
+
+Sample data corresponding to the Rice genome are provided in the EVM distribution and can be downloaded as EVM_sample_data_Rice.tar.gz
+
+
+The Evidence Weights File
+~~~~~~~~~~~~~~~~~~~~~~~~~
+  
+The weights file has three columns including the evidence class, type, and weight.  The class parameter can be one of the following: ABINITIO_PREDICTION, PROTEIN, or TRANSCRIPT.  These are the only input types accepted by EVM currently.  An example weight file looks like so:
+
+
+   ABINITIO_PREDICTION      augustus       1
+   ABINITIO_PREDICTION      twinscan       1
+   ABINITIO_PREDICTION      glimmerHMM      1
+   PROTEIN         spliced_protein_alignments 1
+   PROTEIN         genewise_protein_alignments   5
+   TRANSCRIPT      spliced_transcript_alignments      1
+   TRANSCRIPT      PASA_transcript_assemblies      10
+
+The weights can be set intuitively (ie. weight(pasa) >> weight (protein) >= weight(prediction)).
+
+You can choose weights such as:
+
+  ab initio predictions, weight = 1
+
+  protein alignments, weight = 1
+
+If you have high quality genewise alignments, perhaps weight that between 2 and 5.
+
+  alignments of ESTs from related species, weight = 1
+
+  PASA alignment assemblies, weight = 10 
+
+
+An additional evidence class OTHER_PREDICTION is provided and can be used with complete gene predictions that do not provide an indication of intergenic regions.  This class can be used with trusted forms of complete predictions.  For example, the subset of ab initio predictions that demonstrate full-length homology to known proteins can be extracted as another data tier and provided to EVM using the OTHER_PREDICTION evidence class.
+
+The GFF3 format for gene predictions (and not alignments!) should look like so:
+
+----------------------------------------------------------------------------------------------------
+Contig1 glimmerHMM      gene    57494   59941   .       +       .       ID=1.tPRED000022;Name=glimmerHMM model 1.m000022
+Contig1 glimmerHMM      mRNA    57494   59941   .       +       .       ID=1.m000022;Parent=1.tPRED000022
+Contig1 glimmerHMM      exon    57494   57706   .       +       .       ID=1.e145;Parent=1.m000022
+Contig1 glimmerHMM      CDS     57494   57706   .       +       0       ID=cds_of_1.m000022;Parent=1.m000022
+Contig1 glimmerHMM      exon    58087   58207   .       +       .       ID=1.e146;Parent=1.m000022
+Contig1 glimmerHMM      CDS     58087   58207   .       +       0       ID=cds_of_1.m000022;Parent=1.m000022
+Contig1 glimmerHMM      exon    58371   58545   .       +       .       ID=1.e147;Parent=1.m000022
+Contig1 glimmerHMM      CDS     58371   58545   .       +       1       ID=cds_of_1.m000022;Parent=1.m000022
+Contig1 glimmerHMM      exon    59118   59188   .       +       .       ID=1.e148;Parent=1.m000022
+Contig1 glimmerHMM      CDS     59118   59188   .       +       2       ID=cds_of_1.m000022;Parent=1.m000022
+Contig1 glimmerHMM      exon    59307   59941   .       +       .       ID=1.e149;Parent=1.m000022
+Contig1 glimmerHMM      CDS     59307   59941   .       +       1       ID=cds_of_1.m000022;Parent=1.m000022
+----------------------------------------------------------------------------------------------------
+
+
+[NOTE]
+Special requirements for EVM GFF3: The structure of the gene prediction format is gene->(mRNA->(exon->cds(?))(\+) )(\+) . What is meant by this is that more than one mRNA can link to a gene, and each mRNA has one or more exons, each exon having at most one CDS segment but perhaps no CDS segment if it's entirely untranslated (UTR).   The child/parent relationships between the features are indicated by the Parent= part in the 9th field.  The identifiers for gene's, mRNA's, and exon's need to be unique.  The CDS identifier does not need to be unique.  Also, if an exon is shared among two different transcripts, be sure to duplicate them and present them as distinct exon features with unique ids.  EVM doesn't consider evidence for alternative splicing.  Validate your gene predictions gff3 file using the included script: $EVM_BASE_DIR/EvmUtils/gff3_gene_prediction_file_validator.pl .  Recommended genefinders for eukaryotic genefinding include http://www.cbcb.umd.edu/software/GlimmerHMM[GlimmerHMM], http://homepage.mac.com/iankorf/[SNAP], http://augustus.gobics.de/[Augustus], http://exon.biology.gatech.edu/hmmchoice.html[GeneMarkHMM], and http://linux1.softberry.com/berry.phtml?topic=fgenesh&group=programs&subgroup=gfind[FGeneSH].
+
+The GFF3 format for alignments (protein or ESTs) should be described by an alternative GFF3 format that looks like so:
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     8208    8276    50.00   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 1 23
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     12661   12807   28.57   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 23 73
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     22778   22941   24.53   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 73 127
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     26872   26978   25.71   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 127 163
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     27082   27137   44.44   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 163 181
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     27227   27445   21.92   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 182 250
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     27533   27753   49.32   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 251 321
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     27998   28380   28.35   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 321 447
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     32358   32443   42.86   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 448 476
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     40501   40587   32.14   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 476 505
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     41531   41676   33.33   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 505 554
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     57112   57161   37.50   +       .       ID=match.nap.nr_minus_rice.fasta.120;Target=RF|XP_623193.1|66524404|XM_623190 554 570
+
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     8392    8470    50.00   -       .       ID=match.nap.nr_minus_rice.fasta.37;Target=RF|YP_440341.1|83716234|NC_007650 196 222
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     7650    7786    26.09   -       .       ID=match.nap.nr_minus_rice.fasta.37;Target=RF|YP_440341.1|83716234|NC_007650 222 268
+
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     8386    8509    26.83   -       .       ID=match.nap.nr_minus_rice.fasta.38;Target=RF|YP_099363.1|53713371|NC_006347 1 42
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     7635    7786    24.00   -       .       ID=match.nap.nr_minus_rice.fasta.38;Target=RF|YP_099363.1|53713371|NC_006347 42 92
+
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     9390    9557    55.36   -       .       ID=match.nap.nr_minus_rice.fasta.36;Target=RF|NP_353291.1|15887610|NC_003062 48 103
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     9091    9294    53.42   -       .       ID=match.nap.nr_minus_rice.fasta.36;Target=RF|NP_353291.1|15887610|NC_003062 104 175
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     8807    8979    55.17   -       .       ID=match.nap.nr_minus_rice.fasta.36;Target=RF|NP_353291.1|15887610|NC_003062 176 234
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     8639    8725    48.28   -       .       ID=match.nap.nr_minus_rice.fasta.36;Target=RF|NP_353291.1|15887610|NC_003062 234 264
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     8386    8549    48.15   -       .       ID=match.nap.nr_minus_rice.fasta.36;Target=RF|NP_353291.1|15887610|NC_003062 264 319
+Contig1 nap-nr_minus_rice.fasta nucleotide_to_protein_match     7635    7786    30.00   -       .       ID=match.nap.nr_minus_rice.fasta.36;Target=RF|NP_353291.1|15887610|NC_003062 319 369
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+[NOTE]
+Alignments (EST or protein) provided to EVM should be spliced alignments, and not simple blast results.  Spliced alignments will provide intron-aware alignments, with evidence for intron and exon structures.  Blast will not do this.  Recommended programs for generating spliced alignments of ESTs or proteins include AAT, Exonerate, and GeneWise.   In the above format, the link between individual alignment segments of a single alignment chain are implied by all rows sharing the same identifier (ID='').  No parent/child relationships are explicitly indicated here, as is done with the gene prediction formats.
+
+
+A simple example is provided with the EVM distribution.  Larger data sets are provided on the download page.
+
+
+[[Running_EVM]]
+Running EVM
+-----------
+
+Now that you have generated all the required inputs to EVM, you are ready to execute the system.  Running EVM involves the following steps: partitioning the inputs into smaller data sets, creating a series of commands to execute (for grid or local execution), executing EVM on each of the partitioned data sets, and finally combining the outputs.  Each of these steps is described below.
+
+Partitioning the Inputs
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The genome sequences and gff3 files are partitioned based on individual contigs, and large contigs are segmented into smaller overlapping chunks.  Partition the data like so:
+
+   $EVM_HOME/EvmUtils/partition_EVM_inputs.pl --genome genome.fasta \
+        --gene_predictions gene_predictions.gff3 --protein_alignments protein_alignments.gff3 \
+        --transcript_alignments transcript_alignments.gff3 \
+        --segmentSize 100000 --overlapSize 10000 --partition_listing partitions_list.out
+
+To reduce memory requirements, the *--segmentSize* parameter should be set to less than 1 Mb.  The *--overlapSize* should be set to a length at least two standard deviations greater than the expected gene length, to minimize the likelihood of missing a complete gene structure within any single segment length.  
+
+A separate directory is created for every contig which houses the corresponding contig-specific subset of the data, and additional subdirectories will exist where long contigs were further processed into overlapping chunks.
+
+A summary of the partitions is provided in the *partitions_list.out* file (parameter to *--partition_listing*).  This file is used by subsequent scripts to identify all the partitioned inputs.
+
+
+Generating the EVM Command Set
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To run EVM on each of the data partitions, first create a list of commands to be executed.  Why do we create this command list instead of just executing the commands?  By creating the list of commands to be executed, we provide the ability to subsequently run these commands either locally or on the computing grid.  The choice of execution is described further below.  First, create the list of commands as follows:
+
+     $EVM_HOME/EvmUtils/write_EVM_commands.pl --genome genome.fasta --weights `pwd`/weights.txt \
+           --gene_predictions gene_predictions.gff3 --protein_alignments protein_alignments.gff3 \
+           --transcript_alignments transcript_alignments.gff3 \
+           --output_file_name evm.out  --partitions partitions_list.out >  commands.list
+
+Use -h with this script to examine all the various options.  Additional options of interest includes:
+      
+    --stop_codons        :list of stop codons that provide valid stops (default: TAA,TGA,TAG)   
+
+For organisms such as Tetrahymena, where only a single stop codon is used as 'stop', you would define that single stop codon with the above option.  The others are read thru.
+
+	--RECURSE               :recurse into long introns to find genes that are nested within introns of other genes
+
+    --forwardStrandOnly
+    --reverseStrandOnly
+
+
+The *evm.out* parameter value above indicates the name of the output file to be written during each of the EVM executions.
+
+The commands are written to the *commands.list* file as stdout.  These commands can be executed locally or on a computing grid.  To run the commands in parallel on the grid (fastest, usually), run all the commands in the 'commands.list' file using whatever mechanism you have for running commands on your computing grid.
+
+If you would must run the commands serially and locally, run the following:
+
+     $EVM_HOME/EvmUtils/execute_EVM_commands.pl commands.list | tee run.log
+
+The exit value (0 for success) for each command is reported by stdout and captured in the *run.log* file above.
+
+Whichever method you choose, be sure that the jobs all execute successfully before proceeding.  
+
+Combining the Partitions
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The data sets corresponding to single contigs partitioned into overlapping segments must be joined into single outputs, and redundant or discrepant predictions in the overlapping regions of segments must be resolved.  This operation is performed by the following utility run like so:
+
+   $EVM_HOME/EvmUtils/recombine_EVM_partial_outputs.pl --partitions partitions_list.out --output_file_name evm.out
+
+Convert to GFF3 Format
+~~~~~~~~~~~~~~~~~~~~~~
+
+The raw output provided by EVM describes the consensus gene structures in a tab-delimited format, listing each exon with the set of evidences that fully support each exon structure. An example gene structure in this raw format is shown below:
+  
+  # EVM prediction: 80081-81514 orient(+) score(5464) noncoding_equivalent(442) raw_noncoding(2193) offset(1751)
+  80081   80104   initial+        1       3       glimmerA_ID=cds_of_1954.m01308;Parent=1954.m01308
+  80463   80561   internal+       1       3       genemarkHMM_ID=cds_of_1954.m00088;Parent=1954.m00088,glimmerA_ID=cds_of_1954.m01308;Parent=1954.m01308
+  80656   80853   internal+       1       3       gap2-GUDB.arab/arab:NP169299/match.gap2.GUDB.arab.14861313,genemarkHMM_ID=cds_of_1954.m00088;Parent=1954.m00088,genscan+_ID=cds_of_1954.m00156;Parent=1954.m00156,glimmerA_ID=cds_of_1954.m01308;Parent=1954.m01308,nap-nraa/PIR:C84824/match.nap.nraa.48729919
+  81026   81170   internal+       1       1       gap2-Ceres.arab.cdna/32440./match.gap2.Ceres.arab.cdna.24436708,gap2-GUDB.arab/arab:NP169299/match.gap2.GUDB.arab.14861314,genemarkHMM_ID=cds_of_1954.m00088;Parent=1954.m00088,genscan+_ID=cds_of_1954.m00156;Parent=1954.m00156,nap-nraa/GP:20198307/match.nap.nraa.48729935,nap-nraa/PIR:C84824/match.nap.nraa.48729925
+  81258   81514   terminal+       2       3       genemarkHMM_ID=cds_of_1954.m00088;Parent=1954.m00088,glimmerA_ID=cds_of_1954.m01308;Parent=1954.m01308
+                                                                                                                                
+This output is found as the *evm.out* (*--output_file_name* value above) in each contig directory.  The raw outputs can be converted to the standard GFF3 format like so:
+
+   $EVM_HOME/EvmUtils/convert_EVM_outputs_to_GFF3.pl  --partitions partitions_list.out --output evm.out  --genome genome.fasta
+
+After running the above script, an *evm.out.gff3* file will exist in each of the contig directories.
+
+
+[[Referencing_EVM]]
+Referencing EVM
+---------------
+
+Haas et al. Automated eukaryotic gene structure annotation using EVidenceModeler and the Program to Assemble Spliced Alignments.  http://genomebiology.com/2008/9/1/R7[Genome Biology 2008, 9:R7doi:10.1186/gb-2008-9-1-r7.]
+
+[[Email_Lists]]
+Email Lists
+-----------
+
+- https://lists.sourceforge.net/lists/listinfo/evidencemodeler-users[evidencemodeler-users@lists.sf.net] for assistance and subscribe for announcements of new releases.
+
+
+
+

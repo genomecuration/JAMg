@@ -1,0 +1,225 @@
+scaffold_88	exonerate:cdna2genome	stop_codon	49188	49190	.	-	.	gene_id ".438"; transcript_id ".221";
+scaffold_88	exonerate:cdna2genome	CDS	49191	49433	.	-	0	gene_id ".438"; transcript_id ".221";
+scaffold_88	exonerate:cdna2genome	CDS	49568	49701	.	-	2	gene_id ".438"; transcript_id ".221";
+scaffold_88	exonerate:cdna2genome	CDS	50009	50093	.	-	0	gene_id ".438"; transcript_id ".221";
+scaffold_88	exonerate:cdna2genome	start_codon	50091	50093	.	-	.	gene_id ".438"; transcript_id ".221";
+scaffold_88	exonerate:cdna2genome	5UTR	50094	50393	.	-	0	gene_id ".438"; transcript_id ".221";
+scaffold_88	exonerate:cdna2genome	5UTR	50344	51867	.	-	0	gene_id ".438"; transcript_id ".221";
+
+scaffold_88	exonerate:cdna2genome	stop_codon	49188	49190	.	-	.	gene_id ".438"; transcript_id ".396";
+scaffold_88	exonerate:cdna2genome	CDS	49191	49433	.	-	0	gene_id ".438"; transcript_id ".396";
+scaffold_88	exonerate:cdna2genome	CDS	49568	49701	.	-	2	gene_id ".438"; transcript_id ".396";
+scaffold_88	exonerate:cdna2genome	CDS	50009	50093	.	-	0	gene_id ".438"; transcript_id ".396";
+scaffold_88	exonerate:cdna2genome	start_codon	50091	50093	.	-	.	gene_id ".438"; transcript_id ".396";
+scaffold_88	exonerate:cdna2genome	5UTR	50094	50393	.	-	0	gene_id ".438"; transcript_id ".396";
+scaffold_88	exonerate:cdna2genome	5UTR	50344	51867	.	-	0	gene_id ".438"; transcript_id ".396";
+
+scaffold_88	exonerate:cdna2genome	5UTR	50009	50393	.	+	0	gene_id ".526"; transcript_id ".221";
+scaffold_88	exonerate:cdna2genome	5UTR	50344	51551	.	+	0	gene_id ".526"; transcript_id ".221";
+scaffold_88	exonerate:cdna2genome	start_codon	51552	51554	.	+	.	gene_id ".526"; transcript_id ".221";
+scaffold_88	exonerate:cdna2genome	CDS	51552	51867	.	+	0	gene_id ".526"; transcript_id ".221";
+scaffold_88	exonerate:cdna2genome	CDS	52669	52743	.	+	2	gene_id ".526"; transcript_id ".221";
+scaffold_88	exonerate:cdna2genome	CDS	53125	53320	.	+	2	gene_id ".526"; transcript_id ".221";
+scaffold_88	exonerate:cdna2genome	CDS	53432	53528	.	+	1	gene_id ".526"; transcript_id ".221";
+scaffold_88	exonerate:cdna2genome	CDS	53649	53822	.	+	0	gene_id ".526"; transcript_id ".221";
+scaffold_88	exonerate:cdna2genome	CDS	54226	54375	.	+	0	gene_id ".526"; transcript_id ".221";
+scaffold_88	exonerate:cdna2genome	CDS	54452	54672	.	+	0	gene_id ".526"; transcript_id ".221";
+scaffold_88	exonerate:cdna2genome	CDS	54907	55282	.	+	1	gene_id ".526"; transcript_id ".221";
+scaffold_88	exonerate:cdna2genome	stop_codon	55283	55285	.	+	.	gene_id ".526"; transcript_id ".221";
+
+scaffold_88	exonerate:cdna2genome	5UTR	50009	50393	.	+	0	gene_id ".526"; transcript_id ".396";
+scaffold_88	exonerate:cdna2genome	5UTR	50344	51551	.	+	0	gene_id ".526"; transcript_id ".396";
+scaffold_88	exonerate:cdna2genome	start_codon	51552	51554	.	+	.	gene_id ".526"; transcript_id ".396";
+scaffold_88	exonerate:cdna2genome	CDS	51552	51867	.	+	0	gene_id ".526"; transcript_id ".396";
+scaffold_88	exonerate:cdna2genome	CDS	52669	52743	.	+	2	gene_id ".526"; transcript_id ".396";
+scaffold_88	exonerate:cdna2genome	CDS	53125	53320	.	+	2	gene_id ".526"; transcript_id ".396";
+scaffold_88	exonerate:cdna2genome	CDS	53432	53528	.	+	1	gene_id ".526"; transcript_id ".396";
+scaffold_88	exonerate:cdna2genome	CDS	53649	53822	.	+	0	gene_id ".526"; transcript_id ".396";
+scaffold_88	exonerate:cdna2genome	CDS	54226	54375	.	+	0	gene_id ".526"; transcript_id ".396";
+scaffold_88	exonerate:cdna2genome	CDS	54452	54672	.	+	0	gene_id ".526"; transcript_id ".396";
+scaffold_88	exonerate:cdna2genome	CDS	54907	55282	.	+	1	gene_id ".526"; transcript_id ".396";
+scaffold_88	exonerate:cdna2genome	stop_codon	55283	55285	.	+	.	gene_id ".526"; transcript_id ".396";
+
+scaffold_88	exonerate:cdna2genome	5UTR	129452	130573	.	+	0	gene_id ".135"; transcript_id ".439";
+scaffold_88	exonerate:cdna2genome	start_codon	130574	130576	.	+	.	gene_id ".135"; transcript_id ".439";
+scaffold_88	exonerate:cdna2genome	CDS	130574	130702	.	+	0	gene_id ".135"; transcript_id ".439";
+scaffold_88	exonerate:cdna2genome	CDS	136675	136862	.	+	0	gene_id ".135"; transcript_id ".439";
+scaffold_88	exonerate:cdna2genome	CDS	138906	138993	.	+	1	gene_id ".135"; transcript_id ".439";
+scaffold_88	exonerate:cdna2genome	CDS	139143	139253	.	+	0	gene_id ".135"; transcript_id ".439";
+scaffold_88	exonerate:cdna2genome	CDS	139566	139669	.	+	0	gene_id ".135"; transcript_id ".439";
+scaffold_88	exonerate:cdna2genome	CDS	139947	140140	.	+	1	gene_id ".135"; transcript_id ".439";
+scaffold_88	exonerate:cdna2genome	CDS	140338	140458	.	+	2	gene_id ".135"; transcript_id ".439";
+scaffold_88	exonerate:cdna2genome	CDS	140563	140698	.	+	1	gene_id ".135"; transcript_id ".439";
+scaffold_88	exonerate:cdna2genome	CDS	140782	141412	.	+	0	gene_id ".135"; transcript_id ".439";
+scaffold_88	exonerate:cdna2genome	CDS	141585	141716	.	+	2	gene_id ".135"; transcript_id ".439";
+scaffold_88	exonerate:cdna2genome	CDS	141980	142161	.	+	2	gene_id ".135"; transcript_id ".439";
+scaffold_88	exonerate:cdna2genome	CDS	142261	142440	.	+	0	gene_id ".135"; transcript_id ".439";
+scaffold_88	exonerate:cdna2genome	stop_codon	142441	142443	.	+	.	gene_id ".135"; transcript_id ".439";
+scaffold_88	exonerate:cdna2genome	3UTR	142444	143085	.	+	0	gene_id ".135"; transcript_id ".439";
+
+scaffold_88	exonerate:cdna2genome	stop_codon	175318	175320	.	-	.	gene_id ".216"; transcript_id ".39";
+scaffold_88	exonerate:cdna2genome	CDS	175321	175481	.	-	2	gene_id ".216"; transcript_id ".39";
+scaffold_88	exonerate:cdna2genome	CDS	175797	175947	.	-	0	gene_id ".216"; transcript_id ".39";
+scaffold_88	exonerate:cdna2genome	CDS	176074	176121	.	-	0	gene_id ".216"; transcript_id ".39";
+scaffold_88	exonerate:cdna2genome	start_codon	176119	176121	.	-	.	gene_id ".216"; transcript_id ".39";
+scaffold_88	exonerate:cdna2genome	5UTR	176122	176298	.	-	0	gene_id ".216"; transcript_id ".39";
+
+scaffold_88	exonerate:cdna2genome	5UTR	186877	187370	.	+	0	gene_id ".149"; transcript_id ".79";
+scaffold_88	exonerate:cdna2genome	start_codon	187371	187373	.	+	.	gene_id ".149"; transcript_id ".79";
+scaffold_88	exonerate:cdna2genome	CDS	187371	187389	.	+	0	gene_id ".149"; transcript_id ".79";
+scaffold_88	exonerate:cdna2genome	CDS	189194	189336	.	+	2	gene_id ".149"; transcript_id ".79";
+scaffold_88	exonerate:cdna2genome	CDS	190418	190580	.	+	0	gene_id ".149"; transcript_id ".79";
+scaffold_88	exonerate:cdna2genome	CDS	191936	192000	.	+	2	gene_id ".149"; transcript_id ".79";
+scaffold_88	exonerate:cdna2genome	stop_codon	192001	192003	.	+	.	gene_id ".149"; transcript_id ".79";
+scaffold_88	exonerate:cdna2genome	3UTR	192004	193101	.	+	0	gene_id ".149"; transcript_id ".79";
+
+scaffold_88	exonerate:cdna2genome	stop_codon	195215	195217	.	-	.	gene_id ".292"; transcript_id ".392";
+scaffold_88	exonerate:cdna2genome	CDS	195218	195420	.	-	2	gene_id ".292"; transcript_id ".392";
+scaffold_88	exonerate:cdna2genome	CDS	196310	196679	.	-	0	gene_id ".292"; transcript_id ".392";
+scaffold_88	exonerate:cdna2genome	start_codon	196677	196679	.	-	.	gene_id ".292"; transcript_id ".392";
+scaffold_88	exonerate:cdna2genome	5UTR	196680	196945	.	-	0	gene_id ".292"; transcript_id ".392";
+scaffold_88	exonerate:cdna2genome	5UTR	197527	200248	.	-	0	gene_id ".292"; transcript_id ".392";
+
+scaffold_88	exonerate:cdna2genome	stop_codon	213681	213683	.	-	.	gene_id ".189"; transcript_id ".56";
+scaffold_88	exonerate:cdna2genome	CDS	213684	214076	.	-	0	gene_id ".189"; transcript_id ".56";
+scaffold_88	exonerate:cdna2genome	5UTR	214077	215535	.	-	0	gene_id ".189"; transcript_id ".56";
+
+scaffold_88	exonerate:cdna2genome	stop_codon	346766	346768	.	-	.	gene_id ".328"; transcript_id ".17";
+scaffold_88	exonerate:cdna2genome	CDS	346769	346862	.	-	1	gene_id ".328"; transcript_id ".17";
+scaffold_88	exonerate:cdna2genome	CDS	347098	347225	.	-	0	gene_id ".328"; transcript_id ".17";
+scaffold_88	exonerate:cdna2genome	CDS	347649	347825	.	-	0	gene_id ".328"; transcript_id ".17";
+scaffold_88	exonerate:cdna2genome	CDS	349333	349549	.	-	1	gene_id ".328"; transcript_id ".17";
+scaffold_88	exonerate:cdna2genome	CDS	351074	351834	.	-	0	gene_id ".328"; transcript_id ".17";
+scaffold_88	exonerate:cdna2genome	CDS	377266	377349	.	-	0	gene_id ".328"; transcript_id ".17";
+scaffold_88	exonerate:cdna2genome	start_codon	377347	377349	.	-	.	gene_id ".328"; transcript_id ".17";
+scaffold_88	exonerate:cdna2genome	5UTR	377350	378389	.	-	0	gene_id ".328"; transcript_id ".17";
+
+scaffold_88	exonerate:cdna2genome	5UTR	378449	378790	.	+	0	gene_id ".364"; transcript_id ".101";
+scaffold_88	exonerate:cdna2genome	start_codon	378791	378793	.	+	.	gene_id ".364"; transcript_id ".101";
+scaffold_88	exonerate:cdna2genome	CDS	378791	378872	.	+	0	gene_id ".364"; transcript_id ".101";
+scaffold_88	exonerate:cdna2genome	CDS	379845	379945	.	+	2	gene_id ".364"; transcript_id ".101";
+scaffold_88	exonerate:cdna2genome	CDS	380446	380544	.	+	0	gene_id ".364"; transcript_id ".101";
+scaffold_88	exonerate:cdna2genome	CDS	380764	380832	.	+	0	gene_id ".364"; transcript_id ".101";
+scaffold_88	exonerate:cdna2genome	stop_codon	380833	380835	.	+	.	gene_id ".364"; transcript_id ".101";
+scaffold_88	exonerate:cdna2genome	3UTR	380836	381494	.	+	0	gene_id ".364"; transcript_id ".101";
+
+scaffold_88	exonerate:cdna2genome	stop_codon	385609	385611	.	-	.	gene_id ".363"; transcript_id ".323";
+scaffold_88	exonerate:cdna2genome	CDS	385612	385862	.	-	2	gene_id ".363"; transcript_id ".323";
+scaffold_88	exonerate:cdna2genome	CDS	386853	386922	.	-	0	gene_id ".363"; transcript_id ".323";
+scaffold_88	exonerate:cdna2genome	CDS	387373	387384	.	-	0	gene_id ".363"; transcript_id ".323";
+scaffold_88	exonerate:cdna2genome	start_codon	387382	387384	.	-	.	gene_id ".363"; transcript_id ".323";
+scaffold_88	exonerate:cdna2genome	5UTR	387385	388343	.	-	0	gene_id ".363"; transcript_id ".323";
+
+scaffold_88	exonerate:cdna2genome	stop_codon	392655	392657	.	-	.	gene_id ".138"; transcript_id ".130";
+scaffold_88	exonerate:cdna2genome	CDS	392658	392828	.	-	0	gene_id ".138"; transcript_id ".130";
+scaffold_88	exonerate:cdna2genome	CDS	393114	393177	.	-	1	gene_id ".138"; transcript_id ".130";
+scaffold_88	exonerate:cdna2genome	CDS	393303	393397	.	-	0	gene_id ".138"; transcript_id ".130";
+scaffold_88	exonerate:cdna2genome	CDS	393565	393853	.	-	1	gene_id ".138"; transcript_id ".130";
+scaffold_88	exonerate:cdna2genome	CDS	393977	394133	.	-	2	gene_id ".138"; transcript_id ".130";
+scaffold_88	exonerate:cdna2genome	CDS	394209	394791	.	-	0	gene_id ".138"; transcript_id ".130";
+scaffold_88	exonerate:cdna2genome	start_codon	394789	394791	.	-	.	gene_id ".138"; transcript_id ".130";
+scaffold_88	exonerate:cdna2genome	5UTR	394792	395100	.	-	0	gene_id ".138"; transcript_id ".130";
+
+scaffold_88	exonerate:cdna2genome	stop_codon	396825	396827	.	-	.	gene_id ".1"; transcript_id ".498";
+scaffold_88	exonerate:cdna2genome	CDS	396828	397802	.	-	0	gene_id ".1"; transcript_id ".498";
+scaffold_88	exonerate:cdna2genome	CDS	398975	399115	.	-	0	gene_id ".1"; transcript_id ".498";
+scaffold_88	exonerate:cdna2genome	CDS	399196	399259	.	-	1	gene_id ".1"; transcript_id ".498";
+scaffold_88	exonerate:cdna2genome	CDS	399389	399477	.	-	0	gene_id ".1"; transcript_id ".498";
+scaffold_88	exonerate:cdna2genome	CDS	399697	399985	.	-	1	gene_id ".1"; transcript_id ".498";
+scaffold_88	exonerate:cdna2genome	CDS	400194	400380	.	-	2	gene_id ".1"; transcript_id ".498";
+scaffold_88	exonerate:cdna2genome	CDS	400459	400999	.	-	0	gene_id ".1"; transcript_id ".498";
+scaffold_88	exonerate:cdna2genome	start_codon	400997	400999	.	-	.	gene_id ".1"; transcript_id ".498";
+scaffold_88	exonerate:cdna2genome	5UTR	401000	401590	.	-	0	gene_id ".1"; transcript_id ".498";
+
+scaffold_88	exonerate:cdna2genome	5UTR	405452	406874	.	+	0	gene_id ".32"; transcript_id ".285";
+scaffold_88	exonerate:cdna2genome	start_codon	406875	406877	.	+	.	gene_id ".32"; transcript_id ".285";
+scaffold_88	exonerate:cdna2genome	CDS	406875	407451	.	+	0	gene_id ".32"; transcript_id ".285";
+scaffold_88	exonerate:cdna2genome	CDS	407523	407673	.	+	2	gene_id ".32"; transcript_id ".285";
+scaffold_88	exonerate:cdna2genome	CDS	407870	408158	.	+	1	gene_id ".32"; transcript_id ".285";
+scaffold_88	exonerate:cdna2genome	CDS	408560	408654	.	+	0	gene_id ".32"; transcript_id ".285";
+scaffold_88	exonerate:cdna2genome	CDS	408724	408787	.	+	1	gene_id ".32"; transcript_id ".285";
+scaffold_88	exonerate:cdna2genome	CDS	408953	409099	.	+	0	gene_id ".32"; transcript_id ".285";
+scaffold_88	exonerate:cdna2genome	CDS	409480	410496	.	+	0	gene_id ".32"; transcript_id ".285";
+scaffold_88	exonerate:cdna2genome	stop_codon	410497	410499	.	+	.	gene_id ".32"; transcript_id ".285";
+scaffold_88	exonerate:cdna2genome	3UTR	410500	410507	.	+	0	gene_id ".32"; transcript_id ".285";
+
+scaffold_88	exonerate:cdna2genome	5UTR	411307	411633	.	+	0	gene_id ".547"; transcript_id ".390";
+scaffold_88	exonerate:cdna2genome	5UTR	412338	412341	.	+	0	gene_id ".547"; transcript_id ".390";
+scaffold_88	exonerate:cdna2genome	start_codon	412342	412344	.	+	.	gene_id ".547"; transcript_id ".390";
+scaffold_88	exonerate:cdna2genome	CDS	412342	412434	.	+	0	gene_id ".547"; transcript_id ".390";
+scaffold_88	exonerate:cdna2genome	CDS	413006	413119	.	+	0	gene_id ".547"; transcript_id ".390";
+scaffold_88	exonerate:cdna2genome	CDS	413572	413764	.	+	0	gene_id ".547"; transcript_id ".390";
+scaffold_88	exonerate:cdna2genome	CDS	414181	414311	.	+	2	gene_id ".547"; transcript_id ".390";
+scaffold_88	exonerate:cdna2genome	stop_codon	414312	414314	.	+	.	gene_id ".547"; transcript_id ".390";
+scaffold_88	exonerate:cdna2genome	3UTR	414315	414325	.	+	0	gene_id ".547"; transcript_id ".390";
+scaffold_88	exonerate:cdna2genome	3UTR	414830	414936	.	+	0	gene_id ".547"; transcript_id ".390";
+
+scaffold_88	exonerate:cdna2genome	stop_codon	434494	434496	.	-	.	gene_id ".53"; transcript_id ".545";
+scaffold_88	exonerate:cdna2genome	CDS	434497	434643	.	-	0	gene_id ".53"; transcript_id ".545";
+scaffold_88	exonerate:cdna2genome	CDS	434803	435008	.	-	2	gene_id ".53"; transcript_id ".545";
+scaffold_88	exonerate:cdna2genome	CDS	435440	435600	.	-	1	gene_id ".53"; transcript_id ".545";
+scaffold_88	exonerate:cdna2genome	CDS	435878	435951	.	-	0	gene_id ".53"; transcript_id ".545";
+scaffold_88	exonerate:cdna2genome	CDS	436232	436352	.	-	1	gene_id ".53"; transcript_id ".545";
+scaffold_88	exonerate:cdna2genome	CDS	436742	436833	.	-	0	gene_id ".53"; transcript_id ".545";
+scaffold_88	exonerate:cdna2genome	CDS	437145	437285	.	-	0	gene_id ".53"; transcript_id ".545";
+scaffold_88	exonerate:cdna2genome	CDS	437531	437674	.	-	0	gene_id ".53"; transcript_id ".545";
+scaffold_88	exonerate:cdna2genome	CDS	438078	438243	.	-	1	gene_id ".53"; transcript_id ".545";
+scaffold_88	exonerate:cdna2genome	CDS	438580	438848	.	-	0	gene_id ".53"; transcript_id ".545";
+scaffold_88	exonerate:cdna2genome	CDS	439212	439333	.	-	2	gene_id ".53"; transcript_id ".545";
+scaffold_88	exonerate:cdna2genome	CDS	439524	439626	.	-	0	gene_id ".53"; transcript_id ".545";
+scaffold_88	exonerate:cdna2genome	CDS	439847	440064	.	-	2	gene_id ".53"; transcript_id ".545";
+scaffold_88	exonerate:cdna2genome	CDS	440448	440611	.	-	1	gene_id ".53"; transcript_id ".545";
+scaffold_88	exonerate:cdna2genome	CDS	441053	441180	.	-	0	gene_id ".53"; transcript_id ".545";
+scaffold_88	exonerate:cdna2genome	CDS	451541	451635	.	-	2	gene_id ".53"; transcript_id ".545";
+scaffold_88	exonerate:cdna2genome	CDS	482523	482730	.	-	0	gene_id ".53"; transcript_id ".545";
+scaffold_88	exonerate:cdna2genome	CDS	551987	552256	.	-	0	gene_id ".53"; transcript_id ".545";
+scaffold_88	exonerate:cdna2genome	start_codon	552254	552256	.	-	.	gene_id ".53"; transcript_id ".545";
+scaffold_88	exonerate:cdna2genome	5UTR	552257	552402	.	-	0	gene_id ".53"; transcript_id ".545";
+scaffold_88	exonerate:cdna2genome	5UTR	560397	561116	.	-	0	gene_id ".53"; transcript_id ".545";
+
+scaffold_88	exonerate:cdna2genome	5UTR	943267	944278	.	+	0	gene_id ".445"; transcript_id ".250";
+scaffold_88	exonerate:cdna2genome	5UTR	944802	944807	.	+	0	gene_id ".445"; transcript_id ".250";
+scaffold_88	exonerate:cdna2genome	start_codon	944808	944810	.	+	.	gene_id ".445"; transcript_id ".250";
+scaffold_88	exonerate:cdna2genome	CDS	944808	945068	.	+	0	gene_id ".445"; transcript_id ".250";
+scaffold_88	exonerate:cdna2genome	CDS	945551	945973	.	+	0	gene_id ".445"; transcript_id ".250";
+scaffold_88	exonerate:cdna2genome	stop_codon	945974	945976	.	+	.	gene_id ".445"; transcript_id ".250";
+scaffold_88	exonerate:cdna2genome	3UTR	945977	946030	.	+	0	gene_id ".445"; transcript_id ".250";
+
+scaffold_88	exonerate:cdna2genome	5UTR	951463	954767	.	+	0	gene_id ".283"; transcript_id ".75";
+scaffold_88	exonerate:cdna2genome	5UTR	954840	958294	.	+	0	gene_id ".283"; transcript_id ".75";
+scaffold_88	exonerate:cdna2genome	start_codon	958295	958297	.	+	.	gene_id ".283"; transcript_id ".75";
+scaffold_88	exonerate:cdna2genome	CDS	958295	958620	.	+	0	gene_id ".283"; transcript_id ".75";
+scaffold_88	exonerate:cdna2genome	CDS	958703	958883	.	+	1	gene_id ".283"; transcript_id ".75";
+scaffold_88	exonerate:cdna2genome	stop_codon	958884	958886	.	+	.	gene_id ".283"; transcript_id ".75";
+scaffold_88	exonerate:cdna2genome	3UTR	958887	960016	.	+	0	gene_id ".283"; transcript_id ".75";
+scaffold_88	exonerate:cdna2genome	3UTR	960180	960464	.	+	0	gene_id ".283"; transcript_id ".75";
+scaffold_88	exonerate:cdna2genome	3UTR	960534	960910	.	+	0	gene_id ".283"; transcript_id ".75";
+scaffold_88	exonerate:cdna2genome	3UTR	961043	961930	.	+	0	gene_id ".283"; transcript_id ".75";
+scaffold_88	exonerate:cdna2genome	3UTR	961909	962443	.	+	0	gene_id ".283"; transcript_id ".75";
+
+scaffold_88	exonerate:cdna2genome	5UTR	951463	954767	.	+	0	gene_id ".283"; transcript_id ".217";
+scaffold_88	exonerate:cdna2genome	5UTR	954840	958294	.	+	0	gene_id ".283"; transcript_id ".217";
+scaffold_88	exonerate:cdna2genome	start_codon	958295	958297	.	+	.	gene_id ".283"; transcript_id ".217";
+scaffold_88	exonerate:cdna2genome	CDS	958295	958620	.	+	0	gene_id ".283"; transcript_id ".217";
+scaffold_88	exonerate:cdna2genome	CDS	958703	958883	.	+	1	gene_id ".283"; transcript_id ".217";
+scaffold_88	exonerate:cdna2genome	stop_codon	958884	958886	.	+	.	gene_id ".283"; transcript_id ".217";
+scaffold_88	exonerate:cdna2genome	3UTR	958887	960016	.	+	0	gene_id ".283"; transcript_id ".217";
+scaffold_88	exonerate:cdna2genome	3UTR	960180	960464	.	+	0	gene_id ".283"; transcript_id ".217";
+scaffold_88	exonerate:cdna2genome	3UTR	960534	960910	.	+	0	gene_id ".283"; transcript_id ".217";
+scaffold_88	exonerate:cdna2genome	3UTR	961043	961930	.	+	0	gene_id ".283"; transcript_id ".217";
+scaffold_88	exonerate:cdna2genome	3UTR	961909	962443	.	+	0	gene_id ".283"; transcript_id ".217";
+
+scaffold_88	exonerate:cdna2genome	stop_codon	962262	962264	.	-	.	gene_id ".544"; transcript_id ".75";
+scaffold_88	exonerate:cdna2genome	CDS	962265	962443	.	-	2	gene_id ".544"; transcript_id ".75";
+scaffold_88	exonerate:cdna2genome	CDS	962756	962972	.	-	0	gene_id ".544"; transcript_id ".75";
+scaffold_88	exonerate:cdna2genome	start_codon	962970	962972	.	-	.	gene_id ".544"; transcript_id ".75";
+scaffold_88	exonerate:cdna2genome	5UTR	962973	964549	.	-	0	gene_id ".544"; transcript_id ".75";
+scaffold_88	exonerate:cdna2genome	5UTR	965400	969218	.	-	0	gene_id ".544"; transcript_id ".75";
+
+scaffold_88	exonerate:cdna2genome	stop_codon	962262	962264	.	-	.	gene_id ".544"; transcript_id ".217";
+scaffold_88	exonerate:cdna2genome	CDS	962265	962443	.	-	2	gene_id ".544"; transcript_id ".217";
+scaffold_88	exonerate:cdna2genome	CDS	962756	962972	.	-	0	gene_id ".544"; transcript_id ".217";
+scaffold_88	exonerate:cdna2genome	start_codon	962970	962972	.	-	.	gene_id ".544"; transcript_id ".217";
+scaffold_88	exonerate:cdna2genome	5UTR	962973	964549	.	-	0	gene_id ".544"; transcript_id ".217";
+scaffold_88	exonerate:cdna2genome	5UTR	965400	969218	.	-	0	gene_id ".544"; transcript_id ".217";
+

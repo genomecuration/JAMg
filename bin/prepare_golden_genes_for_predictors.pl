@@ -4,6 +4,7 @@
 
 =head1 TODO
 
+High: Implement GMAP in parallel to exonerate. pick 'best'
 Medium: smth wrong here (temporarely disabled) 38G .exonerate.results.passed.genome
 Low: Would be nice to have a GenBank parser that doesn't use BioPerl
 
@@ -1070,6 +1071,8 @@ sub process_for_gene_prediction() {
 		);
 		rename( "$gff_file.golden.optimization.gff3.rest",
 			"$gff_file.golden.test.gff3" );
+		&gff3_fix_phase_GTF("$gff_file.golden.test.gff3");
+
 		if (   $gff2gb_exec
 			&& $augustus_train_exec
 			&& $augustus_filterGenes_exec )
@@ -1120,9 +1123,6 @@ sub process_for_gene_prediction() {
 	  if -s "$gff_file";
 	&gff2hints("$gff_file.golden.gff3.rest")
 	  if -s "$gff_file.golden.gff3.rest";
-
-#snap already have made zff. $gff_file.golden.zff and $gff_file.golden.gff3.fasta
-	print "\tsnap\n";
 
 	#geneid
 	print "\tgeneid\n";
@@ -1177,6 +1177,12 @@ sub process_for_gene_prediction() {
 			"$gff_file.golden.test.good.gb.geneid"
 		) if -s "$gff_file.golden.test.good.gb.geneid";
 	}
+
+	print "\tsnap\n";
+	#snap already have made zff. $gff_file.golden.zff and $gff_file.golden.gff3.fasta
+	&gff2zff( "$gff_file.golden.train.gff3", "$gff_file.golden.train.zff" );
+	&gff2zff( "$gff_file.golden.test.gff3", "$gff_file.golden.test.zff" );
+	&gff2zff( "$gff_file.golden.optimization.gff3", "$gff_file.golden.optimization.zff" );
 
 	#glimmer
 	print "\tglimmer\n";
@@ -1367,7 +1373,7 @@ sub gff2zff() {
 	my $gff       = shift;
 	my $out       = shift;
 	my $out_hints = $out . ".xdef";
-	open( GFF, $gff ) || die;
+	open( GFF, $gff ) || die "Can't open $gff";
 	open( OUT, ">$out" );
 	open( XDEF, ">$out_hints" );
 	my $orig_delim = $/;
