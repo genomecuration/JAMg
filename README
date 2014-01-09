@@ -1,25 +1,15 @@
 Read INSTALL before continuing
 
-The main perl script, prepare_golden_genes_for_predictors.pl, is what you will need to use. 
+Full documentation and tutorials are available from
+http://jamg.sourceforge.net
 
-Use perldoc to see any ancillary information.
-
-To generate the softmasking, use RepeatMasker (for example) and bedtools (accepts a GFF file).
-
- http://www.repeatmasker.org/RMDownload.html
- http://www.repeatmasker.org/RMBlast.html  # recommended due to open license
- http://code.google.com/p/bedtools
- 
-For example,
-$ RepeatMasker -pa $CPUS -s -species insecta -no_is -gccalc -gff 
-# softmask
-$ maskFastaFromBed -fi $ASSEMBLTY -fo $ASSEMBLY.repeatmasked.soft -bed $ASSEMBLY.out.gff -soft
-# hardmask
-$ maskFastaFromBed -fi $ASSEMBLTY -fo $ASSEMBLY.repeatmasked.hard -bed $ASSEMBLY.out.gff # or the .masked output from RepeatMasker
-
+See LICENSE for the license
 
 =============================================================================================================
-Please not that exonerate is not free of bugs but this software tries to deal with some of them.
+Known bugs
+* Please note that exonerate is not free of bugs but this software tries to deal with some of them.
+
+
 Please report bugs to:
 
  Alexie Papanicolaou

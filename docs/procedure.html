@@ -1208,6 +1208,22 @@ cat <span style="color: #009900">$GENOME_NAME</span><span style="color: #990000"
 </li>
 </ul></div>
 </li>
+<li>
+<p>
+Geneid
+</p>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.3
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/cegma/bin/geneid-train -v <span style="color: #990000">./*</span>geneid<span style="color: #990000">.</span>golden<span style="color: #990000">.</span>train<span style="color: #990000">.</span>gff3 <span style="color: #009900">$GENOME_PATH</span> train
+cd train
+make_paramfile <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/cegma/data/self<span style="color: #990000">.</span>param<span style="color: #990000">.</span>template coding<span style="color: #990000">.</span>initial<span style="color: #990000">.</span><span style="color: #993399">5</span><span style="color: #990000">.</span>logs coding<span style="color: #990000">.</span>transition<span style="color: #990000">.</span><span style="color: #993399">5</span><span style="color: #990000">.</span>logs start<span style="color: #990000">.</span>logs acc<span style="color: #990000">.</span>logs don<span style="color: #990000">.</span>logs intron<span style="color: #990000">.</span>max <span style="color: #990000">&gt;</span> <span style="color: #009900">$GENOME_NAME</span><span style="color: #990000">.</span>param
+cd <span style="color: #990000">..</span>
+<span style="font-style: italic"><span style="color: #9A1900">#TODO CONVERT TO PERL $JAMG_PATH/bin/optimize_geneid.sh train/$GENOME_NAME.param ./*.golden.train.good.gb.geneid.fasta ./*.golden.train.good.gb.geneid run1 &gt; $GENOME_NAME.optimization.cmds</span></span>
+ParaFly -c <span style="color: #009900">$GENOME_NAME</span><span style="color: #990000">.</span>optimization<span style="color: #990000">.</span>cmds -CPU <span style="color: #009900">$LOCAL_CPUS</span></tt></pre></div></div>
+</li>
 </ul></div>
 </li>
 <li>
@@ -1360,8 +1376,9 @@ http://www.gnu.org/software/src-highlite -->
 </li>
 </ul></div>
 <div class="paragraph"><div class="title"><a id="sequencing-data"></a>Sequencing data</div><p>To make the most of the annotation platform you will need some RNA-Seq. Generally speaking, the more is better but beyond a certain point, any added value decreases. If you have the ability to design your genome/transcriptome sequencing before you&#8217;ve reached this stage then, first of all, "Well Done"&#8482;! Too often sequencing is undertaken with little understanding of the needs of the downstream processes&#8230; Second, your genome assembly will greatly benefit from long-range mate pair libraries, long reads (such as Pac-Bio) or optical mapping (if working on bacteria or have lots of cash). The reason for this is that your ability to fully ascertain gene families that have paralogues will only be as good as your feature annotation, and you feature annotation cannot be better than the underlying genome assembly sequence for those regions. Third, for your transcriptome diversity of tissue/life stages is key to acquiring sequencing of us many diverse tissues as possible. Be particularly careful if you wish to identify lowly expressed genes: even with tissue specific libraries, you may need to sequence deeply (the literature is your friend). The most difficult class of genes to annotate are rapidly evolving and lowly expressed genes since you will then have to rely solely on the de-novo prediction but the protein domain search above will be of great help.</p></div>
-<div class="paragraph"><div class="title"><a id="evaluation"></a>Evaluation of gene models</div><p>To add
+<div class="paragraph"><div class="title"><a id="evaluation"></a>Evaluation of gene models</div><p>TODO
 Because for evaluation we are using the entire genome, specificity will be somewhat low if your <em>test</em> set has few genes. Basically a low specificity means that the prediction created gene models not found in your test set (as expected).</p></div>
+<div class="paragraph"><div class="title"><a id="parafly"></a>Using ParaFly for servers</div><p>TODO</p></div>
 <div class="dlist"><div class="title">Glossary</div><dl>
 <dt class="hdlist1">
 Reference sequence
@@ -1387,7 +1404,7 @@ Feature
 <div id="footer">
 <div id="footer-text">
 Version RC1<br />
-Last updated 2014-01-09 00:55:57 EST
+Last updated 2014-01-09 01:53:12 EST
 </div>
 </div>
 </body>

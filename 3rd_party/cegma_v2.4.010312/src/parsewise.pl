@@ -9,6 +9,9 @@
  
 
 use strict; use warnings; use sigtrap;
+use FindBin qw($RealBin);
+use lib ("$RealBin/../lib");
+$ENV{PATH} = "$RealBin:$RealBin:".$ENV{PATH};
 
 die "
 

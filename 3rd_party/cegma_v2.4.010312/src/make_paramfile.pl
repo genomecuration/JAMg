@@ -1,6 +1,9 @@
 #!/usr/bin/perl
 
 use strict; use warnings;
+use FindBin qw($RealBin);
+use lib ("$RealBin/../lib");
+$ENV{PATH} = "$RealBin:$RealBin:".$ENV{PATH};
 use sigtrap;
 
 die "

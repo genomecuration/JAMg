@@ -298,6 +298,16 @@ $JAMG_PATH/3rd_party/eval-2.2.8/evaluate_gtf.pl -g ./*golden.test.gtf  glimmer.g
 +
 WARNING: Glimmer may crash with the very not informative 'segmentation fault'. It is usually data & system (i.e. C library) specific. As Glimmer is unsupported (i.e. they don't reply to emails) and rather old, there is little we could do. If that happens for you, try another server. If it still happens, simply don't use it.
 +
+*** Geneid
++
+[source,bash]
+$JAMG_PATH/3rd_party/cegma/bin/geneid-train -v ./*geneid.golden.train.gff3 $GENOME_PATH train
+cd train
+make_paramfile $JAMG_PATH/3rd_party/cegma/data/self.param.template coding.initial.5.logs coding.transition.5.logs start.logs acc.logs don.logs intron.max > $GENOME_NAME.param
+cd ..
+#TODO CONVERT TO PERL $JAMG_PATH/bin/optimize_geneid.sh train/$GENOME_NAME.param ./*.golden.train.good.gb.geneid.fasta ./*.golden.train.good.gb.geneid run1 > $GENOME_NAME.optimization.cmds
+ParaFly -c $GENOME_NAME.optimization.cmds -CPU $LOCAL_CPUS
++
 ** [[projection]]If we have a closely species that is well annotated, a good approach is to 'project' that genome's gene models to our unannotated one. This can be achieved as such:
 +
 [source,bash]
@@ -367,8 +377,11 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$JAMG_PATH/3rd_party/transdecoder/util/l
 To make the most of the annotation platform you will need some RNA-Seq. Generally speaking, the more is better but beyond a certain point, any added value decreases. If you have the ability to design your genome/transcriptome sequencing before you've reached this stage then, first of all, "Well Done"(TM)! Too often sequencing is undertaken with little understanding of the needs of the downstream processes... Second, your genome assembly will greatly benefit from long-range mate pair libraries, long reads (such as Pac-Bio) or optical mapping (if working on bacteria or have lots of cash). The reason for this is that your ability to fully ascertain gene families that have paralogues will only be as good as your feature annotation, and you feature annotation cannot be better than the underlying genome assembly sequence for those regions. Third, for your transcriptome diversity of tissue/life stages is key to acquiring sequencing of us many diverse tissues as possible. Be particularly careful if you wish to identify lowly expressed genes: even with tissue specific libraries, you may need to sequence deeply (the literature is your friend). The most difficult class of genes to annotate are rapidly evolving and lowly expressed genes since you will then have to rely solely on the de-novo prediction but the protein domain search above will be of great help.
 
 .[[evaluation]]Evaluation of gene models
-To add
+TODO
 Because for evaluation we are using the entire genome, specificity will be somewhat low if your 'test' set has few genes. Basically a low specificity means that the prediction created gene models not found in your test set (as expected).
+
+.[[parafly]]Using ParaFly for servers
+TODO
 
 .Glossary
 Reference sequence::

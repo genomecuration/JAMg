@@ -10,6 +10,9 @@
 # 	$Id: completeness.pl,v 1.6 2012/01/04 02:30:40 keith Exp $	
 
 use strict; use warnings; use sigtrap;
+use FindBin qw($RealBin);
+use lib ("$RealBin/../lib");
+$ENV{PATH} = "$RealBin:$RealBin:".$ENV{PATH};
 use FAlite;
 use Getopt::Std;
 use List::Util qw(max min);

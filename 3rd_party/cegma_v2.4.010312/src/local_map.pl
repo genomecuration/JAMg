@@ -10,6 +10,9 @@
 # 	$Id: local_map.pl,v 1.7 2011/12/30 18:40:26 keith Exp $	
 
 use strict; use warnings; use sigtrap;
+use FindBin qw($RealBin);
+use lib ("$RealBin/../lib");
+$ENV{PATH} = "$RealBin:$RealBin:".$ENV{PATH};
 use FAlite;
 use Getopt::Std;
 use vars qw($opt_p $opt_h $opt_n $opt_g $opt_d $opt_f $opt_i $opt_v);

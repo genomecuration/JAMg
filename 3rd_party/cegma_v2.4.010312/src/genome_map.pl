@@ -10,6 +10,9 @@
 # 	$Id: genome_map.pl,v 1.6 2011/07/19 17:31:12 keith Exp $	
 
 use strict; use warnings; use sigtrap;
+use FindBin qw($RealBin);
+use lib ("$RealBin/../lib");
+$ENV{PATH} = "$RealBin:$RealBin:".$ENV{PATH};
 use FAlite;
 use Getopt::Std;
 use vars qw($opt_p $opt_n $opt_b $opt_d $opt_a $opt_o $opt_c $opt_v $opt_t);

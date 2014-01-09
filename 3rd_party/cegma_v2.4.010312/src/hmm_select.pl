@@ -2,6 +2,9 @@
 # 	$Id: hmm_select.pl,v 1.5 2011/07/19 17:31:12 keith Exp $	
 
 use strict; use warnings; use sigtrap;
+use FindBin qw($RealBin);
+use lib ("$RealBin/../lib");
+$ENV{PATH} = "$RealBin:$RealBin:".$ENV{PATH};
 use FAlite;
 use Getopt::Std;
 use vars qw($opt_p $opt_o $opt_i $opt_v $opt_t);

@@ -30,6 +30,9 @@
 
 use strict; use warnings;
 use Getopt::Long qw(:config no_ignore_case);
+use FindBin qw($RealBin);
+use lib ("$RealBin/../lib");
+$ENV{PATH} = "$RealBin:$RealBin:".$ENV{PATH};
 
 ##########################################################################
 ##                                                                      ##
