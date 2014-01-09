@@ -220,3 +220,17 @@ sub process_cmd {
  return;
 }
 
+sub mytime() {
+ my @mabbr =
+   qw(January February March April May June July August September October November December);
+ my @wabbr = qw(Sunday Monday Tuesday Wednesday Thursday Friday Saturday);
+ my $sec   = localtime->sec() < 10 ? '0' . localtime->sec() : localtime->sec();
+ my $min   = localtime->min() < 10 ? '0' . localtime->min() : localtime->min();
+ my $hour =
+   localtime->hour() < 10 ? '0' . localtime->hour() : localtime->hour();
+ my $wday = $wabbr[ localtime->wday ];
+ my $mday = localtime->mday;
+ my $mon  = $mabbr[ localtime->mon ];
+ my $year = localtime->year() + 1900;
+ return "$wday, $mon $mday, $year: $hour:$min:$sec\t";
+}
