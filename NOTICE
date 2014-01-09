@@ -144,3 +144,10 @@ CEGMA has been written by Genis Parra (formerly at UC Davis Genome Center) and s
 by Keith Bradnam (krbradnam@ucdavis.edu). CEGMA home page is at "http://korflab.ucdavis.edu/Datasets/cegma/"
 Distributed under GPL's aggregation terms
 
+Mauve
+=====
+Mauve is a system for efficiently constructing multiple genome alignments in the presence of large-scale evolutionary 
+events such as rearrangement and inversion. See http://gel.ahabs.wisc.edu/mauve/mauve-user-guide
+Contact darling(at)cs.wisc.edu
+Mauve is licensed under the GNU GPL and distributed under GPL's aggregation terms
+
