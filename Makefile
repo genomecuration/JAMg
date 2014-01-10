@@ -24,7 +24,7 @@ clean:
 	rm -f bin/ParaFly && cd 3rd_party/parafly && $(MAKE) clean
 	cd 3rd_party/snap && $(MAKE) clean
 	cd 3rd_party/transdecoder && $(MAKE) clean
-	cd 3rd_party/RepeatMasker && if [ -e Libraries/Dfam.hmm ] ; then bzip2 -v Libraries/Dfam.hmm; fi && if [ -e taxonomy.dat] ; then bzip2 -v taxonomy.dat; fi && rm -f trf
+	cd 3rd_party/RepeatMasker && if [ -e Libraries/Dfam.hmm ] ; then bzip2 -v Libraries/Dfam.hmm; fi && if [ -e taxonomy.dat ] ; then bzip2 -v taxonomy.dat; fi && rm -f trf
 	cd 3rd_party/augustus && $(MAKE) clean
 	cd 3rd_party/geneid && $(MAKE) clean
 	cd 3rd_party/cegma && if [ -e bin ] ; then $(MAKE) clean; fi
