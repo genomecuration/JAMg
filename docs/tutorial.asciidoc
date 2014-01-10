@@ -12,6 +12,8 @@ This tutorial assumes you know how to use a (ba)sh Linux shell, can create and n
 
 Further, in this tutorial we are skipping a step: aligning 'known proteins' to the genome. Because our tutorial uses 'Drosophila melanogaster', if we did that then we would be essentially using the official annotations so we wouldn't be able to 'validate' the procedure. In a real-world scenario, you would follow the link:procedure.html#foreign_proteins[procedure] to align known proteins of your choice. More tips on using JAMg with real-world scenario will be scattered through out this tutorial.
 
+TIP: At times, entries like this will appear. They offer commentary, tips or warnings. For example, many of the commands that you will run below may take hours. Considering that you will be using a server with SSH, it is advisable that you use the unix command 'screen' to ensure that an intermittent connection error doesn't cramp your style.
+
 Steps that share a number can be run in parallel:
 
 == Step 0: Configure and 'download' example data
@@ -145,16 +147,22 @@ TIP: For parallelization with computing clusters, you can use the -commands_only
 cd TGG
 # prepare files for TGN, splitting them to those that will take a very long time/resources, medium and very short
 $JAMG_PATH/bin/prepare_trinity_genome_assembly_pbs.pl -files ./*.concordant_uniq.bam -intron $MAX_INTRON_LENGTH
-# First, we can create a coverage file of the RNAseq alignments that we will use let on for Augustus. 
-$JAMG_PATH/bin/augustus_RNAseq_hints.pl -bam RNASeq_TGG_input.bam -genome $GENOME_PATH # RNASeq_TGG_input.bam is from prepare_trinity_genome_assembly_pbs.pl above
-# Second we can start assemblying the TGG data:
 ls ./*.cmds # what needs to be run. 
-# these will complete rather quickly and need small amounts of RAM; but there are lots, so it will be I/O limited.
-ParaFly -CPU $LOCAL_CPUS -c small_trinity_GG.cmds 
-# these will take a bit longer and need a bit more memory. They are often repeats in normal RNASeq projects but in projects with billions of reads then can be just highly expressed genes
-ParaFly -CPU $LOCAL_CPUS -c medium_trinity_GG.cmds 
+# We can start assemblying the TGG data:
+# In our our tutorial, only small_trinity_GG.cmds will be created. Run it.
+ParaFly -CPU $LOCAL_CPUS -v -c small_trinity_GG.cmds -failed_cmds small_trinity_GG.cmds.failed
+# Instead, you can use the small_trinity_GG.cmds.000 and small_trinity_GG.cmds.001
+# and load them on two separate machines (or cluster). These were produced using the unix command split
 
-NOTE: Very rarely, 'large_trinity_GG.cmds' will exist, especially from very large RNASeq projects. They are probably repeats or very highly expressed genes. They can take days to complete and their value is debatable. I recommend you use Trinity's kmer data reduction algorithm. Currently this has to be done manually.
+CAUTION: Even though TGG is very fast, Trinity itself is rather I/O (hard disk/network read/write) demanding, especially when you are running multiple Trinity runs in parallel. Decreasing the number of CPUs / parallel runs, may complete faster (use the unix command 'top' to see if many of your commands get stuck in 'D' (delay) mode instead of 'R' (run).
+
+NOTE: If you had used -files ./*_uniq_mult.bam rather than ./*.concordant_uniq.bam, then a 'medium_trinity_GG.cmds' would have been created too. Because Drosophila is well assembled and the reads are high-quality, these are likely to be repeats. Also, generally and very rarely, 'large_trinity_GG.cmds' may exist, especially from very large RNASeq projects. They are probably repeats or very highly expressed genes. They can take days to complete and their value is debatable. I recommend you use Trinity's kmer data reduction algorithm. Currently this has to be done manually.
+
+While this ParaFly procedure is running, we can post-process the alignments to create RNA-Seq coverage data for Augustus (it will take considerable time):
+
+[source,bash]
+# RNASeq_TGG_input.bam is from prepare_trinity_genome_assembly_pbs.pl above
+$JAMG_PATH/bin/augustus_RNAseq_hints.pl -bam RNASeq_TGG_input.bam -genome $GENOME_PATH 
  
 Once TGG and TDN are complete, we can integrate TGG and TDN using http://pasa.sourceforge.net/[PASA2].
 

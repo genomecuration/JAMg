@@ -564,6 +564,14 @@ footnotes: function () {
 <div class="paragraph"><p>In modern projects you will have substantially more RNA-Seq (at least 150 million, i.e. one HiSeq lane) and probably little to no Sanger/454 sequences. However, this makes the tutorial shorter and shows how even established genomes can be annotated (it is also a shameless plug for <a href="http://insectacentral.org">InsectaCentral</a>.</p></div>
 <div class="paragraph"><p>This tutorial assumes you know how to use a (ba)sh Linux shell, can create and navigate through directories. In the tutorial we don&#8217;t create any special directories, but in real-world scenarios you would. You&#8217;d also keep a log of what you&#8217;ve done (and why), keeping track if something didn&#8217;t work. If it was a bug from our side, please let us know (but first ask your system administrator if you don&#8217;t know how to use Linux too well). I also assume you know not to overload your server(s) in terms of CPUs and I/O (hard disk) or network bandwidth. Use <em>top</em> to see if you caused such a bottleneck.</p></div>
 <div class="paragraph"><p>Further, in this tutorial we are skipping a step: aligning <em>known proteins</em> to the genome. Because our tutorial uses <em>Drosophila melanogaster</em>, if we did that then we would be essentially using the official annotations so we wouldn&#8217;t be able to <em>validate</em> the procedure. In a real-world scenario, you would follow the <a href="procedure.html#foreign_proteins">procedure</a> to align known proteins of your choice. More tips on using JAMg with real-world scenario will be scattered through out this tutorial.</p></div>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<img src="./images/icons/tip.png" alt="Tip" />
+</td>
+<td class="content">At times, entries like this will appear. They offer commentary, tips or warnings. For example, many of the commands that you will run below may take hours. Considering that you will be using a server with SSH, it is advisable that you use the unix command <em>screen</em> to ensure that an intermittent connection error doesn&#8217;t cramp your style.</td>
+</tr></table>
+</div>
 <div class="paragraph"><p>Steps that share a number can be run in parallel:</p></div>
 </div>
 </div>
@@ -756,22 +764,36 @@ http://www.gnu.org/software/src-highlite -->
 cd TGG
 <span style="font-style: italic"><span style="color: #9A1900"># prepare files for TGN, splitting them to those that will take a very long time/resources, medium and very short</span></span>
 <span style="color: #009900">$JAMG_PATH</span>/bin/prepare_trinity_genome_assembly_pbs<span style="color: #990000">.</span>pl -files <span style="color: #990000">./*.</span>concordant_uniq<span style="color: #990000">.</span>bam -intron <span style="color: #009900">$MAX_INTRON_LENGTH</span>
-<span style="font-style: italic"><span style="color: #9A1900"># First, we can create a coverage file of the RNAseq alignments that we will use let on for Augustus.</span></span>
-<span style="color: #009900">$JAMG_PATH</span>/bin/augustus_RNAseq_hints<span style="color: #990000">.</span>pl -bam RNASeq_TGG_input<span style="color: #990000">.</span>bam -genome <span style="color: #009900">$GENOME_PATH</span> <span style="font-style: italic"><span style="color: #9A1900"># RNASeq_TGG_input.bam is from prepare_trinity_genome_assembly_pbs.pl above</span></span>
-<span style="font-style: italic"><span style="color: #9A1900"># Second we can start assemblying the TGG data:</span></span>
 ls <span style="color: #990000">./*.</span>cmds <span style="font-style: italic"><span style="color: #9A1900"># what needs to be run.</span></span>
-<span style="font-style: italic"><span style="color: #9A1900"># these will complete rather quickly and need small amounts of RAM; but there are lots, so it will be I/O limited.</span></span>
-ParaFly -CPU <span style="color: #009900">$LOCAL_CPUS</span> -c small_trinity_GG<span style="color: #990000">.</span>cmds
-<span style="font-style: italic"><span style="color: #9A1900"># these will take a bit longer and need a bit more memory. They are often repeats in normal RNASeq projects but in projects with billions of reads then can be just highly expressed genes</span></span>
-ParaFly -CPU <span style="color: #009900">$LOCAL_CPUS</span> -c medium_trinity_GG<span style="color: #990000">.</span>cmds</tt></pre></div></div>
+<span style="font-style: italic"><span style="color: #9A1900"># We can start assemblying the TGG data:</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># In our our tutorial, only small_trinity_GG.cmds will be created. Run it.</span></span>
+ParaFly -CPU <span style="color: #009900">$LOCAL_CPUS</span> -v -c small_trinity_GG<span style="color: #990000">.</span>cmds -failed_cmds small_trinity_GG<span style="color: #990000">.</span>cmds<span style="color: #990000">.</span>failed
+<span style="font-style: italic"><span style="color: #9A1900"># Instead, you can use the small_trinity_GG.cmds.000 and small_trinity_GG.cmds.001</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># and load them on two separate machines (or cluster). These were produced using the unix command split</span></span></tt></pre></div></div>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<img src="./images/icons/caution.png" alt="Caution" />
+</td>
+<td class="content">Even though TGG is very fast, Trinity itself is rather I/O (hard disk/network read/write) demanding, especially when you are running multiple Trinity runs in parallel. Decreasing the number of CPUs / parallel runs, may complete faster (use the unix command <em>top</em> to see if many of your commands get stuck in <em>D</em> (delay) mode instead of <em>R</em> (run).</td>
+</tr></table>
+</div>
 <div class="admonitionblock">
 <table><tr>
 <td class="icon">
 <img src="./images/icons/note.png" alt="Note" />
 </td>
-<td class="content">Very rarely, <em>large_trinity_GG.cmds</em> will exist, especially from very large RNASeq projects. They are probably repeats or very highly expressed genes. They can take days to complete and their value is debatable. I recommend you use Trinity&#8217;s kmer data reduction algorithm. Currently this has to be done manually.</td>
+<td class="content">If you had used -files ./<strong>_uniq_mult.bam rather than ./</strong>.concordant_uniq.bam, then a <em>medium_trinity_GG.cmds</em> would have been created too. Because Drosophila is well assembled and the reads are high-quality, these are likely to be repeats. Also, generally and very rarely, <em>large_trinity_GG.cmds</em> may exist, especially from very large RNASeq projects. They are probably repeats or very highly expressed genes. They can take days to complete and their value is debatable. I recommend you use Trinity&#8217;s kmer data reduction algorithm. Currently this has to be done manually.</td>
 </tr></table>
 </div>
+<div class="paragraph"><p>While this ParaFly procedure is running, we can post-process the alignments to create RNA-Seq coverage data for Augustus (it will take considerable time):</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.3
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-style: italic"><span style="color: #9A1900"># RNASeq_TGG_input.bam is from prepare_trinity_genome_assembly_pbs.pl above</span></span>
+<span style="color: #009900">$JAMG_PATH</span>/bin/augustus_RNAseq_hints<span style="color: #990000">.</span>pl -bam RNASeq_TGG_input<span style="color: #990000">.</span>bam -genome <span style="color: #009900">$GENOME_PATH</span></tt></pre></div></div>
 <div class="paragraph"><p>Once TGG and TDN are complete, we can integrate TGG and TDN using <a href="http://pasa.sourceforge.net/">PASA2</a>.</p></div>
 <div class="listingblock">
 <div class="content"><!-- Generator: GNU source-highlight 3.1.3
@@ -871,7 +893,7 @@ http://www.gnu.org/software/src-highlite -->
 <div id="footer">
 <div id="footer-text">
 Version RC1<br />
-Last updated 2014-01-08 19:20:07 EST
+Last updated 2014-01-10 17:17:41 EST
 </div>
 </div>
 </body>
