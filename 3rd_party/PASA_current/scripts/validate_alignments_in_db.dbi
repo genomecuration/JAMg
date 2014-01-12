@@ -212,7 +212,7 @@ foreach my $result (@results) {
     $thread_helper->add_thread($thread);
 
     $results_processed += 1;
-    print STDERR "\rProcessing ".$results_processed.'/'.$total_number_of_results."             ";
+    print STDERR "\rProcessing ".$results_processed.'/'.$total_number_of_results."      ";
     
 }
 
@@ -222,13 +222,14 @@ if (my @failed_threads = $thread_helper->get_failed_threads()) {
     die "Error, " . scalar(@failed_threads) . " scaffolds failed to be processed. ";
 }
 else {
-    print STDERR "Done with alignment validations.\n";
+    print STDERR "\nDone with alignment validations.\n";
 }
 
 
 ## Get all results files, print to stdout
+print STDERR "-capturing validation results from:\n";
 foreach my $file (@files) {
-    print STDERR "-capturing validation results from $file\n";
+    print STDERR "\r $file                                    ";
     open (my $fh, $file) or die "Error, cannot open file $file";
     while (<$fh>) {
         print $_;
@@ -237,7 +238,7 @@ foreach my $file (@files) {
 }
 
 `rm -rf $tmp_dir`; # cleanup
-
+print "\nCompleted.\n";
 exit(0);
 
 
@@ -258,7 +259,7 @@ sub validate_alignments_on_asmbl_id {
     $genome_fasta_retriever->refresh_fh();
 
     
-    print STDERR "\t-validating alignments on scaffold: $asmbl_id\n";
+    print STDERR "\t($asmbl_id)                      ";
     
     open (my $ofh, ">$validations_outfile") or die "Error, cannot write to file: $validations_outfile";
     print $ofh $header;

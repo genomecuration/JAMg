@@ -98,8 +98,8 @@ while (<STDIN>) {
 
 
 $dbproc->{dbh}->commit(); # last ones.
-print STDERR "\rcommitting $count   \n\n";
-print "$num_validate validated.\n\n\n";
+print STDERR "\rCommitted $count              \n";
+print "$num_validate validated.\n";
 
 
 exit(0);

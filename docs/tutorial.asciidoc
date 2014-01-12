@@ -50,9 +50,10 @@ cp $JAMG_PATH/3rd_party/PASA/pasa_conf/pasa.CONFIG.template $JAMG_PATH/3rd_party
 # Edit conf.txt and set the values for these MySQL database settings:
 # MYSQLSERVER=(your mysql server name)
 # MYSQL_RO_USER=(mysql read-only username)
-# MYSQL_RO_PASSWORD=(mysql read-only password)
+# MYSQL_RO_PASSWORD=(mysql read-only password) - leave empty if none used
 # MYSQL_RW_USER=(mysql all privileges username)
-# MYSQL_RW_PASSWORD=(mysql all privileges password)
+# MYSQL_RW_PASSWORD=(mysql all privileges password) - leave empty if none used
+# PASA_ADMIN_DB=pasa_admin # we need something here but it is not used
 # you do not need to worry about the others 
 vim $JAMG_PATH/3rd_party/PASA/pasa_conf/conf.txt
 
@@ -190,9 +191,9 @@ $JAMG_PATH/3rd_party/PASA/scripts/Launch_PASA_pipeline.pl -c alignAssembly.confi
  -g $GENOME_PATH --MAX_INTRON_LENGTH $max_intron_length \
  --ALIGNERS blat,gmap --TRANSDECODER --CPU $LOCAL_CPUS \
  -T -t transcripts.fasta.clean -u transcripts.fasta \
- --TDN tdn.accs
+ --TDN tdn.accs |& tee pasa.log
 
-This will take some time, about two days with the 2 alignment steps ('blat' and 'gmap') taking the longest. In real-world or mission critical scenarios, we can run the alignment steps separately on a cluster and use the '-s' and '-e' options to determine which steps shown in 'pasa.alignAssembly.commands.to.run' will be run on which computer or cluster.
+This will take some time, about two days with the 2 alignment steps ('blat' and 'gmap') taking the longest. In real-world or mission critical scenarios, we can run the alignment steps separately on a cluster and use the '-s' and '-e' options to determine which steps shown in 'pasa.alignAssembly.commands.to.run' will be run on which computer or cluster. The 'tee' command will print the screen output to a file and '|&' will copy any errors to the same file too.
  
 TIP: If you've never ran PASA on this system before, it makes sense to try the first command produced in 'pasa.alignAssembly.commands.to.run'. It attempt to connect and create the database. If it doesn't work then your mySQL settings are wrong. Common errors are 'Access denied for user user_demo@localhost' when the user already exists. Giving the relevant priviliges can solve it:
 

@@ -164,12 +164,11 @@ sub parse_GFF3_file_load_alignments {
         if ($match_id ne $current_match) {
             if (@match_list) {
                 $counter++;
-                # if ($counter > 300) { last;}
-                print STDERR "\rloading $counter   " if $counter % 1000 == 0;
+                print STDERR "\rloading $counter    " if $counter % 1000 == 0;
                 &process_match_list (@match_list);
                 
                 if ($counter % 10000 == 0) {
-                    print STDERR "Committing...\n";
+                    print STDERR "\rCommitting...       ";
                     $dbproc->{dbh}->commit();
                 }
             }
@@ -199,6 +198,7 @@ sub parse_GFF3_file_load_alignments {
         &process_match_list (@match_list);
     }
     
+    print STDERR "\rCommitted $counter                       \n";
     $dbproc->{dbh}->commit(); # ensure all in.
     
     &store_cluster_links(\%asmbl_to_acc);

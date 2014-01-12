@@ -152,7 +152,7 @@ cat Trinity_denovo.fasta Trinity_GG.fasta > transcripts.fasta
 [source,bash]
 $JAMG_PATH/bin/augustus_RNAseq_hints.pl -bam RNASeq_TGG_input.bam -genome $GENOME_PATH # RNASeq_TGG_input.bam is from prepare_trinity_genome_assembly_pbs.pl
 +
-** Now follow the PASA http://pasa.sourceforge.net/[guidelines] to assemble them as transcripts.
+** Now follow the PASA http://pasa.sourceforge.net/[guidelines] to assemble them as transcripts. If you are having issues installing PASA, look at the link:tutorial.html[tutorial] for advice.
 +
 [source,bash]
 # identify poly-a tails using SeqClean

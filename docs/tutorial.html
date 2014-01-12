@@ -619,9 +619,10 @@ http://www.gnu.org/software/src-highlite -->
 <span style="font-style: italic"><span style="color: #9A1900"># Edit conf.txt and set the values for these MySQL database settings:</span></span>
 <span style="font-style: italic"><span style="color: #9A1900"># MYSQLSERVER=(your mysql server name)</span></span>
 <span style="font-style: italic"><span style="color: #9A1900"># MYSQL_RO_USER=(mysql read-only username)</span></span>
-<span style="font-style: italic"><span style="color: #9A1900"># MYSQL_RO_PASSWORD=(mysql read-only password)</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># MYSQL_RO_PASSWORD=(mysql read-only password) - leave empty if none used</span></span>
 <span style="font-style: italic"><span style="color: #9A1900"># MYSQL_RW_USER=(mysql all privileges username)</span></span>
-<span style="font-style: italic"><span style="color: #9A1900"># MYSQL_RW_PASSWORD=(mysql all privileges password)</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># MYSQL_RW_PASSWORD=(mysql all privileges password) - leave empty if none used</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># PASA_ADMIN_DB=pasa_admin # we need something here but it is not used</span></span>
 <span style="font-style: italic"><span style="color: #9A1900"># you do not need to worry about the others</span></span>
 vim <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/pasa_conf/conf<span style="color: #990000">.</span>txt</tt></pre></div></div>
 <div class="paragraph"><p>This is all you need to do to setup PASA these days. Now let&#8217;s try it with some RNA-Seq (aka PASA2)! How we can get some RNA-Seq data? Well we can download them from NCBI and run the following script to pre-process them:</p></div>
@@ -826,8 +827,8 @@ cp <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/<
  -g <span style="color: #009900">$GENOME_PATH</span> --MAX_INTRON_LENGTH <span style="color: #009900">$max_intron_length</span> <span style="color: #990000">\</span>
  --ALIGNERS blat<span style="color: #990000">,</span>gmap --TRANSDECODER --CPU <span style="color: #009900">$LOCAL_CPUS</span> <span style="color: #990000">\</span>
  -T -t transcripts<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>clean -u transcripts<span style="color: #990000">.</span>fasta <span style="color: #990000">\</span>
- --TDN tdn<span style="color: #990000">.</span>accs</tt></pre></div></div>
-<div class="paragraph"><p>This will take some time, about two days with the 2 alignment steps (<em>blat</em> and <em>gmap</em>) taking the longest. In real-world or mission critical scenarios, we can run the alignment steps separately on a cluster and use the <em>-s</em> and <em>-e</em> options to determine which steps shown in <em>pasa.alignAssembly.commands.to.run</em> will be run on which computer or cluster.</p></div>
+ --TDN tdn<span style="color: #990000">.</span>accs <span style="color: #990000">|&amp;</span> tee pasa<span style="color: #990000">.</span>log</tt></pre></div></div>
+<div class="paragraph"><p>This will take some time, about two days with the 2 alignment steps (<em>blat</em> and <em>gmap</em>) taking the longest. In real-world or mission critical scenarios, we can run the alignment steps separately on a cluster and use the <em>-s</em> and <em>-e</em> options to determine which steps shown in <em>pasa.alignAssembly.commands.to.run</em> will be run on which computer or cluster. The <em>tee</em> command will print the screen output to a file and <em>|&amp;</em> will copy any errors to the same file too.</p></div>
 <div class="admonitionblock">
 <table><tr>
 <td class="icon">
@@ -915,7 +916,7 @@ http://www.gnu.org/software/src-highlite -->
 <div id="footer">
 <div id="footer-text">
 Version RC1<br />
-Last updated 2014-01-11 01:19:04 EST
+Last updated 2014-01-12 19:49:16 EST
 </div>
 </div>
 </body>

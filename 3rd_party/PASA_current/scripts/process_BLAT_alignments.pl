@@ -73,7 +73,7 @@ unless ($genome_db && $transcript_db) {
     die "$usage\n";
 }
 
-my $ooc_cmd = "$blat_path $genome_db $transcript_db -q=rna -dots=100 -maxIntron=$MAX_INTRON  -makeOoc=11.ooc nada";
+my $ooc_cmd = "$blat_path $genome_db $transcript_db -q=rna -dots=100 -maxIntron=$MAX_INTRON  -makeOoc=11.ooc /dev/null";
 
 my $blat_thr;
 
