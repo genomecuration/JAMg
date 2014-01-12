@@ -1,0 +1,183 @@
+#####################
+## Description ######
+#####################
+
+The Gene Structure Annotation Comparison (GSAC) Software 
+
+GSAC compares two sets of gene structure annotations for the same underlying genome sequences.  For each genome contig, the protein-coding gene structure annotations from one data set (A) are first mapped to the other data set (B) based on overlap among their respective genome coordinates.  Within each set of mapped genes, comparisons are performed among the structures of the isoforms encoded by these genes, and each individual isoform or set of isoforms is classified based on the results of the comparison, including the identification of identical gene structures, similar but nonidentical structures, potential gene merges or splits, and complex mappings among gene structures.
+
+This software is designed with the following applications in mind:
+
+    -comparing annotations of the same genome derived from different centers.
+
+    -comparing the results of one gene prediction tool to another (ie. genscan to genemarkHMM)
+
+    ...others?
+
+
+
+GSAC relies on only two data files as input, the annotated gene structures from each data set (A and B) in gff3 format.  The output is a single text file that includes all original gene identifiers and their classifications as a result of the annotation comparison.  Also, CGI scripts are included to facilitate navigation of the results, to generate illustrations of the gene structures, and it includes the capability to generate custom hyperlinks to additional external resources.
+
+
+
+#####################
+## Installation #####
+#####################
+
+Additional Software Requirements:
+
+    WU-blast (specifically, the xdformat and xdget tools for fasta database retrievals)
+
+    pasa (included as pasa.tar.gz)
+
+    slclust  (included as slclust.tar.gz)
+
+         * Each of the utilities (pasa, slclust, xdget, xdformat) should be available within your PATH setting.
+
+
+Required Perl Modules:
+
+    FindBin
+
+    Storable
+
+
+To navigate the data via a web browser, you should also have a webserver such as Apache installed.
+
+
+#########################
+## Using the software ###
+#########################
+
+To demonstrate the software, we provide examples using the same data sets provided in the /sample_data directory.
+
+######################################
+## Performing an annotation comparison 
+
+-we require two GFF3 formatted input files.  It is essential that the CDS phase information is provided.  
+
+* optional, calculating phase info for gff3 files lacking these values:
+If your GFF3 file lacks the phase data for the CDS entries, a utility is provided that will calculate this for you (this requires that your input data is more or less perfect and contains protein-coding gene structures with ORFs beginning within the first 3 bp of the CDS).  Using the genome sequence and provided gene structure annotations, the longest ORF is found within the CDS structure, and phase calculations are computed based on this longest ORF.  Here, we have an example using a GFF3 file lacking the phase data and the provided genome multi-fasta file:
+
+     perl gff3_phase_generator.pl sample_data/TIGR_pre_aedes.gff3 sample_data/aa1.genome > gff3_with_phase_info.example.gff3
+
+
+Given two input GFF3 files with the phase information included, we can proceed with an annotation comparison like so:
+
+    perl perform_annotation_comparison.pl --gff3_A sample_data/TIGR_pre_aedes.gff3.with_phase_info --token_A TIGR --gff3_B sample_data/VectorBase_pre_aedes.gff3.with_phase_info --token_B VBASE > TIGR_vs_VectorBase.comparison.out
+
+
+######################################
+## The comparison output explained
+
+The output is tab-delimited with the following three fields:
+class_token <tab> contig_id <tab> isoform_list
+
+The class_token is one of the following descriptors defined below:
+
+    ISOFORM_SAME : isoform structures encode identical CDS regions.
+
+    ISOFORM_COMPAT-encaps : one isoform structure entirely consumes the other structure and they are identical in their region of overlap.
+
+    COMPAT-end_agree : isoform structures are the same in their region of overlap and share either the very 5' or 3' terminal boundary.
+
+    ISOFORM_COMPAT-staggered : isoforms have the same structure in their region of overlap, but have staggered boundaries.
+
+    ISOFORM_DIFF : isoforms have different structures, but share the same reading frame at least in part.
+
+    MAP_EXTREME_DIFF : isoforms have different structures and do not encode the same reading frame for any part of the encoded proteins.
+
+    MERGE : a single gene in data set A maps to multiple genes in data set B.
+
+    SPLIT : multiple genes in data set A map to a single gene in data set B.
+
+    COMPLEX : many to many gene mappings between the two data sets.
+
+    {A,B}-NOMAP : a gene in data set A or B lacks a counterpart in the other data set.
+
+
+The contig_id is the identifier for the corresponding genomic contig as provided in the GFF3 files.
+
+The isoform_list contains the comma-delimited list of isoforms assigned to the given comparison result class.  Each identifier in in the format:
+    
+    {GFF3_TOKEN}::{GENE_ID}:{ISOFORM_ID}
+
+    The GFF3_TOKEN is the token provided to the perform_annotation_comparison.pl script as the identifier of the corresponding GFF3-formatted gene set.  The GENE_ID is the identifier assigned to the gene in the GFF3 file.  Likewise, the ISOFORM_ID is the identifier provided for the given mRNA entry in the GFF3 file.
+
+
+################################################
+## Navigating the results via a web browser ####
+################################################
+
+First, copy this software in its entirety to the cgi-bin directory of your webserver (ie. Apache).  Make sure all scripts are executable (simply do a chmod -R 755 * ).
+
+Create a project directory with a name corresponding to your annotation comparison.  For our example, we'll use 'myProj' as the directory name.
+
+Edit the 'project_listing.txt' file to include your project directory and a description of this annotation comparison. The format of this file is:
+    {myProj} <tab> {description of the annotation comparison}
+
+
+
+Enter into this {myProj} directory, and do the following:
+   -copy your annotation comparison output file to myProj/compare.out
+   -use the 'index_gff3_files.pl' script to create a database of your gene structures, like the following example:
+
+            index_gff3_files.pl ../sample_data/TIGR_pre_aedes.gff3.with_phase_info ../sample_data/VectorBase_pre_aedes.gff3.with_phase_info
+
+
+    -create a file 'URL_templates.txt' in this {myProj} directory that has the following format:
+        
+        {link_name} <tab> {templated URL}
+        
+        This URL_templates.txt file is described further below.
+
+
+Now, point your web browser to http://your_domain_name:port_no/cgi-bin/annot_compare.cgi
+from which you can begin to navigate the results.
+
+You can follow the above protocol to add more annotation comparison projects to this web site.  Only the entries provided in the 'project_listint.txt' file will be described on the main page.  Prefix an entry with '#' to comment a project out, in which case the cgi script will ignore it.
+
+
+###################################################
+## Customizing URLs in the URL_templates.txt file:
+The templated URL can contain any of the following tokens, which will be replaced with actual values derived from the annotated gene structure:
+
+__CONTIG_ID__
+__REGION_LEND__
+__REGION_REND__    
+__GENE_ID__     
+__MODEL_ID__
+__GENE_END5__
+__GENE_END3__
+
+
+For example, to create a gbrowse link, you might have the following URL_template:
+
+http://domain_name:port_no/cgi-bin/gbrowse?ref=__CONTIG_ID__;start=__REGION_LEND__;end=__REGION_REND__;label=tier1-tier2-tierN
+
+
+
+##########
+## Misc ##
+##########
+
+The following additional utilities are available: 
+
+    script  gff3_file_to_proteins.pl : given a gff3 file and genome multi-fasta file, the biological sequences are extracted and provided in fasta format.  
+            usage: ./gff3_file_to_proteins.pl gff3_file genome_db [prot|CDS|cDNA|gene,default=prot]
+
+                  -cDNA includes UTR sequences.
+                  -gene uncludes introns and exons. Introns are shown in lowercase, exons in uppercase.
+
+        *note, this script creates a database gff3_file.inx that can be queried using the script below.
+
+    
+    script retrieve_gene.pl : given an .inx database (as created in step above), individual genes can be queried, or all stored gene identifiers are listed.
+
+            usage: ./retrieve_gene.pl gene_index_file [gene_id]
+
+                *if no gene_id is given, all existing gene ids are provided via stdout
+
+         
+
+       

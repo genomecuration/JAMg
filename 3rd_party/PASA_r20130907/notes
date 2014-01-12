@@ -1,4 +1,0 @@
-svn checkout --username=bhaas svn+ssh://bhaas@svn.code.sf.net/p/pasa/code/trunk pasa-code
-
-read-only:
-svn checkout svn://svn.code.sf.net/p/pasa/code/trunk pasa-code

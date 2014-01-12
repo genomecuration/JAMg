@@ -1,0 +1,4 @@
+gunzip arabidopsis_clusters.gz
+
+./splice_graph_pasa.pl < arabidopsis_clusters
+

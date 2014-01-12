@@ -1,0 +1,3 @@
+linkA	the url to my linkA
+linkB	the url to my linkB
+gbrowse	http://domain_name:port_no/cgi-bin/gbrowse?ref=__CONTIG_ID__;start=__REGION_LEND__;end=__REGION_REND__;label=tier1-tier2-tierN

@@ -609,16 +609,22 @@ make <span style="font-style: italic"><span style="color: #9A1900"># will instal
 <span style="font-style: italic"><span style="color: #9A1900"># Go to www.giriinst.org and install the repeat library in $JAMG_PATH/3rd_party/RepeatMasker</span></span>
 <span style="font-style: italic"><span style="color: #9A1900"># Run configure. Use the RMBlast NCBI option when asked about an engine (the engine is in $JAMG_PATH/3rd_party/RepeatMasker/ncbi-blast)</span></span>
 <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/RepeatMasker/configure</tt></pre></div></div>
-<div class="paragraph"><p>Finally, we also assume you have correctly installed PASA (and mySQL) to work with your computing environment. Prepare the configuration file
-cp $JAMG_PATH/3rd_party/PASA/pasa_conf/pasa.CONFIG.template $JAMG_PATH/3rd_party/PASA/pasa_conf/conf.txt
-# Edit conf.txt and set the values for these MySQL database settings:
-# MYSQLSERVER=(your mysql server name)
-# MYSQL_RO_USER=(mysql read-only username)
-# MYSQL_RO_PASSWORD=(mysql read-only password)
-# MYSQL_RW_USER=(mysql all privileges username)
-# MYSQL_RW_PASSWORD=(mysql all privileges password)
-vim $JAMG_PATH/3rd_party/PASA/pasa_conf/conf.txt</p></div>
-<div class="paragraph"><p>How we can get some RNA-Seq data? Well we can download them from NCBI and run the following script to pre-process them:</p></div>
+<div class="paragraph"><p>Finally, we also assume you have correctly installed PASA (and mySQL) to work with your computing environment. Prepare the configuration file</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.3
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>cp <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/pasa_conf/pasa<span style="color: #990000">.</span>CONFIG<span style="color: #990000">.</span>template <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/pasa_conf/conf<span style="color: #990000">.</span>txt
+<span style="font-style: italic"><span style="color: #9A1900"># Edit conf.txt and set the values for these MySQL database settings:</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># MYSQLSERVER=(your mysql server name)</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># MYSQL_RO_USER=(mysql read-only username)</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># MYSQL_RO_PASSWORD=(mysql read-only password)</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># MYSQL_RW_USER=(mysql all privileges username)</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># MYSQL_RW_PASSWORD=(mysql all privileges password)</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># you do not need to worry about the others</span></span>
+vim <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/pasa_conf/conf<span style="color: #990000">.</span>txt</tt></pre></div></div>
+<div class="paragraph"><p>This is all you need to do to setup PASA these days. Now let&#8217;s try it with some RNA-Seq (aka PASA2)! How we can get some RNA-Seq data? Well we can download them from NCBI and run the following script to pre-process them:</p></div>
 <div class="listingblock">
 <div class="content"><!-- Generator: GNU source-highlight 3.1.3
 by Lorenzo Bettini
@@ -738,7 +744,7 @@ http://www.gnu.org/software/src-highlite -->
 mkdir TGG<span style="color: #990000">;</span> cd TGG
 <span style="color: #009900">$JAMG_PATH</span>/bin/align_rnaseq_gsnap<span style="color: #990000">.</span>pl -fasta <span style="color: #009900">$GENOME_PATH</span> -dbname <span style="color: #009900">$GENOME_NAME</span> -cpus <span style="color: #009900">$LOCAL_CPUS</span> <span style="color: #990000">\</span>
  -nofail -suffix -input_dir <span style="color: #990000">../../</span> <span style="color: #990000">|&amp;</span> tee tgg<span style="color: #990000">.</span>log</tt></pre></div></div>
-<div class="paragraph"><p>In the above we have prepared the input for TDN and TGG (Trinity de-novo and Trinity Genome-guided). For this tutorial, for TDN we use <em>--min_kmer_cov 2</em> because it saves time and resources but in a real world scenario of annotating a genome, don&#8217;t use it if you don&#8217;t have to. For TGG we use <em>-suffix</em> because we don&#8217;t expect any substantial polymorphism for Drosophila melanogaster. If you have a species with polymorphism then don&#8217;t use <em>-suffix</em>. Once the alignment of the RNASeq is complete we can continue with the TGG process. Some files will be mapped multiple times. We know that Drosophila is well assembled so these RNASeq are almost certainly repeats, for this tutorial we will not use them. The overall process above will take about 16-24h if you&#8217;re doing both in parallel and using 5 CPUs for TDN and 10 CPUs for TGG.</p></div>
+<div class="paragraph"><p>In the above we have prepared the input for TDN and TGG (Trinity de-novo and Trinity Genome-guided). For this tutorial, for TDN we use <em>--min_kmer_cov 2</em> because it saves time and resources but in a real world scenario of annotating a genome, don&#8217;t use it if you don&#8217;t have to. For TGG we use <em>-suffix</em> because we don&#8217;t expect any substantial polymorphism for Drosophila melanogaster. If you have a species with polymorphism then don&#8217;t use <em>-suffix</em> (actually in my tests using -suffix made the search slower rather than faster, the opposite of what is expected). Once the alignment of the RNASeq is complete we can continue with the TGG process. Some files will be mapped multiple times. We know that Drosophila is well assembled so these RNASeq are almost certainly repeats, for this tutorial we will not use them. The overall process above will take about 16-24h if you&#8217;re doing both in parallel and using 5 CPUs for TDN and 10 CPUs for TGG.</p></div>
 <div class="admonitionblock">
 <table><tr>
 <td class="icon">
@@ -752,7 +758,7 @@ mkdir TGG<span style="color: #990000">;</span> cd TGG
 <td class="icon">
 <img src="./images/icons/tip.png" alt="Tip" />
 </td>
-<td class="content">For parallelization with computing clusters, you can use the -commands_only option and create a text file that has one line worth of commands for each input. You can then use the unix command <em>split</em> or ParaFly to run it on a cluster.</td>
+<td class="content">For parallelization with computing clusters, you can use the -commands_only option and create a text file that has one line worth of commands for each input. You can then use the unix command <em>split</em> or ParaFly to run it on a cluster. I find that this GSNAP step is the <em>slowest</em> in the entire procedure (1 day per 50 million pairs). By splitting the sequence files, we can leverage HPC architectures to get through the data in a day or so.</td>
 </tr></table>
 </div>
 <div class="listingblock">
@@ -801,6 +807,7 @@ by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
 <pre><tt>find TGG/Dir_<span style="color: #990000">*</span> -name <span style="color: #FF0000">"*inity.fasta"</span> <span style="color: #990000">|</span> <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/trinityrnaseq/util/GG_trinity_accession_incrementer<span style="color: #990000">.</span>pl <span style="color: #990000">&gt;</span> Trinity_GG<span style="color: #990000">.</span>fasta
+<span style="font-style: italic"><span style="color: #9A1900">#p.s With Trinity_GG.fasta in your base directory, you can safely delete the TGG directory now</span></span>
 cat TDN/Trinity<span style="color: #990000">.</span>fasta Trinity_GG<span style="color: #990000">.</span>fasta <span style="color: #990000">&gt;</span> transcripts<span style="color: #990000">.</span>fasta
 cat TDN/Trinity<span style="color: #990000">.</span>fasta <span style="color: #990000">|</span> <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/misc_utilities/accession_extractor<span style="color: #990000">.</span>pl <span style="color: #990000">&gt;</span> tdn<span style="color: #990000">.</span>accs
 <span style="font-style: italic"><span style="color: #9A1900"># prepare a PASA assembly configuration (separate from the PASA-wide configuration you did in the beginning)</span></span>
@@ -810,7 +817,7 @@ cp <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/<
 <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/bin/seqclean transcripts<span style="color: #990000">.</span>fasta -c <span style="color: #009900">$LOCAL_CPUS</span> -n <span style="color: #993399">10000</span>
 <span style="font-style: italic"><span style="color: #9A1900"># first use -x to check everything is OK create a list of commands that will be run with PASA:</span></span>
 <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/scripts/Launch_PASA_pipeline<span style="color: #990000">.</span>pl -c alignAssembly<span style="color: #990000">.</span>config -C -R <span style="color: #990000">\</span>
- -g <span style="color: #009900">$GENOME_PATH</span> --MAX_INTRON_LENGTH <span style="color: #009900">$max_intron_length</span> <span style="color: #990000">\</span>
+ -g <span style="color: #009900">$GENOME_PATH</span> --MAX_INTRON_LENGTH <span style="color: #009900">$MAX_INTRON_LENGTH</span> <span style="color: #990000">\</span>
  --ALIGNERS blat<span style="color: #990000">,</span>gmap --TRANSDECODER --CPU <span style="color: #009900">$LOCAL_CPUS</span> <span style="color: #990000">\</span>
  -T -t transcripts<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>clean -u transcripts<span style="color: #990000">.</span>fasta <span style="color: #990000">\</span>
  --TDN tdn<span style="color: #990000">.</span>accs -x <span style="color: #990000">&gt;</span> pasa<span style="color: #990000">.</span>alignAssembly<span style="color: #990000">.</span>commands<span style="color: #990000">.</span>to<span style="color: #990000">.</span>run
@@ -821,6 +828,21 @@ cp <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/<
  -T -t transcripts<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>clean -u transcripts<span style="color: #990000">.</span>fasta <span style="color: #990000">\</span>
  --TDN tdn<span style="color: #990000">.</span>accs</tt></pre></div></div>
 <div class="paragraph"><p>This will take some time, about two days with the 2 alignment steps (<em>blat</em> and <em>gmap</em>) taking the longest. In real-world or mission critical scenarios, we can run the alignment steps separately on a cluster and use the <em>-s</em> and <em>-e</em> options to determine which steps shown in <em>pasa.alignAssembly.commands.to.run</em> will be run on which computer or cluster.</p></div>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<img src="./images/icons/tip.png" alt="Tip" />
+</td>
+<td class="content">If you&#8217;ve never ran PASA on this system before, it makes sense to try the first command produced in <em>pasa.alignAssembly.commands.to.run</em>. It attempt to connect and create the database. If it doesn&#8217;t work then your mySQL settings are wrong. Common errors are <em>Access denied for user user_demo@localhost</em> when the user already exists. Giving the relevant priviliges can solve it:</td>
+</tr></table>
+</div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.3
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>mysql -u root
+GRANT SELECT<span style="color: #990000">,</span>INSERT<span style="color: #990000">,</span>UPDATE<span style="color: #990000">,</span>DELETE ON <span style="color: #990000">*.*</span> TO <span style="color: #FF0000">'user_demo'</span>@<span style="color: #FF0000">'localhost'</span><span style="color: #990000">;</span></tt></pre></div></div>
 </div>
 <h2 id="_step_1c_run_de_novo_predictors_that_require_no_training">Step 1c: run de-novo predictors that require no training</h2>
 <div class="sectionbody">
@@ -893,7 +915,7 @@ http://www.gnu.org/software/src-highlite -->
 <div id="footer">
 <div id="footer-text">
 Version RC1<br />
-Last updated 2014-01-10 17:17:41 EST
+Last updated 2014-01-11 01:19:04 EST
 </div>
 </div>
 </body>

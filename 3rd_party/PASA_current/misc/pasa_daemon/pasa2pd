@@ -1,0 +1,481 @@
+#!/usr/local/bin/perl
+
+use Pasa_init;
+use Pasa_conf;
+use POSIX;
+use strict;
+use Getopt::Std;
+use Mysql_connect;
+use DBI;
+use Mail::Mailer;
+use File::Basename;
+
+use vars qw ($opt_h $opt_D $opt_d $opt_p $opt_M $opt_H);
+
+
+my $myProgName = basename($0);
+
+my $uname = `uname -n`;
+chomp $uname;
+
+my $PASA_URL = &Pasa_conf::getParam("BASE_PASA_URL");
+
+my $admin_email = &Pasa_conf::getParam("PASA_ADMIN_EMAIL");
+
+my $configTemplate = $ENV{PASAHOME} . "/pasa_conf/pasaRunTemplate.txt";
+unless (-s $configTemplate) {
+    die "FATAL, cannot find $configTemplate\n\n";
+}
+
+&getopts ('hD:dp:M:H:');
+
+if ($opt_h) {
+	print <<_EOH_;
+
+pasa2pd is a daemon responsible for managing PASA pipeline run requests.  
+It queries the PASA_admin database very five minutes looking for new job submissions.
+Upon completion, an email is sent to the job submitter.
+
+Only one job is run at a time, and FIFO.
+
+All info (user, password, server, emails, etc) read from pasa conf.txt file.
+
+_EOH_
+
+exit;
+
+}
+
+our $time_to_die = 0;  ## use a kill cmd to shut down gracefully
+
+my $mysqlhost = &Pasa_conf::getParam("MYSQLSERVER");
+my $mysqldb = &Pasa_conf::getParam("PASA_ADMIN_DB");
+my $user = &Pasa_conf::getParam("MYSQL_RW_USER"); 
+my $password = &Pasa_conf::getParam("MYSQL_RW_PASSWORD");
+
+my @NOTIFICATION_STATUS = ("FAILURE", "SUCCESS", "INFO_MSG"); 
+my $SLEEPTIME = 30;
+
+
+## Test database connection:
+my $dbproc = &DBconnect();
+$dbproc->disconnect;
+
+
+ main: {
+     
+     die "pasa2pd already running. " if &check_for_running_processes();
+     
+     ## Creating daemon pasapd
+     umask(0000);
+     my $pid = fork();
+     exit if $pid; ## only child runs.
+     
+     # close open I/O handles.
+     close STDERR;
+     close STDOUT;
+     close STDIN;
+     
+     $SIG{TERM} = \&signal_handler;
+     
+     POSIX::setsid() or die "Can't start a new session $!\n";
+     
+     my $FAILURE_FLAG = 0;
+     while (! $time_to_die) {
+         eval {
+             # this dies if unable to connect to database.
+             $dbproc = &DBconnect(); #freshen connection
+             &check_n_run_new_jobs();
+             
+         };
+         if ($@) {
+             unless ($FAILURE_FLAG) {
+                 $FAILURE_FLAG = 1;
+                 &notify_submitter($mysqldb, $admin_email, 2, "Polling: general failure of pasa2pd:\n$@\n");
+             }
+         } else {
+             if ($FAILURE_FLAG) {
+                 &notify_submitter($mysqldb, $admin_email, 2, "Polling: pasa2pd connection restored.\n");
+             }
+             ## Everything is OK
+             $FAILURE_FLAG = 0;
+         }
+         
+         #&notify_submitter($mysqldb, $admin_email, 2, "Daemon is polling.\n");
+         sleep($SLEEPTIME); # poll every 1 minute in-between jobs.
+         
+     }
+     
+     &notify_submitter($mysqldb, $admin_email, 2, "Daemon is terminating now.\n");
+     
+     exit(0);
+     
+ }
+
+
+####
+sub signal_handler {
+    
+    
+    &notify_submitter($mysqldb, $admin_email, 2, "Daemon signalled to terminate now (time_to_die=" . ++$time_to_die . ")\n");
+    
+}
+
+
+####
+sub check_for_running_processes {
+    my $pid = $$;
+    #print "My PID = $pid\n";
+    my @runningProcesses = `ps -e`;
+    while (@runningProcesses) {
+        my $runProc = shift @runningProcesses;
+        $runProc =~ s/^\s+|\s+$//g;
+        my @x = split (/\s+/, $runProc);
+        my ($procPID, $procName) = ($x[0], $x[3]);
+        if ($procName eq $myProgName && $procPID != $pid) {
+            return (1); #detected a diff pasa2pd running process.
+        }
+    }
+    return (0); #just me.
+    
+}
+
+
+####
+sub check_n_run_new_jobs {
+    
+    my $query = "select pd.pasa_db_name, pd.annot_db_name, pd.workdir, ai.email, pd.genome_db, pd.transcript_db, pd.fl_accs, pd.trim_vector_polyA, ai.job_id, ai.job_type from PASA_database_info pd, audit_info ai where pd.pasa_db_name = ai.pasa_db_name and ai.is_started = 0 and ai.is_finished = 0 order by ai.job_id";
+    my @results = &do_sql_2D($dbproc, $query);
+    if (@results) {
+        foreach my $result (@results) {
+            my ($pasa_db_name, $annot_db_name, $workdir, $email, $genome_db, $transcript_db, $fl_accs, $trim_vector_polyA, $job_id, $job_type) = @$result;
+            
+            &notify_submitter($pasa_db_name, $email, 2, "PASA daemon is now processing job $job_id\n$job_type\n$pasa_db_name\n$workdir\n");
+            ## Indicate starting job.
+            my $query = "update audit_info set start_time = now(), is_started = 1 where job_id = $job_id";
+            &RunMod($dbproc, $query);
+            
+            chdir ($workdir) or die "Can't cd to $workdir";
+            
+            my $errors = "";
+            my $progRunType;
+            my $configFilename;
+            my $untrimmedFasta = "";
+            my $script_opts = "";
+            if ($job_type eq "alignAssembly") {
+                
+                $configFilename = "$pasa_db_name.runAlignAssembly.config";
+                ($errors, $transcript_db, $untrimmedFasta, $script_opts)  = &run_align_assembly($configFilename, $pasa_db_name, $annot_db_name, $workdir, $email, $genome_db, $transcript_db, $fl_accs, $trim_vector_polyA, $job_id);
+                
+                $progRunType = "-R -C $script_opts";
+                
+            } 
+            elsif ($job_type eq "annotCompare") {
+                
+                $configFilename = "$pasa_db_name.runAnnotCompare.$$.config";
+                
+                $progRunType = "-A";
+                $errors = &run_annotation_comparison ($configFilename, $pasa_db_name, $annot_db_name, $workdir, $email, $genome_db, $transcript_db, $fl_accs, $trim_vector_polyA, $job_id);
+            } 
+            elsif ($job_type eq "altSplice") {
+                $configFilename = "$pasa_db_name.runAltSplicing.$$.config";
+                &write_alt_splice_analysis_config($configFilename, $pasa_db_name, $genome_db, $transcript_db);
+                $progRunType = "--ALT_SPLICE";
+            }
+            else {
+                $errors .= "ERROR, don't recognize job_type ($job_type)\n";
+            }
+            
+            unless ($errors) {
+	    	    
+                my $fl_accs_param = ($fl_accs) ? "-f $fl_accs" : "";
+                
+                ## Run the pipeline:
+                my $cmd = "$ENV{PASAHOME}/scripts/Launch_PASA_pipeline.pl -c $configFilename $progRunType -g $genome_db -t $transcript_db $fl_accs_param ";
+                
+                if ($untrimmedFasta) {
+                    $cmd .= " -T -u $untrimmedFasta";
+                }
+                
+                my $stdout = `$cmd 2>&1 `;
+                
+                $dbproc = &DBconnect(); # avoid mysql server gone away error; connection closed if above takes a long time, which it sometimes does.
+                
+                if ($?) {
+                    # error in running command:
+                    $errors .= "ERROR running PASA command: $cmd\nOutput: $stdout";
+                    my $query = "update audit_info set finish_time = now(), is_finished = 1, error_text = ? where job_id = $job_id ";
+                    &RunMod($dbproc, $query, $stdout);
+                    
+                } else {
+                    #finished successfully
+                    my $query = "update audit_info set finish_time = now(), is_finished = 1, is_success = 1 where job_id = $job_id";
+                    &RunMod($dbproc, $query);
+                    
+                }
+            }
+            if ($errors) {
+                &notify_submitter($pasa_db_name, $email, 0, $errors);
+            } else {
+                &notify_submitter($pasa_db_name, $email, 1);
+            }
+            
+            chdir ("/") or die "Can't cd to / "; # return to rootdir.
+        } ## end of each job processing
+    } else {
+        ## No jobs to process:
+    }
+    
+    $dbproc->disconnect;
+    
+}
+
+
+
+####
+sub DBconnect {
+    my $dbproc = &connect_to_db($mysqlhost,$mysqldb,$user,$password);
+    return ($dbproc);
+}
+
+
+####
+sub notify_submitter {
+    my ($dbname, $email, $successFlag, $errorText) = @_;
+    
+    unless ($email) {
+        return;
+    }
+    
+    my $status = $NOTIFICATION_STATUS[$successFlag];
+    
+    eval { ## not taking any chances here.
+        
+        my $mailer = new Mail::Mailer ("sendmail");
+        
+        $mailer->open( {From => "$admin_email",
+                        To => "$email",
+                        Bcc => "$admin_email",
+                        Subject => "PASA on $dbname ($status)" } );
+        
+        if ($status eq "SUCCESS") {
+            
+            print $mailer "The PASA pipeline (pasa2pd, $uname) has finished.\nPlease visit the following URL to navigate the results.\n$PASA_URL/status_report.cgi?db=$dbname\n";
+        } elsif ($status eq "FAILURE") {
+            print $mailer "Sorry, the PASA pipeline (pasa2pd, $uname) did not complete successfully. Please notify the current PASA administrator ($admin_email) to further investigate this.  Here is the output from PASA:\n$errorText\n\n";
+        } else {
+            print $mailer $errorText;
+        }
+        
+        print $mailer "\n-----\n\n\n";
+        
+        $mailer->close();
+        
+    };
+    
+    
+}
+
+
+####
+sub write_config_file {
+    my ($configFilename, %tokenHash) = @_;
+    
+    
+    my $configTxt = `cat $configTemplate`;
+    foreach my $token (keys %tokenHash) {
+        my $val = $tokenHash{$token};
+        $configTxt =~ s/<$token>/$val/;
+    }
+    open (CONFIG, ">$configFilename") or die "Can't create config file.\n";
+    print CONFIG $configTxt;
+    close CONFIG;
+}
+
+
+
+
+####
+sub run_align_assembly {
+    
+    my ($configFilename, $pasa_db_name, $annot_db_name, $workdir, $email, $genome_db, $transcript_db, $fl_accs, $trim_vector_polyA, $job_id) = @_;
+    
+    
+    my $errors = "";
+    
+    
+    ## get alignAssemblyParams:
+    my $query = qq { select max_intron_length, min_percent_trans_align, 
+                     min_percent_identity, mapping_utility, sim4_chaser_flag, 
+                     use_splice_graph_assembler, invalidate_single_exon_ESTs 
+                         from alignment_assembly_params where job_id = ?
+                     };
+    my $params_aref = &first_result_sql($dbproc, $query, $job_id);
+    my $untrimmedFasta = "";
+    my $script_opts = "";
+    
+    if (ref $params_aref eq "ARRAY") {
+        my ($max_intron_length, $min_percent_trans_align, $min_percent_identity, $mapping_utility, 
+            $sim4_chaser_flag, $use_splice_graph_assembler, $invalidate_single_exon_ests) = @$params_aref;
+        
+        my %config_hash = (__MYSQLDB__ => $pasa_db_name,
+                           __USER__ => $user,
+                           __PASSWORD__ => $password,
+                           __MYSQL_SERVER_NAME__ => $mysqlhost,
+                           __MAX_INTRON_LENGTH__ => $max_intron_length,
+                           __MIN_PERCENT_ALIGNED__ => $min_percent_trans_align,
+                           __MIN_AVG_PER_ID__ => $min_percent_identity ,
+                           );
+        
+        
+        if ($sim4_chaser_flag) {
+            $script_opts .= " --APPLY_SIM4_CHASER ";
+        }
+        if ($use_splice_graph_assembler) {
+            $script_opts .=  " --USE_SPLICE_GRAPH_ASSEMBLER ";
+        }
+        if ($invalidate_single_exon_ests) {
+            $script_opts .= " --INVALIDATE_SINGLE_EXON_ESTS ";
+        }
+        
+        ## process additional flags:
+        if ($mapping_utility =~ /gmap/i) {
+            $script_opts .= " --USE_GMAP ";
+        }
+        
+        &write_config_file( $configFilename,  %config_hash);
+        
+        ## Run seqclean:
+        if ($trim_vector_polyA) {
+            my $seqclean_prog = &Pasa_conf::getParam("SEQCLEAN");
+            my $vector_database = &Pasa_conf::getParam("VECTOR_DB");
+            my $cmd = "$seqclean_prog $transcript_db ";
+            if ($vector_database =~ /\w/) {
+                $cmd .= " -v $vector_database";
+            }
+            my $ret = system $cmd;
+            if ($ret) {
+                $errors .= "ERROR running seqclean via $cmd\n";
+            }
+
+			## update permissions on the cleaning files. For some reason, the cleaning scripts create files w/ restrictive permissoins.
+			$cmd = "chmod -R 777 cleaning_*";
+			system $cmd;
+			            
+            $untrimmedFasta = $transcript_db;
+            $transcript_db =~ /([^\/]+)$/;
+            $transcript_db = "$workdir/$1.clean";
+            
+        }
+        
+    } else {
+        $errors .= "ERROR: couldn't retrieve parameters from alignment_assembly_params  for job: $job_id, $pasa_db_name\n";
+    }
+    return ($errors, $transcript_db, $untrimmedFasta, $script_opts);
+
+}
+
+
+
+#### 
+sub run_annotation_comparison {
+    my ($configFilename, $pasa_db_name, $annot_db_name, $workdir, $email, $genome_db, $transcript_db, $fl_accs, $trim_vector_polyA, $job_id) = @_;
+    
+    
+    my $errors = "";
+    
+    if ($annot_db_name) {
+        
+        &update_URL_templates($pasa_db_name, $annot_db_name);
+        
+        my $query = "select min_percent_overlap, min_percent_prot_coding, min_perid_prot_compare, min_percent_length_fl_compare, "
+            . "min_percent_length_nonfl_compare, min_fl_orf_size, min_percent_align_length, min_percent_overlap_gene_replace, "
+            . "stomp_high_percentage_overlapping_gene, trust_fl_status, max_utr_exons, genetic_code from annot_compare_params where job_id = ?";
+        my $params_aref = &first_result_sql($dbproc, $query, $job_id);
+        if (ref $params_aref eq "ARRAY") {
+            my ($min_percent_overlap, $min_percent_prot_coding, $min_perid_prot_compare, $min_percent_length_fl_compare,
+                $min_percent_length_nonfl_compare, $min_fl_orf_size, $min_percent_align_length, $min_percent_overlap_gene_replace,
+                $stomp_high_percentage_overlapping_gene, $trust_fl_status, $max_utr_exons, $genetic_code) = @$params_aref;
+            
+            
+            
+            my %configHash = (__MYSQLDB__ => $pasa_db_name,
+                              __USER__ => $user,
+                              __PASSWORD__ => $password,
+                              __MYSQL_SERVER_NAME__ => $mysqlhost,
+                              __MIN_PERCENT_OVERLAP__ => $min_percent_overlap,
+                              __MIN_PERCENT_PROT_CODING__ => $min_percent_prot_coding,
+                              __MIN_PERID_PROT_COMPARE__ => $min_perid_prot_compare,
+                              __MIN_PERCENT_LENGTH_FL_COMPARE__ => $min_percent_length_fl_compare,
+                              __MIN_PERCENT_LENGTH_NONFL_COMPARE__ => $min_percent_length_nonfl_compare,
+                              __MIN_PERCENT_ALIGN_LENGTH__ => $min_percent_align_length,
+                              __MIN_PERCENT_OVERLAP_GENE_REPLACE__ => $min_percent_overlap_gene_replace,
+                              __MAX_UTR_EXONS__ => $max_utr_exons,
+                              __GENETIC_CODE__ => $genetic_code
+                              );
+            
+            ## handle the flags:
+            if ($trust_fl_status) {
+                $configHash{__TRUST_FL_STATUS__}  = $trust_fl_status;
+            }
+            if ($min_fl_orf_size) {
+                $configHash{__MIN_FL_ORF_SIZE__} = $min_fl_orf_size;
+            }
+            if ($stomp_high_percentage_overlapping_gene) {
+                $configHash{__STOMP_HIGH_PERCENTAGE_OVERLAPPING_GENE__} = $stomp_high_percentage_overlapping_gene;
+            }
+            &write_config_file($configFilename, %configHash);
+            
+            ## Load the current version of the annotation:
+            my $cmd = "$ENV{PASAHOME}/scripts/Load_Current_Gene_Annotations.dbi -c $configFilename -g $genome_db -P SYBTIGR,Sybase,access,access,$annot_db_name ";
+            
+            my $out = `$cmd 2>&1`;
+            if ($?) {
+                $errors .= "ERROR loading gene annotations from annotdb: $annot_db_name using command:\n$cmd\n$out\n";
+            }
+            #$errors .= $cmd; ## must remove if not debugging
+            
+        } else {
+            $errors .= "ERROR: couldn't retrieve parameters from annot_compare_params for job_id: $job_id, $pasa_db_name\n";
+        }
+    } else {
+        $errors .= "Cannot run annotation comparison.  The annotation database name was not specified.\n";
+    }
+    
+    return ($errors);
+    
+}
+
+
+####
+sub update_URL_templates {
+    
+    my ($pasa_db_name, $annot_db_name) = @_;
+    my $query = "select url_name, url_template from $pasa_db_name.URL_templates";
+    my @results = &do_sql_2D($dbproc, $query);
+    foreach my $result (@results) {
+        my ($url_name, $url_template) = @$result;
+        if ($url_template =~ /__ANNOT_DB_NAME__/) {
+            $url_template =~ s/__ANNOT_DB_NAME__/$annot_db_name/g;
+            my $query = "update $pasa_db_name.URL_templates set url_template = ? where url_name = ?";
+            &RunMod($dbproc, $query, $url_template, $url_name);
+        }
+    }
+}
+
+####
+sub write_alt_splice_analysis_config {
+    my ($configFilename, $pasa_db_name, $genome_db, $transcript_db) = @_;
+
+    
+    &write_config_file( $configFilename, 
+                        __MYSQLDB__ => $pasa_db_name,
+                        __USER__ => $user,
+                        __PASSWORD__ => $password,
+                        __MYSQL_SERVER_NAME__ => $mysqlhost,
+                        
+                        );
+    
+    return;
+}
+

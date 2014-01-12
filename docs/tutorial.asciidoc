@@ -44,6 +44,8 @@ make # will install the various software, including RepeatMasker
 $JAMG_PATH/3rd_party/RepeatMasker/configure
 
 Finally, we also assume you have correctly installed PASA (and mySQL) to work with your computing environment. Prepare the configuration file
+
+[source,bash]
 cp $JAMG_PATH/3rd_party/PASA/pasa_conf/pasa.CONFIG.template $JAMG_PATH/3rd_party/PASA/pasa_conf/conf.txt
 # Edit conf.txt and set the values for these MySQL database settings:
 # MYSQLSERVER=(your mysql server name)
@@ -51,9 +53,10 @@ cp $JAMG_PATH/3rd_party/PASA/pasa_conf/pasa.CONFIG.template $JAMG_PATH/3rd_party
 # MYSQL_RO_PASSWORD=(mysql read-only password)
 # MYSQL_RW_USER=(mysql all privileges username)
 # MYSQL_RW_PASSWORD=(mysql all privileges password)
+# you do not need to worry about the others 
 vim $JAMG_PATH/3rd_party/PASA/pasa_conf/conf.txt
 
-How we can get some RNA-Seq data? Well we can download them from NCBI and run the following script to pre-process them:
+This is all you need to do to setup PASA these days. Now let's try it with some RNA-Seq (aka PASA2)! How we can get some RNA-Seq data? Well we can download them from NCBI and run the following script to pre-process them:
 
 [source,bash]
 mkdir RNAseq; cd RNAseq
@@ -136,11 +139,11 @@ mkdir TGG; cd TGG
 $JAMG_PATH/bin/align_rnaseq_gsnap.pl -fasta $GENOME_PATH -dbname $GENOME_NAME -cpus $LOCAL_CPUS \
  -nofail -suffix -input_dir ../../ |& tee tgg.log
 
-In the above we have prepared the input for TDN and TGG (Trinity de-novo and Trinity Genome-guided). For this tutorial, for TDN we use '--min_kmer_cov 2' because it saves time and resources but in a real world scenario of annotating a genome, don't use it if you don't have to. For TGG we use '-suffix' because we don't expect any substantial polymorphism for Drosophila melanogaster. If you have a species with polymorphism then don't use '-suffix'. Once the alignment of the RNASeq is complete we can continue with the TGG process. Some files will be mapped multiple times. We know that Drosophila is well assembled so these RNASeq are almost certainly repeats, for this tutorial we will not use them. The overall process above will take about 16-24h if you're doing both in parallel and using 5 CPUs for TDN and 10 CPUs for TGG.
+In the above we have prepared the input for TDN and TGG (Trinity de-novo and Trinity Genome-guided). For this tutorial, for TDN we use '--min_kmer_cov 2' because it saves time and resources but in a real world scenario of annotating a genome, don't use it if you don't have to. For TGG we use '-suffix' because we don't expect any substantial polymorphism for Drosophila melanogaster. If you have a species with polymorphism then don't use '-suffix' (actually in my tests using -suffix made the search slower rather than faster, the opposite of what is expected). Once the alignment of the RNASeq is complete we can continue with the TGG process. Some files will be mapped multiple times. We know that Drosophila is well assembled so these RNASeq are almost certainly repeats, for this tutorial we will not use them. The overall process above will take about 16-24h if you're doing both in parallel and using 5 CPUs for TDN and 10 CPUs for TGG.
 
 CAUTION: In NGS-derived assemblies, it is not uncommon to have 'haplotype' scaffolds (see the Heliconius genome paper), for that reason we would keep them but decrease the '-path_number' option of 'align_rnaseq_gsnap' from the default of 50 to something that is expected for your assembly (e.g. 4). See the files TGG/*.concordant_mult_xs for read pairs that map to higher than -path_number paths.
 
-TIP: For parallelization with computing clusters, you can use the -commands_only option and create a text file that has one line worth of commands for each input. You can then use the unix command 'split' or ParaFly to run it on a cluster.
+TIP: For parallelization with computing clusters, you can use the -commands_only option and create a text file that has one line worth of commands for each input. You can then use the unix command 'split' or ParaFly to run it on a cluster. I find that this GSNAP step is the 'slowest' in the entire procedure (1 day per 50 million pairs). By splitting the sequence files, we can leverage HPC architectures to get through the data in a day or so.
 
 [source,bash]
 # grab all the outputs for Drosophila
@@ -168,6 +171,7 @@ Once TGG and TDN are complete, we can integrate TGG and TDN using http://pasa.so
 
 [source,bash]
 find TGG/Dir_* -name "*inity.fasta" | $JAMG_PATH/3rd_party/trinityrnaseq/util/GG_trinity_accession_incrementer.pl > Trinity_GG.fasta
+#p.s With Trinity_GG.fasta in your base directory, you can safely delete the TGG directory now
 cat TDN/Trinity.fasta Trinity_GG.fasta > transcripts.fasta
 cat TDN/Trinity.fasta | $JAMG_PATH/3rd_party/PASA/misc_utilities/accession_extractor.pl > tdn.accs
 # prepare a PASA assembly configuration (separate from the PASA-wide configuration you did in the beginning)
@@ -177,7 +181,7 @@ cp $JAMG_PATH/3rd_party/PASA/pasa_conf/pasa.alignAssembly.Template.txt alignAsse
 $JAMG_PATH/3rd_party/bin/seqclean transcripts.fasta -c $LOCAL_CPUS -n 10000 
 # first use -x to check everything is OK create a list of commands that will be run with PASA:
 $JAMG_PATH/3rd_party/PASA/scripts/Launch_PASA_pipeline.pl -c alignAssembly.config -C -R \
- -g $GENOME_PATH --MAX_INTRON_LENGTH $max_intron_length \
+ -g $GENOME_PATH --MAX_INTRON_LENGTH $MAX_INTRON_LENGTH \
  --ALIGNERS blat,gmap --TRANSDECODER --CPU $LOCAL_CPUS \
  -T -t transcripts.fasta.clean -u transcripts.fasta \
  --TDN tdn.accs -x > pasa.alignAssembly.commands.to.run
@@ -189,6 +193,14 @@ $JAMG_PATH/3rd_party/PASA/scripts/Launch_PASA_pipeline.pl -c alignAssembly.confi
  --TDN tdn.accs
 
 This will take some time, about two days with the 2 alignment steps ('blat' and 'gmap') taking the longest. In real-world or mission critical scenarios, we can run the alignment steps separately on a cluster and use the '-s' and '-e' options to determine which steps shown in 'pasa.alignAssembly.commands.to.run' will be run on which computer or cluster.
+ 
+TIP: If you've never ran PASA on this system before, it makes sense to try the first command produced in 'pasa.alignAssembly.commands.to.run'. It attempt to connect and create the database. If it doesn't work then your mySQL settings are wrong. Common errors are 'Access denied for user user_demo@localhost' when the user already exists. Giving the relevant priviliges can solve it:
+
+[source,bash]
+mysql -u root
+GRANT SELECT,INSERT,UPDATE,DELETE ON *.* TO 'user_demo'@'localhost';
+ 
+
  
 == Step 1c: run de-novo predictors that require no training
 There are some predictors that use no training at all. 
