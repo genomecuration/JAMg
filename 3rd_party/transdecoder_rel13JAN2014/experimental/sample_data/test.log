@@ -1,0 +1,30 @@
+Using /usr/bin/blastx
+Using /usr/bin/blastn
+Using /usr/bin/transeq
+Using /usr/bin/blastdbcmd
+Using /usr/bin/makeblastdb
+Using /home/alexie/bin/cd-hit-est
+Preparing and counting seqs...
+CMD: /usr/bin/makeblastdb -in test_seq.fsa -dbtype nucl -parse_seqids >/dev/null
+/usr/bin/blastdbcmd -db test_seq.fsa -outfmt %a -entry all
+22:19:03	18 sequences to be translated
+If not all BLASTs provided, doing BLASTs...
+CMD: /usr/bin/blastx -num_descriptions 10 -num_alignments 10 -db mito_aa_inv_80.fsa.trim -query test_seq.fsa -num_threads 4 -out test_seq.fsa_vs_mitochondrial  -evalue 1e-20 -query_gencode 5 -soft_masking true 
+CMD: /usr/bin/blastn -num_descriptions 10 -num_alignments 10 -db rDNA_nt_inv.fsa_nr -query test_seq.fsa -num_threads 4 -out test_seq.fsa_vs_rrna  -task megablast -evalue 1e-40 -dust no 
+CMD: /usr/bin/blastx -num_descriptions 10 -num_alignments 10 -db Dmel_refseq -query test_seq.fsa -num_threads 4 -out test_seq.fsa_vs_nuclear  -evalue 1e-10 -query_gencode 1 -soft_masking true 
+Continuing...
+CMD: /home/alexie/bin/cd-hit-est -r 1 -i test_seq.fsa -o test_seq.fsa.1000bp.nr90 -M 0 -T 4 -d 0 -l 1000 >/dev/null
+Using BLAST (eval < 1e-30) to create a codon usage table for nuclear genes
+You have very few sequences with significant BLASTX hits (11 out of 13) for creating the codon usage table. Careful...
+CMD: /home/alexie/bin/cd-hit-est -r 1 -i test_seq.fsa -o test_seq.fsa.300bp.nr90 -M 0 -T 4 -d 0 -l 300 >/dev/null
+Using BLAST (eval < 1e-30) to create a codon usage table for mitochondrial genes
+You have few sequences with significant BLASTX hits (1 out of 16) for creating the codon usage table. Careful...
+Translating...
+22:19:15	Found no rRNA genes
+Parsing test_seq.fsa_vs_mitochondrial...
+22:19:15	Translated as mtDNA genes: 1
+Parsing test_seq.fsa_vs_nuclear...
+22:19:21	Translated as nuclear genes: 14
+A total of 15 out of 18 has been translated (83.33 %)
+Printing out untranslated: test_seq.fsa.untranslated.fsa
+CMD: /usr/bin/blastdbcmd -db test_seq.fsa  -outfmt %f -entry_batch test_seq.fsa.untranslated > test_seq.fsa.untranslated.fsa

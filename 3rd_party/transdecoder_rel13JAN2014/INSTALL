@@ -1,0 +1,10 @@
+You will require
+
+ * hmmer
+ * mpi
+
+You can install them using a repository, e.g. on an Ubuntu:
+$ sudo apt-get install openmpi-bin hmmer
+
+Please make sure you read http://transdecoder.sf.net before proceeding ("How to prepare for MPI")
+

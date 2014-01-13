@@ -1,0 +1,25 @@
+This was an experiment, mainly built for transcriptome contigs that had indels due to 454 the technology. We don't really use it anymore (but who knows, maybe indel errors become fashionable again).
+
+TransDecoder is faster and better when there are no indels (e.g. Illumina data)
+
+Script that is a subset of prot4EST's facility (1) to find ORFs in a nucleotide file based on a BLASTX report even if frameshifts exist (it fixes the frameshifts). 
+It only translates those that are found in a BLAST report
+Useful for EST assemblies 
+
+This is experimental. In other words:
+ it might work (probably does) but not well. It is also not optimized, clunky and things of little use might have been included.
+ it is also actively worked on so complain to alexie@butterflybase.org if you have features you'd like to request to (dis)appear
+
+To use:
+* Need BLAST+ (new C++)
+* transeq (EMBOSS)
+* Protein BLAST database for 'nuclear' genes (can be anything, small or big up to you - small is fast, big is more likely to find proteins)
+* Protein BLAST database for 'mitochondrial' genes (insect one and eukaryote-wide included)
+* Nucleotide BLAST database for rRNA genes (insect and euk-wide included)
+
+Runtime with 180,000 EST contigs: 2h excluding BLAST
+
+TODO
+ Add instructions
+ 
+(1) James Wasmuth, ICAPB, University of Edinburgh

@@ -1,0 +1,2 @@
+#!/bin/bash
+cpan Statistics::Descriptive Algorithm::Loops Tie::IxHash Time::localtime Getopt::Long Pod::Usage Cwd    
