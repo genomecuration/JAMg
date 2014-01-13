@@ -181,7 +181,7 @@ foreach my $persobjfile (@assembly_files) {
 
         if ($total_assemblies % 1000 == 0){
             $dbproc->{dbh}->commit;
-            print STDERR "\n\tCommitted $total_assemblies PASA assemblies\n";
+            print STDERR "\rCommitted $total_assemblies PASA assemblies       ";
             
         }
         
@@ -190,7 +190,7 @@ foreach my $persobjfile (@assembly_files) {
     
     $progress++;
     
-    print STDERR "\r[$progress/$total_progress] scaffolds processed.    ";
+    print STDERR "\r[$progress/$total_progress] scaffolds processed.           ";
     
 
 }

@@ -828,7 +828,7 @@ cp <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/<
  --ALIGNERS blat<span style="color: #990000">,</span>gmap --TRANSDECODER --CPU <span style="color: #009900">$LOCAL_CPUS</span> <span style="color: #990000">\</span>
  -T -t transcripts<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>clean -u transcripts<span style="color: #990000">.</span>fasta <span style="color: #990000">\</span>
  --TDN tdn<span style="color: #990000">.</span>accs <span style="color: #990000">|&amp;</span> tee pasa<span style="color: #990000">.</span>log</tt></pre></div></div>
-<div class="paragraph"><p>This will take some time, about two days with the 2 alignment steps (<em>blat</em> and <em>gmap</em>) taking the longest. In real-world or mission critical scenarios, we can run the alignment steps separately on a cluster and use the <em>-s</em> and <em>-e</em> options to determine which steps shown in <em>pasa.alignAssembly.commands.to.run</em> will be run on which computer or cluster. The <em>tee</em> command will print the screen output to a file and <em>|&amp;</em> will copy any errors to the same file too.</p></div>
+<div class="paragraph"><p>This will take some time, about one day with the 2 alignment steps (<em>blat</em> and <em>gmap</em>) taking about 5-7 hours. In very large data or mission critical scenarios, we can run the alignment steps separately on a cluster and use the <em>-s</em> and <em>-e</em> options to determine which steps shown in <em>pasa.alignAssembly.commands.to.run</em> will be run on which computer or cluster. The <em>tee</em> command will print the screen output to a file and <em>|&amp;</em> will copy any errors to the same file too.</p></div>
 <div class="admonitionblock">
 <table><tr>
 <td class="icon">
@@ -843,6 +843,8 @@ by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
 <pre><tt>mysql -u root
+CREATE USER <span style="color: #FF0000">'user_demo'</span>@<span style="color: #FF0000">'localhost'</span> IDENTIFIED BY <span style="color: #FF0000">'pass13'</span><span style="color: #990000">;</span>
+<span style="font-style: italic"><span style="color: #9A1900"># OR for without a password, skip the IDENTIFIED BY part.</span></span>
 GRANT SELECT<span style="color: #990000">,</span>INSERT<span style="color: #990000">,</span>UPDATE<span style="color: #990000">,</span>DELETE ON <span style="color: #990000">*.*</span> TO <span style="color: #FF0000">'user_demo'</span>@<span style="color: #FF0000">'localhost'</span><span style="color: #990000">;</span></tt></pre></div></div>
 </div>
 <h2 id="_step_1c_run_de_novo_predictors_that_require_no_training">Step 1c: run de-novo predictors that require no training</h2>
@@ -916,7 +918,7 @@ http://www.gnu.org/software/src-highlite -->
 <div id="footer">
 <div id="footer-text">
 Version RC1<br />
-Last updated 2014-01-12 19:49:16 EST
+Last updated 2014-01-13 16:25:12 EST
 </div>
 </div>
 </body>

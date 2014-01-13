@@ -60,10 +60,11 @@ sub perform_fasta_align {
 	
     my $result_file = "/tmp/$$.grasta_result";
     
-    my $prog = "fasta";
+    my $prog = `which fasta`;chomp($prog);
     if ($FASTAPATH) {
 		$prog = $FASTAPATH;
     }
+    die "Cannot find program fasta\n" unless $prog && -s $prog && -x $prog;
     
     my $cmd = "$prog $file1 $file2 > $result_file";
     my $ret = system ($cmd);

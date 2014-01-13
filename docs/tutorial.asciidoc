@@ -193,16 +193,15 @@ $JAMG_PATH/3rd_party/PASA/scripts/Launch_PASA_pipeline.pl -c alignAssembly.confi
  -T -t transcripts.fasta.clean -u transcripts.fasta \
  --TDN tdn.accs |& tee pasa.log
 
-This will take some time, about two days with the 2 alignment steps ('blat' and 'gmap') taking the longest. In real-world or mission critical scenarios, we can run the alignment steps separately on a cluster and use the '-s' and '-e' options to determine which steps shown in 'pasa.alignAssembly.commands.to.run' will be run on which computer or cluster. The 'tee' command will print the screen output to a file and '|&' will copy any errors to the same file too.
+This will take some time, about one day with the 2 alignment steps ('blat' and 'gmap') taking about 5-7 hours. In very large data or mission critical scenarios, we can run the alignment steps separately on a cluster and use the '-s' and '-e' options to determine which steps shown in 'pasa.alignAssembly.commands.to.run' will be run on which computer or cluster. The 'tee' command will print the screen output to a file and '|&' will copy any errors to the same file too.
  
-TIP: If you've never ran PASA on this system before, it makes sense to try the first command produced in 'pasa.alignAssembly.commands.to.run'. It attempt to connect and create the database. If it doesn't work then your mySQL settings are wrong. Common errors are 'Access denied for user user_demo@localhost' when the user already exists. Giving the relevant priviliges can solve it:
-
+TIP: If you've never ran PASA on this system before, it makes sense to try the first command produced in 'pasa.alignAssembly.commands.to.run'. It attempt to connect and create the database. If it doesn't work then your mySQL settings are wrong. Common errors are 'Access denied for user user_demo@localhost' when the user already exists. Giving the relevant priviliges can solve it: 
 [source,bash]
 mysql -u root
+CREATE USER 'user_demo'@'localhost' IDENTIFIED BY 'pass13';
+# OR for without a password, skip the IDENTIFIED BY part.
 GRANT SELECT,INSERT,UPDATE,DELETE ON *.* TO 'user_demo'@'localhost';
- 
 
- 
 == Step 1c: run de-novo predictors that require no training
 There are some predictors that use no training at all. 
 
@@ -223,6 +222,7 @@ We require to identify some gene models that are complete and of very high quali
 
 == Step 2b: Train and 'run de-novo predictors' that need no evidence
 Some predictors like SNAP and GlimmerHMM can use evidence as an option but they (GlimmerHMM at least) takes longer and the results in a small test I did were not as good as without adding additional weights. Regardless, we first need to train them using our golden gene sets from above. 
+
 
 
 

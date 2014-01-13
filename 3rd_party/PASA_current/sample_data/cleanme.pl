@@ -36,7 +36,7 @@ if (-d "gmap_db_dir") {
 	`rm -rf gmap_db_dir`;
 }
 
-
+`rm -rf assemblies`; 
 `rm -rf pasa_run.log.dir`;
 `rm -rf transdecoder.tmp.*`;
 `rm -rf blat_out_dir/`;

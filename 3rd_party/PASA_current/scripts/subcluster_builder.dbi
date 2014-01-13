@@ -81,7 +81,7 @@ print $query;
 my @results = &Mysql_connect::do_sql_2D ($dbproc, $query);
 foreach my $result (@results) {
     my $asmbl_id = $result->[0];
-    print STDERR "$asmbl_id\n";  ## FIXME: add multi-threading here.
+    print STDERR "\r$asmbl_id";  ## FIXME: add multi-threading here.
     
     #my $sequence = &Ath1_cdnas::get_seq_from_fasta($asmbl_id, $genomic_seq_db);
     
@@ -256,7 +256,7 @@ foreach my $result (@results) {
     }
 }
 
-
+print "\n";
 $dbproc->disconnect;
 
 exit(0);

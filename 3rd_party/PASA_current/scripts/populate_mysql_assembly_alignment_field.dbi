@@ -81,7 +81,7 @@ foreach my $result (@results) {
 
 $dbproc->{dbh}->commit;
 
-print STDERR "\n\ndone.\n";
+print STDERR "\nDone.\n";
 
 $dbproc->disconnect;
 

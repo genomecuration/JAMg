@@ -72,22 +72,13 @@ main: {
     
   # goto annot_compare;
   
-  initial_cleanup:
-	{
-		## Purge the current sample mysql database if it exists from a previous run of this pipeline. Start fresh.
-		
-		my $cmd = "../scripts/drop_mysql_db_if_exists.dbi -c alignAssembly.config";
-		&process_cmd($cmd) unless ($resume_step);
-	}
-	
-	
   alignment_assembly: 
 	{
 		
 		print "********* Running Alignment Assembly ************\n";
 		
-		
-		my $cmd = "../scripts/Launch_PASA_pipeline.pl -c alignAssembly.config -C -R -g genome_sample.fasta -t all_transcripts.fasta.clean -T -u all_transcripts.fasta -f FL_accs.txt --ALIGNERS $ALIGNERS --CPU $CPU -N $num_top_hits --TDN tdn.accs";
+		# "-C -r" will drop db if exists
+		my $cmd = "../scripts/Launch_PASA_pipeline.pl -c alignAssembly.config -C -r -R -g genome_sample.fasta -t all_transcripts.fasta.clean -T -u all_transcripts.fasta -f FL_accs.txt --ALIGNERS $ALIGNERS --CPU $CPU -N $num_top_hits --TDN tdn.accs";
 		
         if ($TRANSDECODER) {
             $cmd .= " --TRANSDECODER ";

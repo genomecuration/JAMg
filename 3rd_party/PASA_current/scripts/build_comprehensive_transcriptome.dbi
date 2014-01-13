@@ -177,7 +177,7 @@ main: {
         foreach my $cdna_acc (keys %cdna_to_aligns) {
             $counter++;
             
-            print STDERR "// [$counter / $total_cdnas] processing map/fail $cdna_acc\n"; # if $DEBUG;
+            print STDERR "\r[$counter / $total_cdnas] processing map/fail $cdna_acc"; # if $DEBUG;
 
 
             my @met_align_thresholds;
@@ -252,7 +252,7 @@ main: {
         
         
     }
-    
+    print "\n";
 
     ## generate output files
     
