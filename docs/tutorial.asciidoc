@@ -101,6 +101,13 @@ anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR767/S
  anonftp@ftp-trace.ncbi.nlm.nih.gov:/sra/sra-instant/reads/ByRun/sra/SRR/SRR767/SRR767623 \
 .
 
+Next we would like to get the Drosophila genome and official annotations in order to evaluate our performance. In a real life scenario this is not possible as you are the ones building the annotation from scratch! However, you can use this procedure to compare different types of annotations (as well as see how JAMg performs). This tutorial was built with FlyBase version 5.53. One can download the GFF from FlyBase (the file with 'no-analysis') but we found that the melanogaster file had a number of errors (e.g. CDS before the parent genes or CDSs without any exon and in one instance a weakly supported gene model that we couldn't translate with GTF etc). We've cleaned it up and made the GTF we will use for evaluation.
+
+ls $JAMG_PATH/test_suite/Drosophila_official_annotations_cleaned.tar
+tar -xf $JAMG_PATH/test_suite/Drosophila_official_annotations_cleaned.tar
+bunzip2 -v $JAMG_PATH/test_suite/*bz2
+ls -l dmel-X-r5.53.fasta dmel-X-r5.53.repeat.hard dmel-X-r5.53.repeat.soft melanogaster/
+
 == Step 1a: RepeatMask and 'identify untranscribed coding exons'
 In this step you will check if there are any domains that are coding. This will provide evidence even in the absence
 of RNA-Seq data. The script will also run RepeatMasker the output of which we will use later on. 
@@ -118,6 +125,9 @@ $JAMG_PATH/bin/prepare_domain_exon_annotation.pl -verbose -genome $GENOME_PATH \
  -uniprot_db $JAMG_PATH/databases/hhblits/refseq_insecta_march13_just_useful \
  -scratch /dev/shm/$USER
 ls ./*hints # should be two files
+# RepeatMasker is going to be run above. Once finished, run this as later we will need a "soft-masked" genome:
+$JAMG_PATH/3rd_party/bin/maskFastaFromBed -soft -fi $GENOME_PATH -fo $GENOME_PATH.softmasked \
+ -bed $GENOME_PATH.out.gff # this last file is the output from RepeatMasker
 
 Purely FYI: in my local cluster environment using MPI with 44 CPUs and the databases copied to /dev/shm (first command above), this step took 36h (36h and 17 minutes to be exact). The network speed used for MPI was a bottleneck (we just have 10gb Ethernet not infiniband).
 
@@ -192,6 +202,10 @@ $JAMG_PATH/3rd_party/PASA/scripts/Launch_PASA_pipeline.pl -c alignAssembly.confi
  --ALIGNERS blat,gmap --TRANSDECODER --CPU $LOCAL_CPUS \
  -T -t transcripts.fasta.clean -u transcripts.fasta \
  --TDN tdn.accs |& tee pasa.log
+ls jamg_drosie_tutorial.assemblies.fasta jamg_drosie_tutorial.pasa_assemblies*
+# Find transcripts that did not make it to the genome
+$JAMG_PATH/3rd_party/PASA/scripts/build_comprehensive_transcriptome.dbi -c alignAssembly.config -t transcripts.fasta.clean
+
 
 This will take some time, about one day with the 2 alignment steps ('blat' and 'gmap') taking about 5-7 hours. In very large data or mission critical scenarios, we can run the alignment steps separately on a cluster and use the '-s' and '-e' options to determine which steps shown in 'pasa.alignAssembly.commands.to.run' will be run on which computer or cluster. The 'tee' command will print the screen output to a file and '|&' will copy any errors to the same file too.
  
@@ -218,6 +232,13 @@ Another tool (under development) is Gavin Huttley's 'projection' approach. This 
 For phase 2, we assume you have completed the PASA step
 
 We require to identify some gene models that are complete and of very high quality. These can be use downstream to train our de-novo predictors. Traditionally, fewer than 100 genes have been used but this was a limitation of the availability of data. In this part we can identify '1000s' of such golden models but we will only use a subset: some we will keep for validation of the output.
+
+There are a number of ways to get these golden gene sets. First, PASA has a script that allows one to generate such models. Second, with JAMG we can use the 'prepare_golden_genes_for_predictors.pl' to acquire a set of good gene models informed by a splice aware aligner such as exonerate.
+[source,bash]
+$JAMG_PATH/3rd_party/PASA/scripts/pasa_asmbls_to_training_set.dbi --pasa_transcripts_fasta ./*.assemblies.fasta \
+ --pasa_transcripts_gff3 ./*.pasa_assemblies.gff3
+$JAMG_PATH/bin/prepare_golden_genes_for_predictors.pl -genome $GENOME_PATH.masked -softmasked $GENOME_PATH.softmasked \
+ -same_species -intron $MAX_INTRON_LENGTH -cpu $LOCAL_CPUS -norefine
 
 
 == Step 2b: Train and 'run de-novo predictors' that need no evidence

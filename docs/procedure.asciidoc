@@ -107,6 +107,9 @@ $JAMG_PATH/bin/prepare_domain_exon_annotation.pl -genome $GENOME_PATH -verbose \
  -trans $JAMG_PATH/databases/hhblits/transposons \
  -engine mpi -hosts morgan:5-haldane3:12-haldane2:10-haldane1:5-haldane4:12 -mpi 44 \
  -scratch /dev/shm/$USER
+# RepeatMasker is going to be run above. Once finished, run this as later we will need a "soft-masked" genome:
+$JAMG_PATH/3rd_party/bin/maskFastaFromBed -soft -fi $GENOME_PATH -fo $GENOME_PATH.softmasked \
+ -bed $GENOME_PATH.out.gff # this last file is the output from RepeatMasker
 +
 The last option '-scratch', tells the program to copy all the database files to every node's local memory. You can use any local directory (/tmp/$USER or a scratch) but be careful you have enough space (and memory). Remember that /dev/shm and some /tmp use the computer's local memory (not hard disk). That's very fast but it will use RAM. Our computers have 48Gb of RAM each and that is far more than needed (depending on database size, estimate 1-5Gb per MPI process). Not including this option means that the databases will be read over the network. That's fine if your network connection is fast, unsaturated and the databases are small. Otherwise, decrease the number of processes, find another computing environment or use a smaller database.
 +
@@ -161,6 +164,10 @@ $JAMG_PATH/3rd_party/PASA/scripts/Launch_PASA_pipeline.pl -c alignAssembly.confi
  --ALIGNERS blat,gmap --TRANSDECODER --CPU $LOCAL_CPUS \
  -T -t transcripts.fasta.clean -u transcripts.fasta \
  --TDN tdn.accs
+# Find transcripts that did not make it to the genome
+$JAMG_PATH/3rd_party/PASA/scripts/build_comprehensive_transcriptome.dbi -c alignAssembly.config -t transcripts.fasta.clean
+# Identify alternative splicing. This will take a very long time so I don't currently recommend it (you could launch it and leave it running but we are not currently using the output)
+$JAMG_PATH/3rd_party/PASA/scripts/Launch_PASA_pipeline.pl -c annotCompare.config -g $GENOME_PATH -t transcripts.fasta.clean --ALT_SPLICE
 +
 CAUTION: If your gene density is high and you expect transcripts from neighboring genes to often overlap in their UTR regions (e.g. fungi), you can perform more stringent clustering of alignments by adding '--stringent_alignment_overlap 30.0'. 
 +
@@ -172,17 +179,23 @@ CAUTION: If your gene density is high and you expect transcripts from neighborin
 ** The standard PASA approach is to use the genome and a perl script to convert 'my.assemblies.fasta' into gene models. Here instead we will use another perl to not only produce gene models but also identify those that can be used for 'de-novo' gene prediction (including generating the different file formats these predictors expect). First, though, you will have to run TransDecoder:
 +
 [source,bash]
-$JAMG_PATH/3rd_party/transdecoder/TransDecoder -t "my.assemblies.fasta" \
+$JAMG_PATH/3rd_party/transdecoder/TransDecoder -t "./*.assemblies.fasta" \
  --search_pfam $JAMG_PATH/3rd_party/transdecoder/pfam/Pfam-AB.hmm.bin
+# Alternatively, one can use the PASA approach which will also run TransDecoder (except without a PFAM search)
+$JAMG_PATH/3rd_party/PASA/scripts/pasa_asmbls_to_training_set.dbi --pasa_transcripts_fasta ./*.assemblies.fasta \
+ --pasa_transcripts_gff3 ./*.pasa_assemblies.gff3
+# either case you will have output from TransDecoder
 +
 ** Once that is complete use the 'prepare_golden_genes_for_predictors.pl' script to prepare the various files.
 ** This script uses exonerate with an initial step with the AATPACKAGE for finding the approximate regions. Exonerate works better if it knows that certain regions are repetitive so we will create a soft-(repeat)masked version of your genome using bedtools.
 +
 [source,bash]
-$JAMG_PATH/3rd_party/bin/maskFastaFromBed -soft -fi $GENOME_PATH -fo $GENOME_PATH.softmasked -bed $GENOME_PATH.out.gff # this last file is the output from RepeatMasker
 $JAMG_PATH/bin/prepare_golden_genes_for_predictors.pl -genome $GENOME_PATH.masked -softmasked $GENOME_PATH.softmasked \
  -same_species -augustus $JAMG_PATH/3rd_party/augustus/bin \
- -intron $MAX_INTRON_LENGTH -cpu $LOCAL_CPUS -norefine
+ -intron $MAX_INTRON_LENGTH -cpu $LOCAL_CPUS -norefine \
+ -transdecoder_gff ./*.assemblies.fasta.gff3 \
+ -transdecoder_assembly ./*.assemblies.fasta \
+ -transdecoder_peptides ./*.assemblies.fasta.pep 
 +
 *** I find that -norefine is quicker and makes little difference (but as always I could be wrong).
 *** [[pasa-statistics]] Let's explore the output and find some statistics:
@@ -308,7 +321,7 @@ cd ..
 #TODO CONVERT TO PERL $JAMG_PATH/bin/optimize_geneid.sh train/$GENOME_NAME.param ./*.golden.train.good.gb.geneid.fasta ./*.golden.train.good.gb.geneid run1 > $GENOME_NAME.optimization.cmds
 ParaFly -c $GENOME_NAME.optimization.cmds -CPU $LOCAL_CPUS
 +
-** [[projection]]If we have a closely species that is well annotated, a good approach is to 'project' that genome's gene models to our unannotated one. This can be achieved as such:
+** [[projection]]If we have a closely species that is well annotated, a good approach is to 'project' that genome's gene models to our unannotated one.This script is still under construction but once ready we can use it like so:
 +
 [source,bash]
 create_projections.py -reference annotated_genome.fasta -genes [annotated_genome.gff3|annotated_genome.genbank] -genome new_genome.fasta -out new_genome.gff3

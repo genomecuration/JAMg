@@ -797,7 +797,10 @@ http://www.gnu.org/software/src-highlite -->
  -uniprot_db <span style="color: #009900">$JAMG_PATH</span>/databases/hhblits/refseq_insecta_march13_just_useful <span style="color: #990000">\</span>
  -trans <span style="color: #009900">$JAMG_PATH</span>/databases/hhblits/transposons <span style="color: #990000">\</span>
  -engine mpi -hosts morgan<span style="color: #990000">:</span><span style="color: #993399">5</span>-haldane<span style="color: #993399">3</span><span style="color: #990000">:</span><span style="color: #993399">12</span>-haldane<span style="color: #993399">2</span><span style="color: #990000">:</span><span style="color: #993399">10</span>-haldane<span style="color: #993399">1</span><span style="color: #990000">:</span><span style="color: #993399">5</span>-haldane<span style="color: #993399">4</span><span style="color: #990000">:</span><span style="color: #993399">12</span> -mpi <span style="color: #993399">44</span> <span style="color: #990000">\</span>
- -scratch /dev/shm<span style="color: #990000">/</span><span style="color: #009900">$USER</span></tt></pre></div></div>
+ -scratch /dev/shm<span style="color: #990000">/</span><span style="color: #009900">$USER</span>
+<span style="font-style: italic"><span style="color: #9A1900"># RepeatMasker is going to be run above. Once finished, run this as later we will need a "soft-masked" genome:</span></span>
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/bin/maskFastaFromBed -soft -fi <span style="color: #009900">$GENOME_PATH</span> -fo <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>softmasked <span style="color: #990000">\</span>
+ -bed <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>out<span style="color: #990000">.</span>gff <span style="font-style: italic"><span style="color: #9A1900"># this last file is the output from RepeatMasker</span></span></tt></pre></div></div>
 <div class="paragraph"><p>The last option <em>-scratch</em>, tells the program to copy all the database files to every node&#8217;s local memory. You can use any local directory (/tmp/$USER or a scratch) but be careful you have enough space (and memory). Remember that /dev/shm and some /tmp use the computer&#8217;s local memory (not hard disk). That&#8217;s very fast but it will use RAM. Our computers have 48Gb of RAM each and that is far more than needed (depending on database size, estimate 1-5Gb per MPI process). Not including this option means that the databases will be read over the network. That&#8217;s fine if your network connection is fast, unsaturated and the databases are small. Otherwise, decrease the number of processes, find another computing environment or use a smaller database.</p></div>
 <div class="admonitionblock">
 <table><tr>
@@ -938,7 +941,11 @@ http://www.gnu.org/software/src-highlite -->
 <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/scripts/Launch_PASA_pipeline<span style="color: #990000">.</span>pl -c alignAssembly<span style="color: #990000">.</span>config -C -R -g <span style="color: #009900">$GENOME_PATH</span> <span style="color: #990000">\</span>
  --ALIGNERS blat<span style="color: #990000">,</span>gmap --TRANSDECODER --CPU <span style="color: #009900">$LOCAL_CPUS</span> <span style="color: #990000">\</span>
  -T -t transcripts<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>clean -u transcripts<span style="color: #990000">.</span>fasta <span style="color: #990000">\</span>
- --TDN tdn<span style="color: #990000">.</span>accs</tt></pre></div></div>
+ --TDN tdn<span style="color: #990000">.</span>accs
+<span style="font-style: italic"><span style="color: #9A1900"># Find transcripts that did not make it to the genome</span></span>
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/scripts/build_comprehensive_transcriptome<span style="color: #990000">.</span>dbi -c alignAssembly<span style="color: #990000">.</span>config -t transcripts<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>clean
+<span style="font-style: italic"><span style="color: #9A1900"># Identify alternative splicing. This will take a very long time so I don't currently recommend it (you could launch it and leave it running but we are not currently using the output)</span></span>
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/scripts/Launch_PASA_pipeline<span style="color: #990000">.</span>pl -c annotCompare<span style="color: #990000">.</span>config -g <span style="color: #009900">$GENOME_PATH</span> -t transcripts<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>clean --ALT_SPLICE</tt></pre></div></div>
 <div class="admonitionblock">
 <table><tr>
 <td class="icon">
@@ -986,8 +993,12 @@ The standard PASA approach is to use the genome and a perl script to convert <em
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
-<pre><tt><span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/transdecoder/TransDecoder -t <span style="color: #FF0000">"my.assemblies.fasta"</span> <span style="color: #990000">\</span>
- --search_pfam <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/transdecoder/pfam/Pfam-AB<span style="color: #990000">.</span>hmm<span style="color: #990000">.</span>bin</tt></pre></div></div>
+<pre><tt><span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/transdecoder/TransDecoder -t <span style="color: #FF0000">"./*.assemblies.fasta"</span> <span style="color: #990000">\</span>
+ --search_pfam <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/transdecoder/pfam/Pfam-AB<span style="color: #990000">.</span>hmm<span style="color: #990000">.</span>bin
+<span style="font-style: italic"><span style="color: #9A1900"># Alternatively, one can use the PASA approach which will also run TransDecoder (except without a PFAM search)</span></span>
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/scripts/pasa_asmbls_to_training_set<span style="color: #990000">.</span>dbi --pasa_transcripts_fasta <span style="color: #990000">./*.</span>assemblies<span style="color: #990000">.</span>fasta <span style="color: #990000">\</span>
+ --pasa_transcripts_gff3 <span style="color: #990000">./*.</span>pasa_assemblies<span style="color: #990000">.</span>gff3
+<span style="font-style: italic"><span style="color: #9A1900"># either case you will have output from TransDecoder</span></span></tt></pre></div></div>
 </li>
 <li>
 <p>
@@ -1003,10 +1014,12 @@ This script uses exonerate with an initial step with the AATPACKAGE for finding 
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
-<pre><tt><span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/bin/maskFastaFromBed -soft -fi <span style="color: #009900">$GENOME_PATH</span> -fo <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>softmasked -bed <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>out<span style="color: #990000">.</span>gff <span style="font-style: italic"><span style="color: #9A1900"># this last file is the output from RepeatMasker</span></span>
-<span style="color: #009900">$JAMG_PATH</span>/bin/prepare_golden_genes_for_predictors<span style="color: #990000">.</span>pl -genome <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>masked -softmasked <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>softmasked <span style="color: #990000">\</span>
+<pre><tt><span style="color: #009900">$JAMG_PATH</span>/bin/prepare_golden_genes_for_predictors<span style="color: #990000">.</span>pl -genome <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>masked -softmasked <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>softmasked <span style="color: #990000">\</span>
  -same_species -augustus <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/augustus/bin <span style="color: #990000">\</span>
- -intron <span style="color: #009900">$MAX_INTRON_LENGTH</span> -cpu <span style="color: #009900">$LOCAL_CPUS</span> -norefine</tt></pre></div></div>
+ -intron <span style="color: #009900">$MAX_INTRON_LENGTH</span> -cpu <span style="color: #009900">$LOCAL_CPUS</span> -norefine <span style="color: #990000">\</span>
+ -transdecoder_gff <span style="color: #990000">./*.</span>assemblies<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>gff3 <span style="color: #990000">\</span>
+ -transdecoder_assembly <span style="color: #990000">./*.</span>assemblies<span style="color: #990000">.</span>fasta <span style="color: #990000">\</span>
+ -transdecoder_peptides <span style="color: #990000">./*.</span>assemblies<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>pep</tt></pre></div></div>
 <div class="ulist"><ul>
 <li>
 <p>
@@ -1228,7 +1241,7 @@ ParaFly -c <span style="color: #009900">$GENOME_NAME</span><span style="color: #
 </li>
 <li>
 <p>
-<a id="projection"></a>If we have a closely species that is well annotated, a good approach is to <em>project</em> that genome&#8217;s gene models to our unannotated one. This can be achieved as such:
+<a id="projection"></a>If we have a closely species that is well annotated, a good approach is to <em>project</em> that genome&#8217;s gene models to our unannotated one.This script is still under construction but once ready we can use it like so:
 </p>
 <div class="listingblock">
 <div class="content"><!-- Generator: GNU source-highlight 3.1.3
@@ -1404,7 +1417,7 @@ Feature
 <div id="footer">
 <div id="footer-text">
 Version RC1<br />
-Last updated 2014-01-12 18:54:39 EST
+Last updated 2014-01-16 01:25:04 EST
 </div>
 </div>
 </body>

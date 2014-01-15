@@ -4,5 +4,20 @@ To add
  
 ALEXIE TODO: add transposon hhblits search to maskFastaFromBed step
 
+do we need transcripts.fasta.clean.transdecoder.* without cd-hit? can we just grab longest peptide per gene?
+
+pasa transdecoder
+vs
+aat
+vs
+gmap -n 0 --nofails -B 4 -t 12 -D ../../ -d dmel-all-r5.53.fasta.gmap --split-output=pasa_vs_genome.gmap -f gff3_gene jamg_drosie_tutorial.assemblies.fasta.transdecoder.cds ; $JAMG_PATH/3rd_party/PASA/misc_utilities/gff3_to_gtf_format.pl pasa_vs_genome.gmap.uniq $GENOME_PATH > pasa_vs_genome.gmap.uniq.gtf
+vs
+makeblastdb -dbtype nucl -in dmel-all-r5.53.fasta.repeat.softmasked -parse_seqids -hash_index -out dmel-all-no-analysis-r5.53
+tblastn -num_threads 11 -query transcripts.fasta.clean.transdecoder.pep -out transcripts.fasta.clean.transdecoder.pep.blast -db ../../dmel-all-no-analysis-r5.53 -lcase_masking -evalue 1e-20 -max_intron_length 70001 -max_target_seqs 1 -outfmt 6
+
+USE: evaluate_gtf.pl -g ../../dmel-all-no-analysis-r5.53.gff3.gff3.clean.gtf jamg_drosie_tutorial.assemblies.fasta.transdecoder.genome.gtf pasa_vs_genome.gmap.uniq.gtf ...
+
+cleanup golden_genes output
+
 #TODO Gavin:
 create_projections.py -reference annotated_genome.fasta -genes [annotated_genome.gff3|annotated_genome.genbank] -genome new_genome.fasta -out new_genome.gff3

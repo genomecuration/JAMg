@@ -697,6 +697,11 @@ anonftp@ftp-trace<span style="color: #990000">.</span>ncbi<span style="color: #9
  anonftp@ftp-trace<span style="color: #990000">.</span>ncbi<span style="color: #990000">.</span>nlm<span style="color: #990000">.</span>nih<span style="color: #990000">.</span>gov<span style="color: #990000">:</span>/sra/sra-instant/reads/ByRun/sra/SRR/SRR<span style="color: #993399">767</span>/SRR<span style="color: #993399">767621</span> <span style="color: #990000">\</span>
  anonftp@ftp-trace<span style="color: #990000">.</span>ncbi<span style="color: #990000">.</span>nlm<span style="color: #990000">.</span>nih<span style="color: #990000">.</span>gov<span style="color: #990000">:</span>/sra/sra-instant/reads/ByRun/sra/SRR/SRR<span style="color: #993399">767</span>/SRR<span style="color: #993399">767623</span> <span style="color: #990000">\</span>
 <span style="color: #990000">.</span></tt></pre></div></div>
+<div class="paragraph"><p>Next we would like to get the Drosophila genome and official annotations in order to evaluate our performance. In a real life scenario this is not possible as you are the ones building the annotation from scratch! However, you can use this procedure to compare different types of annotations (as well as see how JAMg performs). This tutorial was built with FlyBase version 5.53. One can download the GFF from FlyBase (the file with <em>no-analysis</em>) but we found that the melanogaster file had a number of errors (e.g. CDS before the parent genes or CDSs without any exon and in one instance a weakly supported gene model that we couldn&#8217;t translate with GTF etc). We&#8217;ve cleaned it up and made the GTF we will use for evaluation.</p></div>
+<div class="paragraph"><p>ls $JAMG_PATH/test_suite/Drosophila_official_annotations_cleaned.tar
+tar -xf $JAMG_PATH/test_suite/Drosophila_official_annotations_cleaned.tar
+bunzip2 -v $JAMG_PATH/test_suite/*bz2
+ls -l dmel-X-r5.53.fasta dmel-X-r5.53.repeat.hard dmel-X-r5.53.repeat.soft melanogaster/</p></div>
 </div>
 <h2 id="_step_1a_repeatmask_and_em_identify_untranscribed_coding_exons_em">Step 1a: RepeatMask and <em>identify untranscribed coding exons</em></h2>
 <div class="sectionbody">
@@ -718,7 +723,10 @@ http://www.gnu.org/software/src-highlite -->
  -repthreads <span style="color: #009900">$LOCAL_CPUS</span> -engine localmpi -mpi <span style="color: #009900">$LOCAL_CPUS</span> <span style="color: #990000">\</span>
  -uniprot_db <span style="color: #009900">$JAMG_PATH</span>/databases/hhblits/refseq_insecta_march13_just_useful <span style="color: #990000">\</span>
  -scratch /dev/shm<span style="color: #990000">/</span><span style="color: #009900">$USER</span>
-ls <span style="color: #990000">./*</span>hints <span style="font-style: italic"><span style="color: #9A1900"># should be two files</span></span></tt></pre></div></div>
+ls <span style="color: #990000">./*</span>hints <span style="font-style: italic"><span style="color: #9A1900"># should be two files</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># RepeatMasker is going to be run above. Once finished, run this as later we will need a "soft-masked" genome:</span></span>
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/bin/maskFastaFromBed -soft -fi <span style="color: #009900">$GENOME_PATH</span> -fo <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>softmasked <span style="color: #990000">\</span>
+ -bed <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>out<span style="color: #990000">.</span>gff <span style="font-style: italic"><span style="color: #9A1900"># this last file is the output from RepeatMasker</span></span></tt></pre></div></div>
 <div class="paragraph"><p>Purely FYI: in my local cluster environment using MPI with 44 CPUs and the databases copied to /dev/shm (first command above), this step took 36h (36h and 17 minutes to be exact). The network speed used for MPI was a bottleneck (we just have 10gb Ethernet not infiniband).</p></div>
 <div class="paragraph"><p>Now apply the repeatmasking output file $GENOME_PATH.out.gff to create a 'soft&#8217;masked file that we will use later on:</p></div>
 <div class="listingblock">
@@ -827,7 +835,10 @@ cp <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/<
  -g <span style="color: #009900">$GENOME_PATH</span> --MAX_INTRON_LENGTH <span style="color: #009900">$max_intron_length</span> <span style="color: #990000">\</span>
  --ALIGNERS blat<span style="color: #990000">,</span>gmap --TRANSDECODER --CPU <span style="color: #009900">$LOCAL_CPUS</span> <span style="color: #990000">\</span>
  -T -t transcripts<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>clean -u transcripts<span style="color: #990000">.</span>fasta <span style="color: #990000">\</span>
- --TDN tdn<span style="color: #990000">.</span>accs <span style="color: #990000">|&amp;</span> tee pasa<span style="color: #990000">.</span>log</tt></pre></div></div>
+ --TDN tdn<span style="color: #990000">.</span>accs <span style="color: #990000">|&amp;</span> tee pasa<span style="color: #990000">.</span>log
+ls jamg_drosie_tutorial<span style="color: #990000">.</span>assemblies<span style="color: #990000">.</span>fasta jamg_drosie_tutorial<span style="color: #990000">.</span>pasa_assemblies<span style="color: #990000">*</span>
+<span style="font-style: italic"><span style="color: #9A1900"># Find transcripts that did not make it to the genome</span></span>
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/scripts/build_comprehensive_transcriptome<span style="color: #990000">.</span>dbi -c alignAssembly<span style="color: #990000">.</span>config -t transcripts<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>clean</tt></pre></div></div>
 <div class="paragraph"><p>This will take some time, about one day with the 2 alignment steps (<em>blat</em> and <em>gmap</em>) taking about 5-7 hours. In very large data or mission critical scenarios, we can run the alignment steps separately on a cluster and use the <em>-s</em> and <em>-e</em> options to determine which steps shown in <em>pasa.alignAssembly.commands.to.run</em> will be run on which computer or cluster. The <em>tee</em> command will print the screen output to a file and <em>|&amp;</em> will copy any errors to the same file too.</p></div>
 <div class="admonitionblock">
 <table><tr>
@@ -864,6 +875,16 @@ http://www.gnu.org/software/src-highlite -->
 <div class="sectionbody">
 <div class="paragraph"><p>For phase 2, we assume you have completed the PASA step</p></div>
 <div class="paragraph"><p>We require to identify some gene models that are complete and of very high quality. These can be use downstream to train our de-novo predictors. Traditionally, fewer than 100 genes have been used but this was a limitation of the availability of data. In this part we can identify <em>1000s</em> of such golden models but we will only use a subset: some we will keep for validation of the output.</p></div>
+<div class="paragraph"><p>There are a number of ways to get these golden gene sets. First, PASA has a script that allows one to generate such models. Second, with JAMG we can use the <em>prepare_golden_genes_for_predictors.pl</em> to acquire a set of good gene models informed by a splice aware aligner such as exonerate.</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.3
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/scripts/pasa_asmbls_to_training_set<span style="color: #990000">.</span>dbi --pasa_transcripts_fasta <span style="color: #990000">./*.</span>assemblies<span style="color: #990000">.</span>fasta <span style="color: #990000">\</span>
+ --pasa_transcripts_gff3 <span style="color: #990000">./*.</span>pasa_assemblies<span style="color: #990000">.</span>gff3
+<span style="color: #009900">$JAMG_PATH</span>/bin/prepare_golden_genes_for_predictors<span style="color: #990000">.</span>pl -genome <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>masked -softmasked <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>softmasked <span style="color: #990000">\</span>
+ -same_species -intron <span style="color: #009900">$MAX_INTRON_LENGTH</span> -cpu <span style="color: #009900">$LOCAL_CPUS</span> -norefine</tt></pre></div></div>
 </div>
 <h2 id="_step_2b_train_and_em_run_de_novo_predictors_em_that_need_no_evidence">Step 2b: Train and <em>run de-novo predictors</em> that need no evidence</h2>
 <div class="sectionbody">
@@ -918,7 +939,7 @@ http://www.gnu.org/software/src-highlite -->
 <div id="footer">
 <div id="footer-text">
 Version RC1<br />
-Last updated 2014-01-13 16:25:12 EST
+Last updated 2014-01-16 01:32:34 EST
 </div>
 </div>
 </body>
