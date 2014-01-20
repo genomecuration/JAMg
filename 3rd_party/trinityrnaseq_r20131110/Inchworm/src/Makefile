@@ -113,7 +113,7 @@ AUTOCONF = ${SHELL} /home/pap056/workspace/transcripts4community/jamg/3rd_party/
 AUTOHEADER = ${SHELL} /home/pap056/workspace/transcripts4community/jamg/3rd_party/trinityrnaseq/Inchworm/missing --run autoheader
 AUTOMAKE = ${SHELL} /home/pap056/workspace/transcripts4community/jamg/3rd_party/trinityrnaseq/Inchworm/missing --run automake-1.9
 AWK = gawk
-CPPFLAGS =  -fPIC 
+CPPFLAGS = -fpic
 CXX = g++
 CXXDEPMODE = depmode=gcc3
 CXXFLAGS = -g -O2
@@ -142,7 +142,7 @@ PACKAGE_TARNAME = inchworm
 PACKAGE_VERSION = 0.1
 PATH_SEPARATOR = :
 SET_MAKE = 
-SHELL = /bin/sh
+SHELL = /bin/bash
 STRIP = 
 VERSION = 0.1
 ac_ct_CXX = g++

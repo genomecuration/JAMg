@@ -89,8 +89,8 @@ AUTOMAKE = ${SHELL} /home/pap056/workspace/transcripts4community/jamg/3rd_party/
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -g -O2
-CPPFLAGS =  -fPIC 
+CFLAGS = -fpic
+CPPFLAGS = -fpic
 CXX = g++
 CXXDEPMODE = depmode=gcc3
 CXXFLAGS = -Wall -Wno-deprecated 
@@ -122,7 +122,7 @@ PACKAGE_URL =
 PACKAGE_VERSION = 0.1
 PATH_SEPARATOR = :
 SET_MAKE = 
-SHELL = /bin/sh
+SHELL = /bin/bash
 STRIP = 
 VERSION = 0.1
 abs_builddir = /home/pap056/workspace/transcripts4community/jamg/3rd_party/aatpackage/src

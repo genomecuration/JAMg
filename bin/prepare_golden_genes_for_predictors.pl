@@ -157,10 +157,12 @@ use strict;
 use warnings;
 use Getopt::Long;
 use Pod::Usage;
+use POSIX qw(ceil);
 use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
-$ENV{PATH} = "$RealBin:$RealBin/../3rd_party/bin/:".$ENV{PATH};
-
+$ENV{PATH} = "$RealBin:$RealBin/../3rd_party/bin/:$RealBin:$RealBin/../3rd_party/RepeatMasker/ncbi-blast/bin/".$ENV{PATH};
+use threads;
+use Thread_helper;
 use Digest::SHA qw/sha1_hex/;
 use Data::Dumper;
 use File::Basename;
@@ -256,6 +258,10 @@ die "cDNA mode is only used without peptides\n" if $peptide_file && $is_cdna;
 die "Softmasked genome file does not exist\n"
   if $softmasked_genome && !-s $softmasked_genome;
 
+my ($makeblastdb_exec,$tblastn_exec) =  &check_program('makeblastdb','tblastn');
+my ($gmap_build_exec,$gmap_exec) =  &check_program('gmap_build','gmap');
+
+
 my ( $gff2gb_exec, $fathom_exec, $augustus_exec, $augustus_train_exec,
 	$augustus_filterGenes_exec )
   = &check_program_optional(
@@ -273,6 +279,12 @@ my $genome_sequence_file =
     $softmasked_genome
   ? $softmasked_genome
   : $genome_file;    # the full sequence, not repeatmasked
+print "Indexing genome\n";
+my $genome_sequence_file_dir = dirname($genome_sequence_file );
+my $genome_sequence_file_base = basename($genome_sequence_file );
+&process_cmd("$makeblastdb_exec -in $genome_sequence_file -out $genome_sequence_file -hash_index -parse_seqids -dbtype nucl") unless -s "$genome_sequence_file.nin";
+&process_cmd("$gmap_build_exec -D $genome_sequence_file_dir -d $genome_sequence_file_base.gmap $genome_sequence_file") unless -d "$genome_sequence_file_dir/$genome_sequence_file_base.gmap";
+
 unlink("$genome_sequence_file.cidx");
 &process_cmd("$cdbfasta_exec $genome_sequence_file");
 
@@ -2467,3 +2479,59 @@ sub wrap_text() {
 	return $string;
 }
 
+sub count_seq(){
+ my $fasta = shift;
+ my $count = int(0);
+ open (IN,$fasta);
+ while (my $ln=<IN>){
+  next unless $ln=~/^>/;
+  $count++;
+ } 
+ close IN;
+ return $count;
+}
+
+
+sub run_aligner(){
+ my $fasta_in = shift;
+ my $aligner = shift;
+ print "$aligner: Preparing input sequences\n";
+ my $seq_count = &count_seq($fasta_in);
+ my $splits = ceil($seq_count /$threads);
+ &process_cmd("rm -rf $fasta_in.$aligner/");
+ &splitfasta($fasta_in,"$fasta_in.$aligner",$splits);
+ my @fastas = glob("$fasta_in.$aligner/*");
+ return unless @fastas && scalar(@fastas) > 0;
+ print "$aligner: Running alignment\n";
+ my $thread_helper = new Thread_helper($threads);
+ foreach my $fasta (sort @fastas){
+  next unless -f $fasta && -s $fasta;
+  my $thread = threads->create( 'do_'.$aligner.'_cmd', $fasta);
+ }
+  $thread_helper->wait_for_all_threads_to_complete();
+ my @failed_threads = $thread_helper->get_failed_threads();
+ if (@failed_threads) {
+  die "Error, " . scalar(@failed_threads) . " threads failed.\n";
+  exit(1);
+ }
+ 
+ my @aligner_out = glob("$fasta_in.$aligner/*");
+ die "$aligner failed" unless @aligner_out && scalar(@aligner_out)>0;
+ return \@aligner_out;
+}
+
+sub do_blast_cmd(){
+ my $fasta = shift;
+ my $blast_opt = "$tblastn_exec -num_threads 1 -evalue 1e-20 -max_intron_length $intron_size -max_target_seqs 1 -outfmt 6 -db $genome_sequence_file";
+ $blast_opt .= " -lcase_masking" if $softmasked_genome;
+ &process_cmd("$blast_opt -in $fasta -out $fasta.blast");
+ unlink($fasta);
+}
+
+sub do_gmap_cmd(){
+ my $fasta = shift;
+ my $gmap_opt = "$gmap_exec -D $genome_sequence_file_dir -d $genome_sequence_file_base.gmap";
+ $gmap_opt .= " -n 0 --nofails -B 4 -t 1 -f gff3_gene --split-output=$fasta.gmap";
+ &process_cmd("$gmap_opt $fasta");
+ unlink($fasta);
+}

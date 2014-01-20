@@ -15,7 +15,7 @@
 #define HAVE_EXECINFO_H 1
 
 /* Define if type __int128 is supported */
-/* #undef HAVE_INT128 */
+#define HAVE_INT128 1
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
@@ -71,6 +71,9 @@
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "jellyfish"
+
+/* Define to the home page for this package. */
+#define PACKAGE_URL ""
 
 /* Define to the version of this package. */
 #define PACKAGE_VERSION "1.1.6"

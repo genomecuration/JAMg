@@ -1,43 +1,58 @@
-gsnap-gsnap.o: gsnap.c config.h /usr/include/sys/types.h \
- /usr/include/features.h /usr/include/bits/predefs.h \
- /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
- /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
- /usr/include/bits/types.h /usr/include/bits/typesizes.h \
- /usr/include/time.h /usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/stddef.h \
- /usr/include/endian.h /usr/include/bits/endian.h \
- /usr/include/bits/byteswap.h /usr/include/sys/select.h \
- /usr/include/bits/select.h /usr/include/bits/sigset.h \
- /usr/include/bits/time.h /usr/include/sys/sysmacros.h \
- /usr/include/bits/pthreadtypes.h /usr/include/stdio.h \
+gsnap-gsnap.o: gsnap.c config.h /usr/include/x86_64-linux-gnu/sys/types.h \
+ /usr/include/features.h /usr/include/x86_64-linux-gnu/bits/predefs.h \
+ /usr/include/x86_64-linux-gnu/sys/cdefs.h \
+ /usr/include/x86_64-linux-gnu/bits/wordsize.h \
+ /usr/include/x86_64-linux-gnu/gnu/stubs.h \
+ /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
+ /usr/include/x86_64-linux-gnu/bits/types.h \
+ /usr/include/x86_64-linux-gnu/bits/typesizes.h /usr/include/time.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.6/include/stddef.h /usr/include/endian.h \
+ /usr/include/x86_64-linux-gnu/bits/endian.h \
+ /usr/include/x86_64-linux-gnu/bits/byteswap.h \
+ /usr/include/x86_64-linux-gnu/sys/select.h \
+ /usr/include/x86_64-linux-gnu/bits/select.h \
+ /usr/include/x86_64-linux-gnu/bits/sigset.h \
+ /usr/include/x86_64-linux-gnu/bits/time.h \
+ /usr/include/x86_64-linux-gnu/sys/sysmacros.h \
+ /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h /usr/include/stdio.h \
  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/stdarg.h \
- /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
- /usr/include/bits/stdio.h /usr/include/bits/stdio2.h \
- /usr/include/stdlib.h /usr/include/alloca.h /usr/include/bits/stdlib.h \
- /usr/include/string.h /usr/include/xlocale.h /usr/include/bits/string.h \
- /usr/include/bits/string2.h /usr/include/bits/string3.h \
- /usr/include/strings.h /usr/include/ctype.h /usr/include/math.h \
- /usr/include/bits/huge_val.h /usr/include/bits/huge_valf.h \
- /usr/include/bits/huge_vall.h /usr/include/bits/inf.h \
- /usr/include/bits/nan.h /usr/include/bits/mathdef.h \
- /usr/include/bits/mathcalls.h /usr/include/bits/mathinline.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/emmintrin.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/xmmintrin.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/mmintrin.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/mm_malloc.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/smmintrin.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/tmmintrin.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/pmmintrin.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/mmintrin-common.h \
- /usr/include/pthread.h /usr/include/sched.h /usr/include/bits/sched.h \
- /usr/include/signal.h /usr/include/bits/setjmp.h /usr/include/zlib.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.6/include/stdarg.h \
+ /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
+ /usr/include/x86_64-linux-gnu/bits/sys_errlist.h /usr/include/stdlib.h \
+ /usr/include/x86_64-linux-gnu/bits/waitflags.h \
+ /usr/include/x86_64-linux-gnu/bits/waitstatus.h /usr/include/alloca.h \
+ /usr/include/string.h /usr/include/xlocale.h /usr/include/strings.h \
+ /usr/include/ctype.h /usr/include/math.h \
+ /usr/include/x86_64-linux-gnu/bits/huge_val.h \
+ /usr/include/x86_64-linux-gnu/bits/huge_valf.h \
+ /usr/include/x86_64-linux-gnu/bits/huge_vall.h \
+ /usr/include/x86_64-linux-gnu/bits/inf.h \
+ /usr/include/x86_64-linux-gnu/bits/nan.h \
+ /usr/include/x86_64-linux-gnu/bits/mathdef.h \
+ /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.6/include/emmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.6/include/xmmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.6/include/mmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.6/include/mm_malloc.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.6/include/smmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.6/include/tmmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.6/include/pmmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.6/include/popcntintrin.h \
+ /usr/include/pthread.h /usr/include/sched.h \
+ /usr/include/x86_64-linux-gnu/bits/sched.h \
+ /usr/include/x86_64-linux-gnu/bits/setjmp.h /usr/include/zlib.h \
  /usr/include/zconf.h /usr/include/zlibdefs.h /usr/include/unistd.h \
- /usr/include/bits/posix_opt.h /usr/include/bits/confname.h getopt.h \
- /usr/include/bits/unistd.h bzip2.h bool.h /usr/include/bits/signum.h \
- /usr/include/bits/siginfo.h /usr/include/bits/sigaction.h \
- /usr/include/bits/sigcontext.h /usr/include/bits/sigstack.h \
- /usr/include/bits/sigthread.h assert.h except.h /usr/include/setjmp.h \
- /usr/include/bits/setjmp2.h mem.h types.h fopen.h mode.h sequence.h \
+ /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
+ /usr/include/x86_64-linux-gnu/bits/environments.h \
+ /usr/include/x86_64-linux-gnu/bits/confname.h getopt.h bzip2.h bool.h \
+ /usr/include/signal.h /usr/include/x86_64-linux-gnu/bits/signum.h \
+ /usr/include/x86_64-linux-gnu/bits/siginfo.h \
+ /usr/include/x86_64-linux-gnu/bits/sigaction.h \
+ /usr/include/x86_64-linux-gnu/bits/sigcontext.h \
+ /usr/include/x86_64-linux-gnu/bits/sigstack.h \
+ /usr/include/x86_64-linux-gnu/sys/ucontext.h \
+ /usr/include/x86_64-linux-gnu/bits/sigthread.h assert.h except.h \
+ /usr/include/setjmp.h mem.h types.h fopen.h mode.h sequence.h \
  shortread.h stopwatch.h genome.h access.h genomicpos.h uintlist.h \
  iit-read-univ.h list.h univinterval.h iit-read.h interval.h chrnum.h \
  genome_hr.h compress.h genome_sites.h maxent_hr.h indexdb_hr.h reader.h \
@@ -49,45 +64,45 @@ gsnap-gsnap.o: gsnap.c config.h /usr/include/sys/types.h \
 
 config.h:
 
-/usr/include/sys/types.h:
+/usr/include/x86_64-linux-gnu/sys/types.h:
 
 /usr/include/features.h:
 
-/usr/include/bits/predefs.h:
+/usr/include/x86_64-linux-gnu/bits/predefs.h:
 
-/usr/include/sys/cdefs.h:
+/usr/include/x86_64-linux-gnu/sys/cdefs.h:
 
-/usr/include/bits/wordsize.h:
+/usr/include/x86_64-linux-gnu/bits/wordsize.h:
 
-/usr/include/gnu/stubs.h:
+/usr/include/x86_64-linux-gnu/gnu/stubs.h:
 
-/usr/include/gnu/stubs-64.h:
+/usr/include/x86_64-linux-gnu/gnu/stubs-64.h:
 
-/usr/include/bits/types.h:
+/usr/include/x86_64-linux-gnu/bits/types.h:
 
-/usr/include/bits/typesizes.h:
+/usr/include/x86_64-linux-gnu/bits/typesizes.h:
 
 /usr/include/time.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/stddef.h:
+/usr/lib/gcc/x86_64-linux-gnu/4.6/include/stddef.h:
 
 /usr/include/endian.h:
 
-/usr/include/bits/endian.h:
+/usr/include/x86_64-linux-gnu/bits/endian.h:
 
-/usr/include/bits/byteswap.h:
+/usr/include/x86_64-linux-gnu/bits/byteswap.h:
 
-/usr/include/sys/select.h:
+/usr/include/x86_64-linux-gnu/sys/select.h:
 
-/usr/include/bits/select.h:
+/usr/include/x86_64-linux-gnu/bits/select.h:
 
-/usr/include/bits/sigset.h:
+/usr/include/x86_64-linux-gnu/bits/sigset.h:
 
-/usr/include/bits/time.h:
+/usr/include/x86_64-linux-gnu/bits/time.h:
 
-/usr/include/sys/sysmacros.h:
+/usr/include/x86_64-linux-gnu/sys/sysmacros.h:
 
-/usr/include/bits/pthreadtypes.h:
+/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h:
 
 /usr/include/stdio.h:
 
@@ -97,31 +112,23 @@ config.h:
 
 /usr/include/wchar.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/stdarg.h:
+/usr/lib/gcc/x86_64-linux-gnu/4.6/include/stdarg.h:
 
-/usr/include/bits/stdio_lim.h:
+/usr/include/x86_64-linux-gnu/bits/stdio_lim.h:
 
-/usr/include/bits/sys_errlist.h:
-
-/usr/include/bits/stdio.h:
-
-/usr/include/bits/stdio2.h:
+/usr/include/x86_64-linux-gnu/bits/sys_errlist.h:
 
 /usr/include/stdlib.h:
 
-/usr/include/alloca.h:
+/usr/include/x86_64-linux-gnu/bits/waitflags.h:
 
-/usr/include/bits/stdlib.h:
+/usr/include/x86_64-linux-gnu/bits/waitstatus.h:
+
+/usr/include/alloca.h:
 
 /usr/include/string.h:
 
 /usr/include/xlocale.h:
-
-/usr/include/bits/string.h:
-
-/usr/include/bits/string2.h:
-
-/usr/include/bits/string3.h:
 
 /usr/include/strings.h:
 
@@ -129,47 +136,43 @@ config.h:
 
 /usr/include/math.h:
 
-/usr/include/bits/huge_val.h:
+/usr/include/x86_64-linux-gnu/bits/huge_val.h:
 
-/usr/include/bits/huge_valf.h:
+/usr/include/x86_64-linux-gnu/bits/huge_valf.h:
 
-/usr/include/bits/huge_vall.h:
+/usr/include/x86_64-linux-gnu/bits/huge_vall.h:
 
-/usr/include/bits/inf.h:
+/usr/include/x86_64-linux-gnu/bits/inf.h:
 
-/usr/include/bits/nan.h:
+/usr/include/x86_64-linux-gnu/bits/nan.h:
 
-/usr/include/bits/mathdef.h:
+/usr/include/x86_64-linux-gnu/bits/mathdef.h:
 
-/usr/include/bits/mathcalls.h:
+/usr/include/x86_64-linux-gnu/bits/mathcalls.h:
 
-/usr/include/bits/mathinline.h:
+/usr/lib/gcc/x86_64-linux-gnu/4.6/include/emmintrin.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/emmintrin.h:
+/usr/lib/gcc/x86_64-linux-gnu/4.6/include/xmmintrin.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/xmmintrin.h:
+/usr/lib/gcc/x86_64-linux-gnu/4.6/include/mmintrin.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/mmintrin.h:
+/usr/lib/gcc/x86_64-linux-gnu/4.6/include/mm_malloc.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/mm_malloc.h:
+/usr/lib/gcc/x86_64-linux-gnu/4.6/include/smmintrin.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/smmintrin.h:
+/usr/lib/gcc/x86_64-linux-gnu/4.6/include/tmmintrin.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/tmmintrin.h:
+/usr/lib/gcc/x86_64-linux-gnu/4.6/include/pmmintrin.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/pmmintrin.h:
-
-/usr/lib/gcc/x86_64-linux-gnu/4.4.3/include/mmintrin-common.h:
+/usr/lib/gcc/x86_64-linux-gnu/4.6/include/popcntintrin.h:
 
 /usr/include/pthread.h:
 
 /usr/include/sched.h:
 
-/usr/include/bits/sched.h:
+/usr/include/x86_64-linux-gnu/bits/sched.h:
 
-/usr/include/signal.h:
-
-/usr/include/bits/setjmp.h:
+/usr/include/x86_64-linux-gnu/bits/setjmp.h:
 
 /usr/include/zlib.h:
 
@@ -179,37 +182,39 @@ config.h:
 
 /usr/include/unistd.h:
 
-/usr/include/bits/posix_opt.h:
+/usr/include/x86_64-linux-gnu/bits/posix_opt.h:
 
-/usr/include/bits/confname.h:
+/usr/include/x86_64-linux-gnu/bits/environments.h:
+
+/usr/include/x86_64-linux-gnu/bits/confname.h:
 
 getopt.h:
-
-/usr/include/bits/unistd.h:
 
 bzip2.h:
 
 bool.h:
 
-/usr/include/bits/signum.h:
+/usr/include/signal.h:
 
-/usr/include/bits/siginfo.h:
+/usr/include/x86_64-linux-gnu/bits/signum.h:
 
-/usr/include/bits/sigaction.h:
+/usr/include/x86_64-linux-gnu/bits/siginfo.h:
 
-/usr/include/bits/sigcontext.h:
+/usr/include/x86_64-linux-gnu/bits/sigaction.h:
 
-/usr/include/bits/sigstack.h:
+/usr/include/x86_64-linux-gnu/bits/sigcontext.h:
 
-/usr/include/bits/sigthread.h:
+/usr/include/x86_64-linux-gnu/bits/sigstack.h:
+
+/usr/include/x86_64-linux-gnu/sys/ucontext.h:
+
+/usr/include/x86_64-linux-gnu/bits/sigthread.h:
 
 assert.h:
 
 except.h:
 
 /usr/include/setjmp.h:
-
-/usr/include/bits/setjmp2.h:
 
 mem.h:
 
