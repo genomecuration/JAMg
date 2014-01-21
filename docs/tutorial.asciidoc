@@ -238,7 +238,14 @@ There are a number of ways to get these golden gene sets. First, PASA has a scri
 $JAMG_PATH/3rd_party/PASA/scripts/pasa_asmbls_to_training_set.dbi --pasa_transcripts_fasta ./*.assemblies.fasta \
  --pasa_transcripts_gff3 ./*.pasa_assemblies.gff3
 $JAMG_PATH/bin/prepare_golden_genes_for_predictors.pl -genome $GENOME_PATH.masked -softmasked $GENOME_PATH.softmasked \
- -same_species -intron $MAX_INTRON_LENGTH -cpu $LOCAL_CPUS -norefine
+ -same_species -intron $MAX_INTRON_LENGTH -cpu $LOCAL_CPUS -norefine \
+ -transdecoder_gff ./*.assemblies.fasta.transdecoder.gff3 \
+ -transdecoder_peptides ./*.assemblies.fasta.transdecoder.pep \
+ -transdecoder_assembly ./*.assemblies.fasta
+
+Evaluate [todo]
+[source,bash]
+$JAMG_PATH/3rd_party/PASA/misc_utilities/gff3_to_gtf_format.pl jamg_drosie_tutorial.assemblies.fasta.transdecoder.genome.gff3 $GENOME_PATH > jamg_drosie_tutorial.assemblies.fasta.transdecoder.genome.gtf 
 
 
 == Step 2b: Train and 'run de-novo predictors' that need no evidence

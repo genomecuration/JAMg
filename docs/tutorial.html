@@ -884,7 +884,17 @@ http://www.gnu.org/software/src-highlite -->
 <pre><tt><span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/scripts/pasa_asmbls_to_training_set<span style="color: #990000">.</span>dbi --pasa_transcripts_fasta <span style="color: #990000">./*.</span>assemblies<span style="color: #990000">.</span>fasta <span style="color: #990000">\</span>
  --pasa_transcripts_gff3 <span style="color: #990000">./*.</span>pasa_assemblies<span style="color: #990000">.</span>gff3
 <span style="color: #009900">$JAMG_PATH</span>/bin/prepare_golden_genes_for_predictors<span style="color: #990000">.</span>pl -genome <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>masked -softmasked <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>softmasked <span style="color: #990000">\</span>
- -same_species -intron <span style="color: #009900">$MAX_INTRON_LENGTH</span> -cpu <span style="color: #009900">$LOCAL_CPUS</span> -norefine</tt></pre></div></div>
+ -same_species -intron <span style="color: #009900">$MAX_INTRON_LENGTH</span> -cpu <span style="color: #009900">$LOCAL_CPUS</span> -norefine <span style="color: #990000">\</span>
+ -transdecoder_gff <span style="color: #990000">./*.</span>assemblies<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>transdecoder<span style="color: #990000">.</span>gff3 <span style="color: #990000">\</span>
+ -transdecoder_peptides <span style="color: #990000">./*.</span>assemblies<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>transdecoder<span style="color: #990000">.</span>pep <span style="color: #990000">\</span>
+ -transdecoder_assembly <span style="color: #990000">./*.</span>assemblies<span style="color: #990000">.</span>fasta</tt></pre></div></div>
+<div class="paragraph"><p>Evaluate [todo]</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.3
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/misc_utilities/gff3_to_gtf_format<span style="color: #990000">.</span>pl jamg_drosie_tutorial<span style="color: #990000">.</span>assemblies<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>transdecoder<span style="color: #990000">.</span>genome<span style="color: #990000">.</span>gff3 <span style="color: #009900">$GENOME_PATH</span> <span style="color: #990000">&gt;</span> jamg_drosie_tutorial<span style="color: #990000">.</span>assemblies<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>transdecoder<span style="color: #990000">.</span>genome<span style="color: #990000">.</span>gtf</tt></pre></div></div>
 </div>
 <h2 id="_step_2b_train_and_em_run_de_novo_predictors_em_that_need_no_evidence">Step 2b: Train and <em>run de-novo predictors</em> that need no evidence</h2>
 <div class="sectionbody">
@@ -939,7 +949,7 @@ http://www.gnu.org/software/src-highlite -->
 <div id="footer">
 <div id="footer-text">
 Version RC1<br />
-Last updated 2014-01-16 01:32:34 EST
+Last updated 2014-01-21 11:03:39 EST
 </div>
 </div>
 </body>
