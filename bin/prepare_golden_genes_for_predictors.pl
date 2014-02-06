@@ -242,7 +242,7 @@ my $uppercase_genome_files = &splitfasta( $genome_file, $genome_dir, 1 );
 # but it might be better than exonerate (it is certainly MUCH faster).
 
 my ( $gmap_gff, $gmap_passed, $exonerate_gff, $exonerate_passed,
-     %passed_check );
+     %passed_check, @to_evaluate );
 unless ($no_gmap) {
  if ( $mrna_file && -s $mrna_file ) {
   ( $gmap_gff, $gmap_passed ) = &run_gmap($mrna_file);
@@ -261,6 +261,7 @@ open( OUT2, ">$final_gff.passed" );
 # pasa/exonerate takes precedence to gmap
 if ( $exonerate_gff && -s $exonerate_gff ) {
  open( IN, $exonerate_gff ) || die( "Cannot open $exonerate_gff " . $! );
+ push(@to_evaluate,$exonerate_gff);
  while ( my $ln = <IN> ) { print OUT1 $ln; }
  close IN;
  open( IN, $exonerate_passed ) || die( "Cannot open $exonerate_passed " . $! );
@@ -276,6 +277,7 @@ if ( $exonerate_gff && -s $exonerate_gff ) {
 
 if ( $gmap_gff && -s $gmap_gff ) {
  open( IN, $gmap_gff ) || die( "Cannot open $gmap_gff " . $! );
+ push(@to_evaluate,$gmap_gff);
  while ( my $ln = <IN> ) {
   print OUT1 $ln;
  }
@@ -293,11 +295,12 @@ if ( $gmap_gff && -s $gmap_gff ) {
 
 if ( $extra_gff_file && -s $extra_gff_file ) {
  print "Processing user-provided GFF3 $extra_gff_file\n";
- &create_golden_gffs_from_gff( $extra_gff_file,$extra_gff_file . '.n');
- &remove_overlapping_gff( $extra_gff_file.'.n', $extra_gff_file . '.nr' );
+ &create_golden_gffs_from_gff( $extra_gff_file, $extra_gff_file . '.n' );
+ &remove_overlapping_gff( $extra_gff_file . '.n', $extra_gff_file . '.nr' );
  $extra_gff_file .= '.nr';
- &create_golden_gffs_from_gff( $extra_gff_file);
- open( IN, $extra_gff_file ) || die( "Cannot open $extra_gff_file " . $! );
+ &create_golden_gffs_from_gff($extra_gff_file);
+ push(@to_evaluate,$extra_gff_file.'.golden');
+ open( IN, $extra_gff_file.'.golden' ) || die( "Cannot open $extra_gff_file.golden " . $! );
  while ( my $ln = <IN> ) { print OUT1 $ln; }
  open( IN, $extra_gff_file . 'passed' )
    || die( "Cannot open $extra_gff_file.passed " . $! );
@@ -666,7 +669,6 @@ sub correct_exonerate_gff() {
  die "Report seems incomplete!\n"
    unless $scounter == $ecounter;
  die "No genes have been found!\n" if $scounter == 0;
- 
 
  if ($stop_after_correction) {
   print "User asked to stop after correction\n";
@@ -682,7 +684,7 @@ sub create_golden_gffs_from_exonerate() {
  my $details_hashref     = shift;
  my $vulgar_data_hashref = shift;
 
- &gff3_fix_phase_GTF( $exonerate_file ) unless -s $exonerate_file . '.gtf';
+ &gff3_fix_phase($exonerate_file) unless -s $exonerate_file . '.gtf';
 
  # it's getting a bit long...
  my $basename_exonerate = $exonerate_file;
@@ -957,10 +959,10 @@ GENE: while ( my $record = <IN> ) {
 "Processed $counter transcripts.\nFound $number_of_passing_genes sequences passing criteria.\n\n";
 
  #cleanup
- unlink($exonerate_file.'.pep');
- unlink($exonerate_file.'.cds');
- unlink($exonerate_file.'.gene');
- unlink($exonerate_file.'.original');
+ unlink( $exonerate_file . '.pep' );
+ unlink( $exonerate_file . '.cds' );
+ unlink( $exonerate_file . '.gene' );
+ unlink( $exonerate_file . '.original' );
 
  if ($stop_after_golden) {
   print "User stop requested\n";
@@ -1061,7 +1063,7 @@ sub process_for_gene_prediction() {
 
  print "'Golden': $number_of_passing_genes. Filtering GFFs...\n";
  &filter_gff( $gff_file, \%accepted, "$gff_file.golden.gff3" );
-
+ push(@to_evaluate,"$gff_file.golden.gff3");
 #    . "Training set: $training_set_size. Test: "
 #    . ( $number_of_passing_genes - $training_set_size ) . ".\n"
 #    . "Augustus optimization set: "
@@ -1072,7 +1074,7 @@ sub process_for_gene_prediction() {
 #    . ". more or less \n"
 
  print
-"Processing for gene predictors... - Filters may reject some more genes during checking/conversion\n";
+"Processing for gene predictors... - Specific filters may reject some more genes during checking/conversion\n";
  print "\nProcessing for:\n";
 
  #augustus
@@ -1215,7 +1217,9 @@ sub process_for_gene_prediction() {
  #can be consulted in: - false.acc  false.don  false.atg
 
  print "\tevaluation\n";
- &gff3_to_GTF( "$gff_file.golden.gff3" )
+ foreach my $file (@to_evaluate){
+  &gff_to_gtf($file);
+ }
 }
 
 sub revcomp {
@@ -1226,11 +1230,11 @@ sub revcomp {
 }
 
 sub filter_gff() {
- my $gff        = shift;
- my $hash_ref   = shift;
- 
+ my $gff      = shift;
+ my $hash_ref = shift;
+
  return if !$gff || !$hash_ref || !-s $gff;
- 
+
  my $filter_out = shift;
  $filter_out = "$gff.filtered" if !$filter_out;
  my $filter_out2 = shift;
@@ -1260,15 +1264,17 @@ GENE: while ( my $record = <GFF> ) {
    }
   }
   else {
+
    # gene_id
-   $gene_data[8]=~s/\.mRNA$//;
+   $gene_data[8] =~ s/\.mRNA$//;
    $gene_id = $gene_data[8];
   }
   confess "No gene ID for this record!\n$record\n" unless $gene_id;
   my $source = $gene_data[1];
-  
-  if (    ( $gene_id && $hash_ref->{$gene_id} && $hash_ref->{$gene_id} eq $source )
-       || ( $mrna_id && $hash_ref->{$mrna_id} && $hash_ref->{$mrna_id} eq $source ) )
+
+  if ( ( $gene_id && $hash_ref->{$gene_id} && $hash_ref->{$gene_id} eq $source )
+    || ( $mrna_id && $hash_ref->{$mrna_id} && $hash_ref->{$mrna_id} eq $source )
+    )
   {
    print OUT $record . $delimiter;
   }
@@ -1281,7 +1287,7 @@ GENE: while ( my $record = <GFF> ) {
  close GFF;
  close OUT;
  close OUT2;
- warn "Warning: filtered file $filter_out is empty...\n" if !-s $filter_out;
+ warn "Warning: filtered file $filter_out is empty...\n"  if !-s $filter_out;
  warn "Warning: filtered file $filter_out2 is empty...\n" if !-s $filter_out2;
  $/ = $orig_sep;
 
@@ -1289,7 +1295,7 @@ GENE: while ( my $record = <GFF> ) {
 }
 
 sub gff2zff() {
- 
+
 =cut
 
         None,       /* 0 A non-feature? */
@@ -1500,7 +1506,7 @@ GENE: while ( my $record = <IN> ) {
   my @record_data = split( "\n", $record );
   my @gene_data   = split( "\t", $record_data[0] );
   my $gene_id     = $gene_data[8];
-  $gene_id=~s/\.mRNA$//;
+  $gene_id =~ s/\.mRNA$//;
   next if $ignore{$gene_id};
   my %hash;
   $hash{'checkF'} = 0;
@@ -1548,7 +1554,8 @@ GENE: while ( my $record = <IN> ) {
 }
 
 sub remove_overlapping_gff() {
-# we allow genes on opposite strands
+
+ # we allow genes on opposite strands
  my $file               = shift;
  my $out                = shift;
  my $delimiter          = shift;
@@ -1582,14 +1589,15 @@ GENE: while ( my $record = <IN> ) {
    $gene_id = $1;
   }
   else {
+
    # gene_id
-   $gene_data[8]=~s/\.mRNA$//;
+   $gene_data[8] =~ s/\.mRNA$//;
    $gene_id = $gene_data[8];
   }
   my @mrna_data = split( "\t", $record_data[1] );
   if ( $mrna_data[8] && $mrna_data[8] =~ /ID=([^;]+)/ ) {
    $mrna_id = $1;
-   $mrna_id =~s/\.mRNA$//;
+   $mrna_id =~ s/\.mRNA$//;
   }
   else {
    $mrna_id = $gene_id;
@@ -1626,12 +1634,12 @@ GENE: while ( my $record = <IN> ) {
   if (    $previous_mrna_id
        && $previous_ref
        && $last_position_check{$ref_id}{$strand}
-       && $previous_ref eq $ref_id 
-       && $smallest_coord <= $last_position_check{$ref_id}{$strand}  )
-   {
-    print LOG2 "Gene overlapping $previous_mrna_id found: $mrna_id\n";
-    $overlap_found{$previous_mrna_id}{$mrna_id} = $record . $delimiter;
-    next;
+       && $previous_ref eq $ref_id
+       && $smallest_coord <= $last_position_check{$ref_id}{$strand} )
+  {
+   print LOG2 "Gene overlapping $previous_mrna_id found: $mrna_id\n";
+   $overlap_found{$previous_mrna_id}{$mrna_id} = $record . $delimiter;
+   next;
   }
   $master_gene_list{$mrna_id}            = $record . $delimiter;
   $previous_mrna_id                      = $mrna_id;
@@ -1656,16 +1664,16 @@ GENE: while ( my $record = <IN> ) {
    if ( !$gene_longest ) {
     print LOG2 "$gene overlaps: $gene kept as longest CDS\n";
     print OUT $master_gene_list{$gene};
-    my @lines = split("\n",$master_gene_list{$gene});
-    my @data = split("\t",$lines[0]); 
-    $kept{$gene}=$data[1];
+    my @lines = split( "\n", $master_gene_list{$gene} );
+    my @data  = split( "\t", $lines[0] );
+    $kept{$gene} = $data[1];
    }
    else {
     print LOG2 "$gene overlaps: longer CDS $gene_longest found\n";
     print OUT $overlap_found{$gene}{$gene_longest};
-    my @lines = split("\n",$overlap_found{$gene}{$gene_longest});
-    my @data = split("\t",$lines[0]); 
-    $kept{$gene_longest}=$data[1];
+    my @lines = split( "\n", $overlap_found{$gene}{$gene_longest} );
+    my @data  = split( "\t", $lines[0] );
+    $kept{$gene_longest} = $data[1];
    }
    $skipped += scalar( keys %{ $overlap_found{$gene} } );
   }
@@ -1673,9 +1681,9 @@ GENE: while ( my $record = <IN> ) {
 
    # no overlaps
    print OUT $master_gene_list{$gene};
-    my @lines = split("\n",$master_gene_list{$gene});
-    my @data = split("\t",$lines[0]); 
-    $kept{$gene}=$data[1] if !$kept{$gene}; # only the first one
+   my @lines = split( "\n", $master_gene_list{$gene} );
+   my @data  = split( "\t", $lines[0] );
+   $kept{$gene} = $data[1] if !$kept{$gene};    # only the first one
   }
 
  }
@@ -1688,15 +1696,15 @@ GENE: while ( my $record = <IN> ) {
   while ( my $ln = <IN> ) {
    chomp($ln);
    my @data = split( "\t", $ln );
-   if ($kept{ $data[0] } && $kept{ $data[0] } eq $data[1]){
-     $passed{ $data[0] } = $data[1];
+   if ( $kept{ $data[0] } && $kept{ $data[0] } eq $data[1] ) {
+    $passed{ $data[0] } = $data[1];
    }
   }
   close IN;
-  
+
   open( OUT, ">$optional_pass_file" );
   foreach my $id ( keys %passed ) {
-   print OUT $id . "\t" . $passed{$id}."\n";
+   print OUT $id . "\t" . $passed{$id} . "\n";
   }
   close OUT;
 
@@ -2151,46 +2159,7 @@ sub process_cmd {
  return $ret;
 }
 
-sub gff3_to_GTF(){
-  my $gff3_file = shift;
- open( IN, $gff3_file ) || confess( "Cannot find $gff3_file " . $! );
- my $index_file = "$gff3_file.inx";
- my $gene_obj_indexer = new Gene_obj_indexer( { "create" => $index_file } );
- my $asmbl_id_to_gene_list_href =
-   &GFF3_utils::index_GFF3_gene_objs( $gff3_file, $gene_obj_indexer );
- open( GTF,  ">$gff3_file.gtf" );
- foreach my $asmbl_id ( keys %$asmbl_id_to_gene_list_href ) {
-  my $genome_seq = $scaffold_seq_hashref->{$asmbl_id};
-  if ( !$genome_seq ) {
-   warn "Cannot find sequence $asmbl_id from genome\n";
-   next;
-  }
-  my @gene_ids = @{ $asmbl_id_to_gene_list_href->{$asmbl_id} };
-  foreach my $gene_id (@gene_ids) {
-   my $gene_obj_ref = $gene_obj_indexer->get_gene($gene_id);
-
-   foreach
-     my $isoform ( $gene_obj_ref, $gene_obj_ref->get_additional_isoforms() )
-   {
-
-    $isoform->delete_isoforms();
-    my $isoform_id = $isoform->{Model_feat_name};
-    my @model_span = $isoform->get_CDS_span();
-    next
-      if ( !$isoform->get_CDS_span()
-           || abs( $model_span[0] - $model_span[1] ) < 3 );
-
-    $isoform->{is_pseudogene} = 1;
-    my $gtf_text = $isoform->to_GTF_format( \$genome_seq );
-    print GTF "$gtf_text\n" if $gtf_text;
-   }
-  }
- }
- close IN;
- close GTF;
-}
-
-sub gff3_fix_phase_GTF() {
+sub gff3_fix_phase() {
  my $gff3_file = shift;
  open( IN, $gff3_file ) || confess( "Cannot find $gff3_file " . $! );
  my $index_file = "$gff3_file.inx";
@@ -2198,12 +2167,11 @@ sub gff3_fix_phase_GTF() {
  my $asmbl_id_to_gene_list_href =
    &GFF3_utils::index_GFF3_gene_objs( $gff3_file, $gene_obj_indexer );
  open( OUT,  ">$gff3_file.gff3" );
- open( GTF,  ">$gff3_file.gtf" );
  open( PEP,  ">$gff3_file.pep" );
  open( CDS,  ">$gff3_file.cds" );
  open( GENE, ">$gff3_file.gene" );
 
- foreach my $asmbl_id ( keys %$asmbl_id_to_gene_list_href ) {
+ foreach my $asmbl_id (sort keys %$asmbl_id_to_gene_list_href ) {
   my $genome_seq = $scaffold_seq_hashref->{$asmbl_id};
   if ( !$genome_seq ) {
    warn "Cannot find sequence $asmbl_id from genome\n";
@@ -2260,18 +2228,10 @@ sub gff3_fix_phase_GTF() {
     # GFF3
     print OUT $isoform->to_GFF3_format_extended(%preferences) . "\n";
 
-    # GTF
-    my $gtf_text = "";
-
-    # do it in pseudogene mode
-    $isoform->{is_pseudogene} = 1;
-    $gtf_text = $isoform->to_GTF_format( \$genome_seq );
-    print GTF "$gtf_text\n" if $gtf_text;
    }
   }
  }
  close OUT;
- close GTF;
  close PEP;
  close CDS;
  close GENE;
@@ -2282,7 +2242,7 @@ sub gff3_fix_phase_GTF() {
  return;
 }
 
-sub convert_to_gtf() {
+sub gff_to_gtf() {
 
  my $gff3_file = shift;
  open( OUT, ">$gff3_file.gtf" );
@@ -2295,9 +2255,9 @@ sub convert_to_gtf() {
  foreach my $asmbl_id ( sort keys %$asmbl_id_to_gene_list_href ) {
 
   ## get the genome sequence
-  my $genome_seq = &get_id_seq_from_fasta( $asmbl_id, $genome_sequence_file );
+  my $genome_seq = $scaffold_seq_hashref->{$asmbl_id};
   if ( !$genome_seq ) {
-   warn "Cannot find sequence $asmbl_id from $genome_sequence_file\n";
+   warn "Cannot find sequence $asmbl_id\n";
    next;
   }
   my @gene_ids = @{ $asmbl_id_to_gene_list_href->{$asmbl_id} };
@@ -2312,7 +2272,7 @@ sub convert_to_gtf() {
     eval { $gtf_text = $gene_obj->to_GTF_format( \$genome_seq ); };
     if ($@) {
 
-     # do it in pseudogene mode
+     # do it in pseudogene mode - if not then UTR is printed as CDS... not good!
      $gene_obj->{is_pseudogene} = 1;
      $gtf_text = $gene_obj->to_GTF_format( \$genome_seq );
     }
@@ -2833,12 +2793,15 @@ sub run_gmap() {
   close OUT;
   $/ = $orig_sep;
  }
-# consider searching for overlaps after we process golden. it will 
+
+# consider searching for overlaps after we process golden. it will
 # much slower ( a lot more genes) but will not discard golden overlaps
 # i tried it and found 30 more genes (i.e 0.4%) and costs 10 minutes for 100,000 mrnas
 
- &create_golden_gffs_from_gff($gmap_output,$gmap_output.'.n') unless ( -s "$gmap_output.passed" );
- &remove_overlapping_gff( $gmap_output.'.n', $gmap_output . '.nr' ) unless -s $gmap_output . '.nr';
+ &create_golden_gffs_from_gff( $gmap_output, $gmap_output . '.n' )
+   unless ( -s "$gmap_output.passed" );
+ &remove_overlapping_gff( $gmap_output . '.n', $gmap_output . '.nr' )
+   unless -s $gmap_output . '.nr';
  $gmap_output .= '.nr';
  &create_golden_gffs_from_gff($gmap_output) unless ( -s "$gmap_output.passed" );
 
@@ -2982,20 +2945,20 @@ sub run_aat() {
 }
 
 sub create_golden_gffs_from_gff() {
- my $gff_file     = shift;
- my $output = shift;
- $output = $gff_file.'.golden' if !$output;
- my $delimiter    = shift;
- my $orig_sep     = $/;
+ my $gff_file = shift;
+ my $output   = shift;
+ $output = $gff_file . '.golden' if !$output;
+ my $delimiter = shift;
+ my $orig_sep  = $/;
 
- &gff3_fix_phase_GTF($gff_file);
+ &gff3_fix_phase($gff_file);
 
  $delimiter = &get_gff_delimiter($gff_file) if !$delimiter;
  print "Finding golden subset...\n";
 
  #TODO :
  # if thomas changes the gmap format:
- # $mismatch_cutoff 
+ # $mismatch_cutoff
  #DONE:
  # $identical_fraction
  # mrna: coverage=100.0;identity=100.0
@@ -3008,8 +2971,8 @@ sub create_golden_gffs_from_gff() {
 
  my ( %tocheck, %accepted );
  my ( $counter, $failed_cutoff ) = ( int(0), int(0), int(0) );
- my $gene_seqs_hashref = &read_fasta($gff_file.'.gene');
- my $pep_seqs_hashref  = &read_fasta($gff_file.'.pep');
+ my $gene_seqs_hashref = &read_fasta( $gff_file . '.gene' );
+ my $pep_seqs_hashref  = &read_fasta( $gff_file . '.pep' );
 
  $/ = $delimiter;
 
@@ -3130,12 +3093,11 @@ GENE: while ( my $record = <GFF> ) {
 "Processed $counter transcripts.\nFound $number_of_passing_genes sequences passing criteria.\n\n";
 
  #cleanup
- unlink($gff_file.'.pep');
- unlink($gff_file.'.gene');
- unlink($gff_file.'.cds');
+ unlink( $gff_file . '.pep' );
+ unlink( $gff_file . '.gene' );
+ unlink( $gff_file . '.cds' );
 
 }
-
 
 sub create_geneid_from_gff() {
  my $gff_file  = shift;
@@ -3173,7 +3135,7 @@ sub create_geneid_from_gff() {
   }
   if ( $gene_data[8] =~ /ID=([^;]+)/ ) {
    $gene_id = $1;
-   $gene_id =~s/\.mRNA$//
+   $gene_id =~ s/\.mRNA$//;
   }
 
   my $geneid_mRNA_id   = $mRNA_id ? $mRNA_id : $gene_id;
