@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#e.g $1 = masked.exons.aa.trim
+#e.g $1 = masked.exons.aa.trim.db
 # $2 transposon
-# for processing masked.exons.aa.trim_transposon.db.*
+# for processing masked.exons.aa.trim.db_transposon.db.*
 SOURCE="$(dirname "$(test -L "$0" && readlink "$0" || echo "$0")")"
 export PATH=$PATH:$SOURCE
 
@@ -20,10 +20,10 @@ if [ $1 ]; then
            rm -f "$1"_"$TARGET".db.$i "$1"_"$TARGET".db.idx.$i
           fi
 	 done
-	if [ -e "$1".db.idx.orig ]; then
-	        ffindex_resume.pl "$1".db.idx.orig "$1"_"$TARGET".all.db.idx
+	if [ -e "$1".idx.orig ]; then
+	        ffindex_resume.pl "$1".idx.orig "$1"_"$TARGET".all.db.idx
 	else
-	        ffindex_resume.pl "$1".db.idx "$1"_"$TARGET".all.db.idx
+	        ffindex_resume.pl "$1".idx "$1"_"$TARGET".all.db.idx
 	fi
 else
     cat  *.all.db |tr -d '\000' >  results.all.db.hhr

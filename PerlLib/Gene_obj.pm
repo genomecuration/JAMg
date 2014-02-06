@@ -20,8 +20,6 @@ package Gene_obj
 
 =cut
 
-
-
 =head1 DESCRIPTION
 
     Gene_obj(s) encapsulate the elements of both gene structure and gene function. The gene structure is stored in a hierarchical fashion as follows:
@@ -87,10 +85,6 @@ package Gene_obj
 =cut
 
 
-
-
-
-
 =over 4
 
 =item new()
@@ -144,8 +138,6 @@ The Gene_obj contains several attributes which can be manipulated directly (or b
 =back
 
 =cut
-
-
 
 sub new {
     shift;
@@ -208,9 +200,6 @@ sub new {
     return ($self);
 }
 
-
-
-
 =over 4
 
 =item erase_gene_structure()
@@ -256,7 +245,6 @@ B<Returns:> new Gene_obj
 =back
 
 =cut
-
 
 
 ## all objects are cloned.  References to data only are not.
@@ -316,8 +304,6 @@ sub clone_gene {
 }
 
 
-
-
 =over 4
 
 =item deep_clone()
@@ -335,7 +321,6 @@ uses the Storable dclone() function to deep clone the Gene_obj
 =cut
 
 
-    ;
 ## all objects are cloned.  References to data only are not.
 sub deep_clone {
     my $self = shift;
@@ -384,8 +369,7 @@ B<Returns:> none
 
 =cut
 
-    ;
-
+   
 ## Do several things at once: assign CDS and mRNA coordinates, and build gene sequences.
 ## The \$seq_ref is optional in case you want to create the sequence types.
 sub populate_gene_obj {
@@ -551,8 +535,7 @@ undef is returned if the aa_coord could not be converted.
 
 =cut
 
-    ;
-
+    
 sub AAToNucleotideCoords{
     my($self) = shift;
     my($aacoord) = shift;
@@ -646,6 +629,27 @@ sub set_CDS_coords {
 }
 
 
+sub set_intron_coords {
+    my $self = shift;
+    my $hash_ref = shift;
+    if (ref ($hash_ref) eq 'HASH') {
+        $self->{intron_coords} = $hash_ref;
+    } else {
+        print STDERR "Cannot set intron_coords, must have hash reference\n";
+    }
+}
+
+
+sub set_splice_junction_coords {
+    my $self = shift;
+    my $hash_ref = shift;
+    if (ref ($hash_ref) eq 'HASH') {
+        $self->{splice_junction_coords} = $hash_ref;
+    } else {
+        print STDERR "Cannot set splice_junction_coords, must have hash reference\n";
+    }
+}
+
 
 
 =over 4
@@ -665,8 +669,7 @@ These coordinates represent the minimal and maximal exonic coordinates of the ge
 
 =cut
 
-    ;
-
+    
 ## All return gene end5, end3 ###
 sub get_gene_span {
     my $self = shift;
@@ -721,8 +724,6 @@ These coordinates are determined by the min and max of the CDS components of the
 =back
 
 =cut
-
-
 
 
 sub get_model_span {
@@ -871,7 +872,7 @@ sub refine_gene_object {
             $self->add_mRNA_exon_obj($mRNA_exon_obj);
         }
     } else { # remap CDSs to mRNAS
-        print STDERR "ERROR: mRNA exons < CDS exons.  Copying all CDS exons into mRNA exons. \n\n";
+#        print STDERR "ERROR: mRNA exons < CDS exons.  Copying all CDS exons into mRNA exons. \n\n";
         foreach my $CDS_end5 (keys %CDS) {
             my $CDS_end3 = $CDS{$CDS_end5};
             my $mRNA_exon_obj = mRNA_exon_obj->new ($CDS_end5, $CDS_end3);
@@ -920,7 +921,7 @@ B<Returns:> @exons
 
 =cut
 
-    ;
+    
 
 sub get_exons {
     my ($self) = shift;
@@ -990,7 +991,7 @@ A list of arrayRefs are returned providing the coordinates of introns, ordered f
 
 =cut
 
-    ;
+    
 
 sub get_intron_coordinates {
     my $gene_obj = shift;
@@ -1034,7 +1035,6 @@ sub get_intron_coordinates {
     }
     return (@introns);
 }
-
 
 
 
@@ -1128,7 +1128,7 @@ B<Returns:> none
 
 =cut
 
-    ;
+    
 
 sub add_mRNA_exon_obj {
     my ($self) = shift;
@@ -1152,7 +1152,7 @@ sub set_protein_sequence {
         $self->{protein_seq} = $protein;
         $self->{protein_seq_length} = length ($protein);
     } else {
-        print STDERR "No incoming protein sequence to set to.\n" . $self->toString();
+#        print STDERR "No incoming protein sequence to set to.\n" . $self->toString();
     }
 }
 
@@ -1421,7 +1421,7 @@ Note: You must have called create_all_sequence_types($genomic_ref) before protei
 
 =cut
     
-    ;
+    
 
 sub get_protein_sequence {
     my $self = shift;
@@ -1587,7 +1587,7 @@ B<Returns:> none
 ## sequences consume huge amounts of memory in comparison to other gene features.
 ## want to clear them from time to time to save memory.
     
-    ;
+    
 
 sub clear_sequence_info {
     my $self = shift;
@@ -1646,7 +1646,7 @@ B<Returns:> none
 =cut
 
 
-    ;
+    
 
 ####
 # add value to all gene component coordinates
@@ -1698,7 +1698,7 @@ B<Returns:> $text
 
 =cut
 
-    ;
+    
 
 
 ## retrieve text output describing the gene.
@@ -1804,7 +1804,7 @@ If the empty string ("") is returned, then no inconsistencies were identified.
 
 =cut
 
-    ;
+    
     
 ####
 sub validate_splice_sites {
@@ -1861,6 +1861,7 @@ sub validate_splice_sites {
 
 
 
+
 =over 4
 
 =item get_annot_text()
@@ -1878,7 +1879,7 @@ $string includes locus, pub_locus, com_name, and pub_comment
 =cut
 
 
-    ;
+    
 
 ####
 sub get_annot_text {
@@ -1912,7 +1913,7 @@ B<Returns:> none
 
 =cut
 
-    ;
+    
 sub add_isoform {
     my $self = shift;
     my @gene_objs = @_;
@@ -2072,7 +2073,7 @@ B<Returns:> @Gene_ontology_objs
 
 =cut
 
-    ;
+    
 
 sub get_gene_ontology_objs {
     my $self = shift;
@@ -2192,7 +2193,7 @@ B<Returns:> ([end5,end3], ...) or empty list if none exist
 =cut
 
 
-    ;
+    
 
 sub get_5prime_UTR_coords {
     my $self = shift;
@@ -2245,7 +2246,7 @@ B<Returns:> ([end5,end3], ...) or empty list if none exist
 
 =cut
 
-    ;
+    
 
 sub get_3prime_UTR_coords {
     my $self = shift;
@@ -2453,7 +2454,7 @@ B<Returns:> none
 
 =cut
 
-    ;
+    
 
 sub trim_UTRs {
     my $self = shift;
@@ -2587,7 +2588,7 @@ B<Returns:> string
 
 =cut
 
-    ;
+    
 
 ####
 sub get_product_names {
@@ -2645,7 +2646,7 @@ B<Returns:> string
 
 =cut
 
-    ;
+    
 
 ####
 sub get_gene_symbols {
@@ -2702,7 +2703,7 @@ B<Returns:> string
 
 =cut
 
-    ;
+    
 
 ####
 sub get_ec_numbers {
@@ -3007,7 +3008,7 @@ transcript_id (Model_feat_name)
 
 =cut
 
-    ;
+    
 
 sub to_GTF_format {
     my $gene_obj = shift;
@@ -3336,7 +3337,6 @@ sub trim_stop_codon {
 }
 
 
-
 =over 4
     
 =item to_GFF3_format()
@@ -3486,9 +3486,6 @@ freely by applications.
 =back
 
 =cut
-
-    ;
-
 
 
 sub to_GFF3_format {
@@ -3674,6 +3671,214 @@ sub to_GFF3_format {
 
 }
 
+
+
+sub to_GFF3_format_extended {
+    my ($gene_obj, %preferences) = @_;
+    my $gene_id = $gene_obj->{TU_feat_name};
+   
+    my $strand = $gene_obj->get_orientation();
+    
+    my @noteText;
+    
+    if ($gene_obj->{is_pseudogene}) {
+        push (@noteText, "(pseudogene)");
+    }
+    
+    ## parse preferences
+    my $asmbl_id = $preferences{seqid} || $gene_obj->{asmbl_id};
+    my $source = $preferences{source} || $gene_obj->{source} || ".";
+    my $sequence_ref = $preferences{sequence_ref} || '';
+    
+    unless ($asmbl_id) {
+        if ($gene_id =~ /^(\d+)/) {
+            $asmbl_id = $1;
+        } else {
+            die "Error, no asmbl_id from gene_obj\n";
+        }
+    }
+    
+    my ($gene_lend, $gene_rend) = sort {$a<=>$b} $gene_obj->get_gene_span();
+    my $com_name = $gene_obj->{com_name};
+	unless ($com_name =~ /\w/) {
+		$com_name = "";
+	}
+	
+	if ($com_name) {
+		# uri escape it:
+		$com_name = uri_escape($com_name);
+	}
+
+	my $gene_alias = "";
+	if (my $pub_locus = $gene_obj->{pub_locus}) {
+		$gene_alias = "Alias=$pub_locus;";
+	}
+       
+    my $feat_type = ($gene_obj->{gene_type} eq "protein-coding") ? "gene" : $gene_obj->{gene_type};
+    
+
+    my $gff3_text = "$asmbl_id\t$source\t$feat_type\t$gene_lend\t$gene_rend\t.\t$strand\t.\tID=$gene_id;Name=$com_name;$gene_alias\n";  ## note, non-coding gene features are currently represented by a simple single coordinate pair.
+    
+    if ($gene_obj->{gene_type} eq "protein-coding")  {
+		
+        my $gene_obj_ref = $gene_obj;
+        
+        foreach my $gene_obj ($gene_obj_ref, $gene_obj_ref->get_additional_isoforms() ) {
+            
+            my $model_id = $gene_obj->{Model_feat_name};
+            my $model_alias = "";
+            if (my $model_locus = $gene_obj->{Model_pub_locus}) {
+				$model_alias = "Alias=$model_locus;";
+			}
+			      
+			my ($mrna_lend, $mrna_rend) = $gene_obj->get_transcript_span();
+      
+            $gff3_text .= "$asmbl_id\t$source\tmRNA\t$mrna_lend\t$mrna_rend\t.\t$strand\t.\tID=$model_id;Parent=$gene_id;Name=$com_name;$model_alias\n";
+            
+            ## mark the first and last CDS entries (for now, an unpleasant hack!)
+            my @exons = $gene_obj->get_exons();
+            ## find the first cds
+            foreach my $exon (@exons) {
+                if (my $cds = $exon->get_CDS_obj()) {
+                    $cds->{first_cds} = 1;
+                    last;
+                }
+            }
+            @exons = reverse @exons;
+            foreach my $exon (@exons) {
+                if (my $cds = $exon->get_CDS_obj()) {
+                    $cds->{last_cds} = 1;
+                    last;
+                }
+            }
+            
+            my $prime5_partial = $gene_obj->is_5prime_partial();
+            my $prime3_partial = $gene_obj->is_3prime_partial();
+            
+            
+            ## annotate 5' utr
+            if ($gene_obj->has_CDS()) {
+                my @prime5_utr = $gene_obj->get_5prime_UTR_coords();
+                if (@prime5_utr) {
+                    my $utr_count = 0;
+                    foreach my $coordset (@prime5_utr) {
+                        my ($lend, $rend) = sort {$a<=>$b} @$coordset;
+                        $utr_count++;
+                        my $utr_id = "$model_id.utr5p$utr_count";
+                        $gff3_text .= "$asmbl_id\t$source\tfive_prime_utr\t$lend\t$rend\t.\t$strand\t.\tID=$utr_id;Parent=$model_id\n";
+                    }
+                }
+            }
+            
+			
+			my $exon_counter = 0;
+			my @introns = $gene_obj->get_intron_coordinates();
+            foreach my $exon ($gene_obj->get_exons()) {
+                $exon_counter++;
+				my ($exon_lend, $exon_rend) = sort {$a<=>$b} $exon->get_coords();
+                my $exon_ID_string = "";
+                if (my $exon_feat_name = $exon->{feat_name}) {
+                    $exon_ID_string = "$exon_feat_name";
+                }
+				else {
+					$exon_ID_string = "$model_id.exon$exon_counter";
+				}
+                $gff3_text .= "$asmbl_id\t$source\texon\t$exon_lend\t$exon_rend\t.\t$strand\t.\tID=${exon_ID_string};Parent=$model_id\n";
+
+                if (my $cds_obj = $exon->get_CDS_obj()) {
+                    my ($cds_lend, $cds_rend) = sort {$a<=>$b} $cds_obj->get_coords();
+                    my $phase = $cds_obj->{phase};
+					if (defined($phase)) {
+						## use GFF3 definition of phase, which is how many bases to trim before encountering first base of start
+						if ($phase == 2) { 
+							$phase = 1;
+						}
+						elsif ($phase == 1) {
+							$phase = 2;
+						}
+						# phase 0 remains 0
+					} 
+					else {
+						$phase =  "."; #use phase info if avail
+                    }
+
+					
+					my $cds_ID_string = "cds.$model_id";
+					
+					# according to the GFF3 spec, CDS segments from the same coding region should have the same identifier.
+					#if (my $cds_feat_name = $cds_obj->{feat_name}) {
+					#	$cds_ID_string = "$cds_feat_name";
+					#}
+					#else {
+					#	$cds_ID_string = "$model_id.cds$exon_counter";
+					#}
+					
+                    my $partial_text = "";
+                    if ($prime5_partial && $cds_obj->{first_cds}) {
+                        $partial_text .= "; 5_prime_partial=true";
+                    }
+                    if ($prime3_partial && $cds_obj->{last_cds}) {
+                        $partial_text .= "; 3_prime_partial=true";
+                    }
+                    
+                    $gff3_text .= "$asmbl_id\t$source\tCDS\t$cds_lend\t$cds_rend\t.\t$strand\t$phase\tID=${cds_ID_string};Parent=$model_id$partial_text\n";
+                }
+                 # print intron
+                 my ($intron_start,$intron_stop)= @{$introns[$exon_counter-1]} if $introns[$exon_counter-1];
+                 if ($sequence_ref && $intron_start && $intron_stop){
+                 my ($donor_start,$donor_stop,$acceptor_start,$acceptor_stop,$donor_site ,$acceptor_site );
+                 if ($strand eq '+'){
+                   ($donor_start,$donor_stop,$acceptor_start,$acceptor_stop) = ($intron_start,($intron_start + 1),($intron_stop - 1 ), $intron_stop); 
+                    $donor_site = substr ($$sequence_ref, $donor_start -1  ,2 );
+                    $acceptor_site = substr ($$sequence_ref, $acceptor_start -1 ,2 );
+                 }else{
+                   ($donor_start,$donor_stop,$acceptor_start,$acceptor_stop) = ($intron_start,($intron_start - 1),($intron_stop + 1 ), $intron_stop);
+                    $donor_site = substr ($$sequence_ref, $donor_stop -1 ,2 );
+                    $acceptor_site = substr ($$sequence_ref, $acceptor_stop -1 ,2 );
+                    $donor_site = &reverse_complement($donor_site);
+                    $acceptor_site = &reverse_complement($acceptor_site);
+                 }
+                 my $intron_id_string = $exon_ID_string;
+                 $intron_id_string=~s/\.exon/.intron/;
+                 $gff3_text .= "$asmbl_id\t$source\tfive_prime_cis_splice_site\t$donor_start\t$donor_stop\t.\t$strand\t.\tID=$intron_id_string.donor;Parent=$model_id;donor_site=$donor_site\n" if $donor_start;
+                 $gff3_text .= "$asmbl_id\t$source\tintron\t$intron_start\t$intron_stop\t.\t$strand\t.\tID=$intron_id_string;Parent=$model_id\n" if ($intron_start && $intron_stop);
+                 $gff3_text .= "$asmbl_id\t$source\tthree_prime_cis_splice_site\t$acceptor_start\t$acceptor_stop\t.\t$strand\t.\tID=$intron_id_string.acceptor;Parent=$model_id;acceptor_site=$acceptor_site\n" if $acceptor_start;
+                 }
+
+                
+            }
+            
+            ## annotate 3' utr
+            if ($gene_obj->has_CDS()) {
+                my @prime3_utr = $gene_obj->get_3prime_UTR_coords();
+                if (@prime3_utr) {
+                    my $utr_count = 0;
+                    foreach my $coordset (@prime3_utr) {
+                        my ($lend, $rend) = sort {$a<=>$b} @$coordset;
+                        $utr_count++;
+                        my $utr_id = "$model_id.utr3p$utr_count";
+                        $gff3_text .= "$asmbl_id\t$source\tthree_prime_utr\t$lend\t$rend\t.\t$strand\t.\tID=$utr_id;Parent=$model_id\n";
+                    }
+                }
+                
+            }
+        }
+        
+    }  ## end of protein-coding genes
+        
+
+	## strip off any trailing whitespace and semicolons:
+	my @lines = split (/\n/, $gff3_text);
+	foreach my $line (@lines) {
+		$line =~ s/\s+$//;
+		$line =~ s/;$//;
+	}
+	
+	$gff3_text = join ("\n", @lines) . "\n";
+	
+    return ($gff3_text);
+
+}
 
 
 =over 4
@@ -4687,7 +4892,7 @@ B<Returns:> $mRNA_exon_obj
 =cut
 
 
-    ;
+
 
 sub new {
     shift;
@@ -4729,12 +4934,14 @@ If no CDS_exon_obj is attached, returns 0
 
 =cut
 
-    ;
 
 sub get_CDS_obj {
     my $self = shift;
     return ($self->{CDS_exon_obj});
 }
+
+
+
 
 
 ## alias
@@ -4964,7 +5171,7 @@ If end5 == end3, strand orientation cannot be inferred based on coordinates alon
 =cut
 
 
-    ;
+ 
 
 sub get_orientation {
     # determine positive or reverse orientation
@@ -5030,7 +5237,6 @@ B<Returns:> $text
 
 =cut
 
-    ;
 
 
 sub toString {
@@ -5102,7 +5308,7 @@ B<Returns:> $cds_exon_obj
 
 =cut
 
-    ;
+
 
 sub new {
     shift;
@@ -5218,7 +5424,6 @@ The get_coords() method behaves similarly among Gene_obj, mRNA_exon_obj, and CDS
 =cut
 
 
-
 sub get_coords {
     my $self = shift;
     return ($self->get_CDS_end5_end3());
@@ -5241,7 +5446,6 @@ undef returned if end5 == end3
 
 =cut
 
-    ;
 
 sub get_orientation {
     # determine positive or reverse orientation
@@ -5269,7 +5473,6 @@ B<Returns:> $text
 =back
 
 =cut
-
 
 
 =over 4
@@ -5319,7 +5522,6 @@ sub length {
 }
 
 
-
 =over 4
 
 =item  set_phase()
@@ -5340,7 +5542,6 @@ phase 2 = third bp of codon
 
 =cut
     
-
 sub set_phase {
     my $self = shift;
     my $phase = shift;
@@ -5368,8 +5569,6 @@ phase 2 = third bp of codon
 
 =cut
     
-
-
 
 sub get_phase {
     my $self = shift;
@@ -5419,17 +5618,3 @@ sub toString {
 
 
 1;
-
-
-
-
-
-
-
-
-
-
-
-
-
-

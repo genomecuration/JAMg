@@ -66,7 +66,7 @@ sub index_GFF3_gene_objs {
 
         unless ($feat_type) { die "Error, $_, no feat_type: line\[$_\]"; }
         
-        unless ($feat_type =~ /^(gene|mRNA|CDS|exon)$/) { next;} ## these are the only fields I care about right now.
+        unless ($feat_type =~ /^(gene|mRNA|CDS|exon)$/) { next;} 
 
         $gene_info = uri_unescape($gene_info);
         
@@ -251,6 +251,7 @@ sub index_GFF3_gene_objs {
     print STDERR "\n";
     return (\%asmbl_id_to_gene_id_list);
 }
+
 
 
 1; #EOM

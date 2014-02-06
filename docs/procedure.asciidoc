@@ -176,28 +176,30 @@ CAUTION: If your gene density is high and you expect transcripts from neighborin
 *** If you have 50 million read pairs, the entire process should be done in a day. If you have > 1 billion read pairs then the PASA step will not be that much slower (a few days) but your Trinity assembly will take a considerable time. Consider assembling by library or using the kmer normalization technique.
 *** The output file of interest is the one matching '*.assemblies.fasta', let us assume it is called 'my.assemblies.fasta' from now on.
 * 'Gene models for training and evaluation': Identify a subset of you gene data that is of high quality (this process diverges from the standard PASA approach):
-** The standard PASA approach is to use the genome and a perl script to convert 'my.assemblies.fasta' into gene models. Here instead we will use another perl to not only produce gene models but also identify those that can be used for 'de-novo' gene prediction (including generating the different file formats these predictors expect). First, though, you will have to run TransDecoder:
+** The standard PASA approach is to use the genome and a perl script to convert 'my.assemblies.fasta' into gene models. This will create a lot of gene models, most of which will be not be correct. So we also need to identify a subset of really good ones (golden) that can be used for training 'de-novo' gene prediction (including generating the different file formats these predictors expect):
 +
 [source,bash]
-$JAMG_PATH/3rd_party/transdecoder/TransDecoder -t "./*.assemblies.fasta" \
- --search_pfam $JAMG_PATH/3rd_party/transdecoder/pfam/Pfam-AB.hmm.bin
-# Alternatively, one can use the PASA approach which will also run TransDecoder (except without a PFAM search)
+# the PASA approach which will also run TransDecoder
 $JAMG_PATH/3rd_party/PASA/scripts/pasa_asmbls_to_training_set.dbi --pasa_transcripts_fasta ./*.assemblies.fasta \
  --pasa_transcripts_gff3 ./*.pasa_assemblies.gff3
-# either case you will have output from TransDecoder
 +
 ** Once that is complete use the 'prepare_golden_genes_for_predictors.pl' script to prepare the various files.
-** This script uses exonerate with an initial step with the AATPACKAGE for finding the approximate regions. Exonerate works better if it knows that certain regions are repetitive so we will create a soft-(repeat)masked version of your genome using bedtools.
+** This script uses exonerate with an initial step to find the approximate regions. In this scenario the approximate regions have been identified by PASA (and pasa_asmbls_to_training_set.dbi) but the script could be used in other scenarios that have no transdecoder data (see the -peptide option - in that case BLAST or the AATPACKAGE will be used to find the approximate regions). Exonerate works better if it knows that certain regions are repetitive so we will create a soft-(repeat)masked version of your genome using bedtools.
 +
 [source,bash]
 $JAMG_PATH/bin/prepare_golden_genes_for_predictors.pl -genome $GENOME_PATH.masked -softmasked $GENOME_PATH.softmasked \
  -same_species -augustus $JAMG_PATH/3rd_party/augustus/bin \
- -intron $MAX_INTRON_LENGTH -cpu $LOCAL_CPUS -norefine \
- -transdecoder_gff ./*.assemblies.fasta.gff3 \
- -transdecoder_assembly ./*.assemblies.fasta \
- -transdecoder_peptides ./*.assemblies.fasta.pep 
+ -intron $MAX_INTRON_LENGTH -cpu $LOCAL_CPUS -norefine -complete -no_single \
+ -pasa_gff ./*.assemblies.fasta.gff3 \
+ -pasa_assembly ./*.assemblies.fasta \
+ -pasa_peptides ./*.assemblies.fasta.pep \
+ -pasa_genome ./*.assemblies.fasta.transdecoder.genome.gff3 \
+ -pasa_assembly ./*.assemblies.fasta
 +
-*** I find that -norefine is quicker and makes little difference (but as always I could be wrong).
+*** I find that -norefine is quicker and makes little difference (but as always I could be wrong). The -complete flag can also be used to ensure only full-length genes are printed out. 
++
+TIP: Generally, the prepare_golden_genes_for_predictors.pl can also be used for non-PASA derived data (see -mrna, -peptides), or even from another species (remove -same_species). To be honest, support for PASA was the last option added :-)
++
 *** [[pasa-statistics]] Let's explore the output and find some statistics:
 +
 [source,bash]
@@ -235,19 +237,19 @@ mkdir snap; cd snap
 mkdir train ; cd train 
 # also copy/link the relevant .fasta .zff data used below
 ln -s ../../*zff* ../../*gff3.fasta .
-$JAMG_PATH/3rd_party/bin/fathom golden.train.gff3.zff golden.train.gff3.fasta -gene-stats
-$JAMG_PATH/3rd_party/bin/fathom golden.train.gff3.zff golden.train.gff3.fasta -categorize 1000
+$JAMG_PATH/3rd_party/bin/fathom golden.train.zff golden.train.gff3.fasta -gene-stats | tee gene.statistics.log
+$JAMG_PATH/3rd_party/bin/fathom golden.train.zff golden.train.gff3.fasta -categorize 1000
 $JAMG_PATH/3rd_party/bin/fathom -export 1000 -plus uni.ann uni.dna
-$JAMG_PATH/3rd_party/bin/forge export.ann export.dna
+$JAMG_PATH/3rd_party/snap/forge export.ann export.dna
 $JAMG_PATH/3rd_party/snap/hmm-assembler.pl Pult . > $GENOME_NAME.hmm # model to use to predict
 #predict
-mkdir snap_predict; cd snap_predict
+cd .. ; mkdir predict; cd predict
 # create a directory where each genome sequence is in a single file. Use the softmasked repeats
 ln -s $GENOME_PATH.softmasked $GENOME_NAME.softmasked
 $JAMG_PATH/bin/splitfasta.pl -i $GENOME_NAME.softmasked
 # prepare execution for each genome sequence
 find $GENOME_NAME.softmasked_dir1 -maxdepth 1 -type f -exec sh -c \
- 'echo "$JAMG_PATH/3rd_party/snap/bin/snap $GENOME_NAME.hmm $1 -lcmask -quiet > $1.snap 2>/dev/null ; \
+ 'echo "$JAMG_PATH/3rd_party/snap/snap ../train/$GENOME_NAME.hmm $1 -lcmask -quiet > $1.snap 2>/dev/null ; \
   $JAMG_PATH/3rd_party/evidencemodeler/OtherGeneFinderTrainingGuide/SNAP/SNAP_output_to_gff3.pl $1.snap $1 > $1.snap.gff3 ; \
   $JAMG_PATH/3rd_party/PASA/misc_utilities/gff3_to_gtf_format.pl $1.snap.gff3 $1 > $1.snap.gtf"' \
   find-copy '{}' \; > snap.commands
@@ -255,10 +257,12 @@ ParaFly -c snap.commands -CPU $LOCAL_CPUS -v -shuffle
 cat $GENOME_NAME.softmasked_dir1/*snap.gtf > snap.gtf
 # evaluate
 $JAMG_PATH/3rd_party/eval-2.2.8/evaluate_gtf.pl -g ./*golden.test.gtf snap.gtf > snap.eval
+cd ../../
 +
-**** If you don't like the results, you can create a new training directory and try training with fewer, or more genes. Alternatively you can use external evidence (see 'snap -help') in order to improve specificity and prevent wrong overlapping gene models from being predicted. First create an external evidence file for snap using the training genes and then run snap with an extra option:
+**** If you don't like the results, you can create a new training directory and try training with fewer, or more genes. Alternatively you can use external evidence (see 'snap -help') in order to improve specificity and prevent wrong overlapping gene models from being predicted. [[snap-external]] First create an external evidence file for snap using the training genes and then run snap with an extra option:
 +
 [source,bash]
+cd snap/predict
 # reset input genome directory
 rm -f $GENOME_NAME.softmasked_dir1/*snap* $GENOME_NAME.softmasked_dir1/*cidx
 # prepare evidence
@@ -276,6 +280,7 @@ cat $GENOME_NAME.softmasked_dir1/*snap.gtf > snap2.gtf
 $JAMG_PATH/3rd_party/eval-2.2.8/evaluate_gtf.pl -g ./*golden.test.gtf  snap.gtf snap2.gtf > snap.eval
 # Repeat with any evidence/training data as you wish. Once you're happy, you can delete the $GENOME_NAME.softmasked_dir1 directory
 rm -rf $GENOME_NAME.softmasked_dir1
+cd ../../
 +
 **** First, I should say that the zff2hintzff.pl script has room for improvement (specifically, only the 'coding' regions are currently used). Second, if you don't want to evaluate the output and you think that the external evidence has improved matters, there is no reason why you cannot provide all the golden genes (golden.gff3.zff) as external evidence. Clearly you will not be able to have an independent test (since your 'test' genes have been included as evidence) but your aim here is to improve the annotation of a genome, not prove that a particular gene model prediction algorithm is better or worse. We will follow this procedure at the very end with Augustus et al after integrating everything with the evidencemodeler.
 *** Glimmer:
@@ -284,9 +289,9 @@ rm -rf $GENOME_NAME.softmasked_dir1
 # GlimmerHMM - specific instructions
 # train
 mkdir -p glimmer/train; cd glimmer/train
-ln -s ../../*glimmer* ../../*.gb.fasta .
+ln -s ../../*glimmer* ../../*golden*.fasta .
 $JAMG_PATH/3rd_party/GlimmerHMM/train/trainGlimmerHMM \
- ./*.train.good.gb.fasta ./*.train.good.gb.glimmer \
+ ./*.train.good.fasta ./*.train.good.gb.glimmer \
  -d attempt1 >/dev/null
 cd ../
 +

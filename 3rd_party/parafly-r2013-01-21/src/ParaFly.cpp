@@ -118,7 +118,7 @@ int main(int argc, char* argv[]) {
             
             // this command has been run before successfully, not running it again.
             if (VERBOSE_LEVEL) {
-                cerr << "warning, command: " << line << " has successfully completed from a previous run.  Skipping it here." << endl;
+//                cerr << "warning, command: " << line << " has successfully completed from a previous run.  Skipping it here." << endl;
             }
             
             
