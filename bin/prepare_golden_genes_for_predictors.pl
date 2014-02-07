@@ -5,6 +5,7 @@
 =head1 TODO
 
 wishlist:
+interesting: overlapping genes: group as genes before deleting and rename gene_id
 Low: Would be nice to have a GenBank parser that doesn't use BioPerl also augusts' gff2gbSmallDNA.pl is just too ...
 
 =head1 NAME
