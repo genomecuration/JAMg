@@ -59,7 +59,7 @@ use List::Util 'shuffle';
 use POSIX qw(ceil);
 use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
-$ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
+$ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/:$RealBin:$RealBin/../3rd_party/RepeatMasker";
 use Fasta_reader;
 use Thread_helper;
 

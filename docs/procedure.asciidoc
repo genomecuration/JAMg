@@ -49,6 +49,8 @@ make all # will install all utilities
 
 You will then still need to install blat, Apache/Tomcat and WebApollo (see 3rd_party/WebApollo/README for instructions on the later)
 
+Finally, read $JAMG_PATH/databases/hhblits/README and download a database for your taxon (or UniProt which may be an overkill but your only choice if your taxon is not represented in the public databases).
+
 For the rest of this document, I use some environmental variables as shortcuts as above for $JAMG_PATH. For example, LOCAL_CPUS is the number of CPUs to use, MAX_INTRON_LENGTH is the maximum length an intron is expected to be, GENOME_PATH is the path to the genome assembly and GENOME_NAME is just a friendly name for the genome (without any spaces). As shown in the tutorial, you can set your own and it is a handy trick to store them in a file so you remember what were those values.
 
 ==== Input files
@@ -99,7 +101,8 @@ You may follow any of the following steps in any order, at times you can even ac
 +
 TIP: If you have already run RepeatMasker that is ok, make sure that a file that is called $GENOME_PATH.masked is in the same directory as $GENOME_PATH. It will continue with the ORF exploration.
 +
-You can choose which 'known protein' database to use after the transposons. It can be the entire Uniprot distributed with HHblits or one of the taxon-specific databases we provide from RefSeq. These databases are in the folder databases/hhblits/. This script can make use of MPI so that if you have a computing PC-Farm (i.e. no batch system) you can do this:
+You can choose which 'known protein' database to use after the transposons. It can be the entire Uniprot distributed with HHblits or one of the taxon-specific databases we provide from RefSeq. 
+These databases are in the folder databases/hhblits/. This script can make use of MPI so that if you have a computing PC-Farm (i.e. no batch system) you can do this:
 +
 [source,bash]
 $JAMG_PATH/bin/prepare_domain_exon_annotation.pl -genome $GENOME_PATH -verbose \
@@ -111,6 +114,7 @@ $JAMG_PATH/bin/prepare_domain_exon_annotation.pl -genome $GENOME_PATH -verbose \
 $JAMG_PATH/3rd_party/bin/maskFastaFromBed -soft -fi $GENOME_PATH -fo $GENOME_PATH.softmasked \
  -bed $GENOME_PATH.out.gff # this last file is the output from RepeatMasker
 +
+What you specify as a database for -uniprot_db or -trans is the full path and 'basename' of the database (i.e. there is no file $JAMG_PATH/databases/hhblits/transposons but there are files such as transposons.a3m_db, transposons.cs219 etc).
 The last option '-scratch', tells the program to copy all the database files to every node's local memory. You can use any local directory (/tmp/$USER or a scratch) but be careful you have enough space (and memory). Remember that /dev/shm and some /tmp use the computer's local memory (not hard disk). That's very fast but it will use RAM. Our computers have 48Gb of RAM each and that is far more than needed (depending on database size, estimate 1-5Gb per MPI process). Not including this option means that the databases will be read over the network. That's fine if your network connection is fast, unsaturated and the databases are small. Otherwise, decrease the number of processes, find another computing environment or use a smaller database.
 +
 WARNING: '-engine' option has a number of possible options. We've tested 'mpi' and 'localmpi' and routinely use 'PBS'. The 'cluster' option splits the input into segments and produces command files for you to run (we haven't tested it). See xref:MPI[MPI help].

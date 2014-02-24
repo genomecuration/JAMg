@@ -28,6 +28,8 @@ make # will install the various software, including RepeatMasker
 # Run configure. Use the RMBlast NCBI option when asked about an engine (the engine is in $JAMG_PATH/3rd_party/RepeatMasker/ncbi-blast)
 $JAMG_PATH/3rd_party/RepeatMasker/configure
 
+Then download the refseq_insecta_march13_just_useful.tar.bz2 HHblits database from link:https://sourceforge.net/projects/jamg/files/databases/[here] and uncompress it in $JAMG_PATH/databases/hhblits
+
 Finally, we also assume you have correctly installed PASA (and mySQL) to work with your computing environment. Prepare the configuration file
 
 [source,bash]
