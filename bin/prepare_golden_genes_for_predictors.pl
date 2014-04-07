@@ -49,6 +49,7 @@ And one of:
 
 Other options:
 
+    -help                     => Show this menu
     -training        :i       => number of genes to go into a random training set (def. 66% of total or 5000, whichever is higher)
     -complete                 => only do full length (recommended)
     -softmasked      :s       => Genome that has been softmasked for repeats
@@ -145,7 +146,7 @@ my (
      $pasa_assembly_file, $pasa_peptides,         $mrna_file,
      $softmasked_genome,  $stop_after_correction, $norefine,
      $nodataprint,        $no_gmap,               $no_exonerate,
-     $pasa_genome_gff,    $extra_gff_file
+     $pasa_genome_gff,    $extra_gff_file, $show_help
 );
 
 my $no_rerun_exonerate;
@@ -166,6 +167,7 @@ my ( $cdbfasta_exec, $cdbyank_exec ) = &check_program( 'cdbfasta', 'cdbyank' );
 my ( %get_id_seq_from_fasta_hash, $augustus_dir );
 
 GetOptions(
+            'help'               => \$show_help,
             'debug|verbose'      => \$debug,
             'exonerate:s'        => \$exonerate_file,
             'genome:s'           => \$genome_file,
@@ -3251,10 +3253,10 @@ sub read_fasta() {
 }
 
 sub check_for_options() {
-
+ pod2usage if $show_help;
  pod2usage "No genome found\n" unless ( $genome_file && -s $genome_file );
-
- pod2usage "A required input file is missing\n"
+ pod2usage "Provide at least one set of the input files\n" unless ($exonerate_file || ($pasa_gff && $pasa_assembly_file && $pasa_peptides && $pasa_cds && $pasa_genome_gff) || $peptide_file || $mrna_file);
+ 
    unless (
             ( $exonerate_file && -s $exonerate_file )
             || (    $pasa_gff
@@ -3269,7 +3271,19 @@ sub check_for_options() {
                  && -s $pasa_genome_gff )
             || ( $peptide_file && -s $peptide_file )
             || ( $mrna_file    && -s $mrna_file )
-   );
+   ){
+    warn "A required input file is missing\n";
+    warn "\t$exonerate_file not found\n" if ($exonerate_file && !-s $exonerate_file);
+    warn "\t$pasa_gff not found\n" if ($pasa_gff && !-s $pasa_gff);
+    warn "\t$pasa_assembly_file not found\n" if ($pasa_assembly_file && !-s $pasa_assembly_file);
+    warn "\t$pasa_peptides not found\n" if ($pasa_peptides && !-s $pasa_peptides);
+    warn "\t$pasa_cds not found\n" if ($pasa_cds && !-s $pasa_cds);
+    warn "\t$pasa_genome_gff not found\n" if ($pasa_gff && !-s $pasa_genome_gff);
+    warn "\t$peptide_file not found\n" if ($peptide_file && !-s $peptide_file);
+    warn "\t$mrna_file not found\n" if ($mrna_file && !-s $mrna_file);
+    die "\n";
+    
+   }
 
  die "Max intron size (-intron) cannot be 0!\n"
    unless $intron_size && $intron_size > 0;
