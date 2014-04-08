@@ -101,7 +101,7 @@ $engine = lc($engine);
 die pod2usage "Engine must be local, localmpi or PBS\n"
   unless (    $engine =~ /local/
            || $engine =~ /mpi/
-           || $engine =~ /PBS/
+           || $engine =~ /pbs/
            || $engine =~ /none/
            || $engine =~ /cluster/ );
 
@@ -288,32 +288,31 @@ sub prepare_pbs() {
 
  unless ($no_transposon_search) {
 
-  open( SCRIPT, "hhblits_mpi_transposon.sh" );
+  open( SCRIPT, ">hhblits_mpi_transposon.sh" );
   print SCRIPT "#!/bin/bash
 NUMBERSPROCESSES=$hhblits_cpus
 PROTEIN_FILE=$exons.aa.trim
-DB=$transposon_db
 
 if [ ! -e \$PROTEIN_FILE.db ]; then
  $ffindex_from_fasta_exec -s \$PROTEIN_FILE.db \$PROTEIN_FILE.db.idx \$PROTEIN_FILE
  mv \$PROTEIN_FILE.db.idx \$PROTEIN_FILE.db.idx.orig ; cp \$PROTEIN_FILE.db.idx.orig \$PROTEIN_FILE.db.idx.orig.notdone; ln -s \$PROTEIN_FILE.db.idx.orig.notdone \$PROTEIN_FILE.db.idx
 fi
 
-qsub -l select=\$NUMBERSPROCESSES:ncpus=1:mpiprocs=1:mem=4gb:NodeType=any -l walltime=12:00:00 -V -r n -N hbtransposons -- \$PWD/hhblits_mpi.pbs \$PROTEIN_FILE.db \$NUMBERSPROCESSES \$DB
+qsub -l select=\$NUMBERSPROCESSES:ncpus=1:mpiprocs=1:mem=4gb:NodeType=any -l walltime=12:00:00 -V -r n -N hbtransposons -- \$PWD/hhblits_mpi_transposon.pbs \$PROTEIN_FILE.db \$NUMBERSPROCESSES
 ";
   close SCRIPT;
-
-  open( SCRIPT, "hhblits_mpi_transposon.pbs" );
+  open( SCRIPT, ">hhblits_mpi_transposon.pbs" );
   print SCRIPT "#!/bin/bash
 MPIRUN_EXEC=$mpirun_exec
 MPIRUN_ARGS=\"-gmca mpi_warn_on_fork 0 -cpus-per-proc 1 -np \$2 -machinefile workers.\$PBS_JOBID.mpi\"
+DB=$transposon_db
 
 export OMP_NUM_THREADS=1
 cd \$PBS_O_WORKDIR
 cat \${PBS_NODEFILE} > workers.\$PBS_JOBID.mpi
 \$MPIRUN_EXEC \$MPIRUN_ARGS $ffindex_apply_mpi_exec \\
-  -d \"\$1\".transposon.db \\
-  -i \"\$1\".transposon.db.idx \\
+  -d \"\$1\"_transposon.db \\
+  -i \"\$1\"_transposon.db.idx \\
   \$1 \\
   \$1.idx \\
   -- $hhblits_exec -maxmem 3 -d \$3 -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1e-5 -E 1E-05 -id 80 -p 80 -z 0 -b 0 -v 0 -B 3 -Z 3 2>/dev/null
@@ -322,40 +321,41 @@ cat \${PBS_NODEFILE} > workers.\$PBS_JOBID.mpi
 
  }
  unless ($no_uniprot_search) {
-  open( SCRIPT, "hhblits_mpi_uniprot.sh" );
+  open( SCRIPT, ">hhblits_mpi_uniprot.sh" );
   print SCRIPT "#!/bin/bash
 NUMBERSPROCESSES=$hhblits_cpus
 PROTEIN_FILE=$exons.aa.trim
-DB=$uniprot_db
 
 if [ ! -e \$PROTEIN_FILE.db ]; then
  $ffindex_from_fasta_exec -s \$PROTEIN_FILE.db \$PROTEIN_FILE.db.idx \$PROTEIN_FILE
  mv \$PROTEIN_FILE.db.idx \$PROTEIN_FILE.db.idx.orig ; cp \$PROTEIN_FILE.db.idx.orig \$PROTEIN_FILE.db.idx.orig.notdone; ln -s \$PROTEIN_FILE.db.idx.orig.notdone \$PROTEIN_FILE.db.idx
 fi
 
-qsub -l select=\$NUMBERSPROCESSES:ncpus=1:mpiprocs=1:mem=4gb:NodeType=any -l walltime=12:00:00 -V -r n -N hbtransposons -- \$PWD/hhblits_mpi.pbs \$PROTEIN_FILE.db \$NUMBERSPROCESSES \$DB
+qsub -l select=\$NUMBERSPROCESSES:ncpus=1:mpiprocs=1:mem=7gb:NodeType=any -l walltime=12:00:00 -V -r n -N hbuniprot -- \$PWD/hhblits_mpi_uniprot.pbs \$PROTEIN_FILE.db \$NUMBERSPROCESSES
 ";
   close SCRIPT;
 
-  open( SCRIPT, "hhblits_mpi_uniprot.pbs" );
+  open( SCRIPT, ">hhblits_mpi_uniprot.pbs" );
   print SCRIPT "#!/bin/bash
 MPIRUN_EXEC=$mpirun_exec
 MPIRUN_ARGS=\"-gmca mpi_warn_on_fork 0 -cpus-per-proc 1 -np \$2 -machinefile workers.\$PBS_JOBID.mpi\"
+DB=$uniprot_db
 
 export OMP_NUM_THREADS=1
 cd \$PBS_O_WORKDIR
 cat \${PBS_NODEFILE} > workers.\$PBS_JOBID.mpi
 \$MPIRUN_EXEC \$MPIRUN_ARGS $ffindex_apply_mpi_exec \\
-  -d \"\$1\".uniprot.db \\
-  -i \"\$1\".uniprot.db.idx \\
+  -d \"\$1\"_uniprot.db \\
+  -i \"\$1\"_uniprot.db.idx \\
   \$1 \\
   \$1.idx \\
-  -- $hhblits_exec -maxmem 5 -d \$3 -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1e-5 -E 1E-05 -id 80 -p 80 -z 0 -b 0 -v 0 -B 3 -Z 3 2>/dev/null
+  -- $hhblits_exec -maxmem 5 -d \$DB -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1e-5 -E 1E-05 -id 80 -p 80 -z 0 -b 0 -v 0 -B 3 -Z 3 2>/dev/null
 ";
   close SCRIPT;
  }
+ chmod 0755, qw/hhblits_mpi_transposon.sh hhblits_mpi_transposon.pbs hhblits_mpi_uniprot.sh hhblits_mpi_uniprot.pbs/;
  print
-"Wrote PBS scripts. See scripts hhblits_mpi* and $exons.aa.trim and transfer them to your PBS batch system\n";
+"Wrote PBS scripts. See scripts hhblits_mpi* and $exons.aa.trim and transfer them to your PBS batch system. You will almost certainly need to edit the pbs/.sh scripts to make them work for your setup (e.g. your account string or load any modules)\n";
 
 }
 
