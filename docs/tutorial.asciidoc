@@ -56,6 +56,7 @@ export GENOME_NAME=dmel-all-r5.53 # just a base name for our genome
 # number of CPUs to use for the local machine. Always at least one less than the number of available CPUs:
 export LOCAL_CPUS=5 
 export MAX_MEMORY_G=100 # maximum amount of memory to use in Gb
+export PATH=$JAMG_PATH/bin:$JAMG_PATH/3rd_party/bin:$PATH
 
 These ought to be project specific so if you store the above in a file you can use this command to import them in your environment. That way you don't have to type them every time and you will also remember what you used.
 
@@ -291,8 +292,8 @@ $JAMG_PATH/bin/splitfasta.pl -i $GENOME_NAME.softmasked
 # prepare execution for each genome sequence
 find $GENOME_NAME.softmasked_dir1 -maxdepth 1 -type f -exec sh -c \
  'echo "$JAMG_PATH/3rd_party/snap/snap ../train/$GENOME_NAME.hmm $1 -lcmask -quiet > $1.snap 2>/dev/null ; \
-  $JAMG_PATH/3rd_party/evidencemodeler/OtherGeneFinderTrainingGuide/SNAP/SNAP_output_to_gff3.pl $1.snap $1 > $1.snap.gff3 ; \
-  $JAMG_PATH/3rd_party/PASA/misc_utilities/gff3_to_gtf_format.pl $1.snap.gff3 $1 > $1.snap.gtf"' \
+  $JAMG_PATH/3rd_party/evidencemodeler/OtherGeneFinderTrainingGuide/SNAP/SNAP_output_to_gff3.pl $1.snap $1 > $1.snap.gff3 2>/dev/null ; \
+  $JAMG_PATH/3rd_party/PASA/misc_utilities/gff3_to_gtf_format.pl $1.snap.gff3 $1 > $1.snap.gtf 2>/dev/null "' \
   find-copy '{}' \; > snap.commands
 ParaFly -c snap.commands -CPU $LOCAL_CPUS -v -shuffle
 cat $GENOME_NAME.softmasked_dir1/*snap.gtf > snap.gtf
@@ -304,9 +305,9 @@ Next we process GlimmerHMM.
 
 [source,bash]
 mkdir -p glimmer/train; cd glimmer/train
-ln -s ../../*glimmer* ../../*golden*.fasta .
+ln -s ../../*train.good.gb.fasta ../../*train.good.gb.glimmer . 
 $JAMG_PATH/3rd_party/GlimmerHMM/train/trainGlimmerHMM \
- ./*.train.gff3.fasta ./*.train.gb \
+ ./*train.good.gb.fasta ./*train.good.gb.glimmer \
  -d attempt1 >/dev/null
 cd ../
 

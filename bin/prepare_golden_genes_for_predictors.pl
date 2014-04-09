@@ -1104,9 +1104,12 @@ sub process_for_gene_prediction() {
   system(
 "$augustus_train_exec --species=generic $gff_file.golden.train.gb 2>&1 | grep 'n sequence' | perl -pe 's/.*n sequence (\\S+):.*/\$1/' | sort -u > $gff_file.golden.train.gb.bad.lst 2>/dev/null"
   ) if -s "$gff_file.golden.train.gb";
-  system(
-"$augustus_filterGenes_exec $gff_file.golden.train.gb.bad.lst $gff_file.golden.train.gb > $gff_file.golden.train.good.gb 2>/dev/null"
-  ) if -s "$gff_file.golden.train.gb.bad.lst";
+
+  if (-s "$gff_file.golden.train.gb.bad.lst"){
+    system("$augustus_filterGenes_exec $gff_file.golden.train.gb.bad.lst $gff_file.golden.train.gb > $gff_file.golden.train.good.gb 2>/dev/null");
+  }else{
+    symlink("$gff_file.golden.train.gb",$gff_file.golden.train.good.gb") if -s "$gff_file.golden.train.gb";
+  }
 
   system(
 "$gff2gb_exec $gff_file.golden.test.gff3 $genome_sequence_file $augustus_flank_region $gff_file.golden.test.gb  >/dev/null 2>/dev/null"
@@ -1114,9 +1117,12 @@ sub process_for_gene_prediction() {
   system(
 "$augustus_train_exec --species=generic $gff_file.golden.test.gb 2>&1 | grep 'n sequence' | perl -pe 's/.*n sequence (\\S+):.*/\$1/' | sort -u > $gff_file.golden.test.gb.bad.lst 2>/dev/null"
   ) if -s "$gff_file.golden.test.gb";
-  system(
-"$augustus_filterGenes_exec $gff_file.golden.test.gb.bad.lst $gff_file.golden.test.gb > $gff_file.golden.test.good.gb 2>/dev/null"
-  ) if -s "$gff_file.golden.test.gb.bad.lst";
+
+  if (-s "$gff_file.golden.test.gb.bad.lst"){
+    system("$augustus_filterGenes_exec $gff_file.golden.test.gb.bad.lst $gff_file.golden.test.gb > $gff_file.golden.test.good.gb 2>/dev/null");
+  }else{
+    symlink("$gff_file.golden.test.gb","$gff_file.golden.test.good.gb") if -s "$gff_file.golden.test.gb";
+  }
 
   system(
 "$gff2gb_exec $gff_file.golden.optimization.gff3 $genome_sequence_file $augustus_flank_region $gff_file.golden.optimization.gb  >/dev/null"
@@ -1124,9 +1130,12 @@ sub process_for_gene_prediction() {
   system(
 "$augustus_train_exec --species=generic $gff_file.golden.optimization.gb 2>&1 | grep 'n sequence' | perl -pe 's/.*n sequence (\\S+):.*/\$1/' | sort -u > $gff_file.golden.optimization.gb.bad.lst 2>/dev/null"
   ) if -s "$gff_file.golden.optimization.gb";
-  system(
-"$augustus_filterGenes_exec $gff_file.golden.optimization.gb.bad.lst $gff_file.golden.optimization.gb > $gff_file.golden.optimization.good.gb 2>/dev/null"
-  ) if -s "$gff_file.golden.optimization.gb.bad.lst";
+
+  if (-s "$gff_file.golden.optimization.gb.bad.lst"){
+     system("$augustus_filterGenes_exec $gff_file.golden.optimization.gb.bad.lst $gff_file.golden.optimization.gb > $gff_file.golden.optimization.good.gb 2>/dev/null");
+  }else{
+     symlink("$gff_file.golden.optimization.gb","$gff_file.golden.optimization.good.gb");
+  }
  }
 
  #parse GB
@@ -1186,13 +1195,13 @@ sub process_for_gene_prediction() {
      if $test_ref;
    &gb2geneid( $opt_ref, "$geneid_gff_file.golden.optimization.good.gb.geneid" )
      if $opt_ref;
-   &order_fasta( "$geneid_gff_file.golden.optimization.good.gb.fasta",
+   &order_fasta( "$gff_file.golden.optimization.good.gb.fasta",
                  "$geneid_gff_file.golden.optimization.good.gb.geneid" )
      if -s "$geneid_gff_file.golden.optimization.good.gb.geneid";
-   &order_fasta( "$geneid_gff_file.golden.train.good.gb.fasta",
+   &order_fasta( "$gff_file.golden.train.good.gb.fasta",
                  "$geneid_gff_file.golden.train.good.gb.geneid" )
      if -s "$geneid_gff_file.golden.train.good.gb.geneid";
-   &order_fasta( "$geneid_gff_file.golden.test.good.gb.fasta",
+   &order_fasta( "$gff_file.golden.test.good.gb.fasta",
                  "$geneid_gff_file.golden.test.good.gb.geneid" )
      if -s "$geneid_gff_file.golden.test.good.gb.geneid";
   }
@@ -2207,8 +2216,8 @@ sub gff3_fix_phase() {
     # get sequences
     # CDS
     my $seq = $isoform->get_CDS_sequence();
-    $seq =~ s/(\S{60})/$1\n/g;
-    chomp $seq;
+    $seq =~ s/(\S{60})/$1\n/g if $seq;
+    chomp $seq if $seq;
     if ( $seq && length($seq) >= $minorf ) {
      print CDS ">$isoform_id $gene_id\n$seq\n";
     }
