@@ -111,8 +111,7 @@ pod2usage "For MPI engine I need a host definition with -hosts\n"
 my ( $getorf_exec, $repeatmasker_exec ) =
   &check_program( 'getorf', 'RepeatMasker' );
 
-&process_cmd("$repeatmasker_exec -pa $cpus -qq $genome")
-  unless -s $genome . '.masked';
+&process_cmd("$repeatmasker_exec  -frag 5000000 -maxsize 400000000 -gff -pa $cpus -qq $genome") unless -s $genome . '.masked';
 $genome .= '.masked';
 
 die "Could not find masked genome $genome.\n" unless -s $genome;

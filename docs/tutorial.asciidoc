@@ -138,8 +138,10 @@ $JAMG_PATH/bin/prepare_domain_exon_annotation.pl -verbose -genome $GENOME_PATH \
  -scratch /dev/shm/$USER
 ls ./*hints # should be two files
 # RepeatMasker is going to be run above. Once finished, run this as later we will need a "soft-masked" genome:
+cd ../ # go back to original directory
+ln exon_search/*masked exon_search/*.out.gff . #symlink the .masked genome and RepeatMasker output to the main directory
 $JAMG_PATH/3rd_party/bin/maskFastaFromBed -soft -fi $GENOME_PATH -fo $GENOME_PATH.softmasked \
- -bed $GENOME_PATH.out.gff # this last file is the output from RepeatMasker
+ -bed *.out.gff # this last file is the output from RepeatMasker
 
 Purely FYI: in my local cluster environment using MPI with 44 CPUs and the databases copied to /dev/shm (first command above), this step took 36h (36h and 17 minutes to be exact). The network speed used for MPI was a bottleneck (we just have 10gb Ethernet not infiniband).
 
