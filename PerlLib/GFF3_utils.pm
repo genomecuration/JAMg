@@ -129,7 +129,7 @@ sub index_GFF3_gene_objs {
         # print "$asmbl_id, $gene_id, $transcript_id, $feat_type, $end5, $end3\n";
         
         if ($cds_phase =~ /^\d+$/) {
-            $cds_phases{$gene_id}->{$transcript_id}->{$end5} = $cds_phase;
+            $cds_phases{$gene_id}->{$transcript_id}->{$end5} = int($cds_phase);
         }
         
     }
@@ -211,9 +211,9 @@ sub index_GFF3_gene_objs {
                     foreach my $exon (@exons) {
                         if (my $cds = $exon->get_CDS_obj()) {
                             my ($end5, $end3) = $cds->get_coords();
-                            my $phase = $cds_phases_href->{$end5};
-                            unless ($phase =~ /\d+/) {
-                                confess "Error, should have phase set for cds $gene_id $transcript_id $end5, but I do not. ";
+                            my $phase = int($cds_phases_href->{$end5});
+                            unless ($phase == 0 || $phase == 1 || $phase == 2) {
+                                confess "Error, should have phase set for cds $gene_id $transcript_id $end5, but I do not know what $phase is. ";
                             }
                             $cds->set_phase($phase);
                         }

@@ -20,7 +20,7 @@ Mandatory parameters:
 Important optional parameters:
 
  --metapars               File with the names and their ranges of the meta parameters that are subject to optimization (default: generic_metapars.cfg)
- --cpus                   The number of CPUs to use (default: 1)
+ --cpus                   The number of CPUs to use (default and minimum: 2)
 
 Useful optional parameters:
 
@@ -41,7 +41,7 @@ Other optional parameters:
 Others (expert):
 
  --genemodel              Augustus genemodel parameter
- --trans_matrix       Optimize the transition matrix file s. s must be the transition file used. e.g. ../species/nt/generic/generic_trans_shadow_partial.pbl
+ --trans_matrix           Optimize the transition matrix file s. s must be the transition file used. e.g. ../species/nt/generic/generic_trans_shadow_partial.pbl
  --matrix_constraints     A file with try list, normed list and bindings
 
 =head1 AUTHORS
@@ -66,6 +66,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Pod::Usage;
+use File::Copy;
 use Getopt::Long;
 use Time::localtime;
 use IO::File;
@@ -88,7 +89,7 @@ my (
 $rounds      = 5;
 $kfold       = 8;
 $pstep       = 5;
-$cpus        = 1;
+$cpus        = 2;
 $exec_dir    = $ENV{'AUGUSTUS_PATH'} . '/bin' if $ENV{'AUGUSTUS_PATH'};
 $config_path = $ENV{'AUGUSTUS_PATH'} . '/config' if $ENV{'AUGUSTUS_PATH'};
 $config_path = $ENV{'AUGUSTUS_CONFIG_PATH'} if $ENV{'AUGUSTUS_CONFIG_PATH'};
@@ -121,8 +122,7 @@ my ( $common_parameters, $modelrestrict ) = ( '', '' );
 #globals
 $SIG{INT} = \&got_interrupt_signal;
 my %storedsnsp;    # hash with the stored sn and sp array references
-my $be_silent =
-" --/augustus/verbosity=0 --/ExonModel/verbosity=0 --/IGenicModel/verbosity=0 --/IntronModel/verbosity=0 --/UtrModel/verbosity=0 --/genbank/verbosity=0 ";
+my $be_silent = " --/augustus/verbosity=0 --/ExonModel/verbosity=0 --/IGenicModel/verbosity=0 --/IntronModel/verbosity=0 --/UtrModel/verbosity=0 --/genbank/verbosity=0 ";
 &check_options();
 my ( $augustus_exec, $etrain_exec ) = &check_program( 'augustus', 'etraining' );
 
@@ -162,6 +162,10 @@ my $species_cfg_filename = $speciesdir . $species . "_parameters.cfg";
 &prepare_matrix()     if $trans_matrix;
 
 print "Started: " . &mytime . "\n";
+if ( !$notrain ){
+ print "Running initial training set\n";
+ &do_a_training();
+}
 
 #######################################################################################
 # initialize and first test
@@ -188,7 +192,10 @@ foreach (@todelete) { unlink($_) }
 @todelete = glob("$output_directory/predictions-*");
 foreach (@todelete) { unlink($_) }
 
-&do_a_training() if ( !$notrain );
+if ( !$notrain ){
+ print "Running final training set with optimized parameters\n";
+ &do_a_training();
+}
 &process_cmd("rm -rf $output_directory");
 print "Done!\n";
 
@@ -318,7 +325,7 @@ sub start_prediction() {
 
  if ( !$notrain ) {
   &process_cmd(
-"$etrain_exec --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $argument $common_parameters $be_silent $modelrestrict $pbloutfiles $output_directory/curtrain-$k  >/dev/null 2>/dev/null"
+"$etrain_exec --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $argument $common_parameters $be_silent $modelrestrict $pbloutfiles $output_directory/curtrain-$k  >/dev/null "
   );
  }
  else {
@@ -327,7 +334,7 @@ sub start_prediction() {
  }
 
  &process_cmd(
-"$augustus_exec --genemodel=complete --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $argument $common_parameters $pblinfiles $output_directory/bucket$k.gb > $output_directory/predictions-$k.txt 2>/dev/null"
+"$augustus_exec --genemodel=complete --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $argument $common_parameters $pblinfiles $output_directory/bucket$k.gb > $output_directory/predictions-$k.txt "
  );
  print "$k ";
 
@@ -1019,19 +1026,33 @@ sub check_options() {
  pod2usage("Optimization training file missing\n")
    unless ( $optimize_gb && -s $optimize_gb );
  pod2usage("No species specified\n") if ( !$species );
+ $species=~s/\s+/_/g;
  pod2usage("--kfold must be at least two fold cross validation")
    if ( $kfold < 1 );
- $cpus = 1 if !$cpus || $cpus < 1;
+ $cpus = 2 if !$cpus || $cpus < 2;
+
+ $exec_dir = "$RealBin/../3rd_party/augustus/bin/" if !$exec_dir;
+ $exec_dir.='/' if $exec_dir!~/\/$/;
  $ENV{'PATH'} .= ':' . $exec_dir if $exec_dir && -d $exec_dir;
- die(
-"Augustus config directory not in environment (\$AUGUSTUS_CONFIG_PATH) and not specified.\n"
- ) unless $config_path && -d $config_path;
+ die("Augustus exec directory not in environment (\$AUGUSTUS_PATH) and not specified.\n") unless $exec_dir && -d $exec_dir;
+ $config_path = "$RealBin/../3rd_party/augustus/config/" if !$config_path;
  $config_path .= '/' unless $config_path =~ /\/$/;
+ die("Augustus config directory not in environment (\$AUGUSTUS_CONFIG_PATH) and not specified.\n") unless $config_path && -d $config_path;
+
+ unless (-d $config_path.'species/'.$species){
+        mkdir ($config_path.'species/'.$species);
+        die "Cannot create $config_path/species/$species\n" unless -d $config_path.'species/'.$species;
+	&copy_search_replace_file($config_path.'species/generic/generic_parameters.cfg',$config_path.'species/'.$species.'/'.$species.'_parameters.cfg','generic_',$species.'_');
+        copy($config_path.'species/generic/generic_weightmatrix.txt',$config_path.'species/'.$species.'/'.$species.'_weightmatrix.txt');
+        copy($config_path.'species/generic/generic_exon_probs.pbl',$config_path.'species/'.$species.'/'.$species.'_exon_probs.pbl');
+        copy($config_path.'species/generic/generic_igenic_probs.pbl',$config_path.'species/'.$species.'/'.$species.'_igenic_probs.pbl');
+        copy($config_path.'species/generic/generic_intron_probs.pbl',$config_path.'species/'.$species.'/'.$species.'_intron_probs.pbl');
+	copy($metapars,$config_path.'species/'.$species.'/');
+ }
  $notrain = 1 if ($trans_matrix);
 
  if ($onlyutr) {
-  $modelrestrict =
-"--/EHMMTraining/statecount=2 --/EHMMTraining/state00=intronmodel --/EHMMTraining/state01=utrmodel --/IntronModel/outfile=/dev/null";
+  $modelrestrict ="--/EHMMTraining/statecount=2 --/EHMMTraining/state00=intronmodel --/EHMMTraining/state01=utrmodel --/IntronModel/outfile=/dev/null";
   $utr = 1;
  }
 
@@ -1435,27 +1456,21 @@ sub optimize_meta() {
 #       last;
 #   }
  }
-
- sub do_a_training() {
-  unlink("$output_directory/curtest");
-  unlink("$output_directory/curtrain");
-  print "Making final training with the optimized parameters.\n";
-  if ($onlytrain_gb) {
-   system("cp $optimize_gb $output_directory/curtrain");
-   system("cat $onlytrain_gb >> $output_directory/curtrain");
-   &process_cmd(
-"$etrain_exec --species=$species --AUGUSTUS_CONFIG_PATH=$config_path --/genbank/verbosity=0 $output_directory/curtrain $common_parameters $modelrestrict >/dev/null 2>/dev/null"
-   );
-   unlink("$output_directory/curtrain");
-  }
-  else {
-   &process_cmd(
-"$etrain_exec --species=$species --AUGUSTUS_CONFIG_PATH=$config_path --/genbank/verbosity=0 $optimize_gb $common_parameters $modelrestrict  >/dev/null 2>/dev/null"
-   );
-  }
- }
 }
 
+sub do_a_training() {
+  unlink("$output_directory/curtest");
+  unlink("$output_directory/curtrain");
+  if ($onlytrain_gb) {
+   copy($optimize_gb,"$output_directory/curtrain");
+   system("cat $onlytrain_gb >> $output_directory/curtrain");
+   &process_cmd("$etrain_exec --species=$species --AUGUSTUS_CONFIG_PATH=$config_path --/genbank/verbosity=0 $output_directory/curtrain $common_parameters $modelrestrict >/dev/null ");
+   unlink("$output_directory/curtrain");
+  }else {
+   &process_cmd("$etrain_exec --species=$species --AUGUSTUS_CONFIG_PATH=$config_path --/genbank/verbosity=0 $optimize_gb $common_parameters $modelrestrict  >/dev/null ");
+  }
+}
+ 
 sub optimize_trans_matrix() {
  #######################################################################################
  # optimization loop for transition probabilities
@@ -1561,3 +1576,23 @@ sub optimize_trans_matrix() {
   }
  }
 }
+
+sub copy_search_replace_file(){
+	my ($filein,$fileout,$search,$replace,$noglobal) = @_;
+	return unless $filein && -s $filein && $fileout;
+	open (IN,$filein);
+	open (OUT,">$fileout");
+	while (my $ln=<IN>){
+		if ($search){
+			$replace = '' if !$replace; #delete
+			$ln=~s/$search/$replace/ if $noglobal;
+			$ln=~s/$search/$replace/g if !$noglobal;
+			print OUT $ln;
+		}
+	}
+	close IN;
+	close OUT;
+	
+}
+
+

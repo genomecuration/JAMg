@@ -14,22 +14,22 @@ Optimize extrinsic configuration for Augustus. Based on optimize_augustus by Mar
 
 Mandatory parameters:
 
- --species                prefix of the species name
- --optimize               genbank file for training with bona fide gene structures
- --hints                  hints file to use
- --extrinsic              File with the names and their ranges of the meta parameters that are subject to optimization (default: generic_extrinsic.cfg)
+ --species                  prefix of the species name
+ --optimize                 genbank file for training with bona fide gene structures
+ --hints                    hints file to use
+ --extrinsic or --metapars  File with the names and their ranges of the meta parameters that are subject to optimization (default: configs/extrinsic_meta.cfg)
 
 Optional parameters:
 
- --config_path            Specify the config directory d if not set as environment variable
- --aug_exec_dir           Path to augustus and etraining executable. If not specified it must be in $PATH environment variable
- --cpus                   The number of CPUs to use (default: 1)
- --training_set           an optional genbank file that is used in addition to train.gb but only for etrain not for intermediate evaluation of accuracy. These genes may e.g. be incomplete.
- --utr                    Switch on UTR. Recommended to avoid noncoding exons being wrongly predicted as coding.
- --pstep                  For integer and floating parameters start with p tests equidistributed in the allowed range of values (default: 5)
- --min_coding             Minimum coding length
- --genemodel              Augustus genemodel parameter
- --notrain                The training step (etraining) is omitted. Use this if the HMM is already trained. This program does not optimize the HMM
+ --config_path              Specify the config directory d if not set as environment variable
+ --aug_exec_dir             Path to augustus and etraining executable. If not specified it must be in $PATH environment variable
+ --cpus                     The number of CPUs to use (default: 1)
+ --onlytrain                an optional genbank file that is used in addition to train.gb but only for etrain not for intermediate evaluation of accuracy. These genes may e.g. be incomplete.
+ --utr                      Switch on UTR. Recommended to avoid noncoding exons being wrongly predicted as coding.
+ --pstep                    For integer and floating parameters start with p tests equidistributed in the allowed range of values (default: 5)
+ --min_coding               Minimum coding length
+ --genemodel                Augustus genemodel parameter
+ --notrain                  The training step (etraining) is omitted. Use this if the HMM is already trained. This program does not optimize the HMM
 
 =head1 AUTHORS
 
@@ -51,6 +51,7 @@ You can find the terms and conditions at http://www.mozilla.org/MPL/2.0.
 use strict;
 use warnings;
 use Data::Dumper;
+use File::Copy;
 use Pod::Usage;
 use Getopt::Long;
 use Time::localtime;
@@ -83,9 +84,9 @@ my ($common_parameters) = '';
 &GetOptions(
              'species:s'              => \$species,
              'optimize:s'             => \$optimize_gb,
-             'extrinsic:s'            => \$extrinsic,
+             'metapars|extrinsic:s'   => \$extrinsic,
              'rounds:i'               => \$rounds,
-             'training_set:s'         => \$training_set,
+             'onlytrain|training_set:s'         => \$training_set,
              'pstep:i'                => \$pstep,
              'AUGUSTUS_CONFIG_PATH:s' => \$config_path,
              'cpus|threads:i'         => \$cpus,
@@ -114,9 +115,7 @@ print "Started: " . &mytime . "\n";
 
 # we only need to train once
 system("cat $optimize_gb $training_set > train.set 2>/dev/null");
-&process_cmd(
-"$etrain_exec --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $common_parameters $be_silent train.set  >/dev/null 2>/dev/null "
-) unless $notrain;
+&process_cmd("$etrain_exec --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $common_parameters $be_silent train.set  >/dev/null 2>/dev/null ") unless $notrain;
 unlink("train.set");
 
 my %sources_that_need_to_be_checked;
@@ -365,20 +364,33 @@ sub printmetavalues {
 }
 
 sub check_options() {
- die(
-"Augustus config directory not in environment (\$AUGUSTUS_CONFIG_PATH) and not specified.\n"
- ) unless $config_path && -d $config_path;
+ $exec_dir = "$RealBin/../3rd_party/augustus/bin/" if !$exec_dir;
+ $exec_dir.='/' if $exec_dir!~/\/$/;
+ $ENV{'PATH'} .= ':' . $exec_dir if $exec_dir && -d $exec_dir;
+ die("Augustus exec directory not in environment (\$AUGUSTUS_PATH) and not specified.\n") unless $exec_dir && -d $exec_dir;
+ $config_path = "$RealBin/../3rd_party/augustus/config/" if !$config_path;
  $config_path .= '/' unless $config_path =~ /\/$/;
+ die("Augustus config directory not in environment (\$AUGUSTUS_CONFIG_PATH) and not specified.\n") unless $config_path && -d $config_path;
 
  $optimize_gb = shift if !$optimize_gb;
  pod2usage("Optimizing file missing\n") if ( !$optimize_gb );
-
+ $extrinsic = "$RealBin/../configs/extrinsic_meta.cfg" unless $extrinsic;
  pod2usage "No --extrinsic file with metaparameters provided\n"
    unless $extrinsic && -s $extrinsic;
  pod2usage("Hint file is required!\n") if ( !$hint_file || !-s $hint_file );
  pod2usage("no species specified\n") if ( !$species );
+ $species=~s/\s+/_/g;
+ unless (-d $config_path.'species/'.$species){
+        mkdir ($config_path.'species/'.$species);
+        die "Cannot create $config_path/species/$species\n" unless -d $config_path.'species/'.$species;
+        &copy_search_replace_file($config_path.'species/generic/generic_parameters.cfg',$config_path.'species/'.$species.'/'.$species.'_parameters.cfg','generic_',$species.'_');
+        copy($config_path.'species/generic/generic_weightmatrix.txt',$config_path.'species/'.$species.'/'.$species.'_weightmatrix.txt');
+        copy($config_path.'species/generic/generic_exon_probs.pbl',$config_path.'species/'.$species.'/'.$species.'_exon_probs.pbl');
+        copy($config_path.'species/generic/generic_igenic_probs.pbl',$config_path.'species/'.$species.'/'.$species.'_igenic_probs.pbl');
+        copy($config_path.'species/generic/generic_intron_probs.pbl',$config_path.'species/'.$species.'/'.$species.'_intron_probs.pbl');
+	copy($extrinsic,$config_path.'species/'.$species.'/'.$species.'_extrinsic_metapars.cfg');
+ }
  $common_parameters .= " --species=$species ";
- $ENV{'PATH'} .= ':' . $exec_dir if $exec_dir && -d $exec_dir;
  $common_parameters .= " --UTR=on"                         if ($utr);
  $common_parameters .= " --translation_table=$trans_table" if ($trans_table);
  $common_parameters .= " --genemodel=$genemodel"           if ($genemodel);
@@ -568,3 +580,23 @@ sub check_program() {
  }
  return @paths;
 }
+
+sub copy_search_replace_file(){
+	my ($filein,$fileout,$search,$replace,$noglobal) = @_;
+	return unless $filein && -s $filein && $fileout;
+	open (IN,$filein);
+	open (OUT,">$fileout");
+	while (my $ln=<IN>){
+		if ($search){
+			$replace = '' if !$replace; #delete
+			$ln=~s/$search/$replace/ if $noglobal;
+			$ln=~s/$search/$replace/g if !$noglobal;
+			print OUT $ln;
+		}
+	}
+	close IN;
+	close OUT;
+	
+}
+
+

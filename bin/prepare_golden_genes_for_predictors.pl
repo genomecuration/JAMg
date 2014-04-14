@@ -2887,11 +2887,11 @@ sub run_aat() {
 
  # check if it already has been processed
  return
-   if ( -s $aat_command_file
+   if (-s $aat_command_file
         && ( -s $aat_command_file == -s $aat_command_file . '.completed' ) );
 
- if ( -s $aat_command_file && !-s $aat_command_file . '.completed'
-      || ( -s $aat_command_file != -s $aat_command_file . '.completed' ) )
+ if (-s $aat_command_file && !-s $aat_command_file . '.completed'
+      || ( -s $aat_command_file && -s $aat_command_file != -s $aat_command_file . '.completed' ) )
  {
   print "Re-processing with AAT\n";
   &process_cmd(

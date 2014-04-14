@@ -208,9 +208,9 @@ TIP: Generally, the prepare_golden_genes_for_predictors.pl can also be used for 
 *** [[pasa-statistics]] Let's explore the output and find some statistics:
 +
 [source,bash]
-$JAMG_HOME/3rd_party/PASA/misc_utilities/index_gff3_files.pl ./*.corrected.gff3.golden.gff3 >/dev/null
-$JAMG_HOME/3rd_party/PASA/misc_utilities/exon_and_intron_stats.pl ./*.corrected.gff3.golden.gff3.inx
-$JAMG_HOME/3rd_party/PASA/misc_utilities/gff3_to_feature_types.pl ./*.corrected.gff3.golden.gff3 2> /dev/null
+$JAMG_PATH/3rd_party/PASA/misc_utilities/index_gff3_files.pl final_golden_genes.gff3.nr.golden.gff3 >/dev/null
+$JAMG_PATH/3rd_party/PASA/misc_utilities/exon_and_intron_stats.pl final_golden_genes.gff3.nr.golden.gff3.inx
+$JAMG_PATH/3rd_party/PASA/misc_utilities/gff3_to_feature_types.pl final_golden_genes.gff3.nr.golden.gff3 2> /dev/null
 +
 You can then use R to get for example the (median) size of introns, exons etc.
 +
