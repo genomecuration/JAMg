@@ -61,7 +61,7 @@ http://korflab.ucdavis.edu/software.html
 glimmerhmm
 ==========
 Copyright (c) 2005  by  Mihaela Pertea. Artistic License
-http://ccb.jhu.edu/software/glimmerhmm/‎
+http://ccb.jhu.edu/software/glimmerhmm/
 
 augustus
 ========
@@ -121,7 +121,7 @@ hhsuite/hhblits
 Distributed under GPL's aggregation terms
 ftp://toolkit.genzentrum.lmu.de/pub/HHblits/
 
-parafly, transdecoder and aatpackage, preprocess_reads, PASA, evidencemodeler
+parafly, transdecoder and aatpackage, justpreprocessmyreads, PASA, evidencemodeler
 ==============================================================================
 See open licenses. We're also the (co-)authors of these software:
 See 3rd_party/PASA/LICENSE
@@ -129,13 +129,13 @@ See 3rd_party/parafly/LICENSE
 See 3rd_party/aatpackage/LICENSE
 See 3rd_party/transdecoder/LICENSE
 See 3rd_party/evidencemodeler/LICENSE
-See 3rd_party/preprocess_reads/LICENSE
+See 3rd_party/justpreprocessmyreads/LICENSE
 http://sourceforge.net/projects/pasa
 http://sourceforge.net/projects/parafly
 http://sourceforge.net/projects/aatpackage
 http://sourceforge.net/projects/transdecoder
 http://sourceforge.net/projects/evidencemodeler
-http://sourceforge.net/projects/preprocess_reads
+http://justpreprocessmyreads.sourceforge.net/
 
 eval
 ====
@@ -143,7 +143,7 @@ Written, copywrite and maintained by Robert Paul Zimmermann <rpz@cse.wustl.edu>
 Distributed under the agglomeration terms of GPL (see eval-2.2.8/debian/copyright)
 
 The PHP/Java Bridge PHP library (WebApollo/ws/Java)
-===============================
+===================================================
 Compiled from JavaBridge.inc.
 Copyright (C) 2003-2009 Jost Boekemeier.
 Distributed under the MIT license, see Options.inc for details.

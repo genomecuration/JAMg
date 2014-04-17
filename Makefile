@@ -7,7 +7,7 @@ all:
 	cd 3rd_party/cdbtools/cdbfasta && $(MAKE) && cp cdbfasta ../../bin/ && cp cdbyank ../../bin/ && $(MAKE) clean
 	cd 3rd_party/parafly && ./configure --prefix=`pwd`/../ && if [ ! -d bin ]; then mkdir bin; fi && $(MAKE) install
 	cd 3rd_party/aatpackage && ./configure --prefix=`pwd`/../ && $(MAKE) install && cp -r bin/* matrices ../bin/ && $(MAKE) clean
-	cd 3rd_party/preprocess_reads && $(MAKE) 3rd_party
+	cd 3rd_party/justpreprocessmyreads && $(MAKE) 3rd_party
 	cd 3rd_party/PASA && if [ ! -d bin ]; then mkdir bin; fi && $(MAKE) && cd seqclean && find . -name "*.tar.gz" -exec tar xzf '{}' \; && cd mdust && $(MAKE) && cd ../psx && $(MAKE) && cd ../trimpoly && $(MAKE) && cd .. && find . -type f -executable -exec cp -u '{}' ../../bin/ \;
 	cd 3rd_party/transdecoder && $(MAKE) nopfam
 	cd 3rd_party/trinityrnaseq && $(MAKE)
