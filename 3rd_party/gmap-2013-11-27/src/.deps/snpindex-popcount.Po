@@ -1,1 +1,0 @@
-snpindex-popcount.o: popcount.c

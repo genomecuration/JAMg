@@ -1,1 +1,0 @@
-gmapl-popcount.o: popcount.c
