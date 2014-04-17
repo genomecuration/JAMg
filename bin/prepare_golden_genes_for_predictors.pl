@@ -146,7 +146,7 @@ my (
      $pasa_assembly_file, $pasa_peptides,         $mrna_file,
      $softmasked_genome,  $stop_after_correction, $norefine,
      $nodataprint,        $no_gmap,               $no_exonerate,
-     $pasa_genome_gff,    $extra_gff_file, $show_help
+     $pasa_genome_gff,    $extra_gff_file,        $show_help
 );
 
 my $no_rerun_exonerate;
@@ -244,8 +244,10 @@ my $uppercase_genome_files = &splitfasta( $genome_file, $genome_dir, 1 );
 # also, in addition to exonerate, gmap might be of use. it will need post-processing
 # but it might be better than exonerate (it is certainly MUCH faster).
 
-my ( $gmap_gff, $gmap_passed, $exonerate_gff, $exonerate_passed,
-     %passed_check, @to_evaluate );
+my (
+     $gmap_gff,         $gmap_passed,  $exonerate_gff,
+     $exonerate_passed, %passed_check, @to_evaluate
+);
 unless ($no_gmap) {
  if ( $mrna_file && -s $mrna_file ) {
   ( $gmap_gff, $gmap_passed ) = &run_gmap($mrna_file);
@@ -264,7 +266,7 @@ open( OUT2, ">$final_gff.passed" );
 # pasa/exonerate takes precedence to gmap
 if ( $exonerate_gff && -s $exonerate_gff ) {
  open( IN, $exonerate_gff ) || die( "Cannot open $exonerate_gff " . $! );
- push(@to_evaluate,$exonerate_gff);
+ push( @to_evaluate, $exonerate_gff );
  while ( my $ln = <IN> ) { print OUT1 $ln; }
  close IN;
  open( IN, $exonerate_passed ) || die( "Cannot open $exonerate_passed " . $! );
@@ -280,7 +282,7 @@ if ( $exonerate_gff && -s $exonerate_gff ) {
 
 if ( $gmap_gff && -s $gmap_gff ) {
  open( IN, $gmap_gff ) || die( "Cannot open $gmap_gff " . $! );
- push(@to_evaluate,$gmap_gff);
+ push( @to_evaluate, $gmap_gff );
  while ( my $ln = <IN> ) {
   print OUT1 $ln;
  }
@@ -302,8 +304,9 @@ if ( $extra_gff_file && -s $extra_gff_file ) {
  &remove_overlapping_gff( $extra_gff_file . '.n', $extra_gff_file . '.nr' );
  $extra_gff_file .= '.nr';
  &create_golden_gffs_from_gff($extra_gff_file);
- push(@to_evaluate,$extra_gff_file.'.golden');
- open( IN, $extra_gff_file.'.golden' ) || die( "Cannot open $extra_gff_file.golden " . $! );
+ push( @to_evaluate, $extra_gff_file . '.golden' );
+ open( IN, $extra_gff_file . '.golden' )
+   || die( "Cannot open $extra_gff_file.golden " . $! );
  while ( my $ln = <IN> ) { print OUT1 $ln; }
  open( IN, $extra_gff_file . 'passed' )
    || die( "Cannot open $extra_gff_file.passed " . $! );
@@ -1066,7 +1069,8 @@ sub process_for_gene_prediction() {
 
  print "'Golden': $number_of_passing_genes. Filtering GFFs...\n";
  &filter_gff( $gff_file, \%accepted, "$gff_file.golden.gff3" );
- push(@to_evaluate,"$gff_file.golden.gff3");
+ push( @to_evaluate, "$gff_file.golden.gff3" );
+
 #    . "Training set: $training_set_size. Test: "
 #    . ( $number_of_passing_genes - $training_set_size ) . ".\n"
 #    . "Augustus optimization set: "
@@ -1085,7 +1089,7 @@ sub process_for_gene_prediction() {
 
  # hints for training
  &gff2hints( "$gff_file.golden.gff3", 1 ) if -s "$gff_file.golden.gff3";
- &gff2hints("$gff_file") if -s "$gff_file";
+ &gff2hints("$gff_file")                  if -s "$gff_file";
  &gff2hints("$gff_file.golden.gff3.rest") if -s "$gff_file.golden.gff3.rest";
 
  &filter_gff( "$gff_file.golden.gff3", \%training_genes,
@@ -1107,10 +1111,14 @@ sub process_for_gene_prediction() {
 "$augustus_train_exec --species=generic $gff_file.golden.train.gb 2>&1 | grep 'n sequence' | perl -pe 's/.*n sequence (\\S+):.*/\$1/' | sort -u > $gff_file.golden.train.gb.bad.lst 2>/dev/null"
   ) if -s "$gff_file.golden.train.gb";
 
-  if (-s "$gff_file.golden.train.gb.bad.lst"){
-    system("$augustus_filterGenes_exec $gff_file.golden.train.gb.bad.lst $gff_file.golden.train.gb > $gff_file.golden.train.good.gb 2>/dev/null");
-  }else{
-    symlink("$gff_file.golden.train.gb",$gff_file.golden.train.good.gb") if -s "$gff_file.golden.train.gb";
+  if ( -s "$gff_file.golden.train.gb.bad.lst" ) {
+   system(
+"$augustus_filterGenes_exec $gff_file.golden.train.gb.bad.lst $gff_file.golden.train.gb > $gff_file.golden.train.good.gb 2>/dev/null"
+   );
+  }
+  else {
+   symlink( "$gff_file.golden.train.gb", "$gff_file.golden.train.good.gb" )
+     if -s "$gff_file.golden.train.gb";
   }
 
   system(
@@ -1120,10 +1128,14 @@ sub process_for_gene_prediction() {
 "$augustus_train_exec --species=generic $gff_file.golden.test.gb 2>&1 | grep 'n sequence' | perl -pe 's/.*n sequence (\\S+):.*/\$1/' | sort -u > $gff_file.golden.test.gb.bad.lst 2>/dev/null"
   ) if -s "$gff_file.golden.test.gb";
 
-  if (-s "$gff_file.golden.test.gb.bad.lst"){
-    system("$augustus_filterGenes_exec $gff_file.golden.test.gb.bad.lst $gff_file.golden.test.gb > $gff_file.golden.test.good.gb 2>/dev/null");
-  }else{
-    symlink("$gff_file.golden.test.gb","$gff_file.golden.test.good.gb") if -s "$gff_file.golden.test.gb";
+  if ( -s "$gff_file.golden.test.gb.bad.lst" ) {
+   system(
+"$augustus_filterGenes_exec $gff_file.golden.test.gb.bad.lst $gff_file.golden.test.gb > $gff_file.golden.test.good.gb 2>/dev/null"
+   );
+  }
+  else {
+   symlink( "$gff_file.golden.test.gb", "$gff_file.golden.test.good.gb" )
+     if -s "$gff_file.golden.test.gb";
   }
 
   system(
@@ -1133,10 +1145,14 @@ sub process_for_gene_prediction() {
 "$augustus_train_exec --species=generic $gff_file.golden.optimization.gb 2>&1 | grep 'n sequence' | perl -pe 's/.*n sequence (\\S+):.*/\$1/' | sort -u > $gff_file.golden.optimization.gb.bad.lst 2>/dev/null"
   ) if -s "$gff_file.golden.optimization.gb";
 
-  if (-s "$gff_file.golden.optimization.gb.bad.lst"){
-     system("$augustus_filterGenes_exec $gff_file.golden.optimization.gb.bad.lst $gff_file.golden.optimization.gb > $gff_file.golden.optimization.good.gb 2>/dev/null");
-  }else{
-     symlink("$gff_file.golden.optimization.gb","$gff_file.golden.optimization.good.gb");
+  if ( -s "$gff_file.golden.optimization.gb.bad.lst" ) {
+   system(
+"$augustus_filterGenes_exec $gff_file.golden.optimization.gb.bad.lst $gff_file.golden.optimization.gb > $gff_file.golden.optimization.good.gb 2>/dev/null"
+   );
+  }
+  else {
+   symlink( "$gff_file.golden.optimization.gb",
+            "$gff_file.golden.optimization.good.gb" );
   }
  }
 
@@ -1225,7 +1241,7 @@ sub process_for_gene_prediction() {
  #can be consulted in: - false.acc  false.don  false.atg
 
  print "\tevaluation\n";
- foreach my $file (@to_evaluate){
+ foreach my $file (@to_evaluate) {
   &gff_to_gtf($file);
  }
 }
@@ -2179,7 +2195,7 @@ sub gff3_fix_phase() {
  open( CDS,  ">$gff3_file.cds" );
  open( GENE, ">$gff3_file.gene" );
 
- foreach my $asmbl_id (sort keys %$asmbl_id_to_gene_list_href ) {
+ foreach my $asmbl_id ( sort keys %$asmbl_id_to_gene_list_href ) {
   my $genome_seq = $scaffold_seq_hashref->{$asmbl_id};
   if ( !$genome_seq ) {
    warn "Cannot find sequence $asmbl_id from genome\n";
@@ -2883,11 +2899,14 @@ sub run_aat() {
 
  # check if it already has been processed
  return
-   if (-s $aat_command_file
+   if ( -s $aat_command_file
         && ( -s $aat_command_file == -s $aat_command_file . '.completed' ) );
 
- if (-s $aat_command_file && !-s $aat_command_file . '.completed'
-      || ( -s $aat_command_file && -s $aat_command_file != -s $aat_command_file . '.completed' ) )
+ if (
+      -s $aat_command_file && !-s $aat_command_file . '.completed'
+      || (    -s $aat_command_file
+           && -s $aat_command_file != -s $aat_command_file . '.completed' )
+   )
  {
   print "Re-processing with AAT\n";
   &process_cmd(
@@ -3260,35 +3279,50 @@ sub read_fasta() {
 sub check_for_options() {
  pod2usage if $show_help;
  pod2usage "No genome found\n" unless ( $genome_file && -s $genome_file );
- pod2usage "Provide at least one set of the input files\n" unless ($exonerate_file || ($pasa_gff && $pasa_assembly_file && $pasa_peptides && $pasa_cds && $pasa_genome_gff) || $peptide_file || $mrna_file);
- 
+ pod2usage "Provide at least one set of the input files\n"
    unless (
-            ( $exonerate_file && -s $exonerate_file )
+            $exonerate_file
             || (    $pasa_gff
-                 && -s $pasa_gff
                  && $pasa_assembly_file
-                 && -s $pasa_assembly_file
                  && $pasa_peptides
-                 && -s $pasa_peptides
                  && $pasa_cds
-                 && -s $pasa_cds
-                 && $pasa_genome_gff
-                 && -s $pasa_genome_gff )
-            || ( $peptide_file && -s $peptide_file )
-            || ( $mrna_file    && -s $mrna_file )
-   ){
-    warn "A required input file is missing\n";
-    warn "\t$exonerate_file not found\n" if ($exonerate_file && !-s $exonerate_file);
-    warn "\t$pasa_gff not found\n" if ($pasa_gff && !-s $pasa_gff);
-    warn "\t$pasa_assembly_file not found\n" if ($pasa_assembly_file && !-s $pasa_assembly_file);
-    warn "\t$pasa_peptides not found\n" if ($pasa_peptides && !-s $pasa_peptides);
-    warn "\t$pasa_cds not found\n" if ($pasa_cds && !-s $pasa_cds);
-    warn "\t$pasa_genome_gff not found\n" if ($pasa_gff && !-s $pasa_genome_gff);
-    warn "\t$peptide_file not found\n" if ($peptide_file && !-s $peptide_file);
-    warn "\t$mrna_file not found\n" if ($mrna_file && !-s $mrna_file);
-    die "\n";
-    
-   }
+                 && $pasa_genome_gff )
+            || $peptide_file
+            || $mrna_file
+   );
+
+ unless (
+          ( $exonerate_file && -s $exonerate_file )
+          || (    $pasa_gff
+               && -s $pasa_gff
+               && $pasa_assembly_file
+               && -s $pasa_assembly_file
+               && $pasa_peptides
+               && -s $pasa_peptides
+               && $pasa_cds
+               && -s $pasa_cds
+               && $pasa_genome_gff
+               && -s $pasa_genome_gff )
+          || ( $peptide_file && -s $peptide_file )
+          || ( $mrna_file    && -s $mrna_file )
+   )
+ {
+  warn "A required input file is missing\n";
+  warn "\t$exonerate_file not found\n"
+    if ( $exonerate_file && !-s $exonerate_file );
+  warn "\t$pasa_gff not found\n" if ( $pasa_gff && !-s $pasa_gff );
+  warn "\t$pasa_assembly_file not found\n"
+    if ( $pasa_assembly_file && !-s $pasa_assembly_file );
+  warn "\t$pasa_peptides not found\n"
+    if ( $pasa_peptides && !-s $pasa_peptides );
+  warn "\t$pasa_cds not found\n" if ( $pasa_cds && !-s $pasa_cds );
+  warn "\t$pasa_genome_gff not found\n"
+    if ( $pasa_gff && !-s $pasa_genome_gff );
+  warn "\t$peptide_file not found\n" if ( $peptide_file && !-s $peptide_file );
+  warn "\t$mrna_file not found\n"    if ( $mrna_file    && !-s $mrna_file );
+  die "\n";
+
+ }
 
  die "Max intron size (-intron) cannot be 0!\n"
    unless $intron_size && $intron_size > 0;
