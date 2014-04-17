@@ -29,11 +29,12 @@
 
 #     We are very grateful for bug reports! Please contact us at soeding@genzentrum.lmu.de
 
-use lib $ENV{"HHLIB"}."/scripts";
+use strict;
+use FindBin qw/$RealBin/;
+use lib $RealBin;
 use HHPaths;   # config file with path variables for nr, blast, psipred, pdb, dssp etc.
 use Align;     # Needleman-Wunsch and Smith-Waterman alignment functions
 use File::Temp qw/ tempfile tempdir /;
-use strict;
 
 my $ss_cit="PSIPRED: Jones DT. (1999) Protein secondary structure prediction based on position-specific scoring matrices. JMB 292:195-202.";
 
