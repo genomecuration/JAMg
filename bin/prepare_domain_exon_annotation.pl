@@ -884,7 +884,7 @@ sub parse_hhr() {
 
 sub do_repeat_masking(){
   print "Masking repeats with $cpus CPUs (cf $genome.repeatmasking.log)..\n";
-  &process_cmd("$repeatmasker_exec -frag 5000000 -gff -pa $cpus -qq $genome 2>&1 > $genome.repeatmasking.log");
+  &process_cmd("$repeatmasker_exec -e ncbi -frag 5000000 -gff -pa $cpus -qq $genome 2>&1 > $genome.repeatmasking.log");
   my $repeat_gff_file = $genome.".out.gff";
   die "Repeatmasking failed to produce $repeat_gff_file\n" unless -s $repeat_gff_file;
   my $repeat_hints_file = $repeat_gff_file;
