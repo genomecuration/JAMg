@@ -1083,9 +1083,11 @@ sub process_for_gene_prediction() {
  #augustus
  print "\tAugustus\n";
 
- #for training
- &gff2hints( "$gff_file.golden.gff3", 1 )
-   if -s "$gff_file.golden.gff3";
+ # hints for training
+ &gff2hints( "$gff_file.golden.gff3", 1 ) if -s "$gff_file.golden.gff3";
+ &gff2hints("$gff_file") if -s "$gff_file";
+ &gff2hints("$gff_file.golden.gff3.rest") if -s "$gff_file.golden.gff3.rest";
+
  &filter_gff( "$gff_file.golden.gff3", \%training_genes,
               "$gff_file.golden.train.gff3" );
  &filter_gff( "$gff_file.golden.train.gff3.rest",
@@ -1145,12 +1147,6 @@ sub process_for_gene_prediction() {
    if -s "$gff_file.golden.test.good.gb";
  my $opt_ref = &parse_gb("$gff_file.golden.optimization.good.gb")
    if -s "$gff_file.golden.optimization.good.gb";
-
- #hints
- &gff2hints("$gff_file")
-   if -s "$gff_file";
- &gff2hints("$gff_file.golden.gff3.rest")
-   if -s "$gff_file.golden.gff3.rest";
 
  #geneid
  print "\tgeneid\n";

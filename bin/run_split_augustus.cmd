@@ -1,42 +1,55 @@
 #!/bin/bash
 
+###########################
+# CHECK THESE
+MAX_CONTIGS=9999 #NB there are more than 9999 scaffold, then change the number
+PREFIX_GENOME="scaffold_"
+###########################
+
 # pass genome and hints files as arguments
-GENOME=$1  # genome fasta
+FASTA_GENOME=$1  # genome fasta
 HINTS=$2   # merged hints file (full path or relative to current dir)
+AUGUSTUS_EXTRINSIC_CFG=$3
+
+
 MODE=complete  # partial or complete
 UTR=on   # on or off
 
 
-if [[ ! $GENOME || ! -s $GENOME ]]; then 
-	echo provide the genome fasta and hints file
+if [[ ! $FASTA_GENOME || ! -s $FASTA_GENOME ]]; then 
+	echo Please provide the genome fasta, hints file and extrinsic cfg file (in that order)
 	exit
 fi
 
 if [[ ! $HINTS || ! -s $HINTS ]]; then 
-	echo provide the genome fasta and hints file
+	echo Please provide the genome fasta, hints file and extrinsic cfg file (in that order)
+	exit
+fi
+
+if [[ ! $AUGUSTUS_EXTRINSIC_CFG || ! -s $AUGUSTUS_EXTRINSIC_CFG ]]; then 
+	echo Please provide the genome fasta, hints file and extrinsic cfg file (in that order)
 	exit
 fi
 
 SOURCE="$(dirname "$(test -L "$0" && readlink "$0" || echo "$0")")"
-export PATH=$SOURCE:$PATH
+export PATH=$SOURCE:$JAMG_PATH:$PATH
 
-if [ ! -d $GENOME.split ]; then
- splitfasta.pl -i $GENOME -depth 1 -dir $GENOME.split
+if [ ! -d $FASTA_GENOME.split ]; then
+ splitfasta.pl -i $FASTA_GENOME -depth 1 -dir $FASTA_GENOME.split
 fi
 
 echo preparing HINTS
-split_augustus.pl $HINTS
+split_augustus_hints.pl $HINTS
 
 echo preparing genome commands
 mkdir results
 rm -f augustus.commands
 
-#NB there are more than 9999 scaffold, then change the number below (but why would you have 9999 scaffolds?!)
-for i in {0..9999};
+for (( i=0; i<=$MAX_CONTIGS; i++ ));
   do
-  if [ -e *_dir1/scaffold_$i ]; then
-    echo "augustus --UTR=$UTR --species=H.armigera --uniqueGeneId=true --genemodel=$MODE  --alternatives-from-evidence=true --maxtracks=10 --extrinsicCfgFile=extrinsic.all.cfg  --hintsfile=hints/scaffold_$i.hints $DIR/scaffold_$i \
-   2> results/scaffold_$i.augustus.log > results/scaffold_$i.augustus.result; grep -v '^#' results/scaffold_$i.augustus.result|grep '\bAUGUSTUS\b' > results/scaffold_$i.result.gtf " >> augustus.commands
+  if [ -e *_dir1/$PREFIX_GENOME$i ]; then
+    echo "augustus --UTR=$UTR --species=H.armigera --uniqueGeneId=true --genemodel=$MODE  --alternatives-from-evidence=true --maxtracks=10 --extrinsicCfgFile=$AUGUSTUS_EXTRINSIC_CFG  --hintsfile=hints/$PREFIX_GENOME$i.hints $DIR/$PREFIX_GENOME$i \
+   2> results/$PREFIX_GENOME$i.augustus.log > results/$PREFIX_GENOME$i.augustus.result; grep -v '^#' results/$PREFIX_GENOME$i.augustus.result|grep '\bAUGUSTUS\b' > results/$PREFIX_GENOME$i.result.gtf " >> augustus.commands
   fi
 done;
 

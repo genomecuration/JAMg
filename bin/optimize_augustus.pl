@@ -6,8 +6,9 @@
 
 #############################################################
 # optimize_augustus.pl based on Mario Stanke's script (23.04.2007) 
-#
 # Mario Stanke, 23.04.2007
+# additions by Alexie Papanicolaou Dec 2013
+# 
 #############################################################
 
 =head1 USAGE 
@@ -51,6 +52,8 @@ Others (expert):
         CSIRO Ecosystem Sciences
         alexie@butterflybase.org
 
+ based on work by Mario Stanke
+
 =head1 DISCLAIMER & LICENSE
 
 Copyright 2012-2014 the Commonwealth Scientific and Industrial Research Organization. 
@@ -59,8 +62,14 @@ This software is released under the Mozilla Public License v.2.
 It is provided "as is" without warranty of any kind.
 You can find the terms and conditions at http://www.mozilla.org/MPL/2.0.
 
+=head1 TODO
+
+ Mario's script was written as if it was in C... if there is ever time simplify/rewrite it 
+ properly in Perl
 
 =cut
+
+
 
 use strict;
 use warnings;
@@ -116,10 +125,11 @@ my ( $common_parameters, $modelrestrict ) = ( '', '' );
              'genemodel:s'            => \$genemodel,
              'min_coding_len:i'       => \$min_coding,
              'output:s'               => \$output_directory,
-             'verbose'                => \$verbose
+             'debug|verbose'          => \$verbose
 );
 
 #globals
+my (%parameters_initial);
 $SIG{INT} = \&got_interrupt_signal;
 my %storedsnsp;    # hash with the stored sn and sp array references
 my $be_silent = " --/augustus/verbosity=0 --/ExonModel/verbosity=0 --/IGenicModel/verbosity=0 --/IntronModel/verbosity=0 --/UtrModel/verbosity=0 --/genbank/verbosity=0 ";
@@ -216,13 +226,15 @@ sub evalsnsp {
  $gbsn = $gbsp = $gesn = $gesp = $ggsn = $ggsp = $gsmd = $gtmd = 0;
  my $argument = '';
  if ( !$trans_matrix ) {
+ my $check = &check_if_parameters_are_appropriate(\@values);
+ return ( int(0), int(0), int(0), int(0), int(0), int(0), int(0),int(0) ) if $check;
 
   # make the parameters string for the command line
   for ( my $i = 0 ; $i <= $#metaparnames ; $i++ ) {
    $argument = $argument . " --" . $metaparnames[$i] . "=" . $values[$i];
   }
 
-  #print "argument:$argument\n";
+#  print "Training with: $argument\n" if $verbose;
   # check if accuracy has already been computed for this parameter combination
   if ( exists( $storedsnsp{$argument} ) ) {
    return @{ $storedsnsp{$argument} };
@@ -274,7 +286,7 @@ sub evalsnsp {
        || !$cgsp )
   {
    warn(
-"Could not read the accuracy values out of predictions.txt when processing bucket $k."
+"Could not read the accuracy values out of predictions.txt when processing bucket $k. That's ok, I'll just skip it.\n"
    );
    $cbsn = int(0);
    $cbsp = int(0);
@@ -316,17 +328,14 @@ sub evalsnsp {
 sub start_prediction() {
  my $k        = shift;
  my $argument = shift;
- my $pbloutfiles =
-"--/ExonModel/outfile=exon-tmp$k.pbl --/IntronModel/outfile=intron-tmp$k.pbl --/IGenicModel/outfile=igenic-tmp$k.pbl --/UtrModel/outfile=utr-tmp$k.pbl";
+ my $pbloutfiles ="--/ExonModel/outfile=exon-tmp$k.pbl --/IntronModel/outfile=intron-tmp$k.pbl --/IGenicModel/outfile=igenic-tmp$k.pbl --/UtrModel/outfile=utr-tmp$k.pbl";
  my $pblinfiles =
    $onlyutr
    ? ''
    : "--/ExonModel/infile=exon-tmp$k.pbl --/IntronModel/infile=intron-tmp$k.pbl --/IGenicModel/infile=igenic-tmp$k.pbl --/UtrModel/infile=utr-tmp$k.pbl";
 
  if ( !$notrain ) {
-  &process_cmd(
-"$etrain_exec --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $argument $common_parameters $be_silent $modelrestrict $pbloutfiles $output_directory/curtrain-$k  >/dev/null "
-  );
+  &process_cmd("$etrain_exec --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $argument $common_parameters $be_silent $modelrestrict $pbloutfiles $output_directory/curtrain-$k  >/dev/null "  );
  }
  else {
   $pblinfiles = '';
@@ -1259,16 +1268,15 @@ sub prepare_parameters() {
   system("cp $species_cfg_filename $species_cfg_filename.orig$y");
  }
  else {
-  die("Too many $species_cfg_filename.orig copies. Please delete some.");
+  die("Too many $species_cfg_filename.orig copies. Please delete some.\n");
  }
 
  if ( -e "$species_cfg_filename" ) {
   open( SPCCFG, "<$species_cfg_filename" )
-    or die("Could not open $species_cfg_filename");
+    or die("Could not open species config $species_cfg_filename\n");
  }
  else { die "File $species_cfg_filename does not seem to exist!\n"; }
- print
-   "Reading in the starting meta parameters from $species_cfg_filename...\n";
+ print "Reading in the starting meta parameters from $species_cfg_filename...\n";
  my $orig_sep = $/;
  $/            = "\n";
  @spcfilelines = <SPCCFG>;
@@ -1278,9 +1286,11 @@ sub prepare_parameters() {
   if ( /^\s*\#.*/ || /^\s*$/ ) {    # skip comment lines
    next;
   }
+  # ughh ugly c syntax
   if (/^\s*(\S+)\s+(\S*)\s*/) {
    $parname = $1;
    $value   = $2;
+   $parameters_initial{$parname} = $value;
    my $index = idx( \@metaparnames, $1 );
    if ( $index != -1 ) {
     $metastartvalues[$index] = $value;
@@ -1288,12 +1298,9 @@ sub prepare_parameters() {
   }
  }
  $/ = $orig_sep;
-
  for ( my $i = 0 ; $i <= $#metaparnames ; $i++ ) {
   if ( !defined $metastartvalues[$i] ) {
-   die(
-"No start value for parameter $metaparnames[$i] found in file $species_cfg_filename.\n\
-Maybe you misspelled this parameter in $metaparsfilename.\n" );
+   die("No start value for parameter $metaparnames[$i] found in file $species_cfg_filename.\nMaybe you misspelled this parameter in $metaparsfilename.\n" );
   }
  }
 
@@ -1366,8 +1373,7 @@ sub optimize_meta() {
  for ( my $r = 0 ; $r < $rounds ; $r++ ) {
   $found_improvement = 0;
   for ( my $idx = 0 ; $idx <= $#metaparnames ; $idx++ ) {
-   print
-"improving parameter $metaparnames[$idx] curently set to $curoptmeta[$idx]\n";
+   print "improving parameter $metaparnames[$idx] currently set to $curoptmeta[$idx]\n";
    @testmeta = @curoptmeta;
 
    # set the initial min and max of the range to test
@@ -1459,6 +1465,9 @@ sub optimize_meta() {
 }
 
 sub do_a_training() {
+  # just an initial training
+  my $check = &check_if_parameters_are_appropriate();
+  die "Training stopped\n" if $check;
   unlink("$output_directory/curtest");
   unlink("$output_directory/curtrain");
   if ($onlytrain_gb) {
@@ -1595,4 +1604,38 @@ sub copy_search_replace_file(){
 	
 }
 
+
+sub check_if_parameters_are_appropriate(){
+ my $values_ref = shift;
+#AP Must take care of:
+## d_tss_tata_min <= d_tss_tata_max # otherwise segmentation fault, crashes and burns
+# following can be left alone as it doesn't crash
+## d_tss_tata_min >= tata_end + tss_start # otherwise complains and carries on
+## d_tss_tata_max <= tss_windowsize - tata_start # otherwise complains and carries on
+## exonLenD <  max_exon_len  # otherwise complains and carries one
+ my %parameters_check = %parameters_initial;
+ if ($values_ref){
+	 for ( my $i = 0 ; $i <= $#metaparnames ; $i++ ) {
+		$parameters_check{$metaparnames[$i]} = $values_ref->[$i];
+	  }
+  }
+  if (($parameters_check{'/UtrModel/maxexonlength'} && $parameters_check{'/UtrModel/exonlengthD'}) && $parameters_check{'/UtrModel/exonlengthD'} > $parameters_check{'/UtrModel/maxexonlength'}){
+	warn "Violation, must have: exonLenD <  max_exon_len. Skipping\n";
+	return 1;
+  }
+  if (($parameters_check{'/UtrModel/d_tss_tata_min'} && $parameters_check{'/UtrModel/tata_end'} && $parameters_check{'/UtrModel/tss_start'}) && $parameters_check{'/UtrModel/d_tss_tata_min'} < ($parameters_check{'/UtrModel/tata_end'} + $parameters_check{'/UtrModel/tss_start'})){
+	warn "Violation, must have: d_tss_tata_min >= tata_end + tss_start. Skipping\n";
+	return 1;
+  }
+  if (($parameters_check{'/UtrModel/d_tss_tata_max'} && $parameters_check{'/Constant/tss_upwindow_size'} && $parameters_check{'/UtrModel/tata_start'}) && $parameters_check{'/UtrModel/d_tss_tata_max'} > ($parameters_check{'/Constant/tss_upwindow_size'} - $parameters_check{'/UtrModel/tata_start'})){
+	warn "Violation, must have: d_tss_tata_max < tss_windowsize - tata_start. Skipping\n";
+	return 1;
+  }
+  if (($parameters_check{'/UtrModel/d_tss_tata_min'} && $parameters_check{'/UtrModel/d_tss_tata_max'}) && $parameters_check{'/UtrModel/d_tss_tata_min'} >= $parameters_check{'/UtrModel/d_tss_tata_max'}){
+	warn "Violation, must have: d_tss_tata_min lower than d_tss_tata_max. Skipping\n";
+	return 1;
+  }
+	# die Dumper \%parameters_check;
+}
+ 
 

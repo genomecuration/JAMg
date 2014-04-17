@@ -30,7 +30,9 @@ Optional
  -no_transposon        => Don't search for transposon hits. See above.
 
  -help                 => This help text and some more info
- -verbose                => Print out every command before it is executed.
+ -verbose              => Print out every command before it is executed.
+
+ -only_repeat	       => Only do RepeatMasking and then exit
  
 =head1 NOTES
             
@@ -65,7 +67,7 @@ use Thread_helper;
 
 my (
      $genome,          $circular,          $repeatmasker_options,
-     $mpi_host_string, $help,              $verbose,
+     $mpi_host_string, $help,              $verbose,$only_repeat,
      $scratch_dir,     $no_uniprot_search, $no_transposon_search
 );
 my $minsize       = 150;
@@ -80,7 +82,7 @@ GetOptions(
             'fasta|genome|in:s' => \$genome,
             'minsize:i'         => \$minsize,
             'circular'          => \$circular,
-            'repthreadsi'       => \$cpus,
+            'repthreads:i'       => \$cpus,
             'repeatoptions:s'   => \$repeatmasker_options,
             'engine:s'          => \$engine,
             'mpi_cpus:i'        => \$hhblits_cpus,
@@ -91,7 +93,8 @@ GetOptions(
             'help'              => \$help,
             'scratch:s'         => \$scratch_dir,
             'no_uniprot'        => \$no_uniprot_search,
-            'no_transposon'     => \$no_transposon_search
+            'no_transposon'     => \$no_transposon_search,
+		'only_repeat'   => \$only_repeat
 );
 
 pod2usage( -verbose => 2 ) if $help;
@@ -111,10 +114,17 @@ pod2usage "For MPI engine I need a host definition with -hosts\n"
 my ( $getorf_exec, $repeatmasker_exec ) =
   &check_program( 'getorf', 'RepeatMasker' );
 
-&process_cmd("$repeatmasker_exec  -frag 5000000 -maxsize 400000000 -gff -pa $cpus -qq $genome") unless -s $genome . '.masked';
-$genome .= '.masked';
+unless (-s $genome . '.masked'){
+  &do_repeat_masking();
+  $genome .= '.masked';
+}
 
 die "Could not find masked genome $genome.\n" unless -s $genome;
+if ($only_repeat){
+	print "User stop requested after RepeatmMasking step.\n";
+	exit;
+}
+
 
 my $exons = "$genome.exons";
 my $getorf_options .= $circular ? '-circular' : '';
@@ -869,4 +879,26 @@ sub parse_hhr() {
 
  return $outfile;
 
+}
+
+
+sub do_repeat_masking(){
+  print "Masking repeats with $cpus CPUs (cf $genome.repeatmasking.log)..\n";
+  &process_cmd("$repeatmasker_exec -frag 5000000 -gff -pa $cpus -qq $genome 2>&1 > $genome.repeatmasking.log");
+  my $repeat_gff_file = $genome.".out.gff";
+  die "Repeatmasking failed to produce $repeat_gff_file\n" unless -s $repeat_gff_file;
+  my $repeat_hints_file = $repeat_gff_file;
+  $repeat_hints_file =~s/.out.gff$/.repeatmasked.hints/;
+  open (IN,$repeat_gff_file);
+  open (OUT,">$repeat_hints_file");
+  while (my $ln=<IN>){
+	next if $ln=~/^#/;
+	my @data = split("\t",$ln);
+	$data[2] = 'nonexonpart';
+	$data[8] = 'src=RM;pri=6';
+	print OUT join("\t",@data);
+  }
+  close OUT;
+  close IN;
+  print "RepeatMasking completed and hints file produced ($repeat_gff_file)\n";
 }

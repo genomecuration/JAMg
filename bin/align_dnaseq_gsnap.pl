@@ -130,10 +130,10 @@ open (CMD,">$just_write_out_commands") if $just_write_out_commands;
 my ($build_cmd,$align_cmd);
 
 if ($suffix){
- $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -T /tmp/\$USER -k 13 -b 10 -q 1 -e 0 $genome >/dev/null";
+ $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -k 13 -q 1 -e 0 $genome >/dev/null";
  $align_cmd = "$gsnap_exec -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam --sam-use-0M --no-sam-headers --pairmax-dna=$pe_distance ";
 }else{
- $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -T /tmp/\$USER -k 13 -b 10 -q 1 -e 0 --no-sarray $genome >/dev/null";
+ $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -k 13 -q 1 -e 0 --no-sarray $genome >/dev/null";
  $align_cmd = "$gsnap_exec --use-sarray=0 -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam --sam-use-0M --no-sam-headers --pairmax-dna=$pe_distance ";
 }
 
