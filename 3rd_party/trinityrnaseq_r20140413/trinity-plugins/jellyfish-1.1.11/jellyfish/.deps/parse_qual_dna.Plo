@@ -1,0 +1,455 @@
+jellyfish/parse_qual_dna.lo: jellyfish/parse_qual_dna.cc \
+ jellyfish/parse_qual_dna.hpp \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/iostream \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/c++config.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/os_defines.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/include-fixed/features.h \
+ /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
+ /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/cpu_defines.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/ostream \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/ios \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/iosfwd \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stringfwd.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/postypes.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/cwchar \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/cstddef \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/include/stddef.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/include-fixed/wchar.h \
+ /usr/include/stdio.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/include/stdarg.h \
+ /usr/include/bits/wchar.h /usr/include/xlocale.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/exception \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/char_traits.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_algobase.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/functexcept.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/exception_defines.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/cpp_type_traits.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/ext/type_traits.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/ext/numeric_traits.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_pair.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/move.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/concept_check.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_iterator_base_types.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_iterator_base_funcs.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_iterator.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/debug/debug.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/localefwd.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/c++locale.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/clocale \
+ /usr/include/locale.h /usr/include/bits/locale.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/cctype \
+ /usr/include/ctype.h /usr/include/bits/types.h \
+ /usr/include/bits/typesizes.h /usr/include/endian.h \
+ /usr/include/bits/endian.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/ios_base.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/ext/atomicity.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/gthr.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/gthr-default.h \
+ /usr/include/pthread.h /usr/include/sched.h /usr/include/time.h \
+ /usr/include/bits/sched.h /usr/include/bits/time.h /usr/include/signal.h \
+ /usr/include/bits/sigset.h /usr/include/bits/pthreadtypes.h \
+ /usr/include/bits/setjmp.h /usr/include/unistd.h \
+ /usr/include/bits/posix_opt.h /usr/include/bits/environments.h \
+ /usr/include/bits/confname.h /usr/include/getopt.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/atomic_word.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/locale_classes.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/string \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/allocator.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/c++allocator.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/ext/new_allocator.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/new \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/ostream_insert.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/cxxabi-forced.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_function.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/backward/binders.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/basic_string.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/initializer_list \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/basic_string.tcc \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/locale_classes.tcc \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/streambuf \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/streambuf.tcc \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/basic_ios.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/locale_facets.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/cwctype \
+ /usr/include/wctype.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/ctype_base.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/streambuf_iterator.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/ctype_inline.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/locale_facets.tcc \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/basic_ios.tcc \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/ostream.tcc \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/istream \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/istream.tcc \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/vector \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_construct.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_uninitialized.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_vector.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_bvector.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/vector.tcc \
+ jellyfish/double_fifo_input.hpp jellyfish/concurrent_queues.hpp \
+ /usr/include/sys/time.h /usr/include/sys/select.h \
+ /usr/include/bits/select.h /usr/include/string.h /usr/include/errno.h \
+ /usr/include/bits/errno.h /usr/include/linux/errno.h \
+ /usr/include/asm/errno.h /usr/include/asm-x86_64/errno.h \
+ /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
+ /usr/include/libio.h /usr/include/_G_config.h /usr/include/gconv.h \
+ /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
+ /usr/include/bits/stdio.h /usr/include/assert.h jellyfish/atomic_gcc.hpp \
+ jellyfish/dbg.hpp \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/iomanip \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/sstream \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/sstream.tcc \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/stdexcept \
+ /usr/include/sys/types.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/include-fixed/sys/sysmacros.h \
+ /usr/include/stdlib.h /usr/include/bits/waitflags.h \
+ /usr/include/bits/waitstatus.h /usr/include/alloca.h \
+ /usr/include/bits/signum.h /usr/include/bits/siginfo.h \
+ /usr/include/bits/sigaction.h /usr/include/bits/sigcontext.h \
+ /usr/include/bits/sigstack.h /usr/include/sys/ucontext.h \
+ /usr/include/bits/sigthread.h jellyfish/time.hpp jellyfish/divisor.hpp \
+ /usr/include/stdint.h jellyfish/misc.hpp /usr/include/inttypes.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/utility \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_relops.h \
+ config.h jellyfish/locks_pthread.hpp jellyfish/err.hpp \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/fstream \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/codecvt.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/cstdio \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/basic_file.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/c++io.h \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/fstream.tcc \
+ jellyfish/seq_qual_parser.hpp jellyfish/file_parser.hpp \
+ jellyfish/simple_growing_array.hpp jellyfish/allocators_mmap.hpp \
+ /usr/include/sys/mman.h /usr/include/bits/mman.h jellyfish/dna_codes.hpp \
+ /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/limits
+
+jellyfish/parse_qual_dna.hpp:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/iostream:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/c++config.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/os_defines.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/include-fixed/features.h:
+
+/usr/include/sys/cdefs.h:
+
+/usr/include/bits/wordsize.h:
+
+/usr/include/gnu/stubs.h:
+
+/usr/include/gnu/stubs-64.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/cpu_defines.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/ostream:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/ios:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/iosfwd:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stringfwd.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/postypes.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/cwchar:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/cstddef:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/include/stddef.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/include-fixed/wchar.h:
+
+/usr/include/stdio.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/include/stdarg.h:
+
+/usr/include/bits/wchar.h:
+
+/usr/include/xlocale.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/exception:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/char_traits.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_algobase.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/functexcept.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/exception_defines.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/cpp_type_traits.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/ext/type_traits.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/ext/numeric_traits.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_pair.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/move.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/concept_check.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_iterator_base_types.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_iterator_base_funcs.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_iterator.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/debug/debug.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/localefwd.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/c++locale.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/clocale:
+
+/usr/include/locale.h:
+
+/usr/include/bits/locale.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/cctype:
+
+/usr/include/ctype.h:
+
+/usr/include/bits/types.h:
+
+/usr/include/bits/typesizes.h:
+
+/usr/include/endian.h:
+
+/usr/include/bits/endian.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/ios_base.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/ext/atomicity.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/gthr.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/gthr-default.h:
+
+/usr/include/pthread.h:
+
+/usr/include/sched.h:
+
+/usr/include/time.h:
+
+/usr/include/bits/sched.h:
+
+/usr/include/bits/time.h:
+
+/usr/include/signal.h:
+
+/usr/include/bits/sigset.h:
+
+/usr/include/bits/pthreadtypes.h:
+
+/usr/include/bits/setjmp.h:
+
+/usr/include/unistd.h:
+
+/usr/include/bits/posix_opt.h:
+
+/usr/include/bits/environments.h:
+
+/usr/include/bits/confname.h:
+
+/usr/include/getopt.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/atomic_word.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/locale_classes.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/string:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/allocator.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/c++allocator.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/ext/new_allocator.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/new:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/ostream_insert.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/cxxabi-forced.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_function.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/backward/binders.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/basic_string.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/initializer_list:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/basic_string.tcc:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/locale_classes.tcc:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/streambuf:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/streambuf.tcc:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/basic_ios.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/locale_facets.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/cwctype:
+
+/usr/include/wctype.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/ctype_base.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/streambuf_iterator.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/ctype_inline.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/locale_facets.tcc:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/basic_ios.tcc:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/ostream.tcc:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/istream:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/istream.tcc:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/vector:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_construct.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_uninitialized.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_vector.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_bvector.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/vector.tcc:
+
+jellyfish/double_fifo_input.hpp:
+
+jellyfish/concurrent_queues.hpp:
+
+/usr/include/sys/time.h:
+
+/usr/include/sys/select.h:
+
+/usr/include/bits/select.h:
+
+/usr/include/string.h:
+
+/usr/include/errno.h:
+
+/usr/include/bits/errno.h:
+
+/usr/include/linux/errno.h:
+
+/usr/include/asm/errno.h:
+
+/usr/include/asm-x86_64/errno.h:
+
+/usr/include/asm-generic/errno.h:
+
+/usr/include/asm-generic/errno-base.h:
+
+/usr/include/libio.h:
+
+/usr/include/_G_config.h:
+
+/usr/include/gconv.h:
+
+/usr/include/bits/stdio_lim.h:
+
+/usr/include/bits/sys_errlist.h:
+
+/usr/include/bits/stdio.h:
+
+/usr/include/assert.h:
+
+jellyfish/atomic_gcc.hpp:
+
+jellyfish/dbg.hpp:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/iomanip:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/sstream:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/sstream.tcc:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/stdexcept:
+
+/usr/include/sys/types.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/include-fixed/sys/sysmacros.h:
+
+/usr/include/stdlib.h:
+
+/usr/include/bits/waitflags.h:
+
+/usr/include/bits/waitstatus.h:
+
+/usr/include/alloca.h:
+
+/usr/include/bits/signum.h:
+
+/usr/include/bits/siginfo.h:
+
+/usr/include/bits/sigaction.h:
+
+/usr/include/bits/sigcontext.h:
+
+/usr/include/bits/sigstack.h:
+
+/usr/include/sys/ucontext.h:
+
+/usr/include/bits/sigthread.h:
+
+jellyfish/time.hpp:
+
+jellyfish/divisor.hpp:
+
+/usr/include/stdint.h:
+
+jellyfish/misc.hpp:
+
+/usr/include/inttypes.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/utility:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/stl_relops.h:
+
+config.h:
+
+jellyfish/locks_pthread.hpp:
+
+jellyfish/err.hpp:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/fstream:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/codecvt.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/cstdio:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/basic_file.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/x86_64-unknown-linux-gnu/bits/c++io.h:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/bits/fstream.tcc:
+
+jellyfish/seq_qual_parser.hpp:
+
+jellyfish/file_parser.hpp:
+
+jellyfish/simple_growing_array.hpp:
+
+jellyfish/allocators_mmap.hpp:
+
+/usr/include/sys/mman.h:
+
+/usr/include/bits/mman.h:
+
+jellyfish/dna_codes.hpp:
+
+/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../include/c++/4.4.4/limits:
