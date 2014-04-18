@@ -53,7 +53,9 @@ JAMg is focused on delivering a process for feature annotation for all the speci
 
 === Obtaining JAMg
  
-Currently only distributed through the author. It not published. We really appreciate any comments and feedback you can provide, so please do no matter how minor you think they are (e.g. typos in this document).
+Freely distributed from https://sourceforge.net/projects/jamg/files/RC/[here]. Please subscribe to the https://lists.sourceforge.net/lists/listinfo/jamg-users[user mailing list].
+
+It's not published. We really appreciate any comments and feedback you can provide, so please do no matter how minor you think they are (e.g. typos in this document).
 
 We support only 64bit Linux (Ubuntu preferred) but users should feel free try other platforms. Repositories such as that from Ubuntu allow users to quickly install secondary software such as samtools.
 

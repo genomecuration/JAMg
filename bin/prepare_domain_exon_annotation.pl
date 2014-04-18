@@ -61,9 +61,12 @@ use List::Util 'shuffle';
 use POSIX qw(ceil);
 use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
-$ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/:$RealBin:$RealBin/../3rd_party/RepeatMasker";
 use Fasta_reader;
 use Thread_helper;
+
+$ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/:$RealBin:$RealBin/../3rd_party/RepeatMasker:$RealBin/../3rd_party/hhsuite/bin";
+$ENV{LD_LIBRARY_PATH} .= ":$RealBin/../3rd_party/hhsuite/lib64";
+$ENV{HHLIB} =  ":$RealBin/../3rd_party/hhsuite/lib/hh";
 
 my (
      $genome,          $circular,          $repeatmasker_options,
@@ -388,8 +391,7 @@ sub prepare_localmpi() {
   &process_cmd($transposon_cmd) unless $number_of_entries == 0 || -s "hhr.$exons.aa.trim.transposon.db" ;
  }
  my $transposon_results = &parse_hhr( "$exons.aa.trim.transposon", 70, 1e-3, 1e-6, 100, 50, 30, 'yes' );
- my $noreps_fasta = &remove_transposons( "$exons.aa.trim", $transposon_results )
-   if $transposon_results;
+ my $noreps_fasta = &remove_transposons( "$exons.aa.trim", $transposon_results );
 
  unless ($no_uniprot_search) {
   print "Uniprot database...\n";
@@ -470,8 +472,7 @@ sub prepare_mpi() {
  }
  my $transposon_results = &parse_hhr( "$exons.aa.trim.transposon", 70, 1e-3, 1e-6, 100, 50, 30, 'yes' );
  
- my $noreps_fasta = &remove_transposons( "$exons.aa.trim", $transposon_results )
-   if $transposon_results;
+ my $noreps_fasta = &remove_transposons( "$exons.aa.trim", $transposon_results );
 
  unless ($no_uniprot_search) {
   print "Uniprot database...\n";
@@ -507,6 +508,7 @@ sub prepare_mpi() {
 sub remove_transposons() {
  my $fasta_file  = shift;
  my $result_file = shift;
+ return $fasta_file if !-s $result_file;
  my $out_fasta   = "$fasta_file.norep";
  return $out_fasta if -s $out_fasta; 
  my %transposon_hits;

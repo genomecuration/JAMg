@@ -2,15 +2,25 @@
     "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<meta name="generator" content="AsciiDoc 8.5.2" />
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+<meta name="generator" content="AsciiDoc 8.6.6" />
 <title>Just Annotate My Genome (JAMg) info</title>
 <style type="text/css">
-/* Debug borders */
-p, li, dt, dd, div, pre, h1, h2, h3, h4, h5, h6 {
-/*
-  border: 1px solid red;
-*/
+/* Shared CSS for AsciiDoc xhtml11 and html5 backends */
+
+/* Default font. */
+body {
+  font-family: Georgia,serif;
+}
+
+/* Title font. */
+h1, h2, h3, h4, h5, h6,
+div.title, caption.title,
+thead, p.table.header,
+#toctitle,
+#author, #revnumber, #revdate, #revremark,
+#footer {
+  font-family: Arial,Helvetica,sans-serif;
 }
 
 body {
@@ -35,13 +45,8 @@ strong {
   color: #083194;
 }
 
-tt {
-  color: navy;
-}
-
 h1, h2, h3, h4, h5, h6 {
   color: #527bbd;
-  font-family: sans-serif;
   margin-top: 1.2em;
   margin-bottom: 0.5em;
   line-height: 1.3;
@@ -59,9 +64,11 @@ h3 {
 h3 + * {
   clear: left;
 }
+h5 {
+  font-size: 1.0em;
+}
 
 div.sectionbody {
-  font-family: serif;
   margin-left: 0;
 }
 
@@ -77,45 +84,44 @@ p {
 ul, ol, li > p {
   margin-top: 0;
 }
+ul > li     { color: #aaa; }
+ul > li > * { color: black; }
 
 pre {
   padding: 0;
   margin: 0;
 }
 
-span#author {
+#author {
   color: #527bbd;
-  font-family: sans-serif;
   font-weight: bold;
   font-size: 1.1em;
 }
-span#email {
+#email {
 }
-span#revnumber, span#revdate, span#revremark {
-  font-family: sans-serif;
+#revnumber, #revdate, #revremark {
 }
 
-div#footer {
-  font-family: sans-serif;
+#footer {
   font-size: small;
   border-top: 2px solid silver;
   padding-top: 0.5em;
   margin-top: 4.0em;
 }
-div#footer-text {
+#footer-text {
   float: left;
   padding-bottom: 0.5em;
 }
-div#footer-badges {
+#footer-badges {
   float: right;
   padding-bottom: 0.5em;
 }
 
-div#preamble {
+#preamble {
   margin-top: 1.5em;
   margin-bottom: 1.5em;
 }
-div.tableblock, div.imageblock, div.exampleblock, div.verseblock,
+div.imageblock, div.exampleblock, div.verseblock,
 div.quoteblock, div.literalblock, div.listingblock, div.sidebarblock,
 div.admonitionblock {
   margin-top: 1.0em;
@@ -135,7 +141,6 @@ div.content { /* Block element content. */
 /* Block element titles. */
 div.title, caption.title {
   color: #527bbd;
-  font-family: sans-serif;
   font-weight: bold;
   text-align: left;
   margin-top: 1.0em;
@@ -157,13 +162,15 @@ div.content + div.title {
 
 div.sidebarblock > div.content {
   background: #ffffee;
-  border: 1px solid silver;
+  border: 1px solid #dddddd;
+  border-left: 4px solid #f0f0f0;
   padding: 0.5em;
 }
 
 div.listingblock > div.content {
-  border: 1px solid silver;
-  background: #f4f4f4;
+  border: 1px solid #dddddd;
+  border-left: 5px solid #f0f0f0;
+  background: #f8f8f8;
   padding: 0.5em;
 }
 
@@ -171,8 +178,8 @@ div.quoteblock, div.verseblock {
   padding-left: 1.0em;
   margin-left: 1.0em;
   margin-right: 10%;
-  border-left: 5px solid #dddddd;
-  color: #777777;
+  border-left: 5px solid #f0f0f0;
+  color: #888;
 }
 
 div.quoteblock > div.attribution {
@@ -180,8 +187,9 @@ div.quoteblock > div.attribution {
   text-align: right;
 }
 
-div.verseblock > div.content {
-  white-space: pre;
+div.verseblock > pre.content {
+  font-family: inherit;
+  font-size: inherit;
 }
 div.verseblock > div.attribution {
   padding-top: 0.75em;
@@ -254,35 +262,12 @@ div.compact div, div.compact div {
   margin-bottom: 0.1em;
 }
 
-div.tableblock > table {
-  border: 3px solid #527bbd;
-}
-thead, p.table.header {
-  font-family: sans-serif;
-  font-weight: bold;
-}
 tfoot {
   font-weight: bold;
 }
 td > div.verse {
   white-space: pre;
 }
-p.table {
-  margin-top: 0;
-}
-/* Because the table frame attribute is overriden by CSS in most browsers. */
-div.tableblock > table[frame="void"] {
-  border-style: none;
-}
-div.tableblock > table[frame="hsides"] {
-  border-left-style: none;
-  border-right-style: none;
-}
-div.tableblock > table[frame="vsides"] {
-  border-top-style: none;
-  border-bottom-style: none;
-}
-
 
 div.hdlist {
   margin-top: 0.8em;
@@ -339,18 +324,25 @@ span.footnote, span.footnoteref {
   min-width: 100px;
 }
 
-
-@media print {
-  div#footer-badges { display: none; }
+div.colist td {
+  padding-right: 0.5em;
+  padding-bottom: 0.3em;
+  vertical-align: top;
+}
+div.colist td img {
+  margin-top: 0.3em;
 }
 
-div#toc {
+@media print {
+  #footer-badges { display: none; }
+}
+
+#toc {
   margin-bottom: 2.5em;
 }
 
-div#toctitle {
+#toctitle {
   color: #527bbd;
-  font-family: sans-serif;
   font-size: 1.1em;
   font-weight: bold;
   margin-top: 1.0em;
@@ -373,51 +365,181 @@ div.toclevel4 {
   margin-left: 6em;
   font-size: 0.9em;
 }
-/* Workarounds for IE6's broken and incomplete CSS2. */
 
-div.sidebar-content {
-  background: #ffffee;
-  border: 1px solid silver;
-  padding: 0.5em;
+span.aqua { color: aqua; }
+span.black { color: black; }
+span.blue { color: blue; }
+span.fuchsia { color: fuchsia; }
+span.gray { color: gray; }
+span.green { color: green; }
+span.lime { color: lime; }
+span.maroon { color: maroon; }
+span.navy { color: navy; }
+span.olive { color: olive; }
+span.purple { color: purple; }
+span.red { color: red; }
+span.silver { color: silver; }
+span.teal { color: teal; }
+span.white { color: white; }
+span.yellow { color: yellow; }
+
+span.aqua-background { background: aqua; }
+span.black-background { background: black; }
+span.blue-background { background: blue; }
+span.fuchsia-background { background: fuchsia; }
+span.gray-background { background: gray; }
+span.green-background { background: green; }
+span.lime-background { background: lime; }
+span.maroon-background { background: maroon; }
+span.navy-background { background: navy; }
+span.olive-background { background: olive; }
+span.purple-background { background: purple; }
+span.red-background { background: red; }
+span.silver-background { background: silver; }
+span.teal-background { background: teal; }
+span.white-background { background: white; }
+span.yellow-background { background: yellow; }
+
+span.big { font-size: 2em; }
+span.small { font-size: 0.6em; }
+
+span.underline { text-decoration: underline; }
+span.overline { text-decoration: overline; }
+span.line-through { text-decoration: line-through; }
+
+
+/*
+ * xhtml11 specific
+ *
+ * */
+
+tt {
+  font-family: monospace;
+  font-size: inherit;
+  color: navy;
 }
-div.sidebar-title, div.image-title {
-  color: #527bbd;
-  font-family: sans-serif;
+
+div.tableblock {
+  margin-top: 1.0em;
+  margin-bottom: 1.5em;
+}
+div.tableblock > table {
+  border: 3px solid #527bbd;
+}
+thead, p.table.header {
   font-weight: bold;
-  margin-top: 0.0em;
-  margin-bottom: 0.5em;
+  color: #527bbd;
+}
+p.table {
+  margin-top: 0;
+}
+/* Because the table frame attribute is overriden by CSS in most browsers. */
+div.tableblock > table[frame="void"] {
+  border-style: none;
+}
+div.tableblock > table[frame="hsides"] {
+  border-left-style: none;
+  border-right-style: none;
+}
+div.tableblock > table[frame="vsides"] {
+  border-top-style: none;
+  border-bottom-style: none;
 }
 
-div.listingblock div.content {
-  border: 1px solid silver;
-  background: #f4f4f4;
-  padding: 0.5em;
+
+/*
+ * html5 specific
+ *
+ * */
+
+.monospaced {
+  font-family: monospace;
+  font-size: inherit;
+  color: navy;
 }
 
-div.quoteblock-attribution {
-  padding-top: 0.5em;
+table.tableblock {
+  margin-top: 1.0em;
+  margin-bottom: 1.5em;
+}
+thead, p.tableblock.header {
+  font-weight: bold;
+  color: #527bbd;
+}
+p.tableblock {
+  margin-top: 0;
+}
+table.tableblock {
+  border-width: 3px;
+  border-spacing: 0px;
+  border-style: solid;
+  border-color: #527bbd;
+  border-collapse: collapse;
+}
+th.tableblock, td.tableblock {
+  border-width: 1px;
+  padding: 4px;
+  border-style: solid;
+  border-color: #527bbd;
+}
+
+table.tableblock.frame-topbot {
+  border-left-style: hidden;
+  border-right-style: hidden;
+}
+table.tableblock.frame-sides {
+  border-top-style: hidden;
+  border-bottom-style: hidden;
+}
+table.tableblock.frame-none {
+  border-style: hidden;
+}
+
+th.tableblock.halign-left, td.tableblock.halign-left {
+  text-align: left;
+}
+th.tableblock.halign-center, td.tableblock.halign-center {
+  text-align: center;
+}
+th.tableblock.halign-right, td.tableblock.halign-right {
   text-align: right;
 }
 
-div.verseblock-content {
-  white-space: pre;
+th.tableblock.valign-top, td.tableblock.valign-top {
+  vertical-align: top;
 }
-div.verseblock-attribution {
-  padding-top: 0.75em;
-  text-align: left;
+th.tableblock.valign-middle, td.tableblock.valign-middle {
+  vertical-align: middle;
 }
-
-div.exampleblock-content {
-  border-left: 3px solid #dddddd;
-  padding-left: 0.5em;
+th.tableblock.valign-bottom, td.tableblock.valign-bottom {
+  vertical-align: bottom;
 }
 
-/* IE6 sets dynamically generated links as visited. */
-div#toc a:visited { color: blue; }
+
+/*
+ * manpage specific
+ *
+ * */
+
+body.manpage h1 {
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  border-top: 2px solid silver;
+  border-bottom: 2px solid silver;
+}
+body.manpage h2 {
+  border-style: none;
+}
+body.manpage div.sectionbody {
+  margin-left: 3em;
+}
+
+@media print {
+  body.manpage div#toc { display: none; }
+}
 </style>
 <script type="text/javascript">
 /*<![CDATA[*/
-window.onload = function(){asciidoc.footnotes();}
 var asciidoc = {  // Namespace.
 
 /////////////////////////////////////////////////////////////////////
@@ -479,6 +601,25 @@ toc: function (toclevels) {
   }
 
   var toc = document.getElementById("toc");
+  if (!toc) {
+    return;
+  }
+
+  // Delete existing TOC entries in case we're reloading the TOC.
+  var tocEntriesToRemove = [];
+  var i;
+  for (i = 0; i < toc.childNodes.length; i++) {
+    var entry = toc.childNodes[i];
+    if (entry.nodeName == 'div'
+     && entry.getAttribute("class")
+     && entry.getAttribute("class").match(/^toclevel/))
+      tocEntriesToRemove.push(entry);
+  }
+  for (i = 0; i < tocEntriesToRemove.length; i++) {
+    toc.removeChild(tocEntriesToRemove[i]);
+  }
+
+  // Rebuild TOC entries.
   var entries = tocEntries(document.getElementById("content"), toclevels);
   for (var i = 0; i < entries.length; ++i) {
     var entry = entries[i];
@@ -506,24 +647,44 @@ toc: function (toclevels) {
  */
 
 footnotes: function () {
-  var cont = document.getElementById("content");
+  // Delete existing footnote entries in case we're reloading the footnodes.
+  var i;
   var noteholder = document.getElementById("footnotes");
+  if (!noteholder) {
+    return;
+  }
+  var entriesToRemove = [];
+  for (i = 0; i < noteholder.childNodes.length; i++) {
+    var entry = noteholder.childNodes[i];
+    if (entry.nodeName == 'div' && entry.getAttribute("class") == "footnote")
+      entriesToRemove.push(entry);
+  }
+  for (i = 0; i < entriesToRemove.length; i++) {
+    noteholder.removeChild(entriesToRemove[i]);
+  }
+
+  // Rebuild footnote entries.
+  var cont = document.getElementById("content");
   var spans = cont.getElementsByTagName("span");
   var refs = {};
   var n = 0;
   for (i=0; i<spans.length; i++) {
     if (spans[i].className == "footnote") {
       n++;
-      // Use [\s\S] in place of . so multi-line matches work.
-      // Because JavaScript has no s (dotall) regex flag.
-      note = spans[i].innerHTML.match(/\s*\[([\s\S]*)]\s*/)[1];
+      var note = spans[i].getAttribute("data-note");
+      if (!note) {
+        // Use [\s\S] in place of . so multi-line matches work.
+        // Because JavaScript has no s (dotall) regex flag.
+        note = spans[i].innerHTML.match(/\s*\[([\s\S]*)]\s*/)[1];
+        spans[i].innerHTML =
+          "[<a id='_footnoteref_" + n + "' href='#_footnote_" + n +
+          "' title='View footnote' class='footnote'>" + n + "</a>]";
+        spans[i].setAttribute("data-note", note);
+      }
       noteholder.innerHTML +=
         "<div class='footnote' id='_footnote_" + n + "'>" +
         "<a href='#_footnoteref_" + n + "' title='Return to text'>" +
         n + "</a>. " + note + "</div>";
-      spans[i].innerHTML =
-        "[<a id='_footnoteref_" + n + "' href='#_footnote_" + n +
-        "' title='View footnote' class='footnote'>" + n + "</a>]";
       var id =spans[i].getAttribute("id");
       if (id != null) refs["#"+id] = n;
     }
@@ -543,13 +704,36 @@ footnotes: function () {
       }
     }
   }
+},
+
+install: function(toclevels) {
+  var timerId;
+
+  function reinstall() {
+    asciidoc.footnotes();
+    if (toclevels) {
+      asciidoc.toc(toclevels);
+    }
+  }
+
+  function reinstallAndRemoveTimer() {
+    clearInterval(timerId);
+    reinstall();
+  }
+
+  timerId = setInterval(reinstall, 500);
+  if (document.addEventListener)
+    document.addEventListener("DOMContentLoaded", reinstallAndRemoveTimer, false);
+  else
+    window.onload = reinstallAndRemoveTimer;
 }
 
 }
+asciidoc.install();
 /*]]>*/
 </script>
 </head>
-<body>
+<body class="article">
 <div id="header">
 <h1>Just Annotate My Genome (JAMg) info</h1>
 <span id="author">Alexie Papanicolaou</span><br />
@@ -558,12 +742,14 @@ footnotes: function () {
 <span id="revdate">December 2013</span>
 </div>
 <div id="content">
+<div class="sect1">
 <h2 id="_introduction">Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph"><p>An increased number of genomes are being made public but few individual research are willing to take ownership of their own data. Indeed, the current model is for genome sequences to be handled by sequencing centers or large bioinformatic repositories (RefSeq or Ensembl). Even though using these widely used and standardized repositories and center is an excellent model to decrease the cost of completing a genome project, this comes at a cost. First, these groups have in-house pipelines built and customized for the projects that financially support them (i.e. small genomes of microbial human pathogens and largely fully complete genomes such as Drosophila or human) rather than say a highly polymorphic species from a natural ecosystem. Second, the lack of a robust funding model means that these repositories are do not have the resources to offer community-wide support and customization of a pipeline. Third, and perhaps most importantly, these centers and repositories usually lack the domain expertise associated with the biology of the species.</p></div>
 <div class="paragraph"><p>For these (and perhaps others?) reasons, genome consortia that have access to genomicists (or PhD students and post-docs willing to learn) are either collaborating with bioinformatic laboratories or investing in their own annotation capability. This endeveavour has been greatly helped by the public availability of the tools used by the repositories and sequencing centers (e.g. GMOD, Ensembl and sequencing-center specific platforms such as those from the Broad Institute). The GMOD project specifically specializes in compact, user friendly solutions that <em>just_work</em>. For example, MAKER requires a few minutes of configuration to deliver a standardized annotation for gene models. At the other side of the spectrum, Ensembl delivers a comprehensive solution, database and informatic pipelines that - in the hands of a highly-trained bioinformatician - can deliver the same depth and level of annotation as that used by the EBI. There really is no a solution that fits in-between. There is also almost no software that also wishes to educate the user rather than offering a black box. Finally, there is no solution that we know of that can also functionally annotate the genome (a la BLAST2GO but free) and then link the concept of gene model (feature) annotation with functional annotation.</p></div>
 <div class="paragraph"><p>The JAMg software was created to address the issue of creating gene models (feature annotation) and was built by <a href="http://tiny.cc/alexie_pap_csiro/">Alexie Papanicolaou</a> at the <a href="http://www.csiro.au/">Commonwealth Scientific and Industrial Research Organisation</a> (CSIRO) with some brilliant support from <a href="http://www.broadinstitute.org/~bhaas/">Brian Haas</a> at the <a href="http://broadinstitute.org">Broad Institute</a>. The software and manual are written so that to guide the annotation process so that users can follow the process closely. Even though with JAMg you will not need another genome annotation pipeline, JAMg does not aim to replace other genome annotation pipelines (e.g. each sequencing center has its own): it does aim to support nascent genome annotators and (ultimately) educate its users about genome annotation in general. As part of our Just_Annotate series, JAMg links with <a href="http://jamps.sourceforge.net/">JAMp</a> and WebApollo to provide a first solution for users wishing to go from genome assembly to deriving biological hypotheses.</p></div>
-<h3 id="_genome_annotation">Genome annotation</h3><div style="clear:left"></div>
+<div class="sect2">
+<h3 id="_genome_annotation">Genome annotation</h3>
 <div class="paragraph"><p>When genome biologists talk about annotation they can mean one of two things: <strong>feature annotation</strong> is identifying which parts of the genome are coding, the structure of the gene (where does each exon and ORF start &amp; end) and identifying any alternative splicing events. This allows us to build a database of transcripts and proteins for the entire species and the field of de-novo gene prediction (e.g. SNAP, Augustus, GeneMark etc) is a good example of the output. The second definition of annotation is <strong>functional annotation</strong>: what does a particular gene actually do. The Gene Ontology consortium is a good example of a group of scientists that deliver functional annotation knowledge: they read the literature and integrate it with any <em>in-silico</em> information that may exist. Alternatively, pure <em>in-silico</em> information (e.g. BLAST to a known protein) can deliver some information via inference.</p></div>
 <div class="paragraph"><p><strong>Feature annotation</strong> is a mature field and an excellent example of the interdisciplinary use of maths, computer science and biology. There are a number of de-novo gene predictors (each with its strengths and weaknesses) and all rely on building a predictive model that is applied genome-wide (see <a href="http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3207268/">Haas et al 2011</a>). The use of models (such as Hidden Markov Models) trained by a handful of known sequences has performed exceptionally well as it seems that - as far as it is known - that species (or taxa) have a remarkable specific way of constructing their coding seqeunce (e.g. taxon-specific codon usage). However, it is naturally prone to a high rate of false positives (type II errors). The problem is a direct result of a large search space (millions of letters) that contain a dispersed and relatively small amount of signal (e.g. can be as low as 10 % of the total). Type I errors are less likely to occur because of the characteristics of coding sequences (we have a well understood structure such as a start, stop, no stop codons in the middle, exon/intron splice sites etc). Type II errors, however, occur when a stretch of stop-codon-free sequence looks coding but in fact it isn&#8217;t (either because it never was or it has become a pseudogene - worse still with modern genome sequencing: it could be a misassembly). Further, even if a gene model is predicted, it is not possible to identify the actual transcripts generated by this gene unless we have some external information: known transcripts from other species or transcriptomes. Finally, the ability to annotate UTR features is limited: the paucity of conserved signals and variability in the sequence complexity makes it difficult even though correct prediction of a long UTR (even if approximatelly correct) prevents from false positives being predicted in those regions.</p></div>
 <div class="paragraph"><p>These two lines of evidence can help improve both the accuracy of genome annotation and construct the exact transcripts produced. The known transcripts can be from the same (e.g. <a href="http://trinityrnaseq.sourceforge.net/">de-novo transcript assembly</a>) or a related species (that has been annotated - but see below for <em>'propagation of annotation error</em>'). There are disadvantages to both approaches: the former relies on the transcript being actually expressed and correctly reconstructed, the latter requires the gene to be sufficiently conserved - a situation that will improve as we sequence and annotate more species. Most de-novo gene predictors do not or only mildly support such external evidence (they use it to add some weight on some predictions). A bright exception is AUGUSTUS which - if used correctly - has the in-built feature of using such lines of evidence to weight predictions, join exons into a single gene and identify alternative transcription events (via the use of <em>junction reads</em>).</p></div>
@@ -572,33 +758,50 @@ footnotes: function () {
 <div class="content">
 <pre><tt>_TODO_ improve clarity of some sentences</tt></pre>
 </div></div>
-<h3 id="_propagation_of_annotation_error_and_curation">Propagation of annotation error and curation</h3><div style="clear:left"></div>
+</div>
+<div class="sect2">
+<h3 id="_propagation_of_annotation_error_and_curation">Propagation of annotation error and curation</h3>
 <div class="literalblock">
 <div class="content">
 <pre><tt>(which happen often due to Type II error)... _TODO_</tt></pre>
 </div></div>
-<h3 id="_do_we_need_another_approach">Do we need another approach?</h3><div style="clear:left"></div>
+</div>
+<div class="sect2">
+<h3 id="_do_we_need_another_approach">Do we need another approach?</h3>
 <div class="paragraph"><p>Because of some characteristics, it can be easier to identify genes in compact genomes, those that lack introns (e.g. bacteria), lack duplicated in-tandem paralogues, exhibit little alternative splicing and have limited amount of repetitive sequence and within-species polymorphism (e.g. <em>Drosophila</em>, <em>C. elegans</em> and <em>Arabidobsis</em>) in relation to the average. Further, a very high quality genome assembly (ie. <em>finished</em>) will increase the chances of correct modelling and full ascertainment of a gene family. Finally, the sequencing of a diversity of relatively close related species (e.g. mammals) can vastly improve the accuracy since a conserved signal is more likely to be functional (such as coding) than not. For that reason, model species tend to be well annotated: they were picked to be models of the genome era because of some of the mentioned characteristics.</p></div>
 <div class="paragraph"><p>However, researchers use myriads of species as models for specific questions in medicine &amp; physiology, ecology &amp; agriculture, evolution and other basic sciences. I call the former models <em>resource-rich models</em> (because they are good resources) and the latter <em>question-rich models</em> (because they can be used to answer particular questions). We have now reached the most exciting times were any question-rich model can be elevated to a resource-rich model using the vastly decreased costs of sequencing (one of the major secondary benefits of the Human Genome Project activities). Unfortunately, removing one bottleneck always exposes another. In this case the bottleneck is the bioinformatic analysis of these genomes, whether it is their assembly, annotation (both types) or other downstream experimentation.</p></div>
 <div class="paragraph"><p>To respond to this bottleneck, sequencing centers have developed their own in-house pipelines. The <a href="http://gmod.org">GMOD</a> consortium has also develop a pipeline (MAKER) that standardizes and simplifies de-novo gene prediction. MAKER is exceptional in that it requires only a few minutes of a bioinformatician&#8217;s time (but weeks of computational time) and is the first software that brought gene prediction beyond the sequencing centers, standardized its use and linked with curation software such as Apollo. We found, however, that MAKER had some issues that did not suit our purpose: first because it didn&#8217;t offer much control on how the pipeline was run and it was too much of a black box (see commentary in Science <a href="http://www.sciencemag.org/content/340/6134/814">Joppa et al 2013</a>) so that without any incentitive to undestand gene prediction users rarely understood why certain tools were run (and therefore they couldn&#8217;t make a decision later on). More importantly, however, we found that MAKER doesn&#8217;t have an approach to train the de-novo gene predictors (the users has to do that on their own but that is not part of the pipeline and in practice MAKER users rarely do) and it made poor use of transcript evidence. Also when we first started working on this MAKER - because it was such a black box pipeline - was too slow and didn&#8217;t perform well on a HPC environment even though improvements have been made. In any case, basically we started with MAKER but I was dissatisfied with its performance for purely selfish reasons (basically it couldn&#8217;t annotate our gene family of interest&#8230;!). The other problem we came across was that most de-novo predictors (except Augustus) were poorly documented or, worse, unsupported. With poor documentation, it was excruciating trying to find out how to use them (every single software had its own file format!) and I don&#8217;t think anyone ought to have to go through that again.</p></div>
 <div class="paragraph"><p>Having said that, there are some sequencing centers (such as the Broad) that have established complicated platforms, with extensive Quality control (QC). These however are really intended for internal use and we could find a single package that could deliver the best of both worlds without freaking out already over-worked bioinformaticians. So we set out to create a new approach to genome annotation that was educational, high quality, and contained as much capability was needed without being too much of a strain to bioinformaticians. We invested considerable time picking different software, but the modularity of our approach does not exclude incorporating any other approaches and software (including MAKER&#8217;s output). Our aim was <em>not</em> to create a point and click pipeline but a platform that even a bioinformatician - who is a capable user of bioinformatics but has never annotated - can pick up relatively quickly and deliver the highest possible quality of annotation.</p></div>
 <div class="paragraph"><p>We call our platform Just_Annotate_My_genome (JAMg) and we hope you find it useful. In case you&#8217;re wondering, we considered following the model of ARGO but JAMg sounds better than JAMFg (and also I&#8217;ve run out of 50 cent coins).</p></div>
-<h3 id="_intended_audience">Intended audience</h3><div style="clear:left"></div>
+</div>
+<div class="sect2">
+<h3 id="_intended_audience">Intended audience</h3>
 <div class="paragraph"><p>In particular, our audience are early career scientists who have <em>ownership</em> of their species and understand that annotation errors will have detrimental effects on their downstream experiments. Naturally, the output of any platform will depend on the data and effort invested but we feel that our approach will deliver the better possible results given the data.</p></div>
 <div class="paragraph"><p>The software is not particularly useful to career bioinformaticians who have to churn dozens of genomes for a living but have no (scientific) interest in the underlying content. Other tools, such as MAKER or some sequencing center pipelines may be more appropriate high-throughput, one-size-fits-all methods.</p></div>
 </div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_just_annotate_my_genome">Just_Annotate_My_genome</h2>
 <div class="sectionbody">
-<h3 id="_what_is_jamg_for">What is JAMg for?</h3><div style="clear:left"></div>
+<div class="sect2">
+<h3 id="_what_is_jamg_for">What is JAMg for?</h3>
 <div class="paragraph"><p>JAMg is focused on delivering a process for feature annotation for all the species that are not <em>model species</em>. It links to another bit of software, <a href="http://jamps.sourceforge.net/">Just_Annotate_My_proteins (JAMp)</a> that functionally annotates proteins. JAMg is far from being a comprehensive solution (see Plugins needed) but it is a modular and an open-source software and like our other software we invite the community to provide not only feedback but also additional functionality and suggestions on how to improve it.</p></div>
-<h3 id="_obtaining_jamg">Obtaining JAMg</h3><div style="clear:left"></div>
-<div class="paragraph"><p>Currently only distributed through the author. It not published. We really appreciate any comments and feedback you can provide, so please do no matter how minor you think they are (e.g. typos in this document).</p></div>
+</div>
+<div class="sect2">
+<h3 id="_obtaining_jamg">Obtaining JAMg</h3>
+<div class="paragraph"><p>Freely distributed from <a href="https://sourceforge.net/projects/jamg/files/RC/">here</a>. Please subscribe to the <a href="https://lists.sourceforge.net/lists/listinfo/jamg-users">user mailing list</a>.</p></div>
+<div class="paragraph"><p>It&#8217;s not published. We really appreciate any comments and feedback you can provide, so please do no matter how minor you think they are (e.g. typos in this document).</p></div>
 <div class="paragraph"><p>We support only 64bit Linux (Ubuntu preferred) but users should feel free try other platforms. Repositories such as that from Ubuntu allow users to quickly install secondary software such as samtools.</p></div>
 <div class="paragraph"><p>We found it painful to have to find and install all the various bit of software that are needed. For that reason, we distribute a number of 3rd party software (see 3rd_party) within the distribute to facilitate installation (often under the Agglomeration terms of GPL) but we assume that users have a 64bit Linux Operating System.</p></div>
-<h3 id="_running_jamg">Running JAMg</h3><div style="clear:left"></div>
+</div>
+<div class="sect2">
+<h3 id="_running_jamg">Running JAMg</h3>
 <div class="paragraph"><p>First, read the description of the JAMg <a href="procedure.html">procedure</a>.
 Then, read the <a href="tutorial.html">tutorial</a>.</p></div>
-<h3 id="_components_and_dependencies">Components and dependencies</h3><div style="clear:left"></div>
+</div>
+<div class="sect2">
+<h3 id="_components_and_dependencies">Components and dependencies</h3>
 <div class="paragraph" id="software"><p>JAMg (and any gene annotation) really shines for species for which you have raw RNA-Seq (or other transcriptome) data but it can work without it too.</p></div>
 <div class="paragraph"><p>These software are core to the way JAMg works:</p></div>
 <div class="ulist"><ul>
@@ -714,14 +917,16 @@ Tomcat and Apache webserver
 </ul></div>
 <div class="paragraph"><p>All of the above software are installed with</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.3
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
 <pre><tt>make all</tt></pre></div></div>
 <div class="paragraph"><p>except for blat, WebApollo, Tomcat, Apache and the optional <a href="http://topaz.gatech.edu/license_download.cgi">GeneMarkES</a>. You will need to manually install those. You also agree that it is your responsibility to abide by the various license agreements.</p></div>
 <div class="paragraph"><p>See 3rd_party/WebApollo for our webservices, you will need a specific version of WebApollo.</p></div>
-<h3 id="_wishlist">Wishlist</h3><div style="clear:left"></div>
+</div>
+<div class="sect2">
+<h3 id="_wishlist">Wishlist</h3>
 <div class="ulist"><ul>
 <li>
 <p>
@@ -734,7 +939,9 @@ Tutorials and videos
 </p>
 </li>
 </ul></div>
-<h3 id="_the_team">The Team</h3><div style="clear:left"></div>
+</div>
+<div class="sect2">
+<h3 id="_the_team">The Team</h3>
 <div class="paragraph"><p>Alexie Papanicolaou<sup>1</sup> and Brian Haas<sup>2</sup><br />
    <sup>1</sup> CSIRO Ecosystem Sciences, GPO 1700, Canberra 2601, Australia<br />
    <sup>2</sup> The Broad Institute, Cambridge, MA, USA<br />
@@ -747,11 +954,13 @@ It is provided "as is" without warranty of any kind.</tt></pre>
 </div></div>
 </div>
 </div>
+</div>
+</div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
 Version RC1<br />
-Last updated 2014-01-03 23:29:03 EST
+Last updated 2014-04-18 17:06:53 EST
 </div>
 </div>
 </body>

@@ -22,7 +22,7 @@ all:
 	cd databases/hhblits && echo "Uncompressing databases, this may take a while..." find . -name "*tar.bz2" -exec tar -xjf '{}' \;
 	cd 3rd_party/blatSrc && export MACHTYPE_ORIG=$MACHTYPE ; export MACHTYPE=`echo $MACHTYPE | sed -r  's/-.+//'` ; export DESTDIR='' ; export BINDIR=`pwd`/../bin/ && $(MAKE) && export MACHTYPE=$MACHTYPE_ORIG && export MACHTYPE_ORIG=
 	cd 3rd_party/RepeatMasker && if [[ -e Libraries/Dfam.hmm.bz2 && ! -e Libraries/Dfam.hmm ]]; then bunzip2 -kd Libraries/Dfam.hmm.bz2; fi && if [[ -e Libraries/taxonomy.dat.bz2 && ! -e Libraries/taxonomy.dat ]]; then bunzip2 -kd Libraries/taxonomy.dat.bz2 ; fi && echo "I will download TRF from http://tandem.bu.edu/trf. You must read and accept their (v. short) license (see http://tandem.bu.edu/trf/trf.license.html) otherwise exit now:" && sleep 5 && echo "The author of this software grants to any individual or organization the right to use and to make an unlimited number of copies of this software. You may not de-compile, disassemble, reverse engineer, or modify the software. This software cannot be sold, incorporated into commercial software or redistributed. The author of this software accepts no responsibility for damages resulting from the use of this software and makes no warranty or representation, either express or implied, including but not limited to, any implied warranty of merchantability or fitness for a particular purpose. This software is provided as is, and the user assumes all risks when using it." && sleep 10 && wget -nc -r http://tandem.bu.edu/trf/downloads/trf407b.linux64 -O trf && chmod +x trf && echo "You have to now configure RepeatMasker (cd 3rd_party/RepeatMasker; ./configure). Answer the questions. The trf file is in `pwd`. Use the RMBlast NCBI option when asked 'Add a Search Engine', the files are in `pwd`/../bin/" 
-	chmod a+rx bin/* 3rd_party/bin/*
+	chmod -R a+rx bin 3rd_party/bin
 	echo "Installation complete. The only thing now remaining is to configure RepeatMasker: cd 3rd_party/RepeatMasker ; ./configure"
 clean:
 	cd 3rd_party/cdbtools/cdbfasta && $(MAKE) clean
@@ -42,7 +42,7 @@ clean:
 	cd 3rd_party/GlimmerHMM/sources && rm -f *.o
 	cd 3rd_party/PASA && $(MAKE) clean && cd seqclean && rm -rf mdust psx seqclean trimpoly
 	cd 3rd_party/aatpackage && $(MAKE) clean
-	cd 3rd_party/bin && rm -fr *
+	rm -fr 3rd_party/bin 
 	cd test_suite && bash cleanme.sh
 
 test:
