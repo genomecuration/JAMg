@@ -896,7 +896,7 @@ sub do_repeat_masking(){
 	my @data = split("\t",$ln);
 	$data[2] = 'nonexonpart';
 	$data[8] = 'src=RM;pri=6';
-	print OUT join("\t",@data);
+	print OUT join("\t",@data)."\n";
   }
   close OUT;
   close IN;
