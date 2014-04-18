@@ -1,2 +1,0 @@
-myProj	An example annotation comparison
-
