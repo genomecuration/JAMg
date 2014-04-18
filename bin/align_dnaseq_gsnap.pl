@@ -19,8 +19,7 @@ Mandatory:
  
  
 Optional:
-
- -commands_only  :s  Don't run commands, instead write them out into a file as specified by the option. Useful for preparing jobs for ParaFly
+ 
  -input_dir      :s  Directory with read files (defaults to current working directory)
  -gmap_dir       :s  Where the GMAP databases are meant to live (def. ~/databases/gmap)
  -cpus           :i  Number of CPUs/threads (def. 6). I don't recommend more than 6 in a system that has 12 CPUs
@@ -29,8 +28,11 @@ Optional:
  -pattern2           Pattern for automatching right pair (defaults to '_2_')
  -nofail             Don't print out failures (I/O friendlyness if sparse hits expected). Otherwise captured as FASTQ
  -suffix             Build/use suffix array (fast, downweights SNPs, use for non-polymorphic genomes)
- -distance :i        Paired end distance
  -path_number        Maximum number of hits for the read pair. If more that these many hits, then nothing is returned (defaults to 50)
+ -commands_only  :s  Don't run commands, instead write them out into a file as specified by the option. Useful for preparing jobs for ParaFly
+ -split_input    :i  Split the input FASTQ files to these many subfiles. Good for running large RNASeq datasets. Needs -commands_only above
+ -notpaired          Data are single end. Don't look for pairs (use -pattern1 to glob files)
+ -distance :i        Paired end distance
 
 =head1 AUTHORS
 
@@ -42,10 +44,8 @@ Optional:
 =head1 DISCLAIMER & LICENSE
 
 Copyright 2012-2014 the Commonwealth Scientific and Industrial Research Organization. 
-This software is released under the Mozilla Public License v.2.
-
+See LICENSE file for license info
 It is provided "as is" without warranty of any kind.
-You can find the terms and conditions at http://www.mozilla.org/MPL/2.0.
 
 
 =cut
@@ -64,30 +64,33 @@ $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 my ( $gmap_build_exec, $gsnap_exec, $samtools_exec ) =
   &check_program( "gmap_build", "gsnap", "samtools" );
 &samtools_version_check($samtools_exec);
-my ($input_dir,$pattern2,$debug,$genome,$genome_dbname,$nofails,$suffix,$help,$just_write_out_commands);
-my $cwd   = `pwd`;
+my ( $input_dir, $pattern2, $debug, $genome, $genome_dbname, $nofails, $suffix,
+     $help, $just_write_out_commands, $split_input, $notpaired );
+my $cwd = `pwd`;
 chomp($cwd);
-my $gmap_dir = $ENV{'HOME'}.'/databases/gmap/';
+my $gmap_dir           = $ENV{'HOME'} . '/databases/gmap/';
 my $repeat_path_number = 50;
-my $cpus   = 6;
-my $memory = '35G';
-my $pattern = '_1_';
-my $pe_distance = 10000;
+my $cpus               = 6;
+my $memory             = '35G';
+my $pattern            = '_1_';
+my $pe_distance        = 10000;
 &GetOptions(
-             'debug'         => \$debug,
-             'fasta:s'        => \$genome,
-             'dbname:s'       => \$genome_dbname,
-             'gmap_dir:s'     => \$gmap_dir,
-             'cpus|threads:i' => \$cpus,
-             'memory:s'       => \$memory,
-             'help'           => \$help,
+             'debug'           => \$debug,
+             'fasta:s'         => \$genome,
+             'dbname:s'        => \$genome_dbname,
+             'gmap_dir:s'      => \$gmap_dir,
+             'cpus|threads:i'  => \$cpus,
+             'memory:s'        => \$memory,
+             'help'            => \$help,
              'pattern1:s'      => \$pattern,
              'pattern2:s'      => \$pattern2,
-             'nofail'         => \$nofails,
-             'distance:i'     => \$pe_distance,
-             'suffix'        => \$suffix,
-             'path_number:i' => \$repeat_path_number,
+             'nofail'          => \$nofails,
+             'distance:i'      => \$pe_distance,
+             'suffix'          => \$suffix,
+             'path_number:i'   => \$repeat_path_number,
              'commands_only:s' => \$just_write_out_commands,
+             'split_input:i'   => \$split_input,
+             'notpaired'       => \$notpaired,
 );
 
 pod2usage if $help;
@@ -98,24 +101,26 @@ pod2usage "GMAP database does not exist: $gmap_dir\n" unless -d $gmap_dir;
 $input_dir = $cwd unless $input_dir;
 my $samtools_sort_CPUs = int( $cpus / 2 ) > 2 ? int( $cpus / 2 ) : 2;
 my $suff = "";
-if ($memory =~s/([A-Z])$//){
+if ( $memory =~ s/([A-Z])$// ) {
  $suff = $1;
 }
 
-$memory = int(( $memory / $samtools_sort_CPUs ) ) < 1 ? '1G' :
-  int(  ( $memory / $samtools_sort_CPUs ) )
+$memory =
+  int( ( $memory / $samtools_sort_CPUs ) ) < 1
+  ? '1G'
+  : int( ( $memory / $samtools_sort_CPUs ) )
   . $suff;    # samtools sort uses -memory per CPU
 
-unless ($pattern2){
-        $pattern2 = $pattern;
-        $pattern2 =~ s/1/2/;
+unless ( $pattern2 || $notpaired ) {
+ $pattern2 = $pattern;
+ $pattern2 =~ s/1/2/;
 }
 
 my @files = glob("$input_dir/*$pattern*");
 push( @files, @ARGV );
 my @verified_files;
 for ( my $i = 0 ; $i < @files ; $i++ ) {
- next if $files[$i] =~/\.bz2$/ || $files[$i] =~/\.gz$/;
+ next if $files[$i] =~ /\.bz2$/ || $files[$i] =~ /\.gz$/;
  if ( -s $files[$i] ) {
   push( @verified_files, $files[$i] );
  }
@@ -126,104 +131,55 @@ for ( my $i = 0 ; $i < @files ; $i++ ) {
 @files = @verified_files;
 die "No files found!\n" unless @files;
 
-open (CMD,">$just_write_out_commands") if $just_write_out_commands;
-my ($build_cmd,$align_cmd);
+my ( $build_cmd, $align_cmd );
 
-if ($suffix){
- $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -k 13 -q 1 -e 0 $genome >/dev/null";
- $align_cmd = "$gsnap_exec -B 4 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam --sam-use-0M --no-sam-headers --pairmax-dna=$pe_distance ";
-}else{
- $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -k 13 -q 1 -e 0 --no-sarray $genome >/dev/null";
- $align_cmd = "$gsnap_exec --use-sarray=0 -B 4 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam --sam-use-0M --no-sam-headers --pairmax-dna=$pe_distance ";
+if ($suffix) {
+ $build_cmd =
+"$gmap_build_exec -D $gmap_dir -d $genome_dbname -k 13 -q 1 -e 0 $genome >/dev/null";
+ $align_cmd =
+"$gsnap_exec -B 4 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam --sam-use-0M --no-sam-headers ";
+}
+else {
+ $build_cmd =
+"$gmap_build_exec -D $gmap_dir -d $genome_dbname -k 13 -q 1 -e 0 --no-sarray $genome >/dev/null";
+ $align_cmd =
+"$gsnap_exec --use-sarray=0 -B 4 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam --sam-use-0M --no-sam-headers ";
 }
 
-$align_cmd .= " --nofails "        if $nofails;
-$align_cmd .= " --fails-as-input " if !$nofails;
+$align_cmd .= " --nofails "                  if $nofails;
+$align_cmd .= " --fails-as-input "           if !$nofails;
+$align_cmd .= " --pairmax-dna=$pe_distance " if !$notpaired;
 
-foreach my $file ( sort @files ) {
- my $pair = $file;
- $pair =~ s/$pattern/$pattern2/;
- next if $pair eq $file;
- unless ( -s $pair ) {
-  warn "Didn't find pair of $file. Skipping\n";
-  next;
- }
- my $base = basename($file);
- $base =~ s/$pattern.+//;
- my $group_id = $base;
- $base .= "_vs_$genome_dbname";
- if ( -s "gsnap.$base.log" ) {
-  open( LOG, "gsnap.$base.log" );
-  my @log = <LOG>;
-  close LOG;
-  next if $log[-1] && $log[-1] =~ /^GSNAP Completed/;
-#  my @del = glob("gsnap.$base.*");
-#  foreach (@del) { unlink($_); }
- }
- open( LOG, ">gsnap.$base.log" );
- &process_cmd($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
- my $file_align_cmd = $align_cmd;
- $file_align_cmd .=
-   " --split-output=gsnap.$base --read-group-id=$group_id $file $pair ";
- &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
-   unless (    -s "gsnap.$base.concordant_uniq"
-            || -s "gsnap.$base.concordant_uniq.bam" );
- unless ( -s "gsnap.$base.concordant_uniq.bam" ) {
-  &process_cmd(
-"$samtools_exec view -h -u -T $genome gsnap.$base.concordant_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - gsnap.$base.concordant_uniq"
-  );
-  &process_cmd("$samtools_exec index gsnap.$base.concordant_uniq.bam");
-  print LOG "\ngsnap.$base.concordant_uniq.bam:\n";
-  &process_cmd(
-    "$samtools_exec flagstat gsnap.$base.concordant_uniq.bam >> gsnap.$base.log"
-  );
-  unlink("gsnap.$base.concordant_uniq");
- }
- unless ( -s "gsnap.$base.concordant_mult.bam" ) {
-  &process_cmd(
-"$samtools_exec view -h -u -T $genome gsnap.$base.concordant_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - gsnap.$base.concordant_mult"
-  );
-  &process_cmd("$samtools_exec index gsnap.$base.concordant_mult.bam");
-  print LOG "\ngsnap.$base.concordant_mult.bam:\n";
-  &process_cmd(
-    "$samtools_exec flagstat gsnap.$base.concordant_mult.bam >> gsnap.$base.log"
-  );
-  unlink("gsnap.$base.concordant_mult");
- }
- unless ( -s "gsnap.$base.concordant_uniq_mult.bam" ) {
-  &process_cmd(
-"$samtools_exec merge -@ $cpus  -l 9 gsnap.$base.concordant_uniq_mult.bam gsnap.$base.concordant_uniq.bam gsnap.$base.concordant_mult.bam"
-  );
-  &process_cmd("$samtools_exec index gsnap.$base.concordant_uniq_mult.bam");
-  print LOG "\ngsnap.$base.concordant_uniq_mult.bam:\n";
-  &process_cmd(
-"$samtools_exec flagstat gsnap.$base.concordant_uniq_mult.bam >> gsnap.$base.log"
-  );
- }
-
- print LOG "\nGSNAP Completed!\n";
- close LOG;
- print CMD "\n" if $just_write_out_commands;
+open( CMD, ">$just_write_out_commands" ) if $just_write_out_commands;
+if ($notpaired) {
+ my @files_to_do = &checked_unpaired_files(@files);
+ &align_unpaired_files(@files_to_do);
 }
-close (CMD)  if $just_write_out_commands;
+else {
+ my @files_to_do = &checked_paired_files(@files);
+ &align_paired_files(@files_to_do);
+}
+
+close(CMD) if $just_write_out_commands;
 
 ########################################
 sub process_cmd {
  my ( $cmd, $dir, $delete_pattern ) = @_;
- print &mytime . "CMD: $cmd\n"     if $debug;
+ print &mytime . "CMD: $cmd\n" if $debug;
  undef($dir) if $dir && $dir eq '.';
- if ($just_write_out_commands){
-   print CMD "cd $dir ; $cmd ; cd $cwd;  " if $dir;
-   print CMD "$cmd; " if !$dir;
- }else{
-   chdir($dir)                       if $dir;
-   my $ret = system($cmd);
-   if ( $ret && $ret != 256 ) {
-    chdir($cwd) if $dir;
-    &process_cmd_delete_fails( $dir, $delete_pattern ) if $delete_pattern;
-    die "Error, cmd died with ret $ret\n";
-    chdir($cwd) if $dir;
-   }
+ if ($just_write_out_commands) {
+  print CMD "cd $dir ; $cmd ; cd $cwd;  " if $dir;
+  print CMD "$cmd; "                      if !$dir;
+ }
+ else {
+  chdir($dir) if $dir;
+  my $ret = system($cmd);
+  if ( $ret && $ret != 256 ) {
+   chdir($cwd) if $dir;
+   &process_cmd_delete_fails( $dir, $delete_pattern ) if $delete_pattern;
+   die "Error, cmd died with ret $ret\n";
+   chdir($cwd) if $dir;
+  }
  }
  return;
 }
@@ -257,7 +213,7 @@ sub check_program() {
  return @paths;
 }
 
-sub samtools_version_check() { 
+sub samtools_version_check() {
  my $samtools_exec = shift;
  my @version_lines = `$samtools_exec 2>&1`;
  foreach my $ln (@version_lines) {
@@ -277,3 +233,204 @@ sub process_cmd_delete_fails {
  die
 "\nBreak requested while $dir/$pattern was being processed. Unfinished output deleted.\n";
 }
+
+sub checked_unpaired_files() {
+ my @files = @_;
+ my @files_to_do;
+ foreach my $file ( sort @files ) {
+  if ($split_input) {
+   print "Splitting data for unpaired $file\n";
+   my $lines = `wc -l < $file`;
+   chomp($lines);
+   my $number_of_lines = int( ( $lines / 4 ) / $split_input );
+   $number_of_lines *= 4;
+   die
+"Number of lines is not as expected for FASTQ ($number_of_lines / $lines)\n"
+     unless $number_of_lines % 4 == 0;
+   system("split -a 3 -d -l $number_of_lines $file $file. ");
+   my @new_files = glob("$file.0??");
+   print "\t Adding ";
+
+   foreach my $f (@new_files) {
+    if ( $f =~ /$file\.\d+$/ ) {
+     print " $f";
+     push( @files_to_do, $f );
+    }
+   }
+   print "\n";
+  }
+  else {
+   push( @files_to_do, $file );
+  }
+ }
+ return @files_to_do;
+}
+
+sub checked_paired_files() {
+ my @files = @_;
+ my @files_to_do;
+ foreach my $file ( sort @files ) {
+  my $pair = $file;
+  $pair =~ s/$pattern/$pattern2/;
+  next if $pair eq $file;
+  unless ( -s $pair ) {
+   warn "Didn't find pair of $file. Skipping\n";
+   next;
+  }
+  if ($split_input) {
+   print "Splitting data for pairs $file & $pair\n";
+   my $lines = `wc -l < $file`;
+   chomp($lines);
+   my $number_of_lines = int( ( $lines / 4 ) / $split_input );
+   $number_of_lines *= 4;
+   die
+"Number of lines is not as expected for FASTQ ($number_of_lines / $lines)\n"
+     unless $number_of_lines % 4 == 0;
+   system("split -a 3 -d -l $number_of_lines $file $file. ");
+   system("split -a 3 -d -l $number_of_lines $file $pair. ");
+   my @new_files = ( glob("$file.0??"), glob("$pair.0??") );
+   print "\t Adding ";
+
+   foreach my $f (@new_files) {
+    if ( $f =~ /$file\.\d+$/ ) {
+     print " $f";
+     push( @files_to_do, $f );
+    }
+   }
+   print "\n";
+  }
+  else {
+   push( @files_to_do, $file );
+  }
+ }
+ return @files_to_do;
+
+}
+
+sub align_unpaired_files() {
+ my @files = @_;
+ foreach my $file ( sort @files ) {
+  my $base = basename($file);
+  $base =~ s/$pattern.+//;
+  my $group_id = $base;
+  $base .= "_vs_$genome_dbname";
+  if ( -s "gsnap.$base.log" ) {
+   open( LOG, "gsnap.$base.log" );
+   my @log = <LOG>;
+   close LOG;
+   next if $log[-1] && $log[-1] =~ /^GSNAP Completed/;
+  }
+  open( LOG, ">gsnap.$base.log" );
+  &process_cmd($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
+  my $file_align_cmd = $align_cmd;
+  $file_align_cmd .=
+    " --split-output=gsnap.$base --read-group-id=$group_id $file ";
+  &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
+    unless (    -s "gsnap.$base.concordant_uniq"
+             || -s "gsnap.$base.concordant_uniq.bam" );
+  unless ( -s "gsnap.$base.concordant_uniq.bam" ) {
+   &process_cmd(
+"$samtools_exec view -h -u -T $genome gsnap.$base.concordant_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - gsnap.$base.concordant_uniq"
+   );
+   &process_cmd("$samtools_exec index gsnap.$base.concordant_uniq.bam");
+   print LOG "\ngsnap.$base.concordant_uniq.bam:\n";
+   &process_cmd(
+    "$samtools_exec flagstat gsnap.$base.concordant_uniq.bam >> gsnap.$base.log"
+   );
+   unlink("gsnap.$base.concordant_uniq");
+  }
+  unless ( -s "gsnap.$base.concordant_mult.bam" ) {
+   &process_cmd(
+"$samtools_exec view -h -u -T $genome gsnap.$base.concordant_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - gsnap.$base.concordant_mult"
+   );
+   &process_cmd("$samtools_exec index gsnap.$base.concordant_mult.bam");
+   print LOG "\ngsnap.$base.concordant_mult.bam:\n";
+   &process_cmd(
+    "$samtools_exec flagstat gsnap.$base.concordant_mult.bam >> gsnap.$base.log"
+   );
+   unlink("gsnap.$base.concordant_mult");
+  }
+  unless ( -s "gsnap.$base.concordant_uniq_mult.bam" ) {
+   &process_cmd(
+"$samtools_exec merge -@ $cpus  -l 9 gsnap.$base.concordant_uniq_mult.bam gsnap.$base.concordant_uniq.bam gsnap.$base.concordant_mult.bam"
+   );
+   &process_cmd("$samtools_exec index gsnap.$base.concordant_uniq_mult.bam");
+   print LOG "\ngsnap.$base.concordant_uniq_mult.bam:\n";
+   &process_cmd(
+"$samtools_exec flagstat gsnap.$base.concordant_uniq_mult.bam >> gsnap.$base.log"
+   );
+  }
+
+  print LOG "\nGSNAP Completed!\n";
+  close LOG;
+  print CMD "\n" if $just_write_out_commands;
+ }
+}
+
+sub align_paired_files() {
+ my @files = @_;
+ foreach my $file ( sort @files ) {
+  my $pair = $file;
+  $pair =~ s/$pattern/$pattern2/;
+  next if $pair eq $file;
+  unless ( -s $pair ) {
+   warn "Didn't find pair of $file. Skipping\n";
+   next;
+  }
+  my $base = basename($file);
+  $base =~ s/$pattern.+//;
+  my $group_id = $base;
+  $base .= "_vs_$genome_dbname";
+  if ( -s "gsnap.$base.log" ) {
+   open( LOG, "gsnap.$base.log" );
+   my @log = <LOG>;
+   close LOG;
+   next if $log[-1] && $log[-1] =~ /^GSNAP Completed/;
+  }
+  open( LOG, ">gsnap.$base.log" );
+  &process_cmd($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
+  my $file_align_cmd = $align_cmd;
+  $file_align_cmd .=
+    " --split-output=gsnap.$base --read-group-id=$group_id $file $pair ";
+  &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
+    unless (    -s "gsnap.$base.concordant_uniq"
+             || -s "gsnap.$base.concordant_uniq.bam" );
+  unless ( -s "gsnap.$base.concordant_uniq.bam" ) {
+   &process_cmd(
+"$samtools_exec view -h -u -T $genome gsnap.$base.concordant_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - gsnap.$base.concordant_uniq"
+   );
+   &process_cmd("$samtools_exec index gsnap.$base.concordant_uniq.bam");
+   print LOG "\ngsnap.$base.concordant_uniq.bam:\n";
+   &process_cmd(
+    "$samtools_exec flagstat gsnap.$base.concordant_uniq.bam >> gsnap.$base.log"
+   );
+   unlink("gsnap.$base.concordant_uniq");
+  }
+  unless ( -s "gsnap.$base.concordant_mult.bam" ) {
+   &process_cmd(
+"$samtools_exec view -h -u -T $genome gsnap.$base.concordant_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - gsnap.$base.concordant_mult"
+   );
+   &process_cmd("$samtools_exec index gsnap.$base.concordant_mult.bam");
+   print LOG "\ngsnap.$base.concordant_mult.bam:\n";
+   &process_cmd(
+    "$samtools_exec flagstat gsnap.$base.concordant_mult.bam >> gsnap.$base.log"
+   );
+   unlink("gsnap.$base.concordant_mult");
+  }
+  unless ( -s "gsnap.$base.concordant_uniq_mult.bam" ) {
+   &process_cmd(
+"$samtools_exec merge -@ $cpus  -l 9 gsnap.$base.concordant_uniq_mult.bam gsnap.$base.concordant_uniq.bam gsnap.$base.concordant_mult.bam"
+   );
+   &process_cmd("$samtools_exec index gsnap.$base.concordant_uniq_mult.bam");
+   print LOG "\ngsnap.$base.concordant_uniq_mult.bam:\n";
+   &process_cmd(
+"$samtools_exec flagstat gsnap.$base.concordant_uniq_mult.bam >> gsnap.$base.log"
+   );
+  }
+
+  print LOG "\nGSNAP Completed!\n";
+  close LOG;
+  print CMD "\n" if $just_write_out_commands;
+ }
+}
+

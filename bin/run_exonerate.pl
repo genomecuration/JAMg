@@ -69,11 +69,8 @@ $ RepeatMasker -e abblast -pa 35 -s -species insecta -no_is -gccalc -gff  -xsmal
 =head1 DISCLAIMER & LICENSE
 
 Copyright 2012-2014 the Commonwealth Scientific and Industrial Research Organization. 
-This software is released under the Mozilla Public License v.2.
-
+See LICENSE file for license info
 It is provided "as is" without warranty of any kind.
-You can find the terms and conditions at http://www.mozilla.org/MPL/2.0.
-
 
 =head1 BUGS & LIMITATIONS
 
