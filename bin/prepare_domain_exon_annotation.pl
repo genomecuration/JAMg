@@ -63,11 +63,10 @@ use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
 use Fasta_reader;
 use Thread_helper;
+use Data::Dumper;
 
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/:$RealBin:$RealBin/../3rd_party/RepeatMasker:$RealBin/../3rd_party/hhsuite/bin";
-$ENV{LD_LIBRARY_PATH} .= ":$RealBin/../3rd_party/hhsuite/lib64";
-$ENV{HHLIB} =  ":$RealBin/../3rd_party/hhsuite/lib/hh";
-
+$ENV{HHLIB} =  "$RealBin/../3rd_party/hhsuite/lib/hh";
 my (
      $genome,          $circular,          $repeatmasker_options,
      $mpi_host_string, $help,              $verbose,$only_repeat,
@@ -85,14 +84,14 @@ GetOptions(
             'fasta|genome|in:s' => \$genome,
             'minsize:i'         => \$minsize,
             'circular'          => \$circular,
-            'repthreads:i'       => \$cpus,
+            'repthreads:i'      => \$cpus,
             'repeatoptions:s'   => \$repeatmasker_options,
             'engine:s'          => \$engine,
             'mpi_cpus:i'        => \$hhblits_cpus,
             'transposon_db:s'   => \$transposon_db,
             'uniprot_db:s'      => \$uniprot_db,
             'hosts:s'           => \$mpi_host_string,
-            'verbose'             => \$verbose,
+            'verbose|debug'     => \$verbose,
             'help'              => \$help,
             'scratch:s'         => \$scratch_dir,
             'no_uniprot'        => \$no_uniprot_search,
@@ -101,7 +100,7 @@ GetOptions(
 );
 
 pod2usage( -verbose => 2 ) if $help;
-
+die "-mpi_cpus needs to be larger than 1 (not $hhblits_cpus)\n" if $hhblits_cpus < 2;
 die pod2usage "No genome FASTA provided\n" unless $genome && -s $genome;
 $engine = lc($engine);
 die pod2usage "Engine must be local, localmpi or PBS\n"
@@ -184,6 +183,7 @@ sub mpi_version() {
  die "Can't tell which MPI version you are using, MPICH or OpenMPI"
    if !$version;
  print "Found MPI $version\n";
+ $ENV{LD_LIBRARY_PATH} .= ":$RealBin/../lib64";
  return $version;
 }
 
@@ -214,7 +214,7 @@ sub check_program() {
  my @paths;
  foreach my $prog (@_) {
   my $path = `which $prog`;
-  die "Error, path to required $prog cannot be found\n"
+  die "Error, path to required $prog cannot be found in your path\nPATH is:\n".$ENV{PATH}."\n"
     unless $path =~ /^\//;
   chomp($path);
   push( @paths, $path );
@@ -320,6 +320,7 @@ MPIRUN_ARGS=\"-gmca mpi_warn_on_fork 0 -cpus-per-proc 1 -np \$2 -machinefile wor
 DB=$transposon_db
 
 export OMP_NUM_THREADS=1
+export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$RealBin/../lib64
 cd \$PBS_O_WORKDIR
 cat \${PBS_NODEFILE} > workers.\$PBS_JOBID.mpi
 \$MPIRUN_EXEC \$MPIRUN_ARGS $ffindex_apply_mpi_exec \\
@@ -354,6 +355,7 @@ MPIRUN_ARGS=\"-gmca mpi_warn_on_fork 0 -cpus-per-proc 1 -np \$2 -machinefile wor
 DB=$uniprot_db
 
 export OMP_NUM_THREADS=1
+export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$RealBin/../lib64
 cd \$PBS_O_WORKDIR
 cat \${PBS_NODEFILE} > workers.\$PBS_JOBID.mpi
 \$MPIRUN_EXEC \$MPIRUN_ARGS $ffindex_apply_mpi_exec \\
@@ -508,8 +510,9 @@ sub prepare_mpi() {
 sub remove_transposons() {
  my $fasta_file  = shift;
  my $result_file = shift;
- return $fasta_file if !-s $result_file;
  my $out_fasta   = "$fasta_file.norep";
+ return $out_fasta if -s $out_fasta; 
+ return $fasta_file if !$result_file || !-s $result_file;
  return $out_fasta if -s $out_fasta; 
  my %transposon_hits;
  open( IN, $result_file );
@@ -553,92 +556,94 @@ sub remove_zero_bytes() {
 }
 
 sub prepare_local() {
- my ( $ffindex_get_exec, $parafly_exec ) =
-   &check_program( 'ffindex_get', 'ParaFly' );
+ my ( $ffindex_get_exec) = &check_program( 'ffindex_get');
  &cleanup_threaded_exit();
- my @fasta_files;
- my $workdir = 'exons_hhsearch';
- if ( -d $workdir ) {
-  warn
-"Working directory $workdir already exists. Will skip existing command files so you can restart where you left off. If you changed the number of CPUs, then this won't work and you should delete this directory before restarting...\n";
-  sleep(3);
-  @fasta_files = glob( $workdir . "/*fa" );
- }
- else {
-  mkdir $workdir;
-  @fasta_files = &partition_transcript_db( "$exons.aa.trim", 'exons_hhsearch' );
- }
+ my $fasta = "$exons.aa.trim";
+ &process_cmd("$ffindex_from_fasta_exec -s $fasta.db $fasta.db.idx $fasta")  unless -s "$fasta.db";
+ my $number_of_entries = `wc -l < $fasta.db.idx`;
+ chomp($number_of_entries);
 
- my $thread_helper = new Thread_helper($hhblits_cpus);
- my ( @transposon_cmds, @uniprot_cmds );
- foreach my $fasta (@fasta_files) {
-  &process_cmd("$ffindex_from_fasta_exec -s $fasta.db $fasta.db.idx $fasta")
-    unless -s "$fasta.db";
-  my $number_of_entries = `wc -l < $fasta.db.idx`;
-  chomp($number_of_entries);
-
-  unless ( -s "$fasta.hhblits.transposon.cmds" || $no_transposon_search || $number_of_entries == 0 ) {
+ # transposons
+ unless ( -s "$fasta.hhblits.transposon.cmds" || -s "hhr.$exons.aa.trim.transposon.db" || $no_transposon_search || $number_of_entries == 0 ) {
    open( CMD, ">$fasta.hhblits.transposon.cmds" );
    for ( my $i = 1 ; $i <= $number_of_entries ; $i++ ) {
-    print CMD
-"$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0  >> $fasta.transposons.hhr 2>/dev/null\n"; 
+    print CMD "$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0  >> $fasta.transposons.hhr 2>/dev/null\n"; 
    }
    close CMD;
   }
 
-  unless ( -s "$fasta.hhblits.uniprot.cmds" || $no_uniprot_search || $number_of_entries == 0) {
+  # uniprot
+  unless ( -s "$fasta.hhblits.uniprot.cmds" || -s "hhr.$exons.aa.trim.uniprot.db" || $no_uniprot_search || $number_of_entries == 0) {
    open( CMD, ">$fasta.hhblits.uniprot.cmds" );
    for ( my $i = 1 ; $i <= $number_of_entries ; $i++ ) {
-    print CMD
-"$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 >> $fasta.uniprot.hhr 2>/dev/null\n";
+    print CMD "$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 >> $fasta.uniprot.hhr 2>/dev/null\n";
    }
    close CMD;
   }
-  push( @transposon_cmds, "$fasta.hhblits.transposon.cmds" )
-    unless ($no_transposon_search);
-  push( @uniprot_cmds, "$fasta.hhblits.uniprot.cmds" )
-    unless ($no_uniprot_search);
 
+ unless ($no_transposon_search || !-s "$fasta.hhblits.transposon.cmds" ) {
+   print "Processing transposon library\n";
+   &just_run_my_commands("$fasta.hhblits.transposon.cmds");
  }
- unless ($no_transposon_search) {
-  print "Processing "
-    . scalar(@transposon_cmds)
-    . " transposon CMDs with ParaFly\n";
-
-  foreach my $cmd_file (@transposon_cmds) {
-   my $thread = threads->create( '_run_parafly', $cmd_file );
-   $thread_helper->add_thread($thread);
-  }
-  $thread_helper->wait_for_all_threads_to_complete();
-  my @failed_threads = $thread_helper->get_failed_threads();
-  if (@failed_threads) {
-   die "Error, " . scalar(@failed_threads) . " threads failed.\n";
-   exit(1);
-  }
- }
-
  # haven't implemented a separate input for uniprot (i.e not doing repeats) yet.
- unless ($no_uniprot_search) {
-  print "Processing " . scalar(@uniprot_cmds) . " uniprot CMDs with ParaFly\n";
-
-  foreach my $cmd_file (@uniprot_cmds) {
-   my $thread = threads->create( '_run_parafly', $cmd_file );
-   $thread_helper->add_thread($thread);
-  }
-  $thread_helper->wait_for_all_threads_to_complete();
-  my @failed_threads = $thread_helper->get_failed_threads();
-  if (@failed_threads) {
-   die "Error, " . scalar(@failed_threads) . " threads failed.\n";
-   exit(1);
-  }
+ unless ($no_uniprot_search || !-s "$fasta.hhblits.uniprot.cmds") {
+  print "Processing UniProt library\n";
+  &just_run_my_commands("$fasta.hhblits.uniprot.cmds");
  }
 }
 
-sub _run_parafly() {
+sub just_run_my_commands_helper(){
+	my ($cmd,$failed_filehandle,$completed_filehandle) = @_;
+	my $ret = system($cmd);
+	if ($ret && $ret != 256 ){
+		print $failed_filehandle $cmd;
+	}else{
+		print $completed_filehandle $cmd;
+	}
+}
+
+sub just_run_my_commands(){
  my $cmd_file = shift;
- my ($parafly_exec) = &check_program('ParaFly');
- &process_cmd(
-    "$parafly_exec -c $cmd_file -CPU 1 -shuffle -failed_cmds $cmd_file.failed");
+ return unless $cmd_file && -s $cmd_file;
+ open (CMDS,$cmd_file);
+ my @commands = <CMDS>;
+ my $number_commands = scalar(@commands);
+ close CMDS;
+ return unless $number_commands && $number_commands > 0;
+ my (%completed,%failed);
+ my $cmd_count = int(0);
+ my $failed_count = int(0);
+ my $completed_count = int(0);
+ if (-s $cmd_file.'.completed'){
+	open (IN,$cmd_file.'.completed');
+	foreach (my $cmd=<IN>){
+		next if $cmd=~/^\s*$/;
+		$completed{$cmd}++;
+	}
+	close IN;
+ }
+
+ print "Processing with $hhblits_cpus CPUs...\n";
+ my $thread_helper = new Thread_helper($hhblits_cpus);
+ open (my $failed_fh,">$cmd_file.failed");
+ open (my $completed_fh,">>$cmd_file.completed");
+ foreach my $cmd (@commands){
+	next if $cmd=~/^\s*$/;
+	$cmd_count++;
+	next if $completed{$cmd};
+        my $thread = threads->create('just_run_my_commands_helper', $cmd,$failed_fh,$completed_fh);
+        $thread_helper->add_thread($thread);
+        sleep(1) if ($cmd_count % 100 == 0);
+        print "\r $cmd_count / $number_commands                 " if $verbose;
+ }
+ $thread_helper->wait_for_all_threads_to_complete();
+ close $failed_fh;
+ close $completed_fh;
+ my @failed_threads = $thread_helper->get_failed_threads();
+ if (@failed_threads || -s "$cmd_file.failed") {
+  die "Error, " . scalar(@failed_threads) . " threads failed. Also see $cmd_file.failed\n";
+  exit(1);
+ }
 }
 
 sub prepare_cluster() {
@@ -745,7 +750,7 @@ sub parse_hhr() {
  my ( $infile, $homology_prob_cut, $eval_cut, $pval_cut, $score_cut,
       $align_col_cut, $template_aln_size_cut, $is_repeat )
    = @_;
-
+ return if !$infile || !-s $infile;
  $infile = &remove_zero_bytes( $infile);
  my $outfile = "$infile.results";
  return $outfile if (-s $outfile);  

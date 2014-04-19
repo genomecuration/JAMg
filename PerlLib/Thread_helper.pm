@@ -41,7 +41,7 @@ use threads;
 
 
 
-my $SLEEPTIME = 1;
+my $SLEEPTIME = 0;
 
 our $THREAD_MONITORING = 0; # set to 1 to watch thread management
 
@@ -127,7 +127,7 @@ sub wait_for_open_thread {
                 }
             }
             if ($waiting_for_thread_to_complete) {
-                sleep($SLEEPTIME); 
+                sleep($SLEEPTIME) if $SLEEPTIME; 
             }
         }
         

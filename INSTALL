@@ -38,6 +38,8 @@ Then download the RepeatMasker libraries from GIRI (free registration required; 
 NB: "This version of RepeatMasker requires library version 20140131 or higher".
 Place repeatmaskerlibraries-*.tar.gz in $JAMG_PATH/3rd_party/RepeatMasker
 
+Where $JAMG_PATH is shorthand for your full path for where you placed JAMg (e.g ~/software/jamg)
+
 Then run 
 make 2>&1 | tee make.log
 
@@ -54,8 +56,6 @@ Answer the prompts and use RM-BLAST
 file paths are in the JAMg distribution, e.g.
 $JAMG_PATH/3rd_party/RepeatMasker
 $JAMG_PATH/3rd_party/ncbi-blast/bin
-
-
 
 =============================================================================================================
 Please report bugs to:
