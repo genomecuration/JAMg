@@ -323,41 +323,42 @@ sub align_unpaired_files() {
   open( LOG, ">gsnap.$base.log" );
   &process_cmd($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
   my $file_align_cmd = $align_cmd;
+  my $base_out_filename = $notpaired ? "gsnap.$base.unpaired"  : "gsnap.$base.concordant";
+
   $file_align_cmd .=
     " --split-output=gsnap.$base --read-group-id=$group_id $file ";
   &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
-    unless (    -s "gsnap.$base.concordant_uniq"
-             || -s "gsnap.$base.concordant_uniq.bam" );
-  unless ( -s "gsnap.$base.concordant_uniq.bam" ) {
+    unless (    -s $base_out_filename."_uniq"
+             || -s $base_out_filename."_uniq.bam" );
+  unless ( -s $base_out_filename."_uniq.bam" ) {
    &process_cmd(
-"$samtools_exec view -h -u -T $genome gsnap.$base.concordant_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - gsnap.$base.concordant_uniq"
+"$samtools_exec view -h -u -T $genome $base_out_filename"."_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - $base_out_filename"."_uniq"
    );
-   &process_cmd("$samtools_exec index gsnap.$base.concordant_uniq.bam");
-   print LOG "\ngsnap.$base.concordant_uniq.bam:\n";
+   &process_cmd("$samtools_exec index $base_out_filename"."_uniq.bam");
+   print LOG "\n$base_out_filename"."_uniq.bam:\n";
    &process_cmd(
-    "$samtools_exec flagstat gsnap.$base.concordant_uniq.bam >> gsnap.$base.log"
+    "$samtools_exec flagstat $base_out_filename"."_uniq.bam >> gsnap.$base.log"
    );
-   unlink("gsnap.$base.concordant_uniq");
+   unlink($base_out_filename."_uniq");
   }
-  unless ( -s "gsnap.$base.concordant_mult.bam" ) {
+  unless ( -s $base_out_filename."_mult.bam" ) {
    &process_cmd(
-"$samtools_exec view -h -u -T $genome gsnap.$base.concordant_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - gsnap.$base.concordant_mult"
+"$samtools_exec view -h -u -T $genome $base_out_filename"."_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - $base_out_filename"."_mult"
    );
-   &process_cmd("$samtools_exec index gsnap.$base.concordant_mult.bam");
-   print LOG "\ngsnap.$base.concordant_mult.bam:\n";
+   &process_cmd("$samtools_exec index $base_out_filename"."_mult.bam");
+   print LOG "\n$base_out_filename"."_mult.bam:\n";
    &process_cmd(
-    "$samtools_exec flagstat gsnap.$base.concordant_mult.bam >> gsnap.$base.log"
+    "$samtools_exec flagstat $base_out_filename"."_mult.bam >> gsnap.$base.log"
    );
-   unlink("gsnap.$base.concordant_mult");
+   unlink("$base_out_filename"."_mult");
   }
-  unless ( -s "gsnap.$base.concordant_uniq_mult.bam" ) {
-   &process_cmd(
-"$samtools_exec merge -@ $cpus  -l 9 gsnap.$base.concordant_uniq_mult.bam gsnap.$base.concordant_uniq.bam gsnap.$base.concordant_mult.bam"
+  unless ( -s $base_out_filename."_uniq_mult.bam" ) {
+   &process_cmd("$samtools_exec merge -@ $cpus  -l 9 $genome $base_out_filename"."_uniq_mult.bam $base_out_filename"."_uniq.bam $base_out_filename"."_mult.bam"
    );
-   &process_cmd("$samtools_exec index gsnap.$base.concordant_uniq_mult.bam");
-   print LOG "\ngsnap.$base.concordant_uniq_mult.bam:\n";
+   &process_cmd("$samtools_exec index $base_out_filename"."_uniq_mult.bam");
+   print LOG "\n$base_out_filename"."_uniq_mult.bam:\n";
    &process_cmd(
-"$samtools_exec flagstat gsnap.$base.concordant_uniq_mult.bam >> gsnap.$base.log"
+"$samtools_exec flagstat $base_out_filename"."_uniq_mult.bam >> gsnap.$base.log"
    );
   }
 
@@ -389,42 +390,43 @@ sub align_paired_files() {
   }
   open( LOG, ">gsnap.$base.log" );
   &process_cmd($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
+  my $base_out_filename = $notpaired ? "gsnap.$base.unpaired"  : "gsnap.$base.concordant";
   my $file_align_cmd = $align_cmd;
   $file_align_cmd .=
     " --split-output=gsnap.$base --read-group-id=$group_id $file $pair ";
   &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
-    unless (    -s "gsnap.$base.concordant_uniq"
-             || -s "gsnap.$base.concordant_uniq.bam" );
-  unless ( -s "gsnap.$base.concordant_uniq.bam" ) {
+    unless (    -s "$base_out_filename"."_uniq"
+             || -s "$base_out_filename"."_uniq.bam" );
+  unless ( -s "$base_out_filename"."_uniq.bam" ) {
    &process_cmd(
-"$samtools_exec view -h -u -T $genome gsnap.$base.concordant_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - gsnap.$base.concordant_uniq"
+"$samtools_exec view -h -u -T $genome $base_out_filename"."_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - $base_out_filename"."_uniq"
    );
-   &process_cmd("$samtools_exec index gsnap.$base.concordant_uniq.bam");
-   print LOG "\ngsnap.$base.concordant_uniq.bam:\n";
+   &process_cmd("$samtools_exec index $base_out_filename"."_uniq.bam");
+   print LOG "\n$base_out_filename"."_uniq.bam:\n";
    &process_cmd(
-    "$samtools_exec flagstat gsnap.$base.concordant_uniq.bam >> gsnap.$base.log"
+    "$samtools_exec flagstat $base_out_filename"."_uniq.bam >> gsnap.$base.log"
    );
-   unlink("gsnap.$base.concordant_uniq");
+   unlink("$base_out_filename"."_uniq");
   }
-  unless ( -s "gsnap.$base.concordant_mult.bam" ) {
+  unless ( -s "$base_out_filename"."_mult.bam" ) {
    &process_cmd(
-"$samtools_exec view -h -u -T $genome gsnap.$base.concordant_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - gsnap.$base.concordant_mult"
+"$samtools_exec view -h -u -T $genome $base_out_filename"."_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - $base_out_filename"."_mult"
    );
-   &process_cmd("$samtools_exec index gsnap.$base.concordant_mult.bam");
-   print LOG "\ngsnap.$base.concordant_mult.bam:\n";
+   &process_cmd("$samtools_exec index $base_out_filename"."_mult.bam");
+   print LOG "\n$base_out_filename"."_mult.bam:\n";
    &process_cmd(
-    "$samtools_exec flagstat gsnap.$base.concordant_mult.bam >> gsnap.$base.log"
+    "$samtools_exec flagstat $base_out_filename"."_mult.bam >> gsnap.$base.log"
    );
-   unlink("gsnap.$base.concordant_mult");
+   unlink("$base_out_filename"."_mult");
   }
-  unless ( -s "gsnap.$base.concordant_uniq_mult.bam" ) {
+  unless ( -s "$base_out_filename"."_uniq_mult.bam" ) {
    &process_cmd(
-"$samtools_exec merge -@ $cpus  -l 9 gsnap.$base.concordant_uniq_mult.bam gsnap.$base.concordant_uniq.bam gsnap.$base.concordant_mult.bam"
+"$samtools_exec merge -@ $cpus  -l 9 $base_out_filename"."_uniq_mult.bam $base_out_filename"."_uniq.bam $base_out_filename"."_mult.bam"
    );
-   &process_cmd("$samtools_exec index gsnap.$base.concordant_uniq_mult.bam");
-   print LOG "\ngsnap.$base.concordant_uniq_mult.bam:\n";
+   &process_cmd("$samtools_exec index $base_out_filename"."_uniq_mult.bam");
+   print LOG "\n$base_out_filename"."_uniq_mult.bam:\n";
    &process_cmd(
-"$samtools_exec flagstat gsnap.$base.concordant_uniq_mult.bam >> gsnap.$base.log"
+"$samtools_exec flagstat $base_out_filename"."_uniq_mult.bam >> gsnap.$base.log"
    );
   }
 

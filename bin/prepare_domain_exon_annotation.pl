@@ -67,7 +67,6 @@ use Data::Dumper;
 
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/:$RealBin:$RealBin/../3rd_party/RepeatMasker:$RealBin/../3rd_party/hhsuite/bin";
 $ENV{HHLIB} =  "$RealBin/../3rd_party/hhsuite/lib/hh";
-our $SLEEPTIME = int(0);
 
 my (
      $genome,          $circular,          $repeatmasker_options,
@@ -600,18 +599,20 @@ sub prepare_local() {
 
 sub just_run_my_commands_helper(){
 	my ($cmd,$failed_filehandle,$completed_filehandle) = @_;
+	chomp($cmd);
 	my $ret = system($cmd);
 	if ($ret && $ret != 256 ){
-		print $failed_filehandle $cmd;
+		print $failed_filehandle $cmd."\n";
 	}else{
-		print $completed_filehandle $cmd;
+		print $completed_filehandle $cmd."\n";
 	}
 }
 
 sub just_run_my_commands(){
  my $cmd_file = shift;
  return unless $cmd_file && -s $cmd_file;
- my (%commands,%completed,%failed);
+ my (%completed,%failed);
+ my $number_commands = int(0);
  my $cmd_count = int(0);
  my $failed_count = int(0);
  my $completed_count = int(0);
@@ -626,17 +627,18 @@ sub just_run_my_commands(){
  open (CMDS,$cmd_file);
  while (my $cmd=<CMDS>){
 	next if $cmd=~/^\s*$/ || $completed{$cmd};
-	$commands{$cmd}++;
+	$number_commands++;
  }
  close CMDS;
- my $number_commands = scalar(keys %commands);
  return unless $number_commands && $number_commands > 0;
 
  print "Processing with $hhblits_cpus CPUs...\n";
  my $thread_helper = new Thread_helper($hhblits_cpus);
+ open (CMDS,$cmd_file);
  open (my $failed_fh,">$cmd_file.failed");
  open (my $completed_fh,">>$cmd_file.completed");
- foreach my $cmd (keys %commands){
+ while (my $cmd=<CMDS>){
+	next if $cmd=~/^\s*$/ || $completed{$cmd};
 	$cmd_count++;
         my $thread = threads->create('just_run_my_commands_helper', $cmd,$failed_fh,$completed_fh);
         $thread_helper->add_thread($thread);
@@ -644,6 +646,7 @@ sub just_run_my_commands(){
         print "\r $cmd_count / $number_commands                 " if $verbose;
  }
  $thread_helper->wait_for_all_threads_to_complete();
+ close CMDS;
  close $failed_fh;
  close $completed_fh;
  my @failed_threads = $thread_helper->get_failed_threads();
