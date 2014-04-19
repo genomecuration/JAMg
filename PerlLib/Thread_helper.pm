@@ -41,7 +41,7 @@ use threads;
 
 
 
-my $SLEEPTIME = 0;
+our $SLEEPTIME = 1;
 
 our $THREAD_MONITORING = 0; # set to 1 to watch thread management
 

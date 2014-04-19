@@ -67,6 +67,8 @@ use Data::Dumper;
 
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/:$RealBin:$RealBin/../3rd_party/RepeatMasker:$RealBin/../3rd_party/hhsuite/bin";
 $ENV{HHLIB} =  "$RealBin/../3rd_party/hhsuite/lib/hh";
+our $SLEEPTIME = int(0);
+
 my (
      $genome,          $circular,          $repeatmasker_options,
      $mpi_host_string, $help,              $verbose,$only_repeat,
@@ -571,6 +573,10 @@ sub prepare_local() {
    }
    close CMD;
   }
+  my $transposon_results = &parse_hhr( "$fasta.transposon", 70, 1e-3, 1e-6, 100, 50, 30, 'yes' );
+  $fasta = &remove_transposons( $fasta, $transposon_results );
+  $number_of_entries = `wc -l < $fasta.db.idx`;
+  chomp($number_of_entries);
 
   # uniprot
   unless ( -s "$fasta.hhblits.uniprot.cmds" || -s "hhr.$exons.aa.trim.uniprot.db" || $no_uniprot_search || $number_of_entries == 0) {
@@ -585,7 +591,7 @@ sub prepare_local() {
    print "Processing transposon library\n";
    &just_run_my_commands("$fasta.hhblits.transposon.cmds");
  }
- # haven't implemented a separate input for uniprot (i.e not doing repeats) yet.
+
  unless ($no_uniprot_search || !-s "$fasta.hhblits.uniprot.cmds") {
   print "Processing UniProt library\n";
   &just_run_my_commands("$fasta.hhblits.uniprot.cmds");
@@ -605,32 +611,33 @@ sub just_run_my_commands_helper(){
 sub just_run_my_commands(){
  my $cmd_file = shift;
  return unless $cmd_file && -s $cmd_file;
- open (CMDS,$cmd_file);
- my @commands = <CMDS>;
- my $number_commands = scalar(@commands);
- close CMDS;
- return unless $number_commands && $number_commands > 0;
- my (%completed,%failed);
+ my (%commands,%completed,%failed);
  my $cmd_count = int(0);
  my $failed_count = int(0);
  my $completed_count = int(0);
  if (-s $cmd_file.'.completed'){
 	open (IN,$cmd_file.'.completed');
-	foreach (my $cmd=<IN>){
+	while (my $cmd=<IN>){
 		next if $cmd=~/^\s*$/;
 		$completed{$cmd}++;
 	}
 	close IN;
  }
+ open (CMDS,$cmd_file);
+ while (my $cmd=<CMDS>){
+	next if $cmd=~/^\s*$/ || $completed{$cmd};
+	$commands{$cmd}++;
+ }
+ close CMDS;
+ my $number_commands = scalar(keys %commands);
+ return unless $number_commands && $number_commands > 0;
 
  print "Processing with $hhblits_cpus CPUs...\n";
  my $thread_helper = new Thread_helper($hhblits_cpus);
  open (my $failed_fh,">$cmd_file.failed");
  open (my $completed_fh,">>$cmd_file.completed");
- foreach my $cmd (@commands){
-	next if $cmd=~/^\s*$/;
+ foreach my $cmd (keys %commands){
 	$cmd_count++;
-	next if $completed{$cmd};
         my $thread = threads->create('just_run_my_commands_helper', $cmd,$failed_fh,$completed_fh);
         $thread_helper->add_thread($thread);
         sleep(1) if ($cmd_count % 100 == 0);
