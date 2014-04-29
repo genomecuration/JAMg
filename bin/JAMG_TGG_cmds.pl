@@ -3,8 +3,10 @@
 use strict;
 use warnings;
 
-use FindBin;
+use FindBin qw/$RealBin/;
 use Getopt::Long qw(:config no_ignore_case bundling pass_through);
+
+my $trinity_exec = "$RealBin/../3rd_party/trinityrnaseq/Trinity";
 
 my $usage = <<__EOUSAGE__;
 
@@ -69,7 +71,7 @@ while (<$fh>) {
     
     my $file = pop @x;
     
-    my $cmd = "$FindBin::Bin/../Trinity.pl --seqType fa --single \"$file\" --JM 2G --CPU 4 --output \"$file.out\" --genome_guided ";
+    my $cmd = "$trinity_exec --seqType fa --single \"$file\" --JM 2G --CPU 4 --output \"$file.out\" --full_cleanup ";
     
     if ($paired_flag) {
         $cmd .= " --run_as_paired ";
