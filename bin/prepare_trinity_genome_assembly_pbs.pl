@@ -14,10 +14,12 @@ Mandatory Options:
 
 Optional:
 
-	-intron_max    :i => Maximum intron size
-        -minimum_reads :i => Minimum number of reads required to process (defaults to 50)
-        -small_cutoff  :i => Maximum file size of *.reads file to assign it as a 'small' and quick run (defaults to 1024^3, i.e. 1 megabyte)
-        -medium_cutoff :i => As above but for assigning it as 'medium', defaults to 10 x small_cutoff (higher than this is going to be assigned as 'long')
+	-intron_max      :i => Maximum intron size
+        -minimum_reads   :i => Minimum number of reads required to process (defaults to 50)
+        -small_cutoff    :i => Maximum file size of *.reads file to assign it as a 'small' and quick run (defaults to 1024^3, i.e. 1 megabyte)
+        -medium_cutoff   :i => As above but for assigning it as 'medium', defaults to 10 x small_cutoff (higher than this is going to be assigned as 'long')
+	-single_stranded :s => Give if single stranded library (if single end: F or R,  if paired:  FR or RF)
+	-single_end         => Give this option if it is single end data.
 
  Note: Except for -intron, the defaults should be ok for most projects. 
 
@@ -32,15 +34,17 @@ use Time::localtime;
 use List::Util 'shuffle';
 use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
+$ENV{PATH} .= ":$RealBin:$RealBin/";
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin";
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/trinityrnaseq/util";
+$ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/trinityrnaseq/util/support_scripts";
 
 my $cwd   = `pwd`;
 chomp($cwd);
 my $intron_max_size = 70000;
 my $minimum_reads = 50;
 my $small_cut     = 1024 * 1024 * 1024;
-my ($medium_cut,$bam_file,$sam_file,@bam_files,$delete_sam,@read_files);
+my ($medium_cut,$bam_file,$sam_file,@bam_files,$delete_sam,@read_files,$is_single_stranded,$single_end);
 my $debug = 1;
 &GetOptions(
         'debug'         => \$debug,
@@ -50,10 +54,12 @@ my $debug = 1;
 	'bam:s'   => \$bam_file,
 	'sam:s'   => \$sam_file,
 	'files_bam:s{,}' => \@bam_files,
-	'intron_max:i'   => $intron_max_size
+	'intron_max:i'   => $intron_max_size,
+	'single_stranded:s' => \$is_single_stranded,
+	'single_end' => \$single_end
 );
 
-my ($samtools_exec,$TGG_prep_exec,$TGG_exec) = &check_program('samtools','prep_rnaseq_alignments_for_genome_assisted_assembly.pl','GG_write_trinity_cmds.pl');
+my ($samtools_exec,$TGG_prep_exec,$TGG_exec) = &check_program('samtools','prep_rnaseq_alignments_for_genome_assisted_assembly.pl','JAMG_TGG_cmds.pl');
 
 @read_files = `find . -maxdepth 6 -name "*.reads"`;
 chomp(@read_files);
@@ -75,7 +81,10 @@ if (!$read_files[0]){
 	}
 	pod2usage ("Can't produce SAM file from input... Are they sorted by co-ordinate?\n") unless $sam_file && -s $sam_file;
 	print "Will use $sam_file as input to TGG\n";
-	&process_cmd("$TGG_prep_exec --coord_sorted_SAM  $sam_file -I $intron_max_size");
+	my $TGG_prep_cmd = "$TGG_prep_exec --coord_sorted_SAM  $sam_file -I $intron_max_size ";
+	$TGG_prep_cmd .= " --SS_lib_type $is_single_stranded " if $is_single_stranded;
+	$TGG_prep_cmd .= " --min_reads_per_partition $minimum_reads ";
+	&process_cmd($TGG_prep_cmd);
 	unlink($sam_file) if $delete_sam;
 	@read_files = `find . -maxdepth 6 -name "*.reads"`;
 	chomp(@read_files);
@@ -127,10 +136,13 @@ close MED;
 close LARGE;
 
 system( "rm -f small_trinity_GG.cmds* medium_trinity_GG.cmds* large_trinity_GG.cmds*");
-
-system("$TGG_exec --reads_list_file stilltodo.list.k --paired  > small_trinity_GG.cmds") if -s "stilltodo.list.k";
-system("$TGG_exec --jaccard_clip --reads_list_file stilltodo.list.m --paired  > medium_trinity_GG.cmds") if -s "stilltodo.list.m";
-system("$TGG_exec --jaccard_clip --reads_list_file stilltodo.list.g --paired  > large_trinity_GG.cmds") if -s "stilltodo.list.g";
+my $TGG_exec_cmd = "$TGG_exec";
+$TGG_exec_cmd .= " --paired " if !$single_end;
+system("$TGG_exec_cmd --reads_list_file stilltodo.list.k > small_trinity_GG.cmds") if -s "stilltodo.list.k";
+# large readsets with Paired end data need to make use of jaccard
+$TGG_exec_cmd .= " --jaccard_clip " if !$single_end;
+system("$TGG_exec_cmd --reads_list_file stilltodo.list.m > medium_trinity_GG.cmds") if -s "stilltodo.list.m";
+system("$TGG_exec_cmd --reads_list_file stilltodo.list.g  > large_trinity_GG.cmds") if -s "stilltodo.list.g";
 
 unlink("stilltodo.list");
 unlink("stilltodo.list.k");

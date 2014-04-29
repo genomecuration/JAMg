@@ -30,7 +30,7 @@ Optional:
  -suffix             Build/use suffix array (fast, downweights SNPs, use for non-polymorphic genomes)
  -path_number        Maximum number of hits for the read pair. If more that these many hits, then nothing is returned (defaults to 50)
  -commands_only  :s  Don't run commands, instead write them out into a file as specified by the option. Useful for preparing jobs for ParaFly
- -split_input    :i  Split the input FASTQ files to these many subfiles. Good for running large RNASeq datasets. Needs -commands_only above
+ -split_input    :i  Split the input FASTQ files to these many subfiles. Good for running large RNASeq datasets. Needs -commands_only above. Not used when FASTQ files are compressed (.bz2 .gz)
  -notpaired          Data are single end. Don't look for pairs (use -pattern1 to glob files)
  -distance :i        Paired end distance
 
@@ -120,7 +120,6 @@ my @files = glob("$input_dir/*$pattern*");
 push( @files, @ARGV );
 my @verified_files;
 for ( my $i = 0 ; $i < @files ; $i++ ) {
- next if $files[$i] =~ /\.bz2$/ || $files[$i] =~ /\.gz$/;
  if ( -s $files[$i] ) {
   push( @verified_files, $files[$i] );
  }
@@ -238,14 +237,16 @@ sub checked_unpaired_files() {
  my @files = @_;
  my @files_to_do;
  foreach my $file ( sort @files ) {
-  if ($split_input) {
+  if ($file =~ /\.bz2$/ || $file =~ /\.gz$/){
+	push( @files_to_do, $file );
+  }
+  elsif ($split_input) {
    print "Splitting data for unpaired $file\n";
    my $lines = `wc -l < $file`;
    chomp($lines);
    my $number_of_lines = int( ( $lines / 4 ) / $split_input );
    $number_of_lines *= 4;
-   die
-"Number of lines is not as expected for FASTQ ($number_of_lines / $lines)\n"
+   die "Number of lines is not as expected for FASTQ ($number_of_lines / $lines)\n"
      unless $number_of_lines % 4 == 0;
    system("split -a 3 -d -l $number_of_lines $file $file. ");
    my @new_files = glob("$file.0??");
@@ -277,14 +278,16 @@ sub checked_paired_files() {
    warn "Didn't find pair of $file. Skipping\n";
    next;
   }
-  if ($split_input) {
+  if ($file =~ /\.bz2$/ || $file =~ /\.gz$/){
+	push( @files_to_do, $file );
+  }
+  elsif ($split_input) {
    print "Splitting data for pairs $file & $pair\n";
    my $lines = `wc -l < $file`;
    chomp($lines);
    my $number_of_lines = int( ( $lines / 4 ) / $split_input );
    $number_of_lines *= 4;
-   die
-"Number of lines is not as expected for FASTQ ($number_of_lines / $lines)\n"
+   die "Number of lines is not as expected for FASTQ ($number_of_lines / $lines)\n"
      unless $number_of_lines % 4 == 0;
    system("split -a 3 -d -l $number_of_lines $file $file. ");
    system("split -a 3 -d -l $number_of_lines $file $pair. ");
@@ -324,6 +327,8 @@ sub align_unpaired_files() {
   &process_cmd($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
   my $file_align_cmd = $align_cmd;
   my $base_out_filename = $notpaired ? "gsnap.$base.unpaired"  : "gsnap.$base.concordant";
+  $file_align_cmd .= ' --bunzip2 ' if $file =~ /\.bz2$/; 
+  $file_align_cmd .= ' --gunzip ' if $file =~ /\.gz$/; 
 
   $file_align_cmd .=
     " --split-output=gsnap.$base --read-group-id=$group_id $file ";
@@ -392,8 +397,11 @@ sub align_paired_files() {
   &process_cmd($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
   my $base_out_filename = $notpaired ? "gsnap.$base.unpaired"  : "gsnap.$base.concordant";
   my $file_align_cmd = $align_cmd;
-  $file_align_cmd .=
-    " --split-output=gsnap.$base --read-group-id=$group_id $file $pair ";
+
+  $file_align_cmd .= ' --bunzip2 ' if $file =~ /\.bz2$/; 
+  $file_align_cmd .= ' --gunzip ' if $file =~ /\.gz$/; 
+
+  $file_align_cmd .= " --split-output=gsnap.$base --read-group-id=$group_id $file $pair ";
   &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
     unless (    -s "$base_out_filename"."_uniq"
              || -s "$base_out_filename"."_uniq.bam" );

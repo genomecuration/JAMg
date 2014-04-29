@@ -13,7 +13,6 @@ anyway).
 
 
 = Dependencies
-==============
 The following perl modules are required.
 * Pod::Usage
 * Data::Dumper
@@ -32,8 +31,27 @@ The following software are required.
 You can install them using a repository, e.g. on an Ubuntu:
 $ sudo apt-get install emboss
 
+
+== For people using intel compilers:
+======================================================================================
+Exonerate has issues when installing with intel's compiler ICC. 
+For that reason, before running make you may need to force the GCC compiler like so:
+export CC=`which gcc` # if which returns a path directly e.g. '/usr/bin/gcc'
+export CC=`which -p gcc` # if which returns 'gcc is /usr/bin/gcc'
+
+Likewise for ParaFly but C++
+export $CXX=`which g++`
+export $CXX=`which -p g++`
+
+and for ParaFly/GMAP/Samtools, you need this:
+export CPPFLAGS="$CPPFLAGS -fopenmp"
+export LIBPATH=$LDFLAGS
+export LDFLAGS="$LDFLAGS -fopenmp"
+
+======================================================================================
+
+
 = Next step
-===========
 Then download the RepeatMasker libraries from GIRI (free registration required; 2 day waiting period) http://www.girinst.org
 NB: "This version of RepeatMasker requires library version 20140131 or higher".
 Place repeatmaskerlibraries-*.tar.gz in $JAMG_PATH/3rd_party/RepeatMasker
@@ -45,17 +63,25 @@ make 2>&1 | tee make.log
 
 This will take some time because there are a lot of third party utilities being made.
 
-If there is an error, I'm not sure if I can help. Send the make.log but it is likely that the best option
-is to see which program was the last one (i.e. the one that failed) and try to compile it manually. It is not
-unlikely that your system is lacking a dependency (e.g. for Ubuntu/Debian see the 'apt-get build-dep' command, e.g.
-apt-get build-dep exonerate). If you don't want to do, you should talk to your system administrator.
-
 After it finishes you have to configure RepeatMasker
 cd $JAMG_PATH/3rd_party/RepeatMasker; ./configure
 Answer the prompts and use RM-BLAST
 file paths are in the JAMg distribution, e.g.
 $JAMG_PATH/3rd_party/RepeatMasker
 $JAMG_PATH/3rd_party/ncbi-blast/bin
+
+
+
+=============================================================================================================
+
+If there is another error with the external prorams, I'm not sure if I can help but maybe I've come across the error. 
+For example Samtools requires editing the various Makefiles if you have custom library paths (add $(LDFLAGS) in the compilation lines)
+
+Send the make.log but it is likely that the best option
+is to see which program was the last one (i.e. the one that failed) and try to compile it manually. It is not
+unlikely that your system is lacking a dependency (e.g. for Ubuntu/Debian see the 'apt-get build-dep' command, e.g.
+apt-get build-dep exonerate). If you don't want to do, you should talk to your system administrator.
+
 
 =============================================================================================================
 Please report bugs to:

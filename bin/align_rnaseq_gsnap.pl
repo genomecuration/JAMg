@@ -131,7 +131,6 @@ my @files = glob("$input_dir/*$pattern*");
 push( @files, @ARGV );
 my @verified_files;
 for ( my $i = 0 ; $i < @files ; $i++ ) {
- next if $files[$i] =~ /\.bz2$/ || $files[$i] =~ /\.gz$/;
  if ( -s $files[$i] ) {
   push( @verified_files, $files[$i] );
  }
@@ -249,7 +248,10 @@ sub checked_unpaired_files() {
  my @files = @_;
  my @files_to_do;
  foreach my $file ( sort @files ) {
-  if ($split_input) {
+  if ($file =~ /\.bz2$/ || $file =~ /\.gz$/){
+	push( @files_to_do, $file );
+  }
+  elsif ($split_input) {
    print "Splitting data for unpaired $file\n";
    my $lines = `wc -l < $file`;
    chomp($lines);
@@ -288,7 +290,10 @@ sub checked_paired_files() {
    warn "Didn't find pair of $file. Skipping\n";
    next;
   }
-  if ($split_input) {
+  if ($file =~ /\.bz2$/ || $file =~ /\.gz$/){
+	push( @files_to_do, $file );
+  }
+  elsif ($split_input) {
    print "Splitting data for pairs $file & $pair\n";
    my $lines = `wc -l < $file`;
    chomp($lines);
@@ -343,6 +348,10 @@ sub align_unpaired_files() {
   &process_cmd($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
   my $base_out_filename = $notpaired ? "gsnap.$base.unpaired"  : "gsnap.$base.concordant";
   my $file_align_cmd = $align_cmd;
+
+  $file_align_cmd .= ' --bunzip2 ' if $file =~ /\.bz2$/; 
+  $file_align_cmd .= ' --gunzip ' if $file =~ /\.gz$/; 
+
   $file_align_cmd .=
     " --split-output=gsnap.$base --read-group-id=$group_id $file  ";
   &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
@@ -417,6 +426,10 @@ sub align_paired_files() {
   &process_cmd($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
   my $base_out_filename = $notpaired ? "gsnap.$base.unpaired"  : "gsnap.$base.concordant";
   my $file_align_cmd = $align_cmd;
+
+  $file_align_cmd .= ' --bunzip2 ' if $file =~ /\.bz2$/; 
+  $file_align_cmd .= ' --gunzip ' if $file =~ /\.gz$/; 
+
   $file_align_cmd .=
     " --split-output=gsnap.$base --read-group-id=$group_id $file $pair ";
   &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
