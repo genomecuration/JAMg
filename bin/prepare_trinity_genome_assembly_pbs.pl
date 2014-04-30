@@ -14,12 +14,16 @@ Mandatory Options:
 
 Optional:
 
+	-help
 	-intron_max      :i => Maximum intron size
         -minimum_reads   :i => Minimum number of reads required to process (defaults to 50)
         -small_cutoff    :i => Maximum file size of *.reads file to assign it as a 'small' and quick run (defaults to 1024^3, i.e. 1 megabyte)
         -medium_cutoff   :i => As above but for assigning it as 'medium', defaults to 10 x small_cutoff (higher than this is going to be assigned as 'long')
 	-single_stranded :s => Give if single stranded library (if single end: F or R,  if paired:  FR or RF)
 	-single_end         => Give this option if it is single end data.
+	-cpu             :i => Number of CPUs (def 4)
+	-memory          :s => Sorting memory to use, give as e.g. 20G (def 20G).
+	-split_scaffolds :s => Give genome FASTA sequence to split alignments to one per sequence
 
  Note: Except for -intron, the defaults should be ok for most projects. 
 
@@ -44,51 +48,72 @@ chomp($cwd);
 my $intron_max_size = 70000;
 my $minimum_reads = 50;
 my $small_cut     = 1024 * 1024 * 1024;
-my ($medium_cut,$bam_file,$sam_file,@bam_files,$delete_sam,@read_files,$is_single_stranded,$single_end);
+my ($medium_cut,@sam_files,@bam_files,$delete_sam,@read_files,$is_single_stranded,$single_end,$help,$do_split_scaffolds);
 my $debug = 1;
+my $cpus = 4;
+my $memory = '20G';
 &GetOptions(
+	'memory:s'     => \$memory,
+	'cpu|thread:i' => \$cpus,
+	'help'         => \$help,
         'debug'         => \$debug,
 	'minimum_reads:i' => \$minimum_reads,
 	'small_cutoff:i' => \$small_cut,
 	'medium_cutoff:i' => \$medium_cut,
-	'bam:s'   => \$bam_file,
-	'sam:s'   => \$sam_file,
-	'files_bam:s{,}' => \@bam_files,
+	'sam:s{,}'   => \@sam_files,
+	'bam|files_bam:s{,}' => \@bam_files,
 	'intron_max:i'   => $intron_max_size,
 	'single_stranded:s' => \$is_single_stranded,
-	'single_end' => \$single_end
+	'single_end' => \$single_end,
+	'split_scaffolds:s' => \$do_split_scaffolds
 );
-
+pod2usage if $help;
 my ($samtools_exec,$TGG_prep_exec,$TGG_exec) = &check_program('samtools','prep_rnaseq_alignments_for_genome_assisted_assembly.pl','JAMG_TGG_cmds.pl');
 
 @read_files = `find . -maxdepth 6 -name "*.reads"`;
 chomp(@read_files);
+
+############### PART ONE ###########################
+
 if (!$read_files[0]){
-	if ($sam_file && -s $sam_file){
-		print "Will use $sam_file as input\n";
-	}elsif ($bam_file && -s $bam_file){
+	if (@bam_files){
+		foreach my $bam_file (@bam_files){
+			die "Cannot find BAM file $bam_file\n" unless -s $bam_file;
+		}
+		print "Converting BAMs:\n".join(" ",@bam_files)."\n";
 		$delete_sam = 1;
-		$sam_file = $bam_file.'.sam';
-		&process_cmd("$samtools_exec view $bam_file > $sam_file");
-	}elsif (@bam_files){
-		$delete_sam = 1;
-		pod2usage ("No input files...\n") unless scalar(@bam_files) > 1;
-		$bam_file = 'RNASeq_TGG_input.bam';
-		$sam_file = 'RNASeq_TGG_input.sam';
-		&process_cmd("$samtools_exec merge $bam_file ".join(" ",@bam_files));
-	}else{
-		pod2usage ("No input files...\n");
+		my $sam_file = 'RNASeq_TGG_input.sam';
+		if ($do_split_scaffolds && -s $do_split_scaffolds){
+			foreach my $bam_file (@bam_files){
+				push(@sam_files,&split_scaffold_sam($do_split_scaffolds,$bam_file));
+			}
+		}else{
+			if (scalar(@bam_files > 1 )){
+				&process_cmd("$samtools_exec merge - ".join(" ",@bam_files)." |$samtools_exec view -@ $cpus -F4 - > $sam_file " ) unless -s $sam_file;
+			}else{
+				&process_cmd("$samtools_exec view -@ $cpus -F4 ".$bam_files[0]." > $sam_file") unless -s $sam_file;
+			}
+			pod2usage ("Can't produce SAM file from input... Are they sorted by co-ordinate?\n") unless @sam_files && -s $sam_files[0];
+			push(@sam_files,$sam_file);
+		}
 	}
-	pod2usage ("Can't produce SAM file from input... Are they sorted by co-ordinate?\n") unless $sam_file && -s $sam_file;
-	print "Will use $sam_file as input to TGG\n";
-	my $TGG_prep_cmd = "$TGG_prep_exec --coord_sorted_SAM  $sam_file -I $intron_max_size ";
-	$TGG_prep_cmd .= " --SS_lib_type $is_single_stranded " if $is_single_stranded;
-	$TGG_prep_cmd .= " --min_reads_per_partition $minimum_reads ";
-	&process_cmd($TGG_prep_cmd);
-	unlink($sam_file) if $delete_sam;
-	@read_files = `find . -maxdepth 6 -name "*.reads"`;
-	chomp(@read_files);
+
+	pod2usage ("Can't find SAM files\n") unless @sam_files && -s $sam_files[0];
+        print "Will use SAM as input:\n".join(" ",@sam_files)."\n";
+
+	foreach my $sam_file (@sam_files){
+		my $TGG_prep_cmd = "$TGG_prep_exec --coord_sorted_SAM  $sam_file -I $intron_max_size --sort_buffer $memory --CPU $cpus ";
+		$TGG_prep_cmd .= " --SS_lib_type $is_single_stranded " if $is_single_stranded;
+		$TGG_prep_cmd .= " --min_reads_per_partition $minimum_reads ";
+		&process_cmd($TGG_prep_cmd);
+		unlink($sam_file) if $delete_sam;
+		@read_files = `find . -maxdepth 6 -name "*.reads"`;
+		chomp(@read_files);
+	}
 }
+
+############### PART TWO ###########################
+
 print "Now searching for .reads files within a depth of 6 subdirectories and producing new *_trinity_GG commands...\n";
 die "No read files found.\n" unless @read_files && scalar(@read_files) > 1;
 
@@ -245,4 +270,28 @@ sub mytime() {
  my $mon  = $mabbr[ localtime->mon ];
  my $year = localtime->year() + 1900;
  return "$wday, $mon $mday, $year: $hour:$min:$sec\t";
+}
+
+
+sub split_scaffold_sam(){
+	my $genome_sequence = shift;
+	my $bam_file = shift;
+	return unless $genome_sequence && -s $genome_sequence;
+	print "Splitting alignments per genome sequence\n";
+	my @scaff_sams;
+	&process_cmd($samtools_exec." faidx $genome_sequence" ) unless -s "$genome_sequence.fai";	
+	&process_cmd($samtools_exec." index $bam_file" ) unless -s "$bam_file.bai";	
+	open(IN,$genome_sequence.'.fai');
+	my @scaff_id_lines = <IN>;
+	close IN;
+	foreach my $ln (@scaff_id_lines){
+		if ($ln=~/^(\S+)/){
+			my $scaff_id = $1;
+			my $sam_file = "$bam_file.$scaff_id.sam";
+			&process_cmd($samtools_exec."  view -@ $cpus -F4 $bam_file $scaff_id > $sam_file" ) unless -s $sam_file;
+			push(@scaff_sams,$sam_file) if -s $sam_file;
+		}
+	}
+	die "No SAM files produced from genome sequence $genome_sequence\n" unless @scaff_sams && -s $scaff_sams[0];
+	return @scaff_sams;
 }

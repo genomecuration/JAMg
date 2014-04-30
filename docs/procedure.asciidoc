@@ -140,7 +140,7 @@ export LOCAL_CPUS=4 # example number of CPUs to use
 +
 TIP: There is little benefit using more than 6 threads for each GSNAP (it's actually making it slower). Also it can take > 2 days to align 50 M reads but depends on the quality of the data. For high-throughput I recommend you 'split' your input data into chunks and align in parallel. For parallelization with computing clusters, you can use the -commands_only option and create a text file that has one line worth of commands for each input. You can then use the unix command 'split' or ParaFly to run it on a cluster.
 +
-**** also 'util/trinity_gg_helper' can be used to (re)run batches of Trinity-guided assemblies on a PBS cluster. 
+**** also '$JAMG_PATH/bin/JAMG_TGG_cmds.pl' can be used to (re)run batches of Trinity-guided assemblies on a PBS cluster. 
 *** This is the last command you will need for the genome-guided part:
 +
 [source,bash]
@@ -149,7 +149,7 @@ $JAMG_PATH/3rd_party/PASA/misc_utilities/accession_extractor.pl < Trinity_denovo
 # prepare TGG output
 $JAMG_PATH/bin/prepare_trinity_genome_assembly_pbs.pl -files ./*.concordant_uniq.bam -intron $MAX_INTRON_LENGTH
 ls *cmds # Run each one using your method of choice, e.g. ParaFly
-find Dir_*  -name "*inity.fasta" | $JAMG_PATH/3rd_party/trinityrnaseq/util/GG_trinity_accession_incrementer.pl > Trinity_GG.fasta
+find Dir_*  -name "*inity.fasta" | $JAMG_PATH/3rd_party/trinityrnaseq/util/support_scripts/GG_trinity_accession_incrementer.pl > Trinity_GG.fasta
 # compile TGG and TDN outputs into one file.
 cat Trinity_denovo.fasta Trinity_GG.fasta > transcripts.fasta
 +

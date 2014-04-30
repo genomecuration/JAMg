@@ -196,7 +196,7 @@ $JAMG_PATH/bin/augustus_RNAseq_hints.pl -bam RNASeq_TGG_input.bam -genome $GENOM
 Once TGG and TDN are complete, we can integrate TGG and TDN using http://pasa.sourceforge.net/[PASA2].
 
 [source,bash]
-find TGG/Dir_* -name "*inity.fasta" | $JAMG_PATH/3rd_party/trinityrnaseq/util/GG_trinity_accession_incrementer.pl > Trinity_GG.fasta
+find TGG/Dir_* -name "*inity.fasta" | $JAMG_PATH/3rd_party/trinityrnaseq/util/support_scripts/GG_trinity_accession_incrementer.pl > Trinity_GG.fasta
 #p.s With Trinity_GG.fasta in your base directory, you can safely delete the TGG directory now
 cat TDN/Trinity.fasta Trinity_GG.fasta > transcripts.fasta
 cat TDN/Trinity.fasta | $JAMG_PATH/3rd_party/PASA/misc_utilities/accession_extractor.pl > tdn.accs

@@ -71,7 +71,7 @@ while (<$fh>) {
     
     my $file = pop @x;
     
-    my $cmd = "$trinity_exec --seqType fa --single \"$file\" --JM 2G --CPU 4 --output \"$file.out\" --full_cleanup ";
+    my $cmd = "$trinity_exec --seqType fa --single \"$file\" --JM 2G --CPU 4 --output \"$file.out\" --full_cleanup_ET ";
     
     if ($paired_flag) {
         $cmd .= " --run_as_paired ";
