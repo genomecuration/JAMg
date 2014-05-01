@@ -40,8 +40,8 @@ export CC=`which gcc` # if which returns a path directly e.g. '/usr/bin/gcc'
 export CC=`which -p gcc` # if which returns 'gcc is /usr/bin/gcc'
 
 Likewise for ParaFly but C++
-export $CXX=`which g++`
-export $CXX=`which -p g++`
+export CXX=`which g++`
+export CXX=`which -p g++`
 
 and for ParaFly/GMAP/Samtools, you need this:
 export CPPFLAGS="$CPPFLAGS -fopenmp"

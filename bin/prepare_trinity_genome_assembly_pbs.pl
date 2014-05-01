@@ -23,7 +23,7 @@ Optional:
 	-single_end         => Give this option if it is single end data.
 	-cpu             :i => Number of CPUs (def 4)
 	-memory          :s => Sorting memory to use, give as e.g. 20G (def 20G).
-	-split_scaffolds :s => Give genome FASTA sequence to split alignments to one per sequence
+	-split_scaffolds :s => Split alignments to one per reference sequence
 
  Note: Except for -intron, the defaults should be ok for most projects. 
 
@@ -65,7 +65,7 @@ my $memory = '20G';
 	'intron_max:i'   => $intron_max_size,
 	'single_stranded:s' => \$is_single_stranded,
 	'single_end' => \$single_end,
-	'split_scaffolds:s' => \$do_split_scaffolds
+	'split_scaffolds' => \$do_split_scaffolds
 );
 pod2usage if $help;
 my ($samtools_exec,$TGG_prep_exec,$TGG_exec) = &check_program('samtools','prep_rnaseq_alignments_for_genome_assisted_assembly.pl','JAMG_TGG_cmds.pl');
@@ -83,9 +83,9 @@ if (!$read_files[0]){
 		print "Converting BAMs:\n".join(" ",@bam_files)."\n";
 		$delete_sam = 1;
 		my $sam_file = 'RNASeq_TGG_input.sam';
-		if ($do_split_scaffolds && -s $do_split_scaffolds){
+		if ($do_split_scaffolds){
 			foreach my $bam_file (@bam_files){
-				push(@sam_files,&split_scaffold_sam($do_split_scaffolds,$bam_file));
+				push(@sam_files,&split_scaffold_sam($bam_file));
 			}
 		}else{
 			if (scalar(@bam_files > 1 )){
@@ -162,12 +162,14 @@ close LARGE;
 
 system( "rm -f small_trinity_GG.cmds* medium_trinity_GG.cmds* large_trinity_GG.cmds*");
 my $TGG_exec_cmd = "$TGG_exec";
-$TGG_exec_cmd .= " --paired " if !$single_end;
-system("$TGG_exec_cmd --reads_list_file stilltodo.list.k > small_trinity_GG.cmds") if -s "stilltodo.list.k";
+$TGG_exec_cmd .= " -paired " if !$single_end;
+system("$TGG_exec_cmd -reads_list_file stilltodo.list.k > small_trinity_GG.cmds") if -s "stilltodo.list.k";
 # large readsets with Paired end data need to make use of jaccard
-$TGG_exec_cmd .= " --jaccard_clip " if !$single_end;
-system("$TGG_exec_cmd --reads_list_file stilltodo.list.m > medium_trinity_GG.cmds") if -s "stilltodo.list.m";
-system("$TGG_exec_cmd --reads_list_file stilltodo.list.g  > large_trinity_GG.cmds") if -s "stilltodo.list.g";
+$TGG_exec_cmd .= " -jaccard_clip " if !$single_end;
+system("$TGG_exec_cmd -reads_list_file stilltodo.list.m > medium_trinity_GG.cmds") if -s "stilltodo.list.m";
+# huge datasets need normalizing
+$TGG_exec_cmd .= " -normalize ";
+system("$TGG_exec_cmd -reads_list_file stilltodo.list.g  > large_trinity_GG.cmds") if -s "stilltodo.list.g";
 
 unlink("stilltodo.list");
 unlink("stilltodo.list.k");
@@ -274,23 +276,23 @@ sub mytime() {
 
 
 sub split_scaffold_sam(){
-	my $genome_sequence = shift;
 	my $bam_file = shift;
-	return unless $genome_sequence && -s $genome_sequence;
+	return unless $bam_file && -s $bam_file;
 	print "Splitting alignments per genome sequence\n";
 	my @scaff_sams;
-	&process_cmd($samtools_exec." faidx $genome_sequence" ) unless -s "$genome_sequence.fai";	
+	my @scaff_id_lines;
 	&process_cmd($samtools_exec." index $bam_file" ) unless -s "$bam_file.bai";	
-	open(IN,$genome_sequence.'.fai');
-	my @scaff_id_lines = <IN>;
-	close IN;
-	foreach my $ln (@scaff_id_lines){
-		if ($ln=~/^(\S+)/){
-			my $scaff_id = $1;
-			my $sam_file = "$bam_file.$scaff_id.sam";
-			&process_cmd($samtools_exec."  view -@ $cpus -F4 $bam_file $scaff_id > $sam_file" ) unless -s $sam_file;
-			push(@scaff_sams,$sam_file) if -s $sam_file;
+	my @bam_scaff_ids = `$samtools_exec view -H $bam_file |grep '^@SQ'`);
+	foreach my $ln (@bam_scaff_ids){
+		if ($ln=~/\bSN:(\S+)\b/){	
+			push(@scaff_id_lines,$1);
 		}
+	}
+	foreach my $scaff_id (@scaff_id_lines){
+		my $sam_file = "$bam_file.$scaff_id.sam";
+		&process_cmd($samtools_exec."  view -@ $cpus -F4 $bam_file $scaff_id > $sam_file" ) unless -s $sam_file;
+		unlink($sam_file) if -e $sam_file && !-s $sam_file;
+		push(@scaff_sams,$sam_file) if -s $sam_file;
 	}
 	die "No SAM files produced from genome sequence $genome_sequence\n" unless @scaff_sams && -s $scaff_sams[0];
 	return @scaff_sams;
