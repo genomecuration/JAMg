@@ -329,7 +329,7 @@ cat \${PBS_NODEFILE} > workers.\$PBS_JOBID.mpi
   -i \"\$1\"_transposon.db.idx \\
   \$1 \\
   \$1.idx \\
-  -- $hhblits_exec -maxmem 3 -d \$3 -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1e-5 -E 1E-05 -id 80 -p 80 -z 0 -b 0 -v 0 -B 3 -Z 3 2>/dev/null
+  -- $hhblits_exec -maxmem 3 -d \$DB -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1e-5 -E 1E-05 -id 80 -p 80 -z 0 -b 0 -v 0 -B 3 -Z 3 2>/dev/null
 ";
   close SCRIPT;
 
