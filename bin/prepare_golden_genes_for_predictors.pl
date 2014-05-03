@@ -151,7 +151,7 @@ my $same_species             = '';
 my $intron_size              = 70000;
 my $training_set_size        = 4000;
 my $aug_optimization_geneset = 450;
-my $augustus_flank_region    = 4000;
+my $augustus_flank_region    = 3000;
 my $identical_fraction       = 95;
 my $minorf                   = 290;     #minimum orf size in bp
 my $similar_fraction         = 98;
@@ -228,7 +228,7 @@ my $scaffold_seq_hashref      = &read_fasta($genome_sequence_file);
 ) unless -s "$genome_sequence_file.nin";
 &process_cmd(
 "$gmap_build_exec -D $genome_sequence_file_dir -d $genome_sequence_file_base.gmap $genome_file"
-) unless -d "$genome_sequence_file_dir/$genome_sequence_file_base.gmap";
+) unless -d "$genome_sequence_file_dir/$genome_sequence_file_base.gmap" || $peptide_file;
 
 unlink("$genome_sequence_file.cidx");
 &process_cmd("$cdbfasta_exec $genome_sequence_file");

@@ -28,6 +28,7 @@ Optional
  -scratch         :s   => If engine is MPI, a 'local' scratch directory to copy databases to each node, e.g. /dev/shm if there is enough space
  -no_uniprot           => Don't search for Uniprot hits. Useful if you want to conduct the transposon search separately from the Uniprot (e.g. different engine/computing environment)
  -no_transposon        => Don't search for transposon hits. See above.
+ -min_exons_hints :i   => Minimum number of exons with Uniprot hits before flagging sequence having a valid hit (def 2)
 
  -help                 => This help text and some more info
  -verbose              => Print out every command before it is executed.
@@ -80,6 +81,7 @@ my $engine        = 'local';
 my $transposon_db = $ENV{'HOME'} . "/databases/hhsearch/transposons";
 my $uniprot_db =
   $ENV{'HOME'} . "/databases/hhsearch/uniprot20_2013_03/uniprot20_2013_03";
+my $min_exons_before_reporting = 2;
 
 GetOptions(
             'fasta|genome|in:s' => \$genome,
@@ -97,7 +99,8 @@ GetOptions(
             'scratch:s'         => \$scratch_dir,
             'no_uniprot'        => \$no_uniprot_search,
             'no_transposon'     => \$no_transposon_search,
-		'only_repeat'   => \$only_repeat
+            'only_repeat'       => \$only_repeat,
+            'min_exons_hints:i' =>\$min_exons_before_reporting
 );
 
 pod2usage( -verbose => 2 ) if $help;
@@ -766,16 +769,11 @@ sub parse_hhr() {
  return $outfile if (-s $outfile);  
  print "Post-processing $infile\n";   
  my $min_filesize = 500;
- my ( $qcounter, %hits, %hit_counter );
+ my ( $qcounter, %reporting_hash, %hit_counter );
 
  die "Can't find $infile or it is too small\n" unless -s $infile && ( -s $infile ) >= $min_filesize;
 
  open( IN, $infile ) || die($!);
- open( OUT,     ">$outfile" );
- open( GLIMMER, ">$outfile.glimmer" );
- open( GENEID,  ">$outfile.geneid" );
- open( GFF3,    ">$outfile.gff3" );
- open( HINTS,   ">$outfile.hints" );
 
  my ($query,$id,$reverse,$start,$stop);
 
@@ -798,7 +796,7 @@ sub parse_hhr() {
     $ln2 =~ /^\s*(\d+)/;
     my $hit_number = $1;
     next unless $hit_number == 1;
-    my ( $hit_desc, $hit_data, $hit_id );
+    my ( $hit_desc, $hit_data, $hit_id, $strand );
     $hit_desc = substr( $ln2, 4, 31 );
     $hit_data = substr( $ln2, 35 );
     $hit_desc =~ /^(\S+)\s*(.*)/;
@@ -836,17 +834,18 @@ sub parse_hhr() {
     next if $score_cut && $score_cut > $score;
     next if $alignment_length < $align_col_cut;
     next if $template_aln_size < $template_aln_size_cut;
-    $hits{$query}++;
     my ( $gff_start, $gff_end );
     if ( !$reverse ) {
+     $strand = '+';
      $gff_start = $start + ( 3 * $aa_start ) - 1;
      $gff_end   = $start + ( 3 * $aa_stop ) - 1;
     }
     else {
+     $strand = '-';
      $gff_start = $start - ( 3 * $aa_start ) + 1;
      $gff_end   = $start - ( 3 * $aa_stop ) + 1;
     }
-    my $src  = $is_repeat ? 'R'           : 'H';
+    my $src  = $is_repeat ? 'RM'           : 'HU';
     my $type = $is_repeat ? 'nonexonpart' : 'CDSpart';
     my $prio = $is_repeat ? 6             : 5;
     my $uid  = "$hit_id.s$hit_start.e$hit_stop";
@@ -855,32 +854,48 @@ sub parse_hhr() {
 
     my $name = $uid;
     $name .= " ($hit_desc)" if $hit_desc;
-    if ($reverse) {
-     print HINTS $id
-       . "\thhblits\t$type\t$gff_end\t$gff_start\t$score\t-\t.\tsrc=$src;grp=$hit_id;pri=$prio"
-       . "\n";
-     print GFF3 $id
-       . "\thhblits\tprotein_match\t$gff_end\t$gff_start\t$score\t-\t.\tID=$uid;Name=$name;Target=$hit_id $hit_start $hit_stop\n";
-     print GENEID $id
-       . "\thhblits\tsr\t$gff_end\t$gff_start\t$score\t-\t." . "\n";
-    }
-    else {
-     print HINTS $id
-       . "\thhblits\t$type\t$gff_start\t$gff_end\t$score\t+\t.\tsrc=$src;grp=$hit_id;pri=$prio"
-       . "\n";
-     print GFF3 $id
-       . "\thhblits\tprotein_match\t$gff_start\t$gff_end\t$score\t+\t.\tID=$uid;Name=$name;Target=$hit_id $hit_start $hit_stop\n";
-     print GENEID $id
-       . "\thhblits\tsr\t$gff_start\t$gff_end\t$score\t+\t." . "\n";
-    }
-    print GLIMMER "$id $gff_start $gff_end $score $evalue\n\n";
+    my %hash = (
+        'type' => $type,'gff_start'=>$gff_start,'gff_end'=>$gff_end,'score'=>$score,'strand'=>$strand,'src'=>$src,'prio'=>$prio,'uid'=>$uid,'hit_start'=>$hit_start,'hit_stop'=>$hit_stop,'name'=>$name,'evalue'=>$evalue
+    );
+
+    push(@{$reporting_hash{$id}{$hit_id}},\%hash);
     last;    # top hit
    }
   }
  }
  close IN;
- foreach my $id (sort keys %hits) {
-  print OUT $id . "\n";
+
+ open( OUT,     ">$outfile" );
+ open( GLIMMER, ">$outfile.glimmer" );
+ open( GENEID,  ">$outfile.geneid" );
+ open( GFF3,    ">$outfile.gff3" );
+ open( HINTS,   ">$outfile.hints" );
+ foreach my $id (sort keys %reporting_hash) {
+  foreach my $hit_id (keys %{$reporting_hash{$id}}){
+        my $number_of_times = scalar(@{$reporting_hash{$id}{$hit_id}});
+        if ($is_repeat || $number_of_times >= $min_exons_before_reporting){
+          print OUT $id . "\n";
+          last;
+        }
+  }
+  foreach my $hit_id (keys %{$reporting_hash{$id}}){
+        my $number_of_times = scalar(@{$reporting_hash{$id}{$hit_id}});
+        if ($is_repeat || $number_of_times >= $min_exons_before_reporting){
+             foreach my $hash_ref (@{$reporting_hash{$id}{$hit_id}}){
+                my ($type,$gff_start,$gff_end,$score,$strand,$src,$prio,$uid,$name,$hit_start,$hit_stop,$evalue) = (
+         $hash_ref->{'type'},$hash_ref->{'gff_start'},$hash_ref->{'gff_end'},$hash_ref->{'score'},$hash_ref->{'strand'},$hash_ref->{'src'},$hash_ref->{'prio'},$hash_ref->{'uid'},$hash_ref->{'name'},$hash_ref->{'hit_start'},$hash_ref->{'hit_stop'},$hash_ref->{'evalue'}
+                        );
+                     print HINTS "$id\thhblits\t$type\t$gff_start\t$gff_end\t$score\t$strand\t.\tsrc=$src;grp=$hit_id;pri=$prio\n";
+                     print GFF3  "$id\thhblits\tprotein_match\t$gff_start\t$gff_end\t$score\t$strand\t.\tID=$uid;Name=$name;Target=$hit_id $hit_start $hit_stop\n";
+                     print GENEID "$id\thhblits\tsr\t$gff_start\t$gff_end\t$score\t$strand\t.\n";
+                     if ($strand eq '-') {
+                        print GLIMMER "$id $gff_end $gff_start $score $evalue\n\n";
+                     }else {
+                        print GLIMMER "$id $gff_start $gff_end $score $evalue\n\n";
+                     }
+             }
+        }
+  }
  }
  close OUT;
  close GLIMMER;

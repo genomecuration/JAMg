@@ -38,6 +38,8 @@ Optional parameters:
         CSIRO Ecosystem Sciences
         alexie@butterflybase.org
 
+Based on work by Mario Stanke, 23.04.2007
+
 =head1 DISCLAIMER & LICENSE
 
 Copyright 2012-2014 the Commonwealth Scientific and Industrial Research Organization. 
@@ -105,7 +107,8 @@ my ( $augustus_exec, $etrain_exec ) = &check_program( 'augustus', 'etraining' );
 my $cwd = `pwd`;
 chomp($cwd);
 my $be_silent =
-" --/augustus/verbosity=0 --/ExonModel/verbosity=0 --/IGenicModel/verbosity=0 --/IntronModel/verbosity=0 --/UtrModel/verbosity=0 --/genbank/verbosity=0 ";
+" --/augustus/verbosity=0 --/ExonModel/verbosity=0 --/IGenicModel/verbosity=0 --/IntronModel/verbosity=0 --/UtrModel/verbosity=0 --/genbank/verbosity=0 "
+;
 my @feature_order =
   qw/start stop tss tts ass dss exonpart exon intronpart intron CDSpart CDS UTRpart UTR irpart nonexonpart genicpart/;
 
@@ -131,7 +134,7 @@ $extrinsic_iteration_counter = int(0);
 my $thread_helper = new Thread_helper($cpus);
 my $thread        = threads->create('run_evaluation');
 $thread_helper->add_thread($thread);
-my $todo = int(1);
+my $todo = int(0);
 
 foreach my $src ( keys %sources_that_need_to_be_checked ) {
  next if $src eq 'M';
@@ -179,7 +182,6 @@ foreach my $src ( keys %sources_that_need_to_be_checked ) {
       $cfg->{$src}->{$feat}->{'value'}    = $value;
       $cfg->{'bonus'}->{$feat}->{'value'} = $bonus;
       $cfg->{'malus'}->{$feat}->{'value'} = $malus;
-      sleep(1);
       my $thread = threads->create( 'write_extrinsic_cfg', $cfg, $cfg_extra );
       $thread_helper->add_thread($thread);
      }
@@ -227,8 +229,8 @@ if ( $results[0] =~ /^([^:]+)/ ) {
  $best_log =~ /Accuracy:\s([\.\d]+)/;
  my $best_accuracy = $1;
  print "Best config file is found in $file with accuracy $best_accuracy\n$best_log\n";
- print "You may however want to run this command and see if there is a config file that performs better in any specific statistic\n";
- print "\tgrep Acc $output_directory/*log | sort -nk 2\n";
+ print "You may however want to run this command and see if there is a config file that performs better in any specific statistic:\n";
+ print "grep Acc $output_directory/*log | sort -nk 2\n\n";
 }
 
 ################################################################################################################
@@ -272,7 +274,7 @@ sub parse_evaluation() {
 sub check_prediction_finished(){
 	my $file = shift;
 	my $todelete = shift;
-	my $check = `tail -n 3 $file|head -n 1`;
+	my $check = `tail -n 3 $file|head -n 1 `;
 	if ($check !~/^# total time/){
 		unlink($file);
 		unlink($todelete);
@@ -286,13 +288,13 @@ sub run_evaluation {
  if ( $extrinsic_file && -s $extrinsic_file ) {
   $pred_out = $extrinsic_file;
   $pred_out =~ s/.cfg/.prediction/;
-  &check_prediction_finished($pred_out,$pred_out.'.log');
+  &check_prediction_finished($pred_out,$pred_out.'.log') if -s $pred_out;
   $augustus_cmd =
 "$augustus_exec --genemodel=complete --species=$species --alternatives-from-evidence=true --AUGUSTUS_CONFIG_PATH=$config_path --extrinsicCfgFile=$extrinsic_file --hintsfile=$hint_file $common_parameters $optimize_gb > $pred_out 2>/dev/null";
  }
  else {
   $pred_out = $output_directory . '/no_hints.prediction';
-  &check_prediction_finished($pred_out,$pred_out.'.log');
+  &check_prediction_finished($pred_out,$pred_out.'.log') if -s $pred_out;
   $augustus_cmd =
 "$augustus_exec --genemodel=complete --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $common_parameters $optimize_gb > $pred_out 2>/dev/null";
  }
@@ -348,7 +350,7 @@ sub estimate_accuracy {
    6 * $gsp 
   ) / 36;
  }
- my @results = ( "Base_SeNsitivity:".$bsn, "Base_SPecificity:".$bsp, "Exon_SeNsitivity:".$esn, "Exon_SPecificity;".$esp, "Gene_SeNsitivity:".$gsn, "Gene_SPecificity:".$gsp, "UTR_5':".$smd, "UTR_3':".$tmd );
+ my @results = ( "Base_SeNsitivity: ".$bsn, "Base_SPecificity: ".$bsp, "Exon_SeNsitivity: ".$esn, "Exon_SPecificity: ".$esp, "Gene_SeNsitivity: ".$gsn, "Gene_SPecificity: ".$gsp, "UTR_5': ".$smd, "UTR_3' :".$tmd );
 
  return ($accuracy,\@results);
 
@@ -405,18 +407,8 @@ sub write_extrinsic_cfg() {
  my $extrinsic_ref          = shift;
  my $cfg_extra              = shift;
  my $species_extrinsic_file = $output_directory . "/extrinsic.cfg";
- if ($extrinsic_ref) {
-  lock($extrinsic_iteration_counter);
-  $species_extrinsic_file .= ".$extrinsic_iteration_counter";
-  $extrinsic_iteration_counter++;
- }
 
- unless ( -s $species_extrinsic_file ) {
-
-  open( OUT, ">$species_extrinsic_file" ) || die;
-  print OUT "[SOURCES]\n";
-  my $prn;
-
+  my $prn = "[SOURCES]\n";
   foreach my $src ( keys %{$extrinsic_ref} ) {
    $prn .= $src . ' ' unless $src eq 'bonus' || $src eq 'malus';
   }
@@ -439,18 +431,33 @@ sub write_extrinsic_cfg() {
    $prn .= "\tM 1 " . $extrinsic_ref->{'M'}->{$feature}->{'value'};
 
    foreach my $source ( keys %{$extrinsic_ref} ) {
-    next if $source eq 'bonus' || $source eq 'malus' || $source eq 'M';
-    my $multiplier = $extrinsic_ref->{$source}->{$feature}->{'value'}
-      || die "No bonus found for $source $feature\n";
-    $prn .= "\t$source 1 $multiplier";
+      next if $source eq 'bonus' || $source eq 'malus' || $source eq 'M';
+      my $multiplier = $extrinsic_ref->{$source}->{$feature}->{'value'} || die "No bonus found for $source $feature\n";
+      $prn .= "\t$source 1 $multiplier";
    }
    $prn .= "\n";
   }
-  print OUT $prn . "\n";
-  close OUT;
+
+ if ($extrinsic_ref) {
+  lock($extrinsic_iteration_counter);
+  $species_extrinsic_file .= ".$extrinsic_iteration_counter";
+  $extrinsic_iteration_counter++;
  }
- my $accuracy = &run_evaluation($species_extrinsic_file);
- print "\r$extrinsic_iteration_counter/$todo    ";
+
+ # don't rerun if it exists and it is exactly the same configuration
+ unless ( -s $species_extrinsic_file && -s $species_extrinsic_file == length($prn)) {
+  open (IN,$species_extrinsic_file);
+  my @lines = <IN>;
+  close IN;
+  my $check = join('',@lines);
+  if ($check ne $prn){
+	  open( OUT, ">$species_extrinsic_file" ) || die;
+	  print OUT $prn . "\n";
+	  close OUT;
+	  my $accuracy = &run_evaluation($species_extrinsic_file);
+  }
+ }
+  print "\r$extrinsic_iteration_counter/$todo    ";
 }
 
 sub parse_extrinsic_meta() {
@@ -530,7 +537,6 @@ sub parse_extrinsic_meta() {
 
  }
  close IN;
-
  foreach my $head (@feature_headers) {
   $basic_cfg{'M'}->{$head}->{'value'} = 1e+100;
  }
