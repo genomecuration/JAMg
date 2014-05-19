@@ -1,0 +1,25 @@
+#!/bin/bash
+
+module load openmpi
+
+
+# These are example SCRIPTs to run PFAM with MPI ON PBS. Minor changes would be needed for LSF etc
+# executable for mpirun, e.g. from OpenMPI
+MPIRUN_EXEC=`which mpirun`
+# these arguments are valid for OpenMPI, change them for Intel's
+MPIRUN_ARGS="-gmca mpi_warn_on_fork 0 -cpus-per-proc 1 -np $2 -machinefile workers.$PBS_JOBID.mpi"
+
+#your HHblits database
+DB=/home/pap056/30day/databases/hhsearch/uniprot20_2013_03/uniprot20_2013_03
+
+export OMP_NUM_THREADS=1
+cd $PBS_O_WORKDIR
+cat ${PBS_NODEFILE} > workers.$PBS_JOBID.mpi
+
+
+$MPIRUN_EXEC $MPIRUN_ARGS ffindex_apply_mpi \
+  -d "$1".out.db \
+  -i "$1".out.db.idx \
+  $1 \
+  $1.idx \
+  -- hhblits -maxmem 5 -d $DB -n 1 -mact 0.3 -cpu 1 -i stdin -o stdout -oa3m stdout -e 0.0001 -id 100 -p 60 -E 1E-03 -z 0 -b 0 -v 0

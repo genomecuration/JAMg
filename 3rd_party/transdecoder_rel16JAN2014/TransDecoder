@@ -105,7 +105,8 @@ use Fasta_reader;
 use Longest_orf;
 
 my $UTIL_DIR = "$FindBin::RealBin/util";
-$ENV{PATH} .= ":$UTIL_DIR/bin";
+$ENV{PATH} = "$UTIL_DIR/bin:$ENV{PATH}";
+$ENV{LD_LIBRARY_PATH} .= ":$FindBin::RealBin/util/lib64";
 
 my ($cd_hit_est_exec) = &check_program('cd-hit-est');
 
@@ -271,7 +272,7 @@ else {
 
             
             my $cds = $gene_obj->create_CDS_sequence(\$sequence);
-            
+
             unless ($cds) {
                 die "Error, no CDS for gene: " . Dumper($cds_coords_href) . Dumper($exon_coords_href);
             }
@@ -477,6 +478,12 @@ $cmd = "$UTIL_DIR/gene_list_to_gff.pl $acc_file $gff3_file.inx > $cds_file.best_
     my $best_cds_file = $best_pep_file;
     $best_cds_file =~ s/\.pep$/\.cds/;
     $cmd = "$UTIL_DIR/gff3_file_to_proteins.pl $gff3_file $transcripts_file CDS > $best_cds_file";
+    &process_cmd($cmd);
+
+    # make a CDS file:
+    my $best_cdna_file = $best_pep_file;
+    $best_cdna_file =~ s/\.pep$/\.mRNA/;
+    $cmd = "$UTIL_DIR/gff3_file_to_proteins.pl $gff3_file $transcripts_file cDNA > $best_cdna_file";
     &process_cmd($cmd);
     
 }

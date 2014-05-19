@@ -8,7 +8,7 @@ $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 
 my $in = shift||die;
 my $prefix = shift;
-$prefix="scaffold\S+" if !$prefix;
+$prefix='scaffold\S+' if !$prefix;
 mkdir('hints') || die ("hints directory already exists\n");
 open (IN,$in)||die;
 

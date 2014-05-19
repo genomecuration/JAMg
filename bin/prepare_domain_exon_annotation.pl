@@ -28,7 +28,7 @@ Optional
  -scratch         :s   => If engine is MPI, a 'local' scratch directory to copy databases to each node, e.g. /dev/shm if there is enough space
  -no_uniprot           => Don't search for Uniprot hits. Useful if you want to conduct the transposon search separately from the Uniprot (e.g. different engine/computing environment)
  -no_transposon        => Don't search for transposon hits. See above.
- -min_exons_hints :i   => Minimum number of exons with Uniprot hits before flagging sequence having a valid hit (def 2)
+ -min_exons_hints :i   => Minimum number of hits for a scaffold with same Uniprot ID before flagging sequence having a valid hit (def 2). Really useful for small scaffolds or Augustus training. Not useful otherwise but 2 is a good minimum
 
  -help                 => This help text and some more info
  -verbose              => Print out every command before it is executed.
@@ -122,7 +122,6 @@ my ( $getorf_exec, $repeatmasker_exec ) =
 
 unless (-s $genome . '.masked'){
   &do_repeat_masking();
-  $genome .= '.masked';
 }
 
 die "Could not find masked genome $genome.\n" unless -s $genome;
@@ -131,6 +130,7 @@ if ($only_repeat){
 	exit;
 }
 
+$genome .= '.masked';
 
 my $exons = "$genome.exons";
 my $getorf_options .= $circular ? '-circular' : '';
@@ -328,8 +328,8 @@ export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$RealBin/../lib64
 cd \$PBS_O_WORKDIR
 cat \${PBS_NODEFILE} > workers.\$PBS_JOBID.mpi
 \$MPIRUN_EXEC \$MPIRUN_ARGS $ffindex_apply_mpi_exec \\
-  -d \"\$1\"_transposon.db \\
-  -i \"\$1\"_transposon.db.idx \\
+  -d \"\$1\".transposon.db \\
+  -i \"\$1\".transposon.db.idx \\
   \$1 \\
   \$1.idx \\
   -- $hhblits_exec -maxmem 3 -d \$DB -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1e-5 -E 1E-05 -id 80 -p 80 -z 0 -b 0 -v 0 -B 3 -Z 3 2>/dev/null
@@ -363,8 +363,8 @@ export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:$RealBin/../lib64
 cd \$PBS_O_WORKDIR
 cat \${PBS_NODEFILE} > workers.\$PBS_JOBID.mpi
 \$MPIRUN_EXEC \$MPIRUN_ARGS $ffindex_apply_mpi_exec \\
-  -d \"\$1\"_uniprot.db \\
-  -i \"\$1\"_uniprot.db.idx \\
+  -d \"\$1\".uniprot.db \\
+  -i \"\$1\".uniprot.db.idx \\
   \$1 \\
   \$1.idx \\
   -- $hhblits_exec -maxmem 5 -d \$DB -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1e-5 -E 1E-05 -id 80 -p 80 -z 0 -b 0 -v 0 -B 3 -Z 3 2>/dev/null
@@ -382,39 +382,35 @@ sub prepare_localmpi() {
    &check_program( 'mpirun', 'ffindex_apply_mpi' );
  my $mpi_version = &mpi_version($mpirun_exec);
  &check_for_mpd( $hhblits_cpus, $mpi_version );
- unless ($no_transposon_search) {
+ unless ($no_transposon_search || -s "hhr.$exons.aa.trim.db.transposon.db") {
   print "Transposon database...\n";
-  &process_cmd(
-"$ffindex_from_fasta_exec -s $exons.aa.trim.db $exons.aa.trim.db.idx $exons.aa.trim"
-  ) if !-s "$exons.aa.trim.db";
+  &process_cmd("$ffindex_from_fasta_exec -s $exons.aa.trim.db $exons.aa.trim.db.idx $exons.aa.trim") if !-s "$exons.aa.trim.db";
   my $number_of_entries = `wc -l < $exons.aa.trim.db.idx`;
   chomp($number_of_entries);
   print "Processing $number_of_entries entries with $hhblits_cpus threads...\n";
-  my $transposon_cmd =
-"$mpirun_exec -n $hhblits_cpus $ffindex_apply_mpi_exec -d $exons.aa.trim.transposon.db -i $exons.aa.trim.transposon.db.idx $exons.aa.trim.db $exons.aa.trim.db.idx  \\
+  my $transposon_cmd ="$mpirun_exec -n $hhblits_cpus $ffindex_apply_mpi_exec -d $exons.aa.trim.db.transposon.db -i $exons.aa.trim.db.transposon.db.idx $exons.aa.trim.db $exons.aa.trim.db.idx  \\
  -- $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 2>/dev/null
  ";
-  &process_cmd($transposon_cmd) unless $number_of_entries == 0 || -s "hhr.$exons.aa.trim.transposon.db" ;
+  &process_cmd($transposon_cmd) unless $number_of_entries == 0 || -s "$exons.aa.trim.db.transposon.db" ;
  }
- my $transposon_results = &parse_hhr( "$exons.aa.trim.transposon", 70, 1e-3, 1e-6, 100, 50, 30, 'yes' );
+ my $transposon_results = &parse_hhr( "$exons.aa.trim.db.transposon.db", 70, 1e-3, 1e-6, 100, 50, 30, 'yes' );
  my $noreps_fasta = &remove_transposons( "$exons.aa.trim", $transposon_results );
 
- unless ($no_uniprot_search) {
+ unless ($no_uniprot_search || -s "hhr.$noreps_fasta.uniprot.db"){
   print "Uniprot database...\n";
-  &process_cmd(
-"$ffindex_from_fasta_exec -s $noreps_fasta.db $noreps_fasta.db.idx $noreps_fasta"
+  &process_cmd("$ffindex_from_fasta_exec -s $noreps_fasta.db $noreps_fasta.db.idx $noreps_fasta"
   ) if !-s "$noreps_fasta.db";
   my $number_of_entries = `wc -l < $noreps_fasta.db.idx`;
   chomp($number_of_entries);
   print
 "Processing $number_of_entries entries with $hhblits_cpus threads for uniprot...\n";
   my $uniprot_cmd =
-"$mpirun_exec -n $hhblits_cpus $ffindex_apply_mpi_exec -d $noreps_fasta.uniprot.db -i $noreps_fasta.uniprot.db.idx $noreps_fasta.db $noreps_fasta.db.idx  \\
+"$mpirun_exec -n $hhblits_cpus $ffindex_apply_mpi_exec -d $noreps_fasta.db.uniprot.db -i $noreps_fasta.db.uniprot.db.idx $noreps_fasta.db $noreps_fasta.db.idx  \\
  -- $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 2>/dev/null
  ";
 
-  &process_cmd($uniprot_cmd)  unless $number_of_entries == 0 || -s "hhr.$noreps_fasta.uniprot.db";
-  &parse_hhr( "$noreps_fasta.uniprot", 70, 1e-3, 1e-6, 100, 50, 30 );
+  &process_cmd($uniprot_cmd)  unless $number_of_entries == 0 || -s "$noreps_fasta.db.uniprot.db";
+  &parse_hhr( "$noreps_fasta.db.uniprot.db", 70, 1e-3, 1e-6, 100, 50, 30 ) unless  -s "hhr.$noreps_fasta.uniprot.db";
  }
 }
 
@@ -472,11 +468,11 @@ sub prepare_mpi() {
   my $number_of_entries = `wc -l < $exons.aa.trim.db.idx`;
   chomp($number_of_entries);
   print "Processing $number_of_entries entries with $hhblits_cpus threads for transposons...\n";
-  &process_cmd("$mpirun_exec -machinefile $workers_file -n $hhblits_cpus $ffindex_apply_mpi_exec -d $exons.aa.trim.transposon.db -i $exons.aa.trim.transposon.db.idx $exons.aa.trim.db $exons.aa.trim.db.idx  \\
+  &process_cmd("$mpirun_exec -machinefile $workers_file -n $hhblits_cpus $ffindex_apply_mpi_exec -d $exons.aa.trim.db.transposon.db -i $exons.aa.trim.db.transposon.db.idx $exons.aa.trim.db $exons.aa.trim.db.idx  \\
  -- $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 2>/dev/null
- ") unless $number_of_entries == 0 || -s "hhr.$exons.aa.trim.transposon.db" ;
+ ") unless $number_of_entries == 0 || -s "$exons.aa.trim.db.transposon.db" ;
  }
- my $transposon_results = &parse_hhr( "$exons.aa.trim.transposon", 70, 1e-3, 1e-6, 100, 50, 30, 'yes' );
+ my $transposon_results = &parse_hhr( "$exons.aa.trim.db.transposon.db", 70, 1e-3, 1e-6, 100, 50, 30, 'yes' ) unless -s "hhr.$exons.aa.trim.transposon.db";
  
  my $noreps_fasta = &remove_transposons( "$exons.aa.trim", $transposon_results );
 
@@ -491,11 +487,11 @@ sub prepare_mpi() {
 "Processing $number_of_entries entries with $hhblits_cpus threads for uniprot...\n";
 
   &process_cmd(
-"$mpirun_exec -machinefile $workers_file -n $hhblits_cpus $ffindex_apply_mpi_exec -d $noreps_fasta.uniprot.db -i $noreps_fasta.uniprot.db.idx $noreps_fasta.db $noreps_fasta.db.idx  \\
+"$mpirun_exec -machinefile $workers_file -n $hhblits_cpus $ffindex_apply_mpi_exec -d $noreps_fasta.db.uniprot.db -i $noreps_fasta.db.uniprot.db.idx $noreps_fasta.db $noreps_fasta.db.idx  \\
  -- $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 2>/dev/null
  "
-  ) unless $number_of_entries == 0 || -s "hhr.$noreps_fasta.uniprot.db";
-  &parse_hhr( "$noreps_fasta.uniprot", 70, 1e-3, 1e-6, 100, 50, 30 );
+  ) unless $number_of_entries == 0 || -s "$noreps_fasta.db.uniprot.db";
+  &parse_hhr( "$noreps_fasta.db.uniprot.db", 70, 1e-3, 1e-6, 100, 50, 30 ) unless -s "hhr.$noreps_fasta.uniprot.db";
  }
  
  
@@ -544,13 +540,12 @@ sub remove_transposons() {
  close FASTA;
  close OUT;
  $/ = $orig_sep;
-
  return $out_fasta;
 }
 
 sub remove_zero_bytes() {
  my $infile    = shift;
- my $outfile = "hhr.$infile.db";
+ my $outfile = "hhr.$infile";
  return $outfile if (-s $outfile);
  &process_cmd("cat $infile*.idx* > $outfile.idx");
  system("rm -f $infile*.idx*");
@@ -575,8 +570,15 @@ sub prepare_local() {
    }
    close CMD;
   }
-  my $transposon_results = &parse_hhr( "$fasta.transposon", 70, 1e-3, 1e-6, 100, 50, 30, 'yes' );
+
+ unless ($no_transposon_search || !-s "$fasta.hhblits.transposon.cmds" ) {
+   print "Processing transposon library\n";
+   &just_run_my_commands("$fasta.hhblits.transposon.cmds");
+ }
+
+  my $transposon_results = &parse_hhr( "$fasta.transposon.hhr", 70, 1e-3, 1e-6, 100, 50, 30, 'yes' );
   $fasta = &remove_transposons( $fasta, $transposon_results );
+  &process_cmd("$ffindex_from_fasta_exec -s $fasta.db $fasta.db.idx $fasta")  unless -s "$fasta.db";
   $number_of_entries = `wc -l < $fasta.db.idx`;
   chomp($number_of_entries);
 
@@ -589,15 +591,11 @@ sub prepare_local() {
    close CMD;
   }
 
- unless ($no_transposon_search || !-s "$fasta.hhblits.transposon.cmds" ) {
-   print "Processing transposon library\n";
-   &just_run_my_commands("$fasta.hhblits.transposon.cmds");
- }
-
  unless ($no_uniprot_search || !-s "$fasta.hhblits.uniprot.cmds") {
   print "Processing UniProt library\n";
   &just_run_my_commands("$fasta.hhblits.uniprot.cmds");
  }
+ &parse_hhr( "$fasta.uniprot.hhr", 70, 1e-3, 1e-6, 100, 50, 30 );
 }
 
 sub just_run_my_commands_helper(){
@@ -763,10 +761,10 @@ sub parse_hhr() {
  my ( $infile, $homology_prob_cut, $eval_cut, $pval_cut, $score_cut,
       $align_col_cut, $template_aln_size_cut, $is_repeat )
    = @_;
+ my $outfile = "hhr.$infile.results";
+ return $outfile if (-s $outfile);  
  return if !$infile || !-s $infile;
  $infile = &remove_zero_bytes( $infile);
- my $outfile = "$infile.results";
- return $outfile if (-s $outfile);  
  print "Post-processing $infile\n";   
  my $min_filesize = 500;
  my ( $qcounter, %reporting_hash, %hit_counter );
@@ -775,14 +773,14 @@ sub parse_hhr() {
 
  open( IN, $infile ) || die($!);
 
- my ($query,$id,$reverse,$start,$stop);
+ my ($query,$scaffold_id,$reverse,$start,$stop,%scaffold_hits);
 
  while ( my $ln = <IN> ) {
   if ( $ln =~ /^\W*Query\s+(\S+)/ ) {
    $qcounter++;
-   $query = $1;
-   $id    = $query;
-   $id =~ s/_\d+$//;
+   $query = $1;	# original name
+   $scaffold_id    = $query;
+   $scaffold_id =~ s/_\d+$//; # strip ORF identifier to make it a scaffold id
    $reverse = ($ln =~ /REVERSE SENSE/) ? 1 : 0;
    $ln =~ /\[(\d+)\s\-\s(\d+)\]/;
    $start = $1 && $1 =~ /^(\d+)$/ ? $1 : int(0);
@@ -855,10 +853,10 @@ sub parse_hhr() {
     my $name = $uid;
     $name .= " ($hit_desc)" if $hit_desc;
     my %hash = (
-        'type' => $type,'gff_start'=>$gff_start,'gff_end'=>$gff_end,'score'=>$score,'strand'=>$strand,'src'=>$src,'prio'=>$prio,'uid'=>$uid,'hit_start'=>$hit_start,'hit_stop'=>$hit_stop,'name'=>$name,'evalue'=>$evalue
+       'scaffold_id'=>$scaffold_id, 'type' => $type,'gff_start'=>$gff_start,'gff_end'=>$gff_end,'score'=>$score,'strand'=>$strand,'src'=>$src,'prio'=>$prio,'uid'=>$uid,'hit_start'=>$hit_start,'hit_stop'=>$hit_stop,'name'=>$name,'evalue'=>$evalue
     );
-
-    push(@{$reporting_hash{$id}{$hit_id}},\%hash);
+    $scaffold_hits{$scaffold_id}{$hit_id}++;
+    push(@{$reporting_hash{$query}{$hit_id}},\%hash);
     last;    # top hit
    }
   }
@@ -870,20 +868,24 @@ sub parse_hhr() {
  open( GENEID,  ">$outfile.geneid" );
  open( GFF3,    ">$outfile.gff3" );
  open( HINTS,   ">$outfile.hints" );
- foreach my $id (sort keys %reporting_hash) {
-  foreach my $hit_id (keys %{$reporting_hash{$id}}){
-        my $number_of_times = scalar(@{$reporting_hash{$id}{$hit_id}});
-        if ($is_repeat || $number_of_times >= $min_exons_before_reporting){
-          print OUT $id . "\n";
-          last;
+ foreach my $query_id (sort keys %reporting_hash) {
+	my $scaffold_id = $query_id;
+	$scaffold_id=~s/_\d+$//;
+        foreach my $hit_id (keys %{$scaffold_hits{$scaffold_id}}){
+                my $number_of_times = $scaffold_hits{$scaffold_id}{$hit_id};
+                if ($is_repeat || $number_of_times >= $min_exons_before_reporting){
+                  print OUT $query_id . "\n";
+                  last;
+                }
         }
-  }
-  foreach my $hit_id (keys %{$reporting_hash{$id}}){
-        my $number_of_times = scalar(@{$reporting_hash{$id}{$hit_id}});
+  foreach my $hit_id (keys %{$reporting_hash{$query_id}}){
+	my $scaffold_id = $query_id;
+	$scaffold_id=~s/_\d+$//;
+        my $number_of_times = $scaffold_hits{$scaffold_id}{$hit_id};
         if ($is_repeat || $number_of_times >= $min_exons_before_reporting){
-             foreach my $hash_ref (@{$reporting_hash{$id}{$hit_id}}){
-                my ($type,$gff_start,$gff_end,$score,$strand,$src,$prio,$uid,$name,$hit_start,$hit_stop,$evalue) = (
-         $hash_ref->{'type'},$hash_ref->{'gff_start'},$hash_ref->{'gff_end'},$hash_ref->{'score'},$hash_ref->{'strand'},$hash_ref->{'src'},$hash_ref->{'prio'},$hash_ref->{'uid'},$hash_ref->{'name'},$hash_ref->{'hit_start'},$hash_ref->{'hit_stop'},$hash_ref->{'evalue'}
+             foreach my $hash_ref (@{$reporting_hash{$query_id}{$hit_id}}){
+                my ($id,$type,$gff_start,$gff_end,$score,$strand,$src,$prio,$uid,$name,$hit_start,$hit_stop,$evalue) = (
+       $hash_ref->{'scaffold_id'},  $hash_ref->{'type'},$hash_ref->{'gff_start'},$hash_ref->{'gff_end'},$hash_ref->{'score'},$hash_ref->{'strand'},$hash_ref->{'src'},$hash_ref->{'prio'},$hash_ref->{'uid'},$hash_ref->{'name'},$hash_ref->{'hit_start'},$hash_ref->{'hit_stop'},$hash_ref->{'evalue'}
                         );
                      print HINTS "$id\thhblits\t$type\t$gff_start\t$gff_end\t$score\t$strand\t.\tsrc=$src;grp=$hit_id;pri=$prio\n";
                      print GFF3  "$id\thhblits\tprotein_match\t$gff_start\t$gff_end\t$score\t$strand\t.\tID=$uid;Name=$name;Target=$hit_id $hit_start $hit_stop\n";

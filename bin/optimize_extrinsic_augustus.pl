@@ -30,6 +30,7 @@ Optional parameters:
  --min_coding               Minimum coding length
  --genemodel                Augustus genemodel parameter
  --notrain                  The training step (etraining) is omitted. Use this if the HMM is already trained. This program does not optimize the HMM
+ --specificity              Weight Accuracy statistics in favour of specificity over sensitivity (only affects 'Accuracy' stat in .log files)
 
 =head1 AUTHORS
 
@@ -59,6 +60,8 @@ use IO::File;
 use threads;
 use threads::shared;
 use FindBin qw($RealBin);
+use Digest::MD5 qw(md5_hex);
+use Storable 'dclone';
 use lib ("$RealBin/../PerlLib");
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 use Thread_helper;
@@ -69,7 +72,7 @@ my (
      $config_path, $cpus,             $utr,
      $exec_dir,    $output_directory, $species_config_dir,
      $notrain,     $trans_table,      $genemodel,
-     $min_coding,  $hint_file,        $verbose
+     $min_coding,  $hint_file,        $verbose, $prefer_specificity
 );
 $|           = 1;
 $rounds      = 1;
@@ -98,7 +101,8 @@ my ($common_parameters) = '';
              'min_coding_len:i'       => \$min_coding,
              'hints:s'                => \$hint_file,
              'output:s'               => \$output_directory,
-             'verbose'                => \$verbose
+             'verbose'                => \$verbose,
+             'specificity'            => \$prefer_specificity
 );
 
 # globals
@@ -119,11 +123,9 @@ system("cat $optimize_gb $training_set > train.set 2>/dev/null");
 &process_cmd("$etrain_exec --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $common_parameters $be_silent train.set  >/dev/null 2>/dev/null ") unless $notrain;
 unlink("train.set");
 
-my %sources_that_need_to_be_checked;
-my @feature_headers;
-
-my ( $metaextrinsic_hash_ref, $cfg_extra, $basic_cfg ) =
-  &parse_extrinsic_meta();
+my ($sources_that_need_to_be_checked_ref,$feature_headers_ref, $metaextrinsic_hash_ref, $cfg_extra, $basic_cfg_ref ) =  &parse_extrinsic_meta();
+my %sources_that_need_to_be_checked = %{$sources_that_need_to_be_checked_ref};
+my @feature_headers = @$feature_headers_ref;
 
 #######################################################################################
 # initialize and first test
@@ -158,10 +160,13 @@ foreach my $src ( keys %sources_that_need_to_be_checked ) {
 print "Will search for $todo parameters with $cpus CPUs\n";
 sleep(1);
 
+my %cfg_track; # hack to prevent same config from being rerun
+
+#NB we really expect one line of evidence to be checked at a time...!
+open (TRACK,">$output_directory/track_evidence_lines.txt");
 foreach my $src ( keys %sources_that_need_to_be_checked ) {
  next if $src eq 'M';
-
- # we really expect one line of evidence to be checked at a time...!
+ print TRACK "\n$src";
 
  foreach my $feat (@feature_headers) {
   next if $feat eq 'feature';
@@ -176,26 +181,32 @@ foreach my $src ( keys %sources_that_need_to_be_checked ) {
     my $parameter_range = $metaextrinsic_hash_ref->{$src}->{$feat}->{'value'};
     if ( scalar(@$parameter_range) > 1 ) {
      foreach my $value (@$parameter_range) {
-
       # checks every value against the basic_cfg
-      my $cfg = $basic_cfg;
-      $cfg->{$src}->{$feat}->{'value'}    = $value;
-      $cfg->{'bonus'}->{$feat}->{'value'} = $bonus;
-      $cfg->{'malus'}->{$feat}->{'value'} = $malus;
-      my $thread = threads->create( 'write_extrinsic_cfg', $cfg, $cfg_extra );
-      $thread_helper->add_thread($thread);
+      my $cfg_hash = dclone $basic_cfg_ref;
+      $cfg_hash->{$src}->{$feat}->{'value'}    = $value;
+      $cfg_hash->{'bonus'}->{$feat}->{'value'} = $bonus;
+      $cfg_hash->{'malus'}->{$feat}->{'value'} = $malus;
+      my $cfg_serial = Dumper $cfg_hash;
+      if (!$cfg_track{$cfg_serial}){
+	      my $thread = threads->create( 'write_extrinsic_cfg', $cfg_hash, $cfg_extra );
+	      $thread_helper->add_thread($thread);
+	      $cfg_track{$cfg_serial}++;
+      }
      }
     }
    }
   }
  }
+  $thread_helper->wait_for_all_threads_to_complete();
+  my @failed_threads = $thread_helper->get_failed_threads();
+  if (@failed_threads) {
+   warn "Error, " . scalar(@failed_threads) . " threads failed.\nThis is probably if Augustus didn't like some combinations of search parameters but performed ok in the majority of searches. In that case that's ok to proceed or you can opt to retry (I won't delete existing). Any other failure is indicative of something else wrong.\n\n";
+  }
 }
-$thread_helper->wait_for_all_threads_to_complete();
-my @failed_threads = $thread_helper->get_failed_threads();
-if (@failed_threads) {
- die "Error, " . scalar(@failed_threads) . " threads failed.\n";
- exit(1);
-}
+
+
+print TRACK "\n";
+close TRACK;
 
 ### FINISHED
 
@@ -231,10 +242,48 @@ if ( $results[0] =~ /^([^:]+)/ ) {
  print "Best config file is found in $file with accuracy $best_accuracy\n$best_log\n";
  print "You may however want to run this command and see if there is a config file that performs better in any specific statistic:\n";
  print "grep Acc $output_directory/*log | sort -nk 2\n\n";
+ if (-s "$output_directory/track_evidence_lines.txt"){
+   my $best_output = &parse_best_predictions("$output_directory/track_evidence_lines.txt");
+   print "Remember that this is for a single line of evidence at a time. This is the best file for each evidence you have provided (cf. $output_directory/track_evidence_lines.txt.best):\n$best_output\n";
+ }
 }
 
 ################################################################################################################
 ################################################################################################################
+sub parse_best_predictions(){
+ my $tracking = shift;
+ my $return_output = "Evidence type\ttop accuracy\ttop file\n";
+ open (IN,$tracking);
+ while (my $ln=<IN>){
+ 	chomp($ln);
+	next if $ln=~/^\s*$/;
+	my @log_files = split("\t",$ln);
+	my $source_evidence = shift(@log_files);
+	my $top_accuracy = int(0);
+ 	my $top_accuracy_file;
+	foreach my $log (@log_files){
+		next unless -s $log;
+		open (LOG,$log);
+		while (my $ln2 = <LOG>){
+			if ($ln2 =~/Accuracy:\s+([\d\.]+);/){
+				if ($top_accuracy < $1){
+					$top_accuracy = $1;
+					$top_accuracy_file = $log;
+				}
+				last;
+			}
+		}
+		close LOG;
+	}
+	$return_output .= "$source_evidence\t$top_accuracy\t$top_accuracy_file\n" if $top_accuracy > 0;
+ }
+ close IN;
+ open (OUT,">$tracking.best");
+ print OUT $return_output;
+ close OUT;
+ return $return_output;
+}
+
 sub parse_evaluation() {
  my $pred_out = shift;
  my ( $cbsn, $cbsp, $cesn, $cesp, $cgsn, $cgsp, $csmd, $ctmd ) =
@@ -273,11 +322,13 @@ sub parse_evaluation() {
 
 sub check_prediction_finished(){
 	my $file = shift;
-	my $todelete = shift;
+	my @todeletes = @_;
 	my $check = `tail -n 3 $file|head -n 1 `;
 	if ($check !~/^# total time/){
 		unlink($file);
-		unlink($todelete);
+		foreach my $todelete (@todeletes){
+			unlink($todelete);
+		}
 	}
 }
 
@@ -325,12 +376,12 @@ sub run_evaluation {
 }
 
 sub estimate_accuracy {
- my $switch; # trialling for higher specificity
  my ( $bsn, $bsp, $esn, $esp, $gsn, $gsp, $smd, $tmd ) = @_;
  my $accuracy =int(0);
- if ( !$switch ) {
-  $accuracy = (
-   3 * $bsn +
+ if ( !$prefer_specificity ) {
+  if ($utr){
+    $accuracy = (
+     3 * $bsn +
      3 * $bsp +
      4 * $esn +
      4 * $esp +
@@ -338,19 +389,43 @@ sub estimate_accuracy {
      2 * $gsp +
      1 * (40 / ( $smd + 40 )) +
      1 * (40 / ( $tmd + 40 ))
-  ) / 20;
+    ) / 20;
+  }else{
+    $accuracy = (
+     3 * $bsn +
+     3 * $bsp +
+     4 * $esn +
+     4 * $esp +
+     2 * $gsn +
+     2 * $gsp
+    ) / 18;
+  }
  }
  else {
-  $accuracy = ( 
-   3 * $bsn + 
-   9 * $bsp + 
-   4 * $esn + 
-   12 * $esp + 
-   2 * $gsn + 
-   6 * $gsp 
-  ) / 36;
+  if ($utr){
+    $accuracy = ( 
+     3 * $bsn + 
+     9 * $bsp + 
+     4 * $esn + 
+     12 * $esp + 
+     2 * $gsn + 
+     6 * $gsp +
+     1 * (40 / ( $smd + 40 )) +
+     1 * (40 / ( $tmd + 40 ))
+    ) / 38;
+  }else{
+    $accuracy = ( 
+     3 * $bsn + 
+     9 * $bsp + 
+     4 * $esn + 
+     12 * $esp + 
+     2 * $gsn + 
+     6 * $gsp 
+    ) / 36;
+  }
  }
- my @results = ( "Base_SeNsitivity: ".$bsn, "Base_SPecificity: ".$bsp, "Exon_SeNsitivity: ".$esn, "Exon_SPecificity: ".$esp, "Gene_SeNsitivity: ".$gsn, "Gene_SPecificity: ".$gsp, "UTR_5': ".$smd, "UTR_3' :".$tmd );
+
+ my @results = ( "Base_SeNsitivity: $bsn", "Base_SPecificity: $bsp", "Exon_SeNsitivity: $esn", "Exon_SPecificity: $esp", "Gene_SeNsitivity: $gsn", "Gene_SPecificity: $gsp", "UTR_5_median_diff: $smd", "UTR_3_median_diff: $tmd" );
 
  return ($accuracy,\@results);
 
@@ -406,8 +481,8 @@ sub check_options() {
 sub write_extrinsic_cfg() {
  my $extrinsic_ref          = shift;
  my $cfg_extra              = shift;
- my $species_extrinsic_file = $output_directory . "/extrinsic.cfg";
-
+ my $main_species_extrinsic_file = $output_directory . "/extrinsic.cfg";
+ my $local_species_extrinsic_file = $main_species_extrinsic_file;
   my $prn = "[SOURCES]\n";
   foreach my $src ( keys %{$extrinsic_ref} ) {
    $prn .= $src . ' ' unless $src eq 'bonus' || $src eq 'malus';
@@ -437,41 +512,68 @@ sub write_extrinsic_cfg() {
    }
    $prn .= "\n";
   }
-
+  $prn .= "\n";
  if ($extrinsic_ref) {
   lock($extrinsic_iteration_counter);
-  $species_extrinsic_file .= ".$extrinsic_iteration_counter";
+  $local_species_extrinsic_file .= ".$extrinsic_iteration_counter";
   $extrinsic_iteration_counter++;
+  my $pred_out = $local_species_extrinsic_file;
+  $pred_out =~ s/.cfg/.prediction/;
+  &check_prediction_finished($pred_out,$pred_out.'.log',$local_species_extrinsic_file) if -s $pred_out;
+  print TRACK "\t$pred_out.log";
  }
 
  # don't rerun if it exists and it is exactly the same configuration
- unless ( -s $species_extrinsic_file && -s $species_extrinsic_file == length($prn)) {
-  open (IN,$species_extrinsic_file);
-  my @lines = <IN>;
+ if ( -s $local_species_extrinsic_file) {
+  my $check = '';
+  open (IN,$local_species_extrinsic_file) || die("Cannot open $local_species_extrinsic_file:\n$!\n");
+  while (my $ln=<IN>){
+	next if $ln=~/^\s*$/;
+	$check .= $ln;
+  }
   close IN;
-  my $check = join('',@lines);
-  if ($check ne $prn){
-	  open( OUT, ">$species_extrinsic_file" ) || die;
+  my $check_new = '';
+  my @prnt = split("\n",$prn);
+  foreach my $ln (@prnt){
+	next if $ln=~/^\s*$/;
+	$check_new .= $ln."\n";
+  }
+
+  if (md5_hex($check) ne md5_hex($check_new)){
+	  open( OUT, ">$local_species_extrinsic_file" ) || die;
 	  print OUT $prn . "\n";
 	  close OUT;
-	  my $accuracy = &run_evaluation($species_extrinsic_file);
+	  my $pred_out = $local_species_extrinsic_file;
+	  $pred_out =~ s/.cfg/.prediction/;
+	  unlink($pred_out);
+	  unlink($pred_out.".log");
+	  my $accuracy = &run_evaluation($local_species_extrinsic_file);
   }
+ }else{
+	# does not exist
+	  open( OUT, ">$local_species_extrinsic_file" ) || die;
+	  print OUT $prn . "\n";
+	  close OUT;
+	  my $pred_out = $local_species_extrinsic_file;
+	  $pred_out =~ s/.cfg/.prediction/;
+	  unlink($pred_out);
+	  unlink($pred_out.".log");
+	  my $accuracy = &run_evaluation($local_species_extrinsic_file);
  }
   print "\r$extrinsic_iteration_counter/$todo    ";
 }
 
 sub parse_extrinsic_meta() {
  my ( %extrinsic_hash, %basic_cfg, $cfg_extra );
+ my (%sources_that_need_to_be_checked,@feature_headers);
  my $species_meta_cfg_filename =
      $extrinsic
    ? $extrinsic
    : $species_config_dir . "/" . $species . "_metaextrinsic.cfg";
- open( IN, $species_meta_cfg_filename )
-   || die("Can't open $species_meta_cfg_filename\n");
+ open( IN, $species_meta_cfg_filename ) || die("Can't open $species_meta_cfg_filename\n");
  @feature_headers = split( "\t", <IN> );
 
- die
-   "CFG meta file $species_meta_cfg_filename has less than 18 header columns ("
+ die "CFG meta file $species_meta_cfg_filename has less than 18 header columns ("
    . scalar(@feature_headers) . ")\n"
    unless scalar(@feature_headers) == 18;
  chomp( $feature_headers[-1] );
@@ -494,8 +596,7 @@ sub parse_extrinsic_meta() {
   }
   chomp($ln);
   my @data = split( "\t", $ln );
-  die
-"CFG meta file $species_meta_cfg_filename has less than 18 columns for this line:\n$ln\n"
+  die "CFG meta file $species_meta_cfg_filename has less than 18 columns for this line:\n$ln\n"
     unless @data == 18;
   my $source = $data[0];
   for ( my $i = 1 ; $i < 18 ; $i++ ) {
@@ -530,9 +631,6 @@ sub parse_extrinsic_meta() {
    $basic_cfg{$source}->{ $feature_headers[$i] }->{'value'}      = $basic;
    $extrinsic_hash{$source}->{ $feature_headers[$i] }->{'value'} = \@parameters;
 
-   #$basic_cfg{$source}->{ $header[$i] }      = \@scores;
-   #$extrinsic_hash{$source}->{ $header[$i] } = \@parameters;
-
   }
 
  }
@@ -540,7 +638,7 @@ sub parse_extrinsic_meta() {
  foreach my $head (@feature_headers) {
   $basic_cfg{'M'}->{$head}->{'value'} = 1e+100;
  }
- return ( \%extrinsic_hash, $cfg_extra, \%basic_cfg );
+ return (\%sources_that_need_to_be_checked,\@feature_headers, \%extrinsic_hash, $cfg_extra, \%basic_cfg );
 }
 
 sub process_cmd {

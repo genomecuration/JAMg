@@ -115,7 +115,6 @@ sub GTF_to_gene_objs {
                 #print STDERR "Before, CDS: " . Dumper($CDS_coords_aref);
                 #print STDERR "Before, exons: " . Dumper($mRNA_coords_aref);
                 
-        
                 my $CDS_coords_href = &_join_overlapping_coords($CDS_coords_aref);
                 my $mRNA_coords_href = &_join_overlapping_coords($mRNA_coords_aref);
                 
@@ -187,7 +186,7 @@ sub _join_overlapping_coords {
             $inferred_orient = $orient;
         }
         elsif ( defined($orient) && $orient ne $inferred_orient) {
-            die "Error, conflicting orientation info: " . Dumper($coords_aref);
+            confess "Error, conflicting orientation info ($orient ne $inferred_orient) : " . Dumper($coords_aref);
         }
         
         my ($lend, $rend) = sort {$a<=>$b} ($end5, $end3);

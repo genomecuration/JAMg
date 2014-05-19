@@ -5,9 +5,10 @@
 =head1 USAGE
 
  -infile          :s   => Output from HHblits
- -min_exons_hints :i   => Minimum number of exons with Uniprot hits before flagging sequence having a valid hit (def 2)
+ -min_exons_hints :i   => Minimum number of hits for a scaffold with same Uniprot ID before flagging sequence having a valid hit (def 2). Really useful for small scaffolds or Augustus training.
  -is_repeat            => HHblits was ran against a database of repeats/transposons
  -verbose              => Print out commands
+ -is_from_getorf       => HHblits input was the output of getorf: this will strip the _\d+ from the end of query IDs. Used for domain searching
 
 =cut
 
@@ -16,23 +17,24 @@ use warnings;
 use Getopt::Long;
 use Pod::Usage;
 
-my ($infile, $is_repeat,$verbose);
+my ($infile, $is_repeat,$verbose,$is_from_getorf,$not_zero);
 my $min_exons_before_reporting =2;
 
 GetOptions(
 	'infile:s' => \$infile,
 	'is_repeat' => \$is_repeat,
 	'verbose|debug' => \$verbose,
-	'min_exons_hints:i' => $min_exons_before_reporting
-
+	'min_exons_hints:i' => $min_exons_before_reporting,
+	'is_from_getorf'   => \$is_from_getorf,
+	'not_zero'        => \$not_zero
 );
 
-
+$infile = shift if !$infile;
 my %reporting_hash;
 
  my ( $homology_prob_cut, $eval_cut, $pval_cut, $score_cut,$align_col_cut, $template_aln_size_cut) = (70,1e-3,1e-6,100,50,30);
  pod2usage if !$infile || !-s $infile;
- $infile = &remove_zero_bytes( $infile) unless $infile=~/^hhr/;
+ $infile = &remove_zero_bytes( $infile) unless $infile=~/^hhr/ || $not_zero;
  my $outfile = "$infile.results";
  die "Output already exists: $outfile\n" if -s $outfile;
  print "Post-processing $infile\n";   
@@ -43,14 +45,14 @@ my %reporting_hash;
 
  open( IN, $infile ) || die($!);
 
- my ($query,$id,$reverse,$start,$stop);
+ my ($query,$scaffold_id,$reverse,$start,$stop,%scaffold_hits);
 
  while ( my $ln = <IN> ) {
   if ( $ln =~ /^\W*Query\s+(\S+)/ ) {
    $qcounter++;
    $query = $1;
-   $id    = $query;
-   $id =~ s/_\d+$//;
+   $scaffold_id    = $query;
+   $scaffold_id =~ s/_\d+$// if $is_from_getorf; # if for domain searching
    $reverse = ($ln =~ /REVERSE SENSE/) ? 1 : 0;
    $ln =~ /\[(\d+)\s\-\s(\d+)\]/;
    $start = $1 && $1 =~ /^(\d+)$/ ? $1 : int(0);
@@ -124,10 +126,11 @@ my %reporting_hash;
     my $name = $uid;
     $name .= " ($hit_desc)" if $hit_desc;
     my %hash = (
-	'type' => $type,'gff_start'=>$gff_start,'gff_end'=>$gff_end,'score'=>$score,'strand'=>$strand,'src'=>$src,'prio'=>$prio,'uid'=>$uid,'hit_start'=>$hit_start,'hit_stop'=>$hit_stop,'name'=>$name,'evalue'=>$evalue
+	'scaffold_id'=>$scaffold_id,'type' => $type,'gff_start'=>$gff_start,'gff_end'=>$gff_end,'score'=>$score,'strand'=>$strand,'src'=>$src,'prio'=>$prio,'uid'=>$uid,'hit_start'=>$hit_start,'hit_stop'=>$hit_stop,'name'=>$name,'evalue'=>$evalue
     );
 
-    push(@{$reporting_hash{$id}{$hit_id}},\%hash);
+    $scaffold_hits{$scaffold_id}{$hit_id}++;
+    push(@{$reporting_hash{$query}{$hit_id}},\%hash);
     last;    # top hit
    }
   }
@@ -141,19 +144,23 @@ my %reporting_hash;
  open( HINTS,   ">$outfile.hints" );
 
 
- foreach my $id (sort keys %reporting_hash) {
-  foreach my $hit_id (keys %{$reporting_hash{$id}}){
-	my $number_of_times = scalar(@{$reporting_hash{$id}{$hit_id}});
-	if ($is_repeat || $number_of_times >= $min_exons_before_reporting){
-	  print OUT $id . "\n";
-	  last;
+ foreach my $query_id (sort keys %reporting_hash) {
+        my $scaffold_id = $query_id;
+        $scaffold_id=~s/_\d+$//;
+	foreach my $hit_id (keys %{$scaffold_hits{$scaffold_id}}){
+	        my $number_of_times = $scaffold_hits{$scaffold_id}{$hit_id};
+        	if ($is_repeat || $number_of_times >= $min_exons_before_reporting){
+	          print OUT $query_id . "\n";
+        	  last;
+	        }
 	}
-  }
-  foreach my $hit_id (keys %{$reporting_hash{$id}}){
-	my $number_of_times = scalar(@{$reporting_hash{$id}{$hit_id}});
+  foreach my $hit_id (keys %{$reporting_hash{$query_id}}){
+        my $scaffold_id = $query_id;
+        $scaffold_id=~s/_\d+$//;
+        my $number_of_times = $scaffold_hits{$scaffold_id}{$hit_id};
 	if ($is_repeat || $number_of_times >= $min_exons_before_reporting){
-	     foreach my $hash_ref (@{$reporting_hash{$id}{$hit_id}}){
-		my ($type,$gff_start,$gff_end,$score,$strand,$src,$prio,$uid,$name,$hit_start,$hit_stop,$evalue) = ( $hash_ref->{'type'},$hash_ref->{'gff_start'},$hash_ref->{'gff_end'},$hash_ref->{'score'},$hash_ref->{'strand'},$hash_ref->{'src'},$hash_ref->{'prio'},$hash_ref->{'uid'},$hash_ref->{'name'},$hash_ref->{'hit_start'},$hash_ref->{'hit_stop'},$hash_ref->{'evalue'});
+	     foreach my $hash_ref (@{$reporting_hash{$query_id}{$hit_id}}){
+		my ($id,$type,$gff_start,$gff_end,$score,$strand,$src,$prio,$uid,$name,$hit_start,$hit_stop,$evalue) = ( $hash_ref->{'scaffold_id'},$hash_ref->{'type'},$hash_ref->{'gff_start'},$hash_ref->{'gff_end'},$hash_ref->{'score'},$hash_ref->{'strand'},$hash_ref->{'src'},$hash_ref->{'prio'},$hash_ref->{'uid'},$hash_ref->{'name'},$hash_ref->{'hit_start'},$hash_ref->{'hit_stop'},$hash_ref->{'evalue'});
 		     print HINTS "$id\thhblits\t$type\t$gff_start\t$gff_end\t$score\t$strand\t.\tsrc=$src;grp=$hit_id;pri=$prio\n";
 		     print GFF3  "$id\thhblits\tprotein_match\t$gff_start\t$gff_end\t$score\t$strand\t.\tID=$uid;Name=$name;Target=$hit_id $hit_start $hit_stop\n";
 		     print GENEID "$id\thhblits\tsr\t$gff_start\t$gff_end\t$score\t$strand\t.\n";
@@ -183,7 +190,7 @@ print "Done, see $outfile\n";
 #################################################
 sub remove_zero_bytes() {
  my $infile    = shift;
- my $outfile = "hhr.$infile.db";
+ my $outfile = "hhr.$infile";
  return $outfile if (-s $outfile);
  &process_cmd("cat $infile*.idx* > $outfile.idx");
  system("rm -f $infile*.idx*");

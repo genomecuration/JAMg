@@ -8,10 +8,19 @@
 
 =head1 USAGE
 
- Provide a GFF3 file and a genome FASTA file to phase and create sequence feature (CDS,PEP,MRNA,GENE) information for
+Provide a GFF3 file and a genome FASTA file to phase and create sequence feature (CDS,PEP,MRNA,GENE) information for
  
- create_features_from_gff3.pl genes.gff3 genome.fasta
-
+ Mandatory
+  -gff|infile   :s GFF file to process
+  -genome|fasta :s FASTA file of genome
+ 
+ Optional
+  -name            Use Transcript common name as the main ID in the output.
+  -lettername      Use -R[two letters] notation for alternative transcript instead of .[digits]  
+  -verbose         Print progress and debug info
+ 
+NB: -name means that the common name has no spaces and is unique (will be checked). Useful for WebApollo
+ 
 =cut
 
 use strict;
@@ -25,88 +34,123 @@ use Gene_obj;
 use Gene_obj_indexer;
 use GFF3_utils;
 use GTF_utils;
+$|=1;
+our $SEE;
+my $minorf = 3;    #minimum orf size in bp
+my ( $gfffile, $genome, $change_name,$lettername,$verbose );
+GetOptions(
+            'gff|infile:s'     => \$gfffile,
+            'genome|fasta:s'   => \$genome,
+            'name|change_name' => \$change_name,
+            'debug'          => \$SEE,
+            'verbose'          => \$verbose,
+            'lettername'       => \$lettername
+);
+$gfffile = shift if !$gfffile;
+$genome  = shift if !$genome;
+pod2usage unless $gfffile && $genome;
 
-my $minorf                   = 3;     #minimum orf size in bp
-
-my $gfffile = shift || die ("Provide a GFF3 file and a genome FASTA file to phase and create sequence feature (CDS,PEP,MRNAS) information for\n");
-my $genome = shift  || die ("Provide a GFF3 file and a genome FASTA file to phase and create sequence feature (CDS,PEP,MRNAS) information for\n");
-
-die "GFF file $gfffile does not exist\n" unless -s $gfffile;
+die "GFF file $gfffile does not exist\n"  unless -s $gfffile;
 die "Fasta file $genome does not exist\n" unless -s $genome;
 
 my $scaffold_seq_hashref = &read_fasta($genome);
 
 my %unique_names_check;
 
-&gff3_fix_phase($gfffile);
+&gff3_process($gfffile);
 
-sub gff3_fix_phase() {
+sub gff3_process() {
  my $gff3_file = shift;
  open( IN, $gff3_file ) || confess( "Cannot find $gff3_file " . $! );
  my $index_file = "$gff3_file.inx";
  my $gene_obj_indexer = new Gene_obj_indexer( { "create" => $index_file } );
- my $asmbl_id_to_gene_list_href = &GFF3_utils::index_GFF3_gene_objs( $gff3_file, $gene_obj_indexer );
- open( OUT,  ">$gff3_file.gff3" );
+ my $genome_id_to_gene_list_href =
+   &GFF3_utils::index_GFF3_gene_objs( $gff3_file, $gene_obj_indexer );
+ open( GFF3, ">$gff3_file.gff3" );
  open( PEP,  ">$gff3_file.pep" );
  open( CDS,  ">$gff3_file.cds" );
  open( GENE, ">$gff3_file.gene" );
  open( MRNA, ">$gff3_file.mRNA" );
+ 
+ print "Indexing complete\n";
+ foreach my $genome_id (sort  keys %$genome_id_to_gene_list_href ) {
 
- foreach my $asmbl_id (sort keys %$asmbl_id_to_gene_list_href ) {
-  my $genome_seq = $scaffold_seq_hashref->{$asmbl_id};
+  my $genome_seq = $scaffold_seq_hashref->{$genome_id};
   if ( !$genome_seq ) {
-   warn "Cannot find sequence $asmbl_id from genome\n";
+   warn "Cannot find sequence $genome_id from genome\n";
    next;
   }
-  my @gene_ids = @{ $asmbl_id_to_gene_list_href->{$asmbl_id} };
+  my @gene_ids = sort @{ $genome_id_to_gene_list_href->{$genome_id} };
+  print "\nProcessing scaffold $genome_id\n" if $verbose;
   foreach my $gene_id (@gene_ids) {
+   print "\rprocessing gene $gene_id"
+     . "                                                  "
+     if $verbose;
    my %params;
    my %preferences;
    $preferences{'sequence_ref'} = \$genome_seq;
-   $params{unspliced_transcript} = 1;
+   $params{unspliced_transcript} = 1;    # highlights introns
 
    my $gene_obj_ref = $gene_obj_indexer->get_gene($gene_id);
 
    $gene_obj_ref->create_all_sequence_types( \$genome_seq, %params );
+   my $gene_seq = $gene_obj_ref->get_gene_sequence();
+   $gene_seq =~ s/(\S{80})/$1\n/g;
+   chomp $gene_seq;
+   print GENE ">$gene_id type:gene\n$gene_seq\n";
 
    foreach my $isoform ( $gene_obj_ref, $gene_obj_ref->get_additional_isoforms() )   {
-    $isoform->delete_isoforms();
-    my $isoform_id = $isoform->{Model_feat_name};
-    my $common_name = $isoform->{com_name};
-    my @model_span = $isoform->get_CDS_span();
-    next
-      if ( !$isoform->get_CDS_span()
-           || abs( $model_span[0] - $model_span[1] ) < 3 );
+    my $isoform_id  = $isoform->{Model_feat_name};
+    print "\rprocessing gene $gene_id isoform $isoform_id                                              " if $verbose;
+    my @model_span  = $isoform->get_CDS_span();
+    next if ( !$isoform->get_CDS_span() || abs( $model_span[0] - $model_span[1] ) < 3 );
 
-    eval { $isoform->set_CDS_phases( \$genome_seq ); };
+    my $common_name = $isoform->{transcript_name} || $isoform->{com_name};
+    my $description = '';
+    my $alt_name    = '';
+    my $main_id     = $isoform_id;
+    
+    if ( $common_name && $change_name ) {
+     if ( $common_name =~ /\s/ ) {
+      $description = $common_name;
+      $description =~ s/^\s*(\S+)\s*//;
+      $common_name = $1 || die;
+     }
 
-    # check name
-    my ($original_id,$alt_name,$main_id,$gene_name) = ($isoform_id,$common_name,$isoform_id,$gene_id);
-    my $description='';
-    if ($common_name){
-	if ($common_name=~/\s/){
-		$description = $common_name;
-		$description =~s/^\s*(\S+)//;
-		$common_name=$1||die;
-	}
-	if (!$unique_names_check{$common_name}){
-		if ($common_name=~/\.\d{1,2}$/){
-			$main_id = $common_name;
-		}else{
-			$main_id = $common_name.'.1';
-		}
-		$alt_name = $isoform_id;
-	}else{
-		if ($common_name=~/\.\d{1,2}$/){
-			die "Common name $common_name ends in transcript notation (.[digit]) but it is not unique!\n";
-		}
-		my $counter = $unique_names_check{$common_name} + 1;
-		$main_id = $common_name.".$counter";
-		$alt_name = $isoform_id;
- 	}
-	$unique_names_check{$common_name}++;
+     if ( $common_name =~ /\.\d+$/ && !$lettername){ 
+      $main_id = $common_name;
+     }elsif ($lettername && $common_name =~ /-R[A-Z]+$/ ) {
+      $main_id = $common_name;
+     }elsif ($lettername){
+       $main_id = $common_name . '-RA';
+     }else{
+       $main_id = $common_name . '.1';
+     }
+     $alt_name = "($isoform_id) ";
+     if ( $unique_names_check{$common_name} ) {
+      if ($lettername && $common_name =~ /-R[A-Z]+$/ ) {
+       die "Common name $common_name ends in transcript notation but it is not unique!\n";
+      }
+      elsif (!$lettername && $common_name =~ /\.\d+$/) {
+       die "Common name $common_name ends in transcript notation but it is not unique!\n";
+      }
+      if ($lettername){
+       my $letter = 'B';
+       for (my $i=1;$i<$unique_names_check{$common_name};$i++){
+        $letter++;
+       }
+       $main_id  = $common_name . '-R'.$letter;
+      }else{
+       $main_id  = $common_name . '.'.($unique_names_check{$common_name}+1);
+      }
+      $alt_name = "($isoform_id) ";
+     }
+     $unique_names_check{$common_name}++;
+     # set description as note and update name
+     $isoform->{transcript_name} =$main_id;
+     $isoform->{com_name} = $main_id;
+     $isoform->{pub_comment} = $description if $description;
     }
-
 
     # get sequences
     # CDS
@@ -114,10 +158,11 @@ sub gff3_fix_phase() {
     $seq =~ s/(\S{80})/$1\n/g if $seq;
     chomp $seq if $seq;
     if ( $seq && length($seq) >= $minorf ) {
-     print CDS ">$main_id ($alt_name) gene:$gene_name$description\n$seq\n";
+     print CDS
+       ">$main_id ".$alt_name."type:CDS  gene:$gene_id$description\n$seq\n";
     }
     else {
-     warn "Gene $gene_name has no coding sequence. Will not process and will skip it\n";
+     warn "Transcript $main_id has no coding sequence. Will not process and will skip it\n";
      next;
     }
 
@@ -125,35 +170,37 @@ sub gff3_fix_phase() {
     $seq = $isoform->get_protein_sequence();
     $seq =~ s/(\S{80})/$1\n/g;
     chomp $seq;
-    print PEP ">$main_id ($alt_name) gene:$gene_name$description\n$seq\n";
-
-    # gene (+introns)
-    $seq = $isoform->get_gene_sequence();
-    $seq =~ s/(\S{80})/$1\n/g;
-    chomp $seq;
-    print GENE ">$main_id ($alt_name) gene:$gene_name$description\n$seq\n";
+    print PEP
+      ">$main_id ".$alt_name."type:polypeptide  gene:$gene_id$description\n$seq\n";
 
     # mRNA (all exons)
     $seq = $isoform->get_cDNA_sequence();
     $seq =~ s/(\S{80})/$1\n/g;
     chomp $seq;
-    print MRNA ">$main_id ($alt_name) gene:$gene_name$description\n$seq\n";
+    print MRNA
+      ">$main_id ".$alt_name."type:mRNA gene:$gene_id$description\n$seq\n";
 
-    # GFF3
-    print OUT $isoform->to_GFF3_format_extended(%preferences) . "\n";
+
+    eval { $isoform->set_CDS_phases( \$genome_seq ); };
 
    }
+
+   # GFF3
+   print GFF3 $gene_obj_ref->to_GFF3_format_extended(%preferences) . "\n";
+
   }
  }
- close OUT;
+ print "\nDone!\n";
+ close GFF3;
  close PEP;
  close CDS;
  close MRNA;
  close GENE;
- rename( $gff3_file, "$gff3_file.original" ) unless -s "$gff3_file.original";
- unlink $index_file;
- rename( "$gff3_file.gff3", $gff3_file );
- &sort_gff3("$gff3_file");
+
+ # rename( $gff3_file, "$gff3_file.original" ) unless -s "$gff3_file.original";
+ # unlink $index_file;
+ # rename( "$gff3_file.gff3", $gff3_file );
+ &sort_gff3("$gff3_file.gff3");
  return;
 }
 
@@ -187,7 +234,7 @@ sub sort_gff3() {
  $delimiter = &get_gff_delimiter($gff) if !$delimiter;
  my $orig_sep = $/;
  open( GFF, $gff ) || confess "Cannot open $gff $!";
- open( OUT, ">$gff.sorted" );
+ open( GFF3, ">$gff.sorted" );
  $/ = $delimiter;
  my @records;
 
@@ -209,10 +256,10 @@ sub sort_gff3() {
   } @records
    )
  {
-  print OUT $rec . $/;
+  print GFF3 $rec . $/;
  }
 
- close OUT;
+ close GFF3;
  $/ = $orig_sep;
  rename( "$gff.sorted", $gff );
 }

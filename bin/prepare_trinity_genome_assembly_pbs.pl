@@ -23,7 +23,7 @@ Optional:
 	-single_end         => Give this option if it is single end data.
 	-cpu             :i => Number of CPUs (def 4)
 	-memory          :s => Sorting memory to use, give as e.g. 20G (def 20G).
-	-split_scaffolds :s => Split alignments to one per reference sequence
+	-split_scaffolds    => Split alignments to one per reference sequence
 
  Note: Except for -intron, the defaults should be ok for most projects. 
 
@@ -102,7 +102,7 @@ if (!$read_files[0]){
         print "Will use SAM as input:\n".join(" ",@sam_files)."\n";
 
 	foreach my $sam_file (@sam_files){
-		my $TGG_prep_cmd = "$TGG_prep_exec --coord_sorted_SAM  $sam_file -I $intron_max_size --sort_buffer $memory --CPU $cpus ";
+		my $TGG_prep_cmd = "$TGG_prep_exec --coord_sorted_SAM  $sam_file -I $intron_max_size --sort_buffer $memory ";
 		$TGG_prep_cmd .= " --SS_lib_type $is_single_stranded " if $is_single_stranded;
 		$TGG_prep_cmd .= " --min_reads_per_partition $minimum_reads ";
 		&process_cmd($TGG_prep_cmd);
@@ -282,7 +282,7 @@ sub split_scaffold_sam(){
 	my @scaff_sams;
 	my @scaff_id_lines;
 	&process_cmd($samtools_exec." index $bam_file" ) unless -s "$bam_file.bai";	
-	my @bam_scaff_ids = `$samtools_exec view -H $bam_file |grep '^@SQ'`);
+	my @bam_scaff_ids = `$samtools_exec view -H $bam_file |grep '^\@SQ' `;
 	foreach my $ln (@bam_scaff_ids){
 		if ($ln=~/\bSN:(\S+)\b/){	
 			push(@scaff_id_lines,$1);
@@ -294,6 +294,6 @@ sub split_scaffold_sam(){
 		unlink($sam_file) if -e $sam_file && !-s $sam_file;
 		push(@scaff_sams,$sam_file) if -s $sam_file;
 	}
-	die "No SAM files produced from genome sequence $genome_sequence\n" unless @scaff_sams && -s $scaff_sams[0];
+	die "No SAM files produced from genome\n" unless @scaff_sams && -s $scaff_sams[0];
 	return @scaff_sams;
 }

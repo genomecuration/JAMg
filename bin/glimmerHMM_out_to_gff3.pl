@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use FindBin qw($RealBin);
-use lib ("$RealBin/../../PerlLib");
+use lib ("$RealBin/../PerlLib");
 use Gene_obj;
 use CdbTools;
 
@@ -46,16 +46,16 @@ while (<$fh>) {
 }
 close $fh;
 
-print STDERR "-done parsing inputs.\n";
+#print STDERR "-done parsing inputs.\n";
 
 foreach my $asmbl_id (keys %data) {
 	
-	print STDERR "-processing results for $asmbl_id\n";
+#	print STDERR "-processing results for $asmbl_id\n";
 	my $genome_seq = &cdbyank_linear($asmbl_id, $genome_fasta);
 	
 	foreach my $model (keys %{$data{$asmbl_id}}) {
 
-		print STDERR "processing $model\n";
+#		print STDERR "processing $model\n";
 
 		
 		
@@ -69,7 +69,7 @@ foreach my $asmbl_id (keys %data) {
 		$gene_obj->{Model_feat_name} = "mRNA.glimmerHMM.$model";
 		$gene_obj->{asmbl_id} = $asmbl_id;
 		$gene_obj->{com_name} = "GlimmerHMM model $model";
-                $gene_obj->{source} = 'glimmerHMM';
+		$gene_obj->{source} = 'glimmerHMM';
 		
 		print $gene_obj->to_GFF3_format()  . "\n\n";
 		

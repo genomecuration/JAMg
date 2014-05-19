@@ -1,9 +1,9 @@
 ABINITIO_PREDICTION	geneid	2
-ABINITIO_PREDICTION	SNAP	2
-ABINITIO_PREDICTION	GeneMark.hmm	1
-ABINITIO_PREDICTION	glimmer		3
-ABINITIO_PREDICTION	AUGUSTUS	9
+ABINITIO_PREDICTION	snap	2
+ABINITIO_PREDICTION	GeneMarkHMM	5
+ABINITIO_PREDICTION	glimmerHMM	3
+ABINITIO_PREDICTION	AUGUSTUS	8
 TRANSCRIPT	PASA	10
-PROTEIN	foreign_protein_gold	10
-PROTEIN	foreign_protein_notgold	2
-# OTHER_PREDICTION # ie. ensembl known genes (homology-based prediction). Count like protein alignments, but include well defined initial/terminal exons too!
+OTHER_PREDICTION	FOREIGN	4
+OTHER_PREDICTION	GOLD	15
+

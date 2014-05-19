@@ -18,10 +18,10 @@ The following perl modules are required.
 * Data::Dumper
 * Getopt::Long
 * List::Util
-* Digest::SHA
+* Digest::MD5
 
 You can install via CPAN:
-$ cpan Pod::Usage Data::Dumper Getopt::Long List::Util Digest::SHA
+$ cpan Pod::Usage Data::Dumper Getopt::Long List::Util Digest::MD5
 
 Note that Pod::Usage Data::Dumper are only used for error messages so you could edit them out if you have to.
 
