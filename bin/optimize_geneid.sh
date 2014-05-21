@@ -6,12 +6,12 @@ SECONDS=0 # Reset Timing
 # This program adds a score to a specified type of exons, runs geneid and
 # evaluates the results with the annotations.
 
-IeWF='-8.0'                              # Initial Weigth First     value -7
+IeWF='-8.5'                              # Initial Weigth First     value -7
 deWF='0.5'                               # Delta Weigth First       value 0.5
 FeWF='-1.0'                              # Final Weigth First       value -1.5
 IeWFini=$IeWF                          # Initial value
 
-IoWF='0.10'                              # Initial Weigth First     value 0.30
+IoWF='0.05'                              # Initial Weigth First     value 0.30
 doWF='0.05'                             # Delta Weigth First       value 0.05
 FoWF='0.70'                              # Final Weigth First       value 0.70
 
