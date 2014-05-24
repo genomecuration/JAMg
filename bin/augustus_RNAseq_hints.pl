@@ -64,14 +64,14 @@ my ( $samtools_exec, $bedtools_exec ) =
   &check_program( 'samtools', 'bedtools' );
 
 #Options
-my ( $bamfile, $genome, $help );
+my ( @bamfiles, $genome, $help );
 my $window           = 50;
 my $min_score        = 20;
 my $strandness       = int(0);
 my $background_level = 4;
 GetOptions(
             'help'              => \$help,
-            'bam|in:s'          => \$bamfile,
+            'bam|in:s{,}'          => \@bamfiles,
             'genome|fasta:s'    => \$genome,
             'min_score:i'       => \$min_score,
             'strandness:i'      => \$strandness,
@@ -82,8 +82,8 @@ GetOptions(
 pod2usage if $help;
 
 pod2usage "Cannot find the BAM or genome FASTA file\n"
-  unless $bamfile
-   && -s $bamfile
+  unless $bamfiles[0]
+   && -s $bamfiles[0]
    && $genome
    && ( -s $genome || -s $genome . '.fai' );
 
@@ -101,34 +101,46 @@ else {
  die;
 }
 
+my $master_bamfile;
+if (scalar(@bamfiles == 1)){
+  $master_bamfile = $bamfiles[0];
+}else{
+	foreach my $bamfile (@bamfiles){
+		die "Cannot find $bamfile\n" unless -s $bamfile;
+	}
+	$master_bamfile = 'master_bamfile.bam';
+	&process_cmd("$samtools_exec merge -r $master_bamfile ".join(" ",@bamfiles)) unless -s $master_bamfile;
+}
+
 &process_cmd("$samtools_exec faidx $genome") unless -s $genome . '.fai';
 die "Cannot index genome $genome\n" unless -s $genome . '.fai';
 
-unless (-e "$bamfile.junctions.completed"){
- &process_cmd("$samtools_exec rmdup -S $bamfile - | $bedtools_exec bamtobed -bed12 | bed12_to_augustus_junction_hints.pl -prio 7 -out $bamfile.junctions.bed > $bamfile.junctions.hints" ) ;
- &only_keep_intronic("$bamfile.junctions.hints");
- &touch("$bamfile.junctions.completed");
+unless (-e "$master_bamfile.junctions.completed"){
+ &process_cmd("$samtools_exec rmdup -S $master_bamfile - | $bedtools_exec bamtobed -bed12 | bed12_to_augustus_junction_hints.pl -prio 7 -out $master_bamfile.junctions.bed > $master_bamfile.junctions.hints" ) ;
+ &only_keep_intronic("$master_bamfile.junctions.hints");
+ &touch("$master_bamfile.junctions.completed");
 }
 
-unless (-e "$bamfile.coverage.bg.completed"){
- &process_cmd("$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $bamfile >  $bamfile.coverage.bg");
- &touch("$bamfile.coverage.bg.completed");
+unless (-e "$master_bamfile.coverage.bg.completed"){
+ &process_cmd("$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $master_bamfile >  $master_bamfile.coverage.bg");
+ &touch("$master_bamfile.coverage.bg.completed");
 }
 
-unless (-e "$bamfile.coverage.hints.completed"){
- &bg2hints("$bamfile.coverage.bg") ;
- &merge_hints("$bamfile.coverage.hints");
- &touch("$bamfile.coverage.hints.completed");
+unless (-e "$master_bamfile.coverage.hints.completed"){
+ &bg2hints("$master_bamfile.coverage.bg") ;
+ &merge_hints("$master_bamfile.coverage.hints");
+ &touch("$master_bamfile.coverage.hints.completed");
 }
 
-if (    -e "$bamfile.junctions.completed"
-     && -e "$bamfile.coverage.hints.completed" )
+if (    -e "$master_bamfile.junctions.completed"
+     && -e "$master_bamfile.coverage.hints.completed" )
 {
- unless (-e "$bamfile.rnaseq.completed"){
+ unless (-e "$master_bamfile.rnaseq.completed"){
+  my $augustus_script_exec = $RealBin.'/../3rd_party/augustus/scripts/join_mult_hints.pl';
   &process_cmd(
-"cat $bamfile.junctions.hints.intronic $bamfile.coverage.hints| sort -S 1G -n -k 4,4 | sort -S 1G -s -n -k 5,5 | sort -S 1G -s -n -k 3,3 | sort -S 1G -s -k 1,1 -o $bamfile.rnaseq.hints"
+"cat $master_bamfile.junctions.hints.intronic $master_bamfile.coverage.hints| sort -S 1G -n -k 4,4 | sort -S 1G -s -n -k 5,5 | sort -S 1G -s -n -k 3,3 | sort -S 1G -s -k 1,1| $augustus_script_exec > $master_bamfile.rnaseq.hints"
  );
-  &touch("$bamfile.rnaseq.completed");
+  &touch("$master_bamfile.rnaseq.completed");
  }
  print "Done!\n";
 }

@@ -131,6 +131,7 @@ my @files = glob("$input_dir/*$pattern*");
 push( @files, @ARGV );
 my @verified_files;
 for ( my $i = 0 ; $i < @files ; $i++ ) {
+ next if basename($files[$i])=~/^gsnap/;
  if ( -s $files[$i] ) {
   push( @verified_files, $files[$i] );
  }
