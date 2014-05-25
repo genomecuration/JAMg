@@ -382,7 +382,7 @@ die "No references have been matched.\n"
   unless scalar( keys %reference_hash ) > 0;
 warn "$not_used queries had no hit or ORF and will not be searched\n"
   if $not_used;
-my $reference_dir = $reference_file . "_dir/";
+my $reference_dir = basename($reference_file) . "_dir/";
 unless ( -d $reference_dir ) {
  print "Splitting reference file\n";
  my $files_ref = &splitfasta( $reference_file, $reference_dir, 1 );
@@ -670,11 +670,13 @@ sub separate_exonerate() {
  open( CMD, ">run_exonerate_commands.cmd" );
  my $do_annotations = $annotation_file
    && -s $annotation_file ? "--annotation $annotation_file" : ' ';
+ my $reference_base = basename($reference_file);
+ my $base           = basename($fasta_file);
 
  #only process those with ORF
  foreach my $scaffold ( sort keys %reference_hash ) {
   my @queries         = @{ $reference_hash{$scaffold} };
-  my $base_query_file = $fasta_file . '_queries/' . $scaffold . '.queries';
+  my $base_query_file = $base . '_queries/' . $scaffold . '.queries';
   my $scaffold_seq    = &get_id_seq_from_fasta( $scaffold, $reference_file );
   if ( !$scaffold_seq ) {
    warn "Cannot find reference sequence file for $scaffold. Skipping...\n";
@@ -723,7 +725,7 @@ sub separate_exonerate() {
 #        my $header= "Processing reference target $scaffold with query $comp_q\n";
    my $query_file = $base_query_file . "_$comp_q";
    if ( !-s $query_file ) {
-    open( QUERY, ">$query_file" );
+    open( QUERY, ">$query_file" ) ||die ($!);
     print QUERY ">$id\n" . &wrap_text($queries{$id}{'seq'})
       if !$coding_only;
     print QUERY ">$id\n" . &wrap_text($queries{$id}{'orf'}{'seq'})
@@ -732,7 +734,7 @@ sub separate_exonerate() {
    }
    my $scaffold_file = "$query_file.scaffold";
    if ( !-s $scaffold_file ) {
-    open( SCAFFOLD, ">$scaffold_file" );
+    open( SCAFFOLD, ">$scaffold_file" ) ||die($!);
     print SCAFFOLD ">$scaffold" . ":$start-$end\n".&wrap_text($genome_region);
     close SCAFFOLD;
    }
