@@ -528,7 +528,7 @@ sub parse_aat_filter() {
 
  }
  close IN;
- print "Preparing hits from $file...\n";
+# print "Preparing hits from $file...\n";
  foreach my $query ( keys %hash ) {
   my $seq       = $contig_seq_hash->{$query};
   if ( !$seq ) {

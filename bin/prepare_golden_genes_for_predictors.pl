@@ -2575,9 +2575,9 @@ sub run_exonerate() {
 
     &process_cmd( 'run_exonerate.pl' . $exonerate_options );
     die "Exonerate run failed for some reason....\n"
-      if ( !-d $peptide_file . "_queries" );
+      if ( !-d basename($peptide_file) . "_queries" );
     system(   "cat "
-            . $peptide_file
+            . basename($peptide_file)
             . "_queries/*exonerate_results >> $exonerate_file" );
    }
    elsif ($mrna_file) {
@@ -2602,10 +2602,10 @@ sub run_exonerate() {
     $exonerate_options .= " -from_blast " if $is_blast;
     &process_cmd( 'run_exonerate.pl' . $exonerate_options );
     die "Exonerate run failed for some reason....\n"
-      if ( !-d $fasta_contigs . "_queries" );
+      if ( !-d basename($fasta_contigs) . "_queries" );
     unlink($exonerate_file);
     system(   "cat "
-            . $fasta_contigs
+            . basename($fasta_contigs)
             . "_queries/*exonerate_results >> $exonerate_file" );
 
    }

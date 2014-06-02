@@ -3,11 +3,11 @@
 =pod
 =head1 NAME
 
-align_rnaseq_gsnap.pl
+align_dnaseq_gsnap.pl
 
 =head1 USAGE
 
-Run GSNAP on lots of RNASeq data.
+Run GSNAP on lots of data. No intron splicing
 
 Will automatically run against all files that match a pattern, eg if -pattern is '_1_' then "*_[12]_*" and also any files given in the command line.
 Pairs are matched using the _[12]_ Files must only have one of _1_ or _2_ in their filename. The pattern can be changed with -pattern1 and -pattern2.
