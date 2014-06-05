@@ -2,7 +2,8 @@
 
 ###########################
 # CHECK THESE
-MAX_CONTIGS=9999 #NB if there are more than 9999 scaffold, then change the number
+MAX_CONTIGS=9999 #NB if there are more than 9999 scaffold, then change the number.
+ # Doesn't matter if it is too high (script will be slightly slower)
 PREFIX_GENOME="scaffold_" # after prefix a number is experted, 0 to $MAX_CONTIGS
 ###########################
 
@@ -37,7 +38,7 @@ if [[ ! $AUGUSTUS_EXTRINSIC_CFG || ! -s $AUGUSTUS_EXTRINSIC_CFG ]]; then
 fi
 
 SOURCE="$(dirname "$(test -L "$0" && readlink "$0" || echo "$0")")"
-export PATH=$SOURCE:$JAMG_PATH:$PATH
+export PATH=$SOURCE:$JAMG_PATH/bin/:$PATH
 
 if [ ! -d $FASTA_GENOME.split ]; then
  splitfasta.pl -i $FASTA_GENOME -depth 1 -dir $FASTA_GENOME.split
@@ -67,11 +68,14 @@ split -a 3 -d -l 400 augustus.commands augustus.commands.
 echo "
  Done, see augustus.commands or augustus.commands.*
  What to do next? 
- #0 move to compute node and:
+ #0 move to compute node (optionally) and:
  ## import any environmental variables
  ##    export AUGUSTUS_CONFIG_PATH=\$JAMG_PATH/3rd_party/augustus/config
  #1 run with Parafly (either augustus.commands or the split files augustus.commands.* for each compute node)
  #2 grep -hv '^#' results/*result | grep -h '\bAUGUSTUS\b' > augustus_results.gtf
  #3 augustus_gtf_2_gtf_proper.pl augustus_results.gtf
  #4 gtf_to_gff3_format.pl augustus_results.gtf.gtf > augustus_results.gff3
-"
+ ## Pls see instructions.txt for this instructions again
+"  > instructions.txt
+
+cat instructions.txt

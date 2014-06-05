@@ -161,13 +161,15 @@ print "Will search for $todo parameters with $cpus CPUs\n";
 sleep(1);
 
 my %cfg_track; # hack to prevent same config from being rerun
+my %file_handles;
+unlink("$output_directory/track_evidence_lines.txt") if -s "$output_directory/track_evidence_lines.txt";
 
 #NB we really expect one line of evidence to be checked at a time...!
-open (TRACK,">$output_directory/track_evidence_lines.txt");
 foreach my $src ( keys %sources_that_need_to_be_checked ) {
  next if $src eq 'M';
- print TRACK "\n$src";
-
+ open (my $track_fh,">$output_directory/track_evidence_lines.$src.txt");
+ $file_handles{$src} = $track_fh;
+ print $track_fh "$src\t";
  foreach my $feat (@feature_headers) {
   next if $feat eq 'feature';
   my $bonus_range = $metaextrinsic_hash_ref->{'bonus'}->{$feat}->{'value'};
@@ -188,7 +190,7 @@ foreach my $src ( keys %sources_that_need_to_be_checked ) {
       $cfg_hash->{'malus'}->{$feat}->{'value'} = $malus;
       my $cfg_serial = Dumper $cfg_hash;
       if (!$cfg_track{$cfg_serial}){
-	      my $thread = threads->create( 'write_extrinsic_cfg', $cfg_hash, $cfg_extra );
+	      my $thread = threads->create( 'write_extrinsic_cfg', $cfg_hash, $cfg_extra,$track_fh );
 	      $thread_helper->add_thread($thread);
 	      $cfg_track{$cfg_serial}++;
       }
@@ -197,16 +199,20 @@ foreach my $src ( keys %sources_that_need_to_be_checked ) {
    }
   }
  }
-  $thread_helper->wait_for_all_threads_to_complete();
-  my @failed_threads = $thread_helper->get_failed_threads();
-  if (@failed_threads) {
-   warn "Error, " . scalar(@failed_threads) . " threads failed.\nThis is probably if Augustus didn't like some combinations of search parameters but performed ok in the majority of searches. In that case that's ok to proceed or you can opt to retry (I won't delete existing). Any other failure is indicative of something else wrong.\n\n";
-  }
 }
 
+$thread_helper->wait_for_all_threads_to_complete();
+my @failed_threads = $thread_helper->get_failed_threads();
+if (@failed_threads) {
+  warn "Error, " . scalar(@failed_threads) . " threads failed.\nThis is probably if Augustus didn't like some combinations of search parameters but performed ok in the majority of searches. In that case that's ok to proceed or you can opt to retry (I won't delete existing). Any other failure is indicative of something else wrong.\n\n";
+}
 
-print TRACK "\n";
-close TRACK;
+foreach my $src ( keys %sources_that_need_to_be_checked ) {
+ my $track_fh = $file_handles{$src};
+ print $track_fh "\n";
+ close $track_fh;
+ system("cat $output_directory/track_evidence_lines.$src.txt >> $output_directory/track_evidence_lines.txt");
+}
 
 ### FINISHED
 
@@ -244,7 +250,7 @@ if ( $results[0] =~ /^([^:]+)/ ) {
  print "grep Acc $output_directory/*log | sort -nk 2\n\n";
  if (-s "$output_directory/track_evidence_lines.txt"){
    my $best_output = &parse_best_predictions("$output_directory/track_evidence_lines.txt");
-   print "Remember that this is for a single line of evidence at a time. This is the best file for each evidence you have provided (cf. $output_directory/track_evidence_lines.txt.best):\n$best_output\n";
+   print "Remember that this is for a single line of evidence at a time. This is the best file for each evidence you have provided (cf. $output_directory/track_evidence_lines.*):\n$best_output\n";
  }
 }
 
@@ -481,6 +487,7 @@ sub check_options() {
 sub write_extrinsic_cfg() {
  my $extrinsic_ref          = shift;
  my $cfg_extra              = shift;
+ my $track_fh               = shift;
  my $main_species_extrinsic_file = $output_directory . "/extrinsic.cfg";
  my $local_species_extrinsic_file = $main_species_extrinsic_file;
   my $prn = "[SOURCES]\n";
@@ -520,7 +527,7 @@ sub write_extrinsic_cfg() {
   my $pred_out = $local_species_extrinsic_file;
   $pred_out =~ s/.cfg/.prediction/;
   &check_prediction_finished($pred_out,$pred_out.'.log',$local_species_extrinsic_file) if -s $pred_out;
-  print TRACK "\t$pred_out.log";
+  print $track_fh "\t$pred_out.log";
  }
 
  # don't rerun if it exists and it is exactly the same configuration

@@ -5,7 +5,7 @@
 =head1 USAGE
 
  -infile          :s   => Output from HHblits
- -min_exons_hints :i   => Minimum number of hits for a scaffold with same Uniprot ID before flagging sequence having a valid hit (def 2). Really useful for small scaffolds or Augustus training.
+ -min_exons_hints :i   => Minimum number of hits for a scaffold with same Uniprot ID before flagging sequence having a valid hit (def 2). Really useful for small scaffolds or Augustus training (doesn't harm other use-cases)
  -is_repeat            => HHblits was ran against a database of repeats/transposons
  -verbose              => Print out commands
  -is_from_getorf       => HHblits input was the output of getorf: this will strip the _\d+ from the end of query IDs. Used for domain searching

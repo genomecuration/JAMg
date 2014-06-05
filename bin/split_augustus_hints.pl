@@ -6,23 +6,27 @@ use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 
-my $in = shift||die;
-my $prefix = shift;
-$prefix='scaffold\S+' if !$prefix;
+my $in = shift||die ("Please provide a hint file\n");
+
 mkdir('hints') || die ("hints directory already exists\n");
 open (IN,$in)||die;
-
 my $prev_id = '';
 while (my $ln=<IN>){
-	$ln=~/^($prefix)\b/;
-	next unless $1;
-	my $outfile = "hints/$1.hints";
-	if ($1 ne $prev_id){
+	next if $ln=~/^#/ || $ln=~/^\s*$/;
+	my @data = split("\t",$ln);
+	next unless $data[8];
+	my $id = $data[0];
+	my $outfile = "hints/$id.hints";
+	if ($id ne $prev_id){
 		close OUT;
 		open (OUT,'>>'.$outfile);
 	}
 	print OUT $ln;
-        $prev_id = $1;
+       	$prev_id = $id;
 }
 close IN;
 close OUT;
+
+
+my @outputs = glob("hints/*");
+print "Produced hints for ".$#outputs. " reference sequences\n";
