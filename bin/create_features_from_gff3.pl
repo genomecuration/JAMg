@@ -152,7 +152,7 @@ sub gff3_process() {
      $unique_names_check{$common_name}++;
      # set description as note and update name
      $isoform->{transcript_name} =$main_id;
-     $isoform->{com_name} = $main_id;
+     $isoform->{com_name} = uri_escape($main_id);
      $isoform->{pub_comment} = $description if $description;
     }
 
