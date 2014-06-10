@@ -34,6 +34,8 @@ use Gene_obj;
 use Gene_obj_indexer;
 use GFF3_utils;
 use GTF_utils;
+use URI::Escape;
+
 $|=1;
 our $SEE;
 my $minorf = 3;    #minimum orf size in bp
@@ -59,6 +61,7 @@ my %unique_names_check;
 
 &gff3_process($gfffile);
 
+#########################################################################
 sub gff3_process() {
  my $gff3_file = shift;
  open( IN, $gff3_file ) || confess( "Cannot find $gff3_file " . $! );
@@ -86,8 +89,7 @@ sub gff3_process() {
    print "\rprocessing gene $gene_id"
      . "                                                  "
      if $verbose;
-   my %params;
-   my %preferences;
+   my (%params,%preferences);
    $preferences{'sequence_ref'} = \$genome_seq;
    $params{unspliced_transcript} = 1;    # highlights introns
 
@@ -102,8 +104,9 @@ sub gff3_process() {
    foreach my $isoform ( $gene_obj_ref, $gene_obj_ref->get_additional_isoforms() )   {
     my $isoform_id  = $isoform->{Model_feat_name};
     print "\rprocessing gene $gene_id isoform $isoform_id                                              " if $verbose;
+    next unless $isoform->has_CDS() || !$isoform->get_CDS_span();
     my @model_span  = $isoform->get_CDS_span();
-    next if ( !$isoform->get_CDS_span() || abs( $model_span[0] - $model_span[1] ) < 3 );
+    next if ( abs( $model_span[0] - $model_span[1] ) < 3 );
 
     my $common_name = $isoform->{transcript_name} || $isoform->{com_name};
     my $description = '';
@@ -114,6 +117,7 @@ sub gff3_process() {
      if ( $common_name =~ /\s/ ) {
       $description = $common_name;
       $description =~ s/^\s*(\S+)\s*//;
+      $description = uri_escape($description);
       $common_name = $1 || die;
      }
 

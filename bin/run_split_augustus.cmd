@@ -72,6 +72,7 @@ echo "
  ## import any environmental variables
  ##    export AUGUSTUS_CONFIG_PATH=\$JAMG_PATH/3rd_party/augustus/config
  #1 run with Parafly (either augustus.commands or the split files augustus.commands.* for each compute node)
+ ##    \$JAMG_PATH/3rd_party/bin/ParaFly -c augustus.commands -CPU \$LOCAL_CPUS -v
  #2 grep -hv '^#' results/*result | grep -h '\bAUGUSTUS\b' > augustus_results.gtf
  #3 augustus_gtf_2_gtf_proper.pl augustus_results.gtf
  #4 gtf_to_gff3_format.pl augustus_results.gtf.gtf > augustus_results.gff3
