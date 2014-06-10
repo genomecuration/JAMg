@@ -3454,7 +3454,7 @@ sub to_GFF3_format {
 
    my $model_id    = $gene_obj->{Model_feat_name};
    my $model_alias = "";
-   if ( my $model_locus = $gene_obj->{Model_pub_locus} ) {
+   if ( my $model_locus = Model_pub_locus($gene_obj->{Model_pub_locus}) ) {
     $model_alias = "Alias=$model_locus;";
    }
 
@@ -3653,9 +3653,9 @@ sub to_GFF3_format_extended {
   # $isoform->delete_isoforms(); 
    my (@noteText_mrna);
    my $model_id    = $isoform->{Model_feat_name};
-   my $transcript_common_name = $isoform->{transcript_name} || $com_name;
+   my $transcript_common_name = uri_escape($isoform->{transcript_name}) || $com_name;
    my $model_alias = "";
-   if ( my $model_locus = $isoform->{Model_pub_locus} ) {
+   if ( my $model_locus = uri_escape($isoform->{Model_pub_locus}) ) {
     $model_alias = "Alias=$model_locus;";
    }
    my ( $mrna_lend, $mrna_rend ) = $isoform->get_transcript_span();

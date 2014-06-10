@@ -34,7 +34,6 @@ use Gene_obj;
 use Gene_obj_indexer;
 use GFF3_utils;
 use GTF_utils;
-use URI::Escape;
 
 $|=1;
 our $SEE;
@@ -117,7 +116,7 @@ sub gff3_process() {
      if ( $common_name =~ /\s/ ) {
       $description = $common_name;
       $description =~ s/^\s*(\S+)\s*//;
-      $description = uri_escape($description);
+      $description = $description;
       $common_name = $1 || die;
      }
 
@@ -151,8 +150,8 @@ sub gff3_process() {
      }
      $unique_names_check{$common_name}++;
      # set description as note and update name
-     $isoform->{transcript_name} =$main_id;
-     $isoform->{com_name} = uri_escape($main_id);
+     $isoform->{transcript_name} = $main_id;
+     $isoform->{com_name} = $main_id;
      $isoform->{pub_comment} = $description if $description;
     }
 
