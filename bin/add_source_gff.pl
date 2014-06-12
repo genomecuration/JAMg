@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-my $file = shift||die;
+my $file = shift||die ("Give a GFF file and the source tag\n");
 my $source = shift ||die;
 open (IN,$file);
 open (OUT,">$file.out");

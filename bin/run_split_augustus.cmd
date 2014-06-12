@@ -75,7 +75,7 @@ echo "
  ##    \$JAMG_PATH/3rd_party/bin/ParaFly -c augustus.commands -CPU \$LOCAL_CPUS -v
  #2 grep -hv '^#' results/*result | grep -h '\bAUGUSTUS\b' > augustus_results.gtf
  #3 augustus_gtf_2_gtf_proper.pl augustus_results.gtf
- # ignore the errors regarding CDS length (an Augustus issue) here:
+ # ignore the errors regarding CDS length (an Augustus issue with inline stop codons) here:
  #4 gtf_to_gff3_format.pl augustus_results.gtf.gtf $FASTA_GENOME > augustus_results.gff3 2> err
  ## Pls see instructions.txt for this instructions again
 "  > instructions.txt

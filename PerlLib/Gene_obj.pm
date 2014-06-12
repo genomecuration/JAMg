@@ -1363,9 +1363,9 @@ sub create_protein_sequence {
  #AP: sometimes Augustus will predict a sequence with a gap or an inline
  # stop codon. Likewise if the gene is mtDNA but the translation table is universal
  # That is annoying but we should allow it to break the subroutine
- # so i'm forcing first frame for the translation
- #my $protein = &Nuc_translator::get_protein($cds_sequence);
- my $protein = &Nuc_translator::get_protein($cds_sequence,1);
+ # so i'm forcing first frame for the translation-> doesn't seem to make a diff
+ #my $protein = &Nuc_translator::get_protein($cds_sequence,1);
+ my $protein = &Nuc_translator::get_protein($cds_sequence);
  $self->set_protein_sequence($protein);
  return ($protein);
 }
