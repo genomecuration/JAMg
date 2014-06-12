@@ -1360,7 +1360,12 @@ sub create_protein_sequence {
   }
   $cds_sequence = $self->create_CDS_sequence($seq_ref);
  }
- my $protein = &Nuc_translator::get_protein($cds_sequence);
+ #AP: sometimes Augustus will predict a sequence with a gap or an inline
+ # stop codon. Likewise if the gene is mtDNA but the translation table is universal
+ # That is annoying but we should allow it to break the subroutine
+ # so i'm forcing first frame for the translation
+ #my $protein = &Nuc_translator::get_protein($cds_sequence);
+ my $protein = &Nuc_translator::get_protein($cds_sequence,1);
  $self->set_protein_sequence($protein);
  return ($protein);
 }
@@ -3454,7 +3459,7 @@ sub to_GFF3_format {
 
    my $model_id    = $gene_obj->{Model_feat_name};
    my $model_alias = "";
-   if ( my $model_locus = Model_pub_locus($gene_obj->{Model_pub_locus}) ) {
+   if ( my $model_locus = uri_escape($gene_obj->{Model_pub_locus}) ) {
     $model_alias = "Alias=$model_locus;";
    }
 
@@ -4731,16 +4736,12 @@ sub _get_cds_start_pos {
    my $length  = $orf->{length};
    my $protein = $orf->{protein};
    if ( $length > $cds_length - 3 && $start <= 3 && $protein =~ /\*$/ ) {
-    unless ($bestOrfPos) {
-     $bestOrfPos = $start;
-    }
+     $bestOrfPos = $start unless $bestOrfPos;
    }
   }
  }
 
- if ( $bestOrfPos && $bestOrfPos != $orfPos ) {
-  $orfPos = $bestOrfPos;
- }
+ $orfPos = $bestOrfPos if ( $bestOrfPos && $bestOrfPos != $orfPos && $bestOrfPos <= 3);
 
  if ( $orfPos > 3 ) {
   confess

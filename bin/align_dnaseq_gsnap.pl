@@ -24,7 +24,7 @@ Optional:
  -gmap_dir       :s  Where the GMAP databases are meant to live (def. ~/databases/gmap)
  -cpus           :i  Number of CPUs/threads (def. 6). I don't recommend more than 6 in a system that has 12 CPUs
  -help
- -pattern1           Pattern for automatching left pair files with *$pattern*.fastq (defaults to '_1_')
+ -pattern1           Pattern for automatching left pair files with *'pattern1'*.fastq (defaults to '_1_')
  -pattern2           Pattern for automatching right pair (defaults to '_2_')
  -nofail             Don't print out failures (I/O friendlyness if sparse hits expected). Otherwise captured as FASTQ
  -suffix             Build/use suffix array (fast, downweights SNPs, use for non-polymorphic genomes)
@@ -32,7 +32,8 @@ Optional:
  -commands_only  :s  Don't run commands, instead write them out into a file as specified by the option. Useful for preparing jobs for ParaFly
  -split_input    :i  Split the input FASTQ files to these many subfiles. Good for running large RNASeq datasets. Needs -commands_only above. Not used when FASTQ files are compressed (.bz2 .gz)
  -notpaired          Data are single end. Don't look for pairs (use -pattern1 to glob files)
- -distance :i        Paired end distance
+ -distance :i        Paired end distance (def 10000)
+ -memory             Memory for samtools sorting, use suffix G M b (def '35G')
 
 =head1 AUTHORS
 
@@ -72,7 +73,7 @@ my $gmap_dir           = $ENV{'HOME'} . '/databases/gmap/';
 my $repeat_path_number = 50;
 my $cpus               = 6;
 my $memory             = '35G';
-my $pattern            = '_1_';
+my $pattern1            = '_1_';
 my $pe_distance        = 10000;
 &GetOptions(
              'debug'           => \$debug,
@@ -82,7 +83,7 @@ my $pe_distance        = 10000;
              'cpus|threads:i'  => \$cpus,
              'memory:s'        => \$memory,
              'help'            => \$help,
-             'pattern1:s'      => \$pattern,
+             'pattern1:s'      => \$pattern1,
              'pattern2:s'      => \$pattern2,
              'nofail'          => \$nofails,
              'distance:i'      => \$pe_distance,
@@ -97,7 +98,7 @@ pod2usage if $help;
 pod2usage "No genome FASTA\n" unless $genome && -s $genome;
 pod2usage "No GMAP genome database name\n" unless $genome_dbname;
 pod2usage "GMAP database does not exist: $gmap_dir\n" unless -d $gmap_dir;
-
+pod2usage "You only provided pattern1 and didn't specify -notpaired\n" if $pattern1 && !$notpaired && !$pattern2;
 $input_dir = $cwd unless $input_dir;
 my $samtools_sort_CPUs = int( $cpus / 2 ) > 2 ? int( $cpus / 2 ) : 2;
 my $suff = "";
@@ -112,11 +113,11 @@ $memory =
   . $suff;    # samtools sort uses -memory per CPU
 
 unless ( $pattern2 || $notpaired ) {
- $pattern2 = $pattern;
+ $pattern2 = $pattern1;
  $pattern2 =~ s/1/2/;
 }
 
-my @files = glob("$input_dir/*$pattern*");
+my @files = glob("$input_dir/*$pattern1*");
 push( @files, @ARGV );
 my @verified_files;
 for ( my $i = 0 ; $i < @files ; $i++ ) {
@@ -130,7 +131,7 @@ for ( my $i = 0 ; $i < @files ; $i++ ) {
 }
 @files = @verified_files;
 die "No files found!\n" unless @files;
-
+print "Found these files:\n".join("\n",@files)."\n";
 my ( $build_cmd, $align_cmd );
 
 if ($suffix) {
@@ -228,6 +229,7 @@ sub samtools_version_check() {
 sub process_cmd_delete_fails {
  my $dir     = shift;
  my $pattern = shift;
+ return unless $dir && $pattern;
  my @delete  = glob( $dir . "/" . $pattern );
  foreach (@delete) { unlink $_; }
  die
@@ -273,7 +275,7 @@ sub checked_paired_files() {
  my @files_to_do;
  foreach my $file ( sort @files ) {
   my $pair = $file;
-  $pair =~ s/$pattern/$pattern2/;
+  $pair =~ s/$pattern1/$pattern2/;
   next if $pair eq $file;
   unless ( -s $pair ) {
    warn "Didn't find pair of $file. Skipping\n";
@@ -315,7 +317,7 @@ sub align_unpaired_files() {
  my @files = @_;
  foreach my $file ( sort @files ) {
   my $base = basename($file);
-  $base =~ s/$pattern.+//;
+  $base =~ s/$pattern1.+//;
   my $group_id = $base;
   $base .= "_vs_$genome_dbname";
   if ( -s "gsnap.$base.log" ) {
@@ -378,14 +380,14 @@ sub align_paired_files() {
  my @files = @_;
  foreach my $file ( sort @files ) {
   my $pair = $file;
-  $pair =~ s/$pattern/$pattern2/;
+  $pair =~ s/$pattern1/$pattern2/;
   next if $pair eq $file;
   unless ( -s $pair ) {
    warn "Didn't find pair of $file. Skipping\n";
    next;
   }
   my $base = basename($file);
-  $base =~ s/$pattern.+//;
+  $base =~ s/$pattern1.+//;
   my $group_id = $base;
   $base .= "_vs_$genome_dbname";
   if ( -s "gsnap.$base.log" ) {

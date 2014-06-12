@@ -24,7 +24,7 @@ Optional:
  -gmap_dir       :s  Where the GMAP databases are meant to live (def. ~/databases/gmap)
  -cpus           :i  Number of CPUs/threads (def. 6). I don't recommend more than 6 in a system that has 12 CPUs
  -help
- -pattern1           Pattern for automatching left pair files with *$pattern*.fastq (defaults to '_1_')
+ -pattern1           Pattern for automatching left pair files with *'pattern1'*.fastq (defaults to '_1_')
  -pattern2           Pattern for automatching right pair (defaults to '_2_')
  -nofail             Don't print out failures (I/O friendlyness if sparse hits expected). Otherwise captured as FASTQ
  -suffix             Build/use suffix array (fast, downweights SNPs, use for non-polymorphic genomes)
@@ -34,6 +34,7 @@ Optional:
  -notpaired          Data are single end. Don't look for pairs (use -pattern1 to glob files)
  -intron_db      :s  GMAP intron splice database
  -intron_size    :i  Maximum intron length (def. 70,000)
+ -memory             Memory for samtools sorting, use suffix G M b (def '35G')
 
 =head1 AUTHORS
 
@@ -77,7 +78,7 @@ my $repeat_path_number = 50;
 my $intron_length      = 70000;
 my $cpus               = 6;
 my $memory             = '35G';
-my $pattern            = '_1_';
+my $pattern1            = '_1_';
 
 &GetOptions(
              'debug'           => \$debug,
@@ -89,7 +90,7 @@ my $pattern            = '_1_';
              'cpus|threads:i'  => \$cpus,
              'memory:s'        => \$memory,
              'help'            => \$help,
-             'pattern1:s'      => \$pattern,
+             'pattern1:s'      => \$pattern1,
              'pattern2:s'      => \$pattern2,
              'nofail'          => \$nofails,
              'suffix'          => \$suffix,
@@ -108,6 +109,7 @@ pod2usage "Split input requires the -commands_only option\n"
   if $split_input && !$just_write_out_commands;
 pod2usage "Split input cannot be more than 100\n"
   if $split_input && $split_input > 100;
+pod2usage "You only provided pattern1 and didn't specify -notpaired\n" if $pattern1 && !$notpaired && !$pattern2;
 $input_dir = $cwd unless $input_dir;
 my $samtools_sort_CPUs = int( $cpus / 2 ) > 2 ? int( $cpus / 2 ) : 2;
 my $suff = "";
@@ -123,11 +125,11 @@ $memory =
   . $suff;    # samtools sort uses -memory per CPU
 
 unless ( $pattern2 || $notpaired ) {
- $pattern2 = $pattern;
+ $pattern2 = $pattern1;
  $pattern2 =~ s/1/2/;
 }
 
-my @files = glob("$input_dir/*$pattern*");
+my @files = glob("$input_dir/*$pattern1*");
 push( @files, @ARGV );
 my @verified_files;
 for ( my $i = 0 ; $i < @files ; $i++ ) {
@@ -141,6 +143,7 @@ for ( my $i = 0 ; $i < @files ; $i++ ) {
 }
 @files = @verified_files;
 die "No files found!\n" unless @files;
+print "Found these files:\n".join("\n",@files)."\n";
 
 my ( $build_cmd, $align_cmd );
 if ($suffix) {
@@ -285,7 +288,7 @@ sub checked_paired_files() {
  my @files_to_do;
  foreach my $file ( sort @files ) {
   my $pair = $file;
-  $pair =~ s/$pattern/$pattern2/;
+  $pair =~ s/$pattern1/$pattern2/;
   next if $pair eq $file;
   unless ( -s $pair ) {
    warn "Didn't find pair of $file. Skipping\n";
@@ -329,12 +332,12 @@ sub align_unpaired_files() {
   my $base = basename($file);
   my $group_id;
   if ( $split_input && $base =~ /\.\d+$/ ) {
-   $base =~ s/$pattern.+(\.0\d\d)$/$1/;
+   $base =~ s/$pattern1.+(\.0\d\d)$/$1/;
    $group_id = $base;
    $group_id =~ s/\.0\d\d$//;
   }
   else {
-   $base =~ s/$pattern.+//;
+   $base =~ s/$pattern1.+//;
    $group_id = $base;
   }
   print "Processing $group_id ($file)\n";
@@ -403,16 +406,16 @@ sub align_paired_files() {
  my @files_to_do = @_;
  foreach my $file ( sort @files_to_do ) {
   my $pair = $file;
-  $pair =~ s/$pattern/$pattern2/;
+  $pair =~ s/$pattern1/$pattern2/;
   my $base = basename($file);
   my $group_id;
   if ( $split_input && $base =~ /\.\d+$/ ) {
-   $base =~ s/$pattern.+(\.0\d\d)$/$1/;
+   $base =~ s/$pattern1.+(\.0\d\d)$/$1/;
    $group_id = $base;
    $group_id =~ s/\.0\d\d$//;
   }
   else {
-   $base =~ s/$pattern.+//;
+   $base =~ s/$pattern1.+//;
    $group_id = $base;
   }
   print "Processing $group_id ($file)\n";

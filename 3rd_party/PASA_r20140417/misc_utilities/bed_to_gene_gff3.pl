@@ -3,8 +3,9 @@
 use strict;
 use warnings;
 
+use FindBin;
+use lib ("$FindBin::Bin/../PerlLib");
 
-use lib ($ENV{EUK_MODULES});
 use Gene_obj;
 use Fasta_reader;
 

@@ -28,26 +28,40 @@ next;
   	 if (@gene_data){
 		my @first_gene_data = split("\t",$gene_data[0]);
 		my $strand = $first_gene_data[6];
+		my $stop_codon_found;
 		if ($strand eq '-'){
+		    # find terminal CDS - data is sorted
 			for (my $g=0;$g<(@gene_data);$g++){
 				my @data = split("\t",$gene_data[$g]);
+				$stop_codon_found = $g if $data[2] eq 'stop_codon';
 				if ($data[2] eq 'CDS'){
-					$data[3]--; # remove stop codon bug
+				    if (abs($data[4] - $data[3]) < 3){ # sometimes augustus prints a 3 base CDS (which is the stop codon)
+				       $gene_data[$g] = '';
+				       $gene_data[$stop_codon_found] = '';
+				       last;
+				    } 
+#	leave CDS unchanged	$data[3]+=3 if $stop_codon_found; # remove stop codon bug
 					$gene_data[$g] = join("\t",@data);
 					last;
 				}
 			}
 		}else{
+		    # find stop_codon
+		    for (my $g=(scalar(@gene_data)-1);$g>=0;$g--){
+				my @data = split("\t",$gene_data[$g]);
+				$stop_codon_found = $g if $data[2] eq 'stop_codon';
+		    }
+		    # find terminal CDS
 			for (my $g=(scalar(@gene_data)-1);$g>=0;$g--){
 				my @data = split("\t",$gene_data[$g]);
 				if ($data[2] eq 'CDS'){
-					$data[4]-=3; # remove stop codon
-					if ($data[4] > $data[3]){
-						#sometimes augustus prints a 3 base CDS (which is the stop codon)
-						$gene_data[$g] = join("\t",@data);
-					}else{
-						$gene_data[$g] = '';
-					}
+				    if (abs($data[4] - $data[3]) < 3){ # sometimes augustus prints a 3 base CDS (which is the stop codon)
+				       $gene_data[$g] = '';
+				       $gene_data[$stop_codon_found] = ''; # not found
+				       last;
+				    } 
+#	leave CDS unchanged $data[4]-=3 if $stop_codon_found; # remove stop codon
+					$gene_data[$g] = join("\t",@data);
 					last;
 				}
 			}

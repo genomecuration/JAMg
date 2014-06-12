@@ -101,9 +101,8 @@ B<Returns:> $protein_sequence
 
 sub translate_sequence {
   my ($sequence, $frame) = @_;
-    
     $sequence = uc ($sequence);
-	$sequence =~ tr/U/T/;
+    $sequence =~ tr/U/T/;
     my $seq_length = length ($sequence);
     unless ($frame >= 1 and $frame <= 6) { 
 		confess "Frame $frame is not allowed. Only between 1 and 6";
@@ -163,8 +162,12 @@ B<Returns:> $protein_sequence
 
 
 sub get_protein {
-    my ($sequence) = @_;
-    
+    my ($sequence,$forced_frame) = @_;
+    #AP: We have the option of forcing the frame
+    if ($forced_frame){
+        my $protein = &translate_sequence($sequence, $forced_frame);
+	return ($protein);
+    }
     ## Assume frame 1 unless multiple stops appear.
     my $least_stops = undef();
     my $least_stop_prot_seq = "";
