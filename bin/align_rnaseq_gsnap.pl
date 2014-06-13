@@ -130,18 +130,19 @@ unless ( $pattern2 || $notpaired ) {
 }
 
 my @files = glob("$input_dir/*$pattern1*");
+push( @files, "$input_dir/$pattern1" ) if -s "$input_dir/$pattern1";
 push( @files, @ARGV );
-my @verified_files;
+my %verified_files;
 for ( my $i = 0 ; $i < @files ; $i++ ) {
  next if basename($files[$i])=~/^gsnap/;
  if ( -s $files[$i] ) {
-  push( @verified_files, $files[$i] );
+  $verified_files{$files[$i]} = 1;
  }
  else {
   warn "Skipping: did not find file " . $files[$i] . "\n";
  }
 }
-@files = @verified_files;
+@files = sort keys %verified_files;
 die "No files found!\n" unless @files;
 print "Found these files:\n".join("\n",@files)."\n";
 
