@@ -236,9 +236,8 @@ sub index_GFF3_gene_objs {
       if ( my $cds = $exon->get_CDS_obj() ) {
        my ( $end5, $end3 ) = $cds->get_coords();
        my $phase = int( $cds_phases_href->{$end5} );
-       unless ( $phase == 0 || $phase == 1 || $phase == 2 ) {
-        confess
-"Error, should have phase set for cds $gene_id $transcript_id $end5, but I do not know what $phase is. ";
+       unless (defined($phase) && $phase == 0 || $phase == 1 || $phase == 2 ) {
+        confess "Error, should have phase set for cds $gene_id $transcript_id $end5, but I do not know what $phase is. ";
        }
        $cds->set_phase($phase);
       }

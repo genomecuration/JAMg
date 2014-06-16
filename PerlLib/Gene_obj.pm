@@ -4742,7 +4742,8 @@ sub _get_cds_start_pos {
  }
 
  $orfPos = $bestOrfPos if ( $bestOrfPos && $bestOrfPos != $orfPos && $bestOrfPos <= 3);
-
+ #if ( $bestOrfPos && $bestOrfPos != $orfPos ) {  $orfPos = $bestOrfPos; }
+ 
  if ( $orfPos > 3 ) {
   confess
 "Error, longest ORF is found at position $orfPos, and should be between 1 and 3.  What's wrong with your gene?"

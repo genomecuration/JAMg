@@ -162,7 +162,7 @@ sub gff3_process() {
     chomp $seq if $seq;
     if ( $seq && length($seq) >= $minorf ) {
      print CDS
-       ">$main_id ".$alt_name."type:CDS  gene:$gene_id$description\n$seq\n";
+       ">$main_id ".$alt_name."type:CDS  gene:$gene_id$description\n".uc($seq)."\n";
     }
     else {
      warn "Transcript $main_id has no coding sequence. Will not process and will skip it\n";
@@ -174,14 +174,14 @@ sub gff3_process() {
     $seq =~ s/(\S{80})/$1\n/g;
     chomp $seq;
     print PEP
-      ">$main_id ".$alt_name."type:polypeptide  gene:$gene_id$description\n$seq\n";
+      ">$main_id ".$alt_name."type:polypeptide  gene:$gene_id$description\n".uc($seq)."\n";
 
     # mRNA (all exons)
     $seq = $isoform->get_cDNA_sequence();
     $seq =~ s/(\S{80})/$1\n/g;
     chomp $seq;
     print MRNA
-      ">$main_id ".$alt_name."type:mRNA gene:$gene_id$description\n$seq\n";
+      ">$main_id ".$alt_name."type:mRNA gene:$gene_id$description\n".uc($seq)."\n";
 
 
     eval { $isoform->set_CDS_phases( \$genome_seq ); };

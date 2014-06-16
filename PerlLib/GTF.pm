@@ -1650,7 +1650,7 @@ sub _parse_file{
         next if ($#$p_exons < 1);
 
         my($i, $subtype);
-        $subtype = ($$p_exons[0]->type =~ /UTR/) ? "utr" : "cds";
+        $subtype = ($$p_exons[0]->type =~ /UTR/i) ? "utr" : "cds";
         for ($i = 1; $i <= $#$p_exons; $i++){
           push @checks, {pos  => $$p_exons[$i-1]->stop+2, 
                          type => $subtype."_".$splice_type1, 

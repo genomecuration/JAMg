@@ -82,7 +82,7 @@ sub GTF_to_gene_objs {
             push (@{$gene_transcript_data{$seqname}->{$gene_id}->{$transcript_id}->{CDS}}, [$end5, $end3] );
             push (@{$gene_transcript_data{$seqname}->{$gene_id}->{$transcript_id}->{mRNA}}, [$end5, $end3] );
         }
-        if ($type eq "exon" || $type =~ /UTR/) {
+        if ($type eq "exon" || $type =~ /UTR/i) {
             push (@{$gene_transcript_data{$seqname}->{$gene_id}->{$transcript_id}->{mRNA}}, [$end5, $end3] );
         }
     }

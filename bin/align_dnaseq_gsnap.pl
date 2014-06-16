@@ -34,6 +34,7 @@ Optional:
  -notpaired          Data are single end. Don't look for pairs (use -pattern1 to glob files)
  -distance :i        Paired end distance (def 10000)
  -memory             Memory for samtools sorting, use suffix G M b (def '35G')
+ -verbose
 
 =head1 AUTHORS
 
@@ -66,7 +67,7 @@ my ( $gmap_build_exec, $gsnap_exec, $samtools_exec ) =
   &check_program( "gmap_build", "gsnap", "samtools" );
 &samtools_version_check($samtools_exec);
 my ( $input_dir, $pattern2, $debug, $genome, $genome_dbname, $nofails, $suffix,
-     $help, $just_write_out_commands, $split_input, $notpaired );
+     $help, $just_write_out_commands, $split_input, $notpaired, $verbose );
 my $cwd = `pwd`;
 chomp($cwd);
 my $gmap_dir           = $ENV{'HOME'} . '/databases/gmap/';
@@ -76,7 +77,7 @@ my $memory             = '35G';
 my $pattern1            = '_1_';
 my $pe_distance        = 10000;
 &GetOptions(
-             'debug'           => \$debug,
+             'debug'           => \$debug,'verbose'=>\$verbose,
              'fasta:s'         => \$genome,
              'dbname:s'        => \$genome_dbname,
              'gmap_dir:s'      => \$gmap_dir,
@@ -167,7 +168,7 @@ close(CMD) if $just_write_out_commands;
 ########################################
 sub process_cmd {
  my ( $cmd, $dir, $delete_pattern ) = @_;
- print &mytime . "CMD: $cmd\n" if $debug;
+ print &mytime . "CMD: $cmd\n" if $debug || $verbose;
  undef($dir) if $dir && $dir eq '.';
  if ($just_write_out_commands) {
   print CMD "cd $dir ; $cmd ; cd $cwd;  " if $dir;
@@ -362,7 +363,7 @@ sub align_unpaired_files() {
    unlink("$base_out_filename"."_mult");
   }
   unless ( -s $base_out_filename."_uniq_mult.bam" ) {
-   &process_cmd("$samtools_exec merge -@ $cpus  -l 9 $genome $base_out_filename"."_uniq_mult.bam $base_out_filename"."_uniq.bam $base_out_filename"."_mult.bam"
+   &process_cmd("$samtools_exec merge -@ $cpus -l 9 $base_out_filename"."_uniq_mult.bam $base_out_filename"."_uniq.bam $base_out_filename"."_mult.bam"
    );
    &process_cmd("$samtools_exec index $base_out_filename"."_uniq_mult.bam");
    print LOG "\n$base_out_filename"."_uniq_mult.bam:\n";

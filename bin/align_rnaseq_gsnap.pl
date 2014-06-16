@@ -35,6 +35,7 @@ Optional:
  -intron_db      :s  GMAP intron splice database
  -intron_size    :i  Maximum intron length (def. 70,000)
  -memory             Memory for samtools sorting, use suffix G M b (def '35G')
+ -verbose
 
 =head1 AUTHORS
 
@@ -81,7 +82,7 @@ my $memory             = '35G';
 my $pattern1            = '_1_';
 
 &GetOptions(
-             'debug'           => \$debug,
+             'debug'           => \$debug,'verbose'=>\$verbose,
              'fasta:s'         => \$genome,
              'dbname:s'        => \$genome_dbname,
              'intron_db:s'     => \$intron_splice_db,
@@ -180,7 +181,7 @@ close(CMD) if $just_write_out_commands;
 ########################################
 sub process_cmd {
  my ( $cmd, $dir, $delete_pattern ) = @_;
- print &mytime . "CMD: $cmd\n" if $debug;
+ print &mytime . "CMD: $cmd\n" if $debug || $verbose;
  undef($dir) if $dir && $dir eq '.';
  if ($just_write_out_commands) {
   print CMD "cd $dir ; $cmd ; cd $cwd;  " if $dir;
@@ -386,7 +387,7 @@ sub align_unpaired_files() {
   }
   unless ( -s "$base_out_filename"."_uniq_mult.bam" ) {
    &process_cmd(
-"$samtools_exec merge -@ $cpus  -l 9 $base_out_filename"."_uniq_mult.bam $base_out_filename"."_uniq.bam $base_out_filename"."_mult.bam"
+"$samtools_exec merge -@ $cpus -l 9 $base_out_filename"."_uniq_mult.bam $base_out_filename"."_uniq.bam $base_out_filename"."_mult.bam"
    );
    &process_cmd("$samtools_exec index $base_out_filename"."_uniq_mult.bam");
    print LOG "\n$base_out_filename"."_uniq_mult.bam:\n";
@@ -464,7 +465,7 @@ sub align_paired_files() {
   }
   unless ( -s "$base_out_filename"."_uniq_mult.bam" ) {
    &process_cmd(
-"$samtools_exec merge -@ $cpus  -l 9 $base_out_filename"."_uniq_mult.bam $base_out_filename"."_uniq.bam $base_out_filename"."_mult.bam"
+"$samtools_exec merge -@ $cpus -l 9 $base_out_filename"."_uniq_mult.bam $base_out_filename"."_uniq.bam $base_out_filename"."_mult.bam"
    );
    &process_cmd("$samtools_exec index $base_out_filename"."_uniq_mult.bam");
    print LOG "\n$base_out_filename"."_uniq_mult.bam:\n";
