@@ -42,7 +42,7 @@ use Fasta_reader;
 
 my ($hint_file,$fasta_file);
 
-&GetOptions(
+pod2usage $! unless &GetOptions(
 	'hint:s' =>\$hint_file,
 	'fasta:s' =>\$fasta_file
 );

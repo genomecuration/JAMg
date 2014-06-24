@@ -76,7 +76,7 @@ my ($help);
 my $priority    = 5;
 my $strandness = int(0);
 my $bed_outfile = 'junctions.bed';
-GetOptions(
+pod2usage $! unless &GetOptions(
             'help'        => \$help,
             'exon_min:i'  => \$min_exon_size,
             'score_min:i' => \$min_score,

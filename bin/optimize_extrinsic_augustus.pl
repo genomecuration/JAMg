@@ -84,7 +84,7 @@ $config_path = $ENV{'AUGUSTUS_CONFIG_PATH'} if $ENV{'AUGUSTUS_CONFIG_PATH'};
 
 my ($common_parameters) = '';
 
-&GetOptions(
+pod2usage $! unless &GetOptions(
              'species:s'              => \$species,
              'optimize:s'             => \$optimize_gb,
              'metapars|extrinsic:s'   => \$extrinsic,

@@ -39,7 +39,7 @@ $|=1;
 our $SEE;
 my $minorf = 3;    #minimum orf size in bp
 my ( $gfffile, $genome, $change_name,$lettername,$verbose );
-GetOptions(
+pod2usage $! unless &GetOptions(
             'gff|infile:s'     => \$gfffile,
             'genome|fasta:s'   => \$genome,
             'name|change_name' => \$change_name,

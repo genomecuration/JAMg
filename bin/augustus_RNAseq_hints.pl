@@ -27,6 +27,7 @@ Other options:
  -min_score        i  Minimum score for parsing (defaults to 20)
  -window           i  Window size for coverage graph (defaults to 50)
  -background_fold  i  Background (defaults to 4), see perldoc
+ -no_hints            Don't create hints file for Augustus, just process junction reads
 
 =head1 DESCRIPTION
 
@@ -60,23 +61,25 @@ use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 
-my ( $samtools_exec, $bedtools_exec ) =
-  &check_program( 'samtools', 'bedtools' );
+my ( $samtools_exec, $bedtools_exec, $bed_to_aug_script ) = &check_program( 'samtools', 'bedtools','bed12_to_augustus_junction_hints.pl' );
+
+
 
 #Options
-my ( @bamfiles, $genome, $help );
+my ( @bamfiles, $genome, $help,$no_hints );
 my $window           = 50;
 my $min_score        = 20;
 my $strandness       = int(0);
 my $background_level = 4;
-GetOptions(
+pod2usage $! unless &GetOptions(
             'help'              => \$help,
             'bam|in:s{,}'          => \@bamfiles,
             'genome|fasta:s'    => \$genome,
             'min_score:i'       => \$min_score,
             'strandness:i'      => \$strandness,
             'window:i'          => \$window,
-            'background_fold:i' => \$background_level
+            'background_fold:i' => \$background_level,
+	    'nohints|no_hints'  => \$no_hints
 );
 
 pod2usage if $help;
@@ -116,17 +119,23 @@ if (scalar(@bamfiles == 1)){
 die "Cannot index genome $genome\n" unless -s $genome . '.fai';
 
 unless (-e "$master_bamfile.junctions.completed"){
- &process_cmd("$samtools_exec rmdup -S $master_bamfile - | $bedtools_exec bamtobed -bed12 | bed12_to_augustus_junction_hints.pl -prio 7 -out $master_bamfile.junctions.bed > $master_bamfile.junctions.hints" ) ;
+ &process_cmd("$samtools_exec rmdup -S $master_bamfile - | $bedtools_exec bamtobed -bed12 | $bed_to_aug_script -prio 7 -out $master_bamfile.junctions.bed > $master_bamfile.junctions.hints" );
+ # For JBrowse
+ &process_cmd("$bedtools_exec bedtobam -bed12 -g $genome.fai -i $master_bamfile.junctions.bed| $samtools_exec sort -m 1073741824 - $master_bamfile.junctions");
+ &process_cmd("$samtools_exec index $master_bamfile.junctions.bam");
+ # For Augustus
  &only_keep_intronic("$master_bamfile.junctions.hints");
  &touch("$master_bamfile.junctions.completed");
 }
 
 unless (-e "$master_bamfile.coverage.bg.completed"){
- &process_cmd("$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $master_bamfile >  $master_bamfile.coverage.bg");
+ # For JBrowse
+ &process_cmd("$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $master_bamfile| sort -S 1G -k1,1 -k2,2n > $master_bamfile.coverage.bg");
+ &process_cmd("bedGraphToBigWig $master_bamfile.coverage.bg $genome.fai $master_bamfile.coverage.bw") if `which bedGraphToBigWig`; 
  &touch("$master_bamfile.coverage.bg.completed");
 }
 
-unless (-e "$master_bamfile.coverage.hints.completed"){
+unless (-e "$master_bamfile.coverage.hints.completed" && !$no_hints){
  &bg2hints("$master_bamfile.coverage.bg") ;
  &merge_hints("$master_bamfile.coverage.hints");
  &touch("$master_bamfile.coverage.hints.completed");
@@ -137,15 +146,17 @@ if (    -e "$master_bamfile.junctions.completed"
 {
  unless (-e "$master_bamfile.rnaseq.completed"){
   my $augustus_script_exec = $RealBin.'/../3rd_party/augustus/scripts/join_mult_hints.pl';
-  &process_cmd(
-"cat $master_bamfile.junctions.hints.intronic $master_bamfile.coverage.hints| sort -S 1G -n -k 4,4 | sort -S 1G -s -n -k 5,5 | sort -S 1G -s -n -k 3,3 | sort -S 1G -s -k 1,1| $augustus_script_exec > $master_bamfile.rnaseq.hints"
- );
-  &touch("$master_bamfile.rnaseq.completed");
+  if (-s $augustus_script_exec){
+  	&process_cmd("cat $master_bamfile.junctions.hints.intronic $master_bamfile.coverage.hints| sort -S 1G -n -k 4,4 | sort -S 1G -s -n -k 5,5 | sort -S 1G -s -n -k 3,3 | sort -S 1G -s -k 1,1| $augustus_script_exec > $master_bamfile.rnaseq.hints" );
+	  &touch("$master_bamfile.rnaseq.completed");
+  }
  }
  print "Done!\n";
 }
-else {
+elsif (!$no_hints) {
  die "Something went wrong....\n";
+}else{
+  print "Done, no hints were processed as requested\n";
 }
 ###
 sub check_program() {

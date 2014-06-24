@@ -24,7 +24,7 @@ my ($file2split,$splitfiledir);
 my $depth=1;
 my $suffix="";
 
-GetOptions(
+pod2usage $! unless &GetOptions(
 	'i|fa|fasta=s'  => \$file2split,
 	'depth=i'	=> \$depth,
 	'suffix=s'	=> \$suffix,

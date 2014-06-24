@@ -54,6 +54,7 @@ It is provided "as is" without warranty of any kind.
 
 use strict;
 use warnings;
+use Carp;
 use Data::Dumper;
 use Pod::Usage;
 use Getopt::Long;
@@ -63,14 +64,14 @@ use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 
-my ( $gmap_build_exec, $gsnap_exec, $samtools_exec ) =
-  &check_program( "gmap_build", "gsnap", "samtools" );
+my ( $gmap_build_exec, $gsnap_exec, $samtools_exec,$bunzip2_exec ) =
+  &check_program( "gmap_build", "gsnap", "samtools",'bunzip2' );
 &samtools_version_check($samtools_exec);
 my (
      $input_dir,               $pattern2,      $debug,
      $genome,                  $genome_dbname, $nofails,
      $suffix,                  $help,          $intron_splice_db,
-     $just_write_out_commands, $split_input,   $notpaired
+     $just_write_out_commands, $split_input,   $notpaired, $verbose
 );
 my $cwd = `pwd`;
 chomp($cwd);
@@ -150,13 +151,13 @@ print "Found these files:\n".join("\n",@files)."\n";
 my ( $build_cmd, $align_cmd );
 if ($suffix) {
  $build_cmd =
-"$gmap_build_exec -D $gmap_dir -d $genome_dbname -k 13 -q 1 -e 0 $genome >/dev/null";
+"$gmap_build_exec -D $gmap_dir -d $genome_dbname -k 13 -q 1 -e 0 $genome >/dev/null ; $samtools_exec faidx $genome";
  $align_cmd =
 "$gsnap_exec -B 4 -D $gmap_dir -d $genome_dbname --nthreads=$cpus --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam --sam-use-0M --no-sam-headers ";
 }
 else {
  $build_cmd =
-"$gmap_build_exec -D $gmap_dir -d $genome_dbname -k 13 -q 1 -e 0 --no-sarray $genome >/dev/null";
+"$gmap_build_exec -D $gmap_dir -d $genome_dbname -k 13 -q 1 -e 0 --no-sarray $genome >/dev/null ; $samtools_exec faidx $genome";
  $align_cmd =
 "$gsnap_exec --use-sarray=0 -B 4 -D $gmap_dir -d $genome_dbname --nthreads=$cpus --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam --sam-use-0M --no-sam-headers ";
 }
@@ -331,6 +332,8 @@ sub checked_paired_files() {
 sub align_unpaired_files() {
  my @files_to_do = @_;
  foreach my $file ( sort @files_to_do ) {
+  my $qual_prot = &check_fastq_format($file);
+  $qual_prot = $qual_prot eq 'fasta' ? '' : ' --quality-protocol='.$qual_prot;
   my $base = basename($file);
   my $group_id;
   if ( $split_input && $base =~ /\.\d+$/ ) {
@@ -357,6 +360,7 @@ sub align_unpaired_files() {
 
   $file_align_cmd .= ' --bunzip2 ' if $file =~ /\.bz2$/; 
   $file_align_cmd .= ' --gunzip ' if $file =~ /\.gz$/; 
+  $file_align_cmd .= $qual_prot if $qual_prot;
 
   $file_align_cmd .=
     " --split-output=gsnap.$base --read-group-id=$group_id $file  ";
@@ -407,6 +411,8 @@ sub align_unpaired_files() {
 sub align_paired_files() {
  my @files_to_do = @_;
  foreach my $file ( sort @files_to_do ) {
+  my $qual_prot = &check_fastq_format($file);
+  $qual_prot = $qual_prot eq 'fasta' ? '' : ' --quality-protocol='.$qual_prot;
   my $pair = $file;
   $pair =~ s/$pattern1/$pattern2/;
   my $base = basename($file);
@@ -435,6 +441,7 @@ sub align_paired_files() {
 
   $file_align_cmd .= ' --bunzip2 ' if $file =~ /\.bz2$/; 
   $file_align_cmd .= ' --gunzip ' if $file =~ /\.gz$/; 
+  $file_align_cmd .= $qual_prot if $qual_prot;
 
   $file_align_cmd .=
     " --split-output=gsnap.$base --read-group-id=$group_id $file $pair ";
@@ -480,3 +487,38 @@ sub align_paired_files() {
   print CMD "\n" if $just_write_out_commands;
  }
 }
+sub check_fastq_format() {
+ my $fq        = shift;
+ my $max_seqs  = 100;
+ my $max_lines = $max_seqs * 4;
+ my ( @lines, $number, $counter );
+ if ( $fq =~ /.bz2$/ ) {
+  @lines = `$bunzip2_exec -dkc $fq|head -n $max_lines`;
+ }
+ else {
+  @lines = `head -n $max_lines $fq`;
+ }
+ chomp(@lines);
+ for ( my $k = 0 ; $k < @lines ; $k += 4 ) {
+  my $ids = $lines[$k];
+  if ($ids =~ /^>/){
+        return 'fasta';
+  }
+  confess "$fq: Not in illumina format!\n" unless $ids =~ /^@/;
+  $counter++;
+  my $seq   = $lines[ $k + 1 ];
+  my $idq   = $lines[ $k + 2 ];
+  my $qual  = $lines[ $k + 3 ];
+  my @quals = split( //, $qual );
+  for ( my $i = 0 ; $i <= $#quals ; $i++ ) {
+   $number = ord( $quals[$i] );
+   if ( $number > 75 ) {
+    warn "File $fq is solexa/illumina phred64 format!\n";
+    return 'illumina';
+   }
+  }
+  last if $counter >= $max_seqs;
+ }
+ return 'sanger';
+}
+

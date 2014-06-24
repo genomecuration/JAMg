@@ -83,7 +83,7 @@ my $uniprot_db =
   $ENV{'HOME'} . "/databases/hhsearch/uniprot20_2013_03/uniprot20_2013_03";
 my $min_exons_before_reporting = 2;
 
-GetOptions(
+pod2usage $! unless GetOptions(
             'fasta|genome|in:s' => \$genome,
             'minsize:i'         => \$minsize,
             'circular'          => \$circular,

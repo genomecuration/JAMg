@@ -90,7 +90,7 @@ my (
 	 $convert2uc,   $descr_flag,  $solexafastq,   $search_accession,
 	 $seq_search,   $single_line, $ratio_cutoff,  $ghash, $overwrite, $casava
 );
-GetOptions(
+&GetOptions(
 	'i|fa|fasta=s{,}' => \@infiles,
 	'blastfile=s'     => \$blastfile,
 	#'evalue=s'	=> \$evalue_cutoff,

@@ -163,7 +163,7 @@ my $failed_cutoff = int(0);
 my ( $cdbfasta_exec, $cdbyank_exec ) = &check_program( 'cdbfasta', 'cdbyank' );
 my ( %get_id_seq_from_fasta_hash, $augustus_dir );
 
-GetOptions(
+pod2usage $! unless &GetOptions(
             'help'               => \$show_help,
             'debug|verbose'      => \$debug,
             'exonerate:s'        => \$exonerate_file,

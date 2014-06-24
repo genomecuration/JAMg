@@ -52,7 +52,7 @@ my ($medium_cut,@sam_files,@bam_files,$delete_sam,@read_files,$is_single_strande
 my $debug = 1;
 my $cpus = 4;
 my $memory = '20G';
-&GetOptions(
+pod2usage $! unless &GetOptions(
 	'memory:s'     => \$memory,
 	'cpu|thread:i' => \$cpus,
 	'help'         => \$help,

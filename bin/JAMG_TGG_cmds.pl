@@ -1,44 +1,40 @@
 #!/usr/bin/env perl
 
+=pod
+
+=head1 USAGE 
+
+
+Required:
+
+ --reads_list_file <string>      file containing list of filenames corresponding 
+                                  to the reads.fasta
+
+Optional:
+
+ --paired                        reads are paired (default: not paired)
+
+ --SS                            strand-specific  (reads are already oriented
+
+ --jaccard_clip                  run jaccard clip
+
+ --bfly_opts <string>            options to pass on to butterfly
+
+=cut
+
 use strict;
 use warnings;
-
+use Pod::Usage;
 use FindBin qw/$RealBin/;
 use Getopt::Long;
 
 my $trinity_exec = "$RealBin/../3rd_party/trinityrnaseq/Trinity";
 
-my $usage = <<__EOUSAGE__;
-
-####################################################################################
-#
-# Required:
-#
-# --reads_list_file <string>      file containing list of filenames corresponding 
-#                                  to the reads.fasta
-#
-# Optional:
-#
-# --paired                        reads are paired (default: not paired)
-#
-# --SS                            strand-specific  (reads are already oriented
-#
-# --jaccard_clip                  run jaccard clip
-#
-# --bfly_opts <string>            options to pass on to butterfly
-#
-#####################################################################################
-
-
-__EOUSAGE__
-
-    ;
-
 
 my $reads_file;
 my ($paired_flag,$SS_flag,$jaccard_clip,$normalize,$bfly_opts,$help_flag);
 
-&GetOptions (
+pod2usage $! unless &GetOptions (
              'reads_list_file:s' => \$reads_file,
              'paired' => \$paired_flag,
              'SS' => \$SS_flag,
@@ -47,8 +43,8 @@ my ($paired_flag,$SS_flag,$jaccard_clip,$normalize,$bfly_opts,$help_flag);
 	     'normalize' => \$normalize,             
              'help' => \$help_flag,
              );
-die $usage if ($help_flag);
-die $usage unless ($reads_file && -s $reads_file);
+pod2usage if ($help_flag);
+pod2usage unless ($reads_file && -s $reads_file);
 
 
 open (my $fh, $reads_file) or die "Error, cannot open file $reads_file";

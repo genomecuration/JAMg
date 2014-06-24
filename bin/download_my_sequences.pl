@@ -61,7 +61,7 @@ $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 my ( $query, $query_text, $molecule,$species_latin,$ncbi_taxid,$taxonomy,$outfile );
 my $format     = "fasta";
 
-GetOptions(
+pod2usage $! unless &GetOptions(
 	'outfile:s'  => \$outfile,
 	'format:s'  => \$format,
 	'query:s'    => \$query,

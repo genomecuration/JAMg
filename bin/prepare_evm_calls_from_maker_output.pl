@@ -41,7 +41,7 @@ my %allowed_types =
 my $outdir = 'maker_output.' . $$;
 my ($evm_exec) = &check_program("evidence_modeler.pl");
 
-GetOptions(
+pod2usage $! unless GetOptions(
             'maker_output_dir:s' => \$maker_dir,
             'genome:s'           => \$genome_sequence,
             'weights'            => \$evm_weights_file,

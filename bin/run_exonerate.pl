@@ -121,7 +121,7 @@ my ( $makeblastdb_exec, $blastn_exec, $tblastn_exec ) =
   &check_program( 'makeblastdb', 'blastn', 'tblastn' );
 my ($getorf_exec) = &check_program('getorf');
 
-GetOptions(
+pod2usage $! unless &GetOptions(
          'help'             => \$help,
          'annotations:s'    => \$annotation_file,
          'minorf:i'         => \$minorf,
