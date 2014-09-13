@@ -136,10 +136,12 @@ my $exons = "$genome.exons";
 my $getorf_options .= $circular ? '-circular' : '';
 
 &process_cmd(
-       "$getorf_exec -sequence $genome -outseq $exons.aa -minsize 150 -find 0 ")
+       #"$getorf_exec -sequence $genome -outseq $exons.aa -minsize 150 -find 0 ")
+       "$getorf_exec -sequence $genome -outseq $exons.aa -minsize 300 -find 0 ")
   unless -s $exons . '.aa';
 &process_cmd(
-       "$getorf_exec -sequence $genome -outseq $exons.nt -minsize 150 -find 2 ")
+       #"$getorf_exec -sequence $genome -outseq $exons.nt -minsize 150 -find 2 ")
+       "$getorf_exec -sequence $genome -outseq $exons.nt -minsize 300 -find 2 ")
   unless -s $exons . '.nt';
 die "No exon file could be produced.\n"
   unless -s $exons . '.aa' && -s $exons . '.nt';
