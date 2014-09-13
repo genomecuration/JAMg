@@ -545,7 +545,8 @@ sub remove_transposons() {
 
 sub remove_zero_bytes() {
  my $infile    = shift;
- my $outfile = "hhr.$infile";
+ my ($name, $path, $suffix) = fileparse($infile);
+ my $outfile = $path ."hhr.$name$suffix";
  return $outfile if (-s $outfile);
  &process_cmd("cat $infile*.idx* > $outfile.idx");
  system("rm -f $infile*.idx*");
@@ -761,7 +762,8 @@ sub parse_hhr() {
  my ( $infile, $homology_prob_cut, $eval_cut, $pval_cut, $score_cut,
       $align_col_cut, $template_aln_size_cut, $is_repeat )
    = @_;
- my $outfile = "hhr.$infile.results";
+ my ($name, $path, $suffix) = fileparse($infile);
+ my $outfile = $path . "hhr.$name$suffix.results";
  return $outfile if (-s $outfile);  
  return if !$infile || !-s $infile;
  $infile = &remove_zero_bytes( $infile);
