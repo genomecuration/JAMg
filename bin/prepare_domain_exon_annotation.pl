@@ -688,15 +688,25 @@ sub prepare_cluster() {
    }
    close CMD;
   }
-  unless ($no_uniprot_search) {
-   open( CMD, ">$fasta.hhblits.uniprot.cmds" );
-   for ( my $i = 1 ; $i <= $number_of_entries ; $i++ ) {
-    print CMD
-"$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 2 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 >> $fasta.uniprot.hhr 2>/dev/null\n";
-   }
-   close CMD;
+
+  if ( -s "$fasta.transposon.hhr" ){
+    my $transposon_results = &parse_hhr( "$fasta.transposon.hhr", 70, 1e-3, 1e-6, 100, 50, 30, 'yes' );
+    $fasta = &remove_transposons( $fasta, $transposon_results );
+    &process_cmd("$ffindex_from_fasta_exec -s $fasta.db $fasta.db.idx $fasta")  unless -s "$fasta.db";
+    $number_of_entries = `wc -l < $fasta.db.idx`;
+    chomp($number_of_entries);
+
+    
+    unless ($no_uniprot_search) {
+      open( CMD, ">$fasta.hhblits.uniprot.cmds" );
+      for ( my $i = 1 ; $i <= $number_of_entries ; $i++ ) {
+	print CMD
+	  "$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 2 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 >> $fasta.uniprot.hhr 2>/dev/null\n";
+      }
+      close CMD;
+    }
   }
- }
+}
  print "Done, prepared for 2 CPUs per node. See $workdir/*cmds\n";
 }
 
