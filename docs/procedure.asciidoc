@@ -109,6 +109,7 @@ $JAMG_PATH/bin/prepare_domain_exon_annotation.pl -genome $GENOME_PATH -verbose \
  -uniprot_db $JAMG_PATH/databases/hhblits/refseq_insecta_march13_just_useful \
  -trans $JAMG_PATH/databases/hhblits/transposons \
  -engine mpi -hosts morgan:5-haldane3:12-haldane2:10-haldane1:5-haldane4:12 -mpi 44 \
+ -repthreads $LOCAL_CPUS -mpi_cpus $LOCAL_CPUS \
  -scratch /dev/shm/$USER
 # RepeatMasker is going to be run above. Once finished, run this as later we will need a "soft-masked" genome:
 $JAMG_PATH/3rd_party/bin/maskFastaFromBed -soft -fi $GENOME_PATH -fo $GENOME_PATH.softmasked \
@@ -331,7 +332,7 @@ cd ..
 #TODO CONVERT TO PERL $JAMG_PATH/bin/optimize_geneid.sh train/$GENOME_NAME.param ./*.golden.train.good.gb.geneid.fasta ./*.golden.train.good.gb.geneid run1 > $GENOME_NAME.optimization.cmds
 ParaFly -c $GENOME_NAME.optimization.cmds -CPU $LOCAL_CPUS
 +
-** [[projection]]If we have a closely species that is well annotated, a good approach is to 'project' that genome's gene models to our unannotated one.This script is still under construction but once ready we can use it like so:
+** [[projection]]If we have a closely species that is well annotated, a good approach is to 'project' that genome's gene models to our unannotated one. This script, by Gavin Huttley () is still under construction but once ready we can use it like so:
 +
 [source,bash]
 create_projections.py -reference annotated_genome.fasta -genes [annotated_genome.gff3|annotated_genome.genbank] -genome new_genome.fasta -out new_genome.gff3
@@ -353,6 +354,16 @@ $JAMG_PATH/bin/prepare_golden_genes_for_predictors.pl -identical 40 -similar 70 
  -intron $MAX_INTRON_LENGTH -cpu $LOCAL_CPUS -norefine
 +
 * 'Running Augustus'
++
+Augustus is our more powerful gene predictor for the simple fact that it accepts a number of tracks with external evidence (and also it is still actively maintained). In practice, in my projects I barely provide the other gene predictors with external evidence and just rely on Augustus. JAMg was written before Augustus 3 was released and I have had time to test it so JAMg uses the latest Augustus 2 (also Augustus 3 is under the rather 'viral' GPL so there is the headache of changing the license). In any case, moving on: the input to Augustus is your genome FASTA, a subset of your golden gene predictions and your evidence tracks and two sets of configuration. The first set is to parameterize how Augustus builds the HMM. It is very important to do that once per species. Then the second configuration file is about your external evidence: how much weight to give to each type of evidence (on a per feature type basis, exon, intron etc). JAMg uses a modified script from Augustus to conduct the former and a new script to do the latter. Both are quite easy to use but may take a day to run. The major complication is that for the second configuration we must create a set of evidence tracks using our 'test' sequence as a reference, not our genome. This is happening because our 'golden genes' are used to create a train/test set and therefore we must create our evidence tracks using these as a reference:
++
+[source,bash]
+mkdir augustus; cd augustus
+cat ../final_golden_genes.gff3.nr.golden.optimization.good.gb.fasta ../final_golden_genes.gff3.nr.golden.train.good.gb.fasta > complete_reference_training_set.fasta
++
+Therefore, we must rerun our scripts: for the RNASeq: 'align_rnaseq_gsnap.pl' and 'augustus_RNAseq_hints.pl', for repeats and domains: 'prepare_domain_exon_annotation.pl' and 'maskFastaFromBed', and for our Foreign proteins prepare_golden_genes_for_predictors.pl. See the link:tutorial.html#augustus_training[tutorial section 2C] on how we are doing this exactly.
+
+
 * 'Creating a consensus gene set'
 * 'Adding UTR and alternative splicing'
 * 'Functional annotation' with JAMPs

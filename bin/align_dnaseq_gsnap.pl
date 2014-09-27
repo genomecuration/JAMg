@@ -32,9 +32,11 @@ Optional:
  -commands_only  :s  Don't run commands, instead write them out into a file as specified by the option. Useful for preparing jobs for ParaFly
  -split_input    :i  Split the input FASTQ files to these many subfiles. Good for running large RNASeq datasets. Needs -commands_only above. Not used when FASTQ files are compressed (.bz2 .gz)
  -notpaired          Data are single end. Don't look for pairs (use -pattern1 to glob files)
+ -matepair           Data are paired as circularized inserts RF
  -distance :i        Paired end distance (def 10000)
  -memory             Memory for samtools sorting, use suffix G M b (def '35G')
  -verbose
+ -piccard_0m         Ask gsnap to add 0M between insertions (only for piccard compatibility, issues with most other software)
 
 =head1 AUTHORS
 
@@ -67,8 +69,8 @@ $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 my ( $gmap_build_exec, $gsnap_exec, $samtools_exec,$bunzip2_exec ) =
   &check_program( "gmap_build", "gsnap", "samtools",'bunzip2' );
 &samtools_version_check($samtools_exec);
-my ( $input_dir, $pattern2, $debug, $genome, $genome_dbname, $nofails, $suffix,
-     $help, $just_write_out_commands, $split_input, $notpaired, $verbose );
+my ( $input_dir, $pattern2, $debug, $genome, $genome_dbname, $nofails, $suffix,$piccard_0m,
+     $help, $just_write_out_commands, $split_input, $notpaired, $verbose, $matepair );
 my $cwd = `pwd`;
 chomp($cwd);
 my $gmap_dir           = $ENV{'HOME'} . '/databases/gmap/';
@@ -94,13 +96,15 @@ my $pe_distance        = 10000;
              'commands_only:s' => \$just_write_out_commands,
              'split_input:i'   => \$split_input,
              'notpaired'       => \$notpaired,
+	     'matepair'        => \$matepair,
+             'piccard_0m'      => \$piccard_0m
 );
 
 pod2usage if $help;
 pod2usage "No genome FASTA\n" unless $genome && -s $genome;
 pod2usage "No GMAP genome database name\n" unless $genome_dbname;
 pod2usage "GMAP database does not exist: $gmap_dir\n" unless -d $gmap_dir;
-pod2usage "You only provided pattern1 and didn't specify -notpaired\n" if $pattern1 && !$notpaired && !$pattern2;
+pod2usage "You only provided pattern1 or more than 1 input file but didn't specify -notpaired\n" if $pattern1 && !$notpaired && !$pattern2 && $ARGV[1];
 $input_dir = $cwd unless $input_dir;
 my $samtools_sort_CPUs = int( $cpus / 2 ) > 2 ? int( $cpus / 2 ) : 2;
 my $suff = "";
@@ -139,20 +143,21 @@ my ( $build_cmd, $align_cmd );
 
 if ($suffix) {
  $build_cmd =
-"$gmap_build_exec -D $gmap_dir -d $genome_dbname -k 13 -q 1 -e 0 $genome >/dev/null ; $samtools_exec faidx $genome";
+"$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 $genome >/dev/null ; $samtools_exec faidx $genome";
  $align_cmd =
-"$gsnap_exec -B 4 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam --sam-use-0M --no-sam-headers ";
+"$gsnap_exec -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam --no-sam-headers ";
 }
 else {
  $build_cmd =
-"$gmap_build_exec -D $gmap_dir -d $genome_dbname -k 13 -q 1 -e 0 --no-sarray $genome >/dev/null ; $samtools_exec faidx $genome";
+"$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 --no-sarray $genome >/dev/null ; $samtools_exec faidx $genome";
  $align_cmd =
-"$gsnap_exec --use-sarray=0 -B 4 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam --sam-use-0M --no-sam-headers ";
+"$gsnap_exec --use-sarray=0 -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam --no-sam-headers ";
 }
 
 $align_cmd .= " --nofails "                  if $nofails;
-$align_cmd .= " --fails-as-input "           if !$nofails;
 $align_cmd .= " --pairmax-dna=$pe_distance " if !$notpaired;
+$align_cmd .= " --sam-use-0M " if $piccard_0m;
+$align_cmd .= " -o RF " if $matepair;
 
 
 open( CMD, ">$just_write_out_commands" ) if $just_write_out_commands;
@@ -340,7 +345,7 @@ sub align_unpaired_files() {
   $file_align_cmd .= ' --gunzip ' if $file =~ /\.gz$/; 
   $file_align_cmd .= $qual_prot if $qual_prot;
   $file_align_cmd .=
-    " --split-output=gsnap.$base --read-group-id=$group_id $file ";
+    " --split-output=gsnap.$base $file ";
   &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
     unless (    -s $base_out_filename."_uniq"
              || -s $base_out_filename."_uniq.bam" );
@@ -413,7 +418,7 @@ sub align_paired_files() {
   $file_align_cmd .= ' --gunzip ' if $file =~ /\.gz$/; 
   $file_align_cmd .= $qual_prot if $qual_prot;
 
-  $file_align_cmd .= " --split-output=gsnap.$base --read-group-id=$group_id $file $pair ";
+  $file_align_cmd .= " --split-output=gsnap.$base $file $pair ";
   &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
     unless (    -s "$base_out_filename"."_uniq"
              || -s "$base_out_filename"."_uniq.bam" );

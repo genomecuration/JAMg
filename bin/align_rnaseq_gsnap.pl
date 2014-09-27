@@ -28,14 +28,16 @@ Optional:
  -pattern2           Pattern for automatching right pair (defaults to '_2_')
  -nofail             Don't print out failures (I/O friendlyness if sparse hits expected). Otherwise captured as FASTQ
  -suffix             Build/use suffix array (fast, downweights SNPs, use for non-polymorphic genomes)
- -path_number        Maximum number of hits for the read pair. If more that these many hits, then nothing is returned (defaults to 50)
+ -path_number        Maximum number of hits for the read pair. If more that these many hits, then nothing is returned (defaults to 10)
  -commands_only  :s  Don't run commands, instead write them out into a file as specified by the option. Useful for preparing jobs for ParaFly
  -split_input    :i  Split the input FASTQ files to these many subfiles. Good for running large RNASeq datasets. Needs -commands_only above
  -notpaired          Data are single end. Don't look for pairs (use -pattern1 to glob files)
- -intron_db      :s  GMAP intron splice database
+ -intron_db      :s  GMAP intron or splice database (iit_store). Automatically found and used if it exists as a single *.iit in maps/ directory.
+ -intron_hard        If -intron_db, we will now be conservative handling junction reads and eliminate all soft-clipping (--ambig-splice-noclip --trim-mismatch-score=0)
  -intron_size    :i  Maximum intron length (def. 70,000)
  -memory             Memory for samtools sorting, use suffix G M b (def '35G')
  -verbose
+ -piccard_0m         Ask gsnap to add 0M between insertions (only for piccard compatibility, issues with most other software)
 
 =head1 AUTHORS
 
@@ -68,15 +70,15 @@ my ( $gmap_build_exec, $gsnap_exec, $samtools_exec,$bunzip2_exec ) =
   &check_program( "gmap_build", "gsnap", "samtools",'bunzip2' );
 &samtools_version_check($samtools_exec);
 my (
-     $input_dir,               $pattern2,      $debug,
-     $genome,                  $genome_dbname, $nofails,
+     $input_dir,               $pattern2,      $debug, $piccard_0m,
+     $genome,                  $genome_dbname, $nofails, $intron_hard,
      $suffix,                  $help,          $intron_splice_db,
      $just_write_out_commands, $split_input,   $notpaired, $verbose
 );
 my $cwd = `pwd`;
 chomp($cwd);
 my $gmap_dir           = $ENV{'HOME'} . '/databases/gmap/';
-my $repeat_path_number = 50;
+my $repeat_path_number = 10;
 my $intron_length      = 70000;
 my $cpus               = 6;
 my $memory             = '35G';
@@ -87,6 +89,7 @@ my $pattern1            = '_1_';
              'fasta:s'         => \$genome,
              'dbname:s'        => \$genome_dbname,
              'intron_db:s'     => \$intron_splice_db,
+             'intron_hard'     => \$intron_hard,
              'gmap_dir:s'      => \$gmap_dir,
              'intron_size:i'   => \$intron_length,
              'cpus|threads:i'  => \$cpus,
@@ -101,6 +104,7 @@ my $pattern1            = '_1_';
              'commands_only:s' => \$just_write_out_commands,
              'split_input:i'   => \$split_input,
              'notpaired'       => \$notpaired,
+             'piccard_0m'      => \$piccard_0m
 );
 
 pod2usage if $help;
@@ -111,7 +115,7 @@ pod2usage "Split input requires the -commands_only option\n"
   if $split_input && !$just_write_out_commands;
 pod2usage "Split input cannot be more than 100\n"
   if $split_input && $split_input > 100;
-pod2usage "You only provided pattern1 and didn't specify -notpaired\n" if $pattern1 && !$notpaired && !$pattern2;
+pod2usage "You only provided pattern1 or more than 1 input file but didn't specify -notpaired\n" if $pattern1 && !$notpaired && !$pattern2 && $ARGV[1];
 $input_dir = $cwd unless $input_dir;
 my $samtools_sort_CPUs = int( $cpus / 2 ) > 2 ? int( $cpus / 2 ) : 2;
 my $suff = "";
@@ -150,22 +154,33 @@ print "Found these files:\n".join("\n",@files)."\n";
 
 my ( $build_cmd, $align_cmd );
 if ($suffix) {
+ warn "WARNING: Using -suffix with RNA-Seq gapped alignments is not recommended... it seems to be much (order of magnitude) slower in my tests\n";sleep(3);
  $build_cmd =
-"$gmap_build_exec -D $gmap_dir -d $genome_dbname -k 13 -q 1 -e 0 $genome >/dev/null ; $samtools_exec faidx $genome";
+"$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 $genome >/dev/null ; $samtools_exec faidx $genome";
  $align_cmd =
-"$gsnap_exec -B 4 -D $gmap_dir -d $genome_dbname --nthreads=$cpus --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam --sam-use-0M --no-sam-headers ";
+"$gsnap_exec -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam --no-sam-headers ";
 }
 else {
  $build_cmd =
-"$gmap_build_exec -D $gmap_dir -d $genome_dbname -k 13 -q 1 -e 0 --no-sarray $genome >/dev/null ; $samtools_exec faidx $genome";
+"$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 --no-sarray $genome >/dev/null ; $samtools_exec faidx $genome";
  $align_cmd =
-"$gsnap_exec --use-sarray=0 -B 4 -D $gmap_dir -d $genome_dbname --nthreads=$cpus --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam --sam-use-0M --no-sam-headers ";
+"$gsnap_exec --use-sarray=0 -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam --no-sam-headers ";
+}
+
+if (!$intron_splice_db){
+ my @checks = glob("$gmap_dir/$genome_dbname/$genome_dbname.maps/*iit");
+ if (@checks && length(@checks) == 1){
+  $intron_splice_db = $checks[0];
+  print "Will use the splice file $intron_splice_db\n";
+  sleep(1);
+ }
 }
 
 $align_cmd .= " --nofails "                    if $nofails;
-$align_cmd .= " --fails-as-input "             if !$nofails;
 $align_cmd .= " -s $intron_splice_db "         if $intron_splice_db;
+$align_cmd .= " --ambig-splice-noclip --trim-mismatch-score=0 " if $intron_splice_db && $intron_hard;
 $align_cmd .= " --pairmax-rna=$intron_length " if !$notpaired;
+$align_cmd .= " --sam-use-0M " if $piccard_0m;
 
 open( CMD, ">$just_write_out_commands" ) if $just_write_out_commands;
 
@@ -363,7 +378,7 @@ sub align_unpaired_files() {
   $file_align_cmd .= $qual_prot if $qual_prot;
 
   $file_align_cmd .=
-    " --split-output=gsnap.$base --read-group-id=$group_id $file  ";
+    " --split-output=gsnap.$base $file  ";
   &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
     unless (    -s "$base_out_filename"."_uniq"
              || -s "$base_out_filename"."_uniq.bam" );
@@ -444,7 +459,7 @@ sub align_paired_files() {
   $file_align_cmd .= $qual_prot if $qual_prot;
 
   $file_align_cmd .=
-    " --split-output=gsnap.$base --read-group-id=$group_id $file $pair ";
+    " --split-output=gsnap.$base $file $pair ";
   &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
     unless (    -s "$base_out_filename"."_uniq"
              || -s "$base_out_filename"."_uniq.bam" );

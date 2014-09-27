@@ -1018,7 +1018,7 @@ http://www.gnu.org/software/src-highlite -->
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
-<pre><tt>find TGG/Dir_<span style="color: #990000">*</span> -name <span style="color: #FF0000">"*inity.fasta"</span> <span style="color: #990000">|</span> <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/trinityrnaseq/util/GG_trinity_accession_incrementer<span style="color: #990000">.</span>pl <span style="color: #990000">&gt;</span> Trinity_GG<span style="color: #990000">.</span>fasta
+<pre><tt>find TGG/Dir_<span style="color: #990000">*</span> -name <span style="color: #FF0000">"*inity.fasta"</span> <span style="color: #990000">|</span> <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/trinityrnaseq/util/support_scripts/GG_trinity_accession_incrementer<span style="color: #990000">.</span>pl <span style="color: #990000">&gt;</span> Trinity_GG<span style="color: #990000">.</span>fasta
 <span style="font-style: italic"><span style="color: #9A1900">#p.s With Trinity_GG.fasta in your base directory, you can safely delete the TGG directory now</span></span>
 cat TDN/Trinity<span style="color: #990000">.</span>fasta Trinity_GG<span style="color: #990000">.</span>fasta <span style="color: #990000">&gt;</span> transcripts<span style="color: #990000">.</span>fasta
 cat TDN/Trinity<span style="color: #990000">.</span>fasta <span style="color: #990000">|</span> <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/misc_utilities/accession_extractor<span style="color: #990000">.</span>pl <span style="color: #990000">&gt;</span> tdn<span style="color: #990000">.</span>accs
@@ -1159,7 +1159,7 @@ cd <span style="color: #990000">../</span></tt></pre></div></div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_step_2c_em_prepare_evidence_em_for_augustus_and_train">Step 2c: <em>Prepare evidence</em> for Augustus and train</h2>
+<h2 id="augustus_training">Step 2c: <em>Prepare evidence</em> for Augustus and train</h2>
 <div class="sectionbody">
 <div class="admonitionblock">
 <table><tr>
@@ -1177,29 +1177,90 @@ http://www.gnu.org/software/src-highlite -->
 <pre><tt><span style="font-style: italic"><span style="color: #9A1900"># collate data from the output of predict_golden</span></span>
 mkdir augustus<span style="color: #990000">;</span> cd augustus<span style="color: #990000">;</span>
 ln -s <span style="color: #990000">[</span>path from trinity genome guided<span style="color: #990000">]</span>/gsnap<span style="color: #990000">.</span>coordSorted<span style="color: #990000">.</span>bam<span style="color: #990000">.</span>rnaseq<span style="color: #990000">.</span>hints <span style="color: #990000">.</span> <span style="font-style: italic"><span style="color: #9A1900"># from when you ran $JAMG_PATH/bin/augustus_RNAseq_hints.pl at the Trinity Genome Guided above.</span></span>
-ln -s <span style="color: #990000">[</span>path from prepare_golden_genes<span style="color: #990000">]</span> final_golden_genes<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>nr<span style="color: #990000">.</span>golden<span style="color: #990000">.*.</span>good<span style="color: #990000">.</span>gb<span style="color: #990000">*</span> <span style="color: #990000">.</span>
-<span style="font-style: italic"><span style="color: #9A1900"># now we need to prepare some files for optimizing the extrinsic evidence scores. Specifically we need to recreate the hints for use with our 'test/train data' derived from the genbank files.</span></span>
-mkdir optimization<span style="color: #990000">;</span> cd optimization
-cat <span style="color: #990000">..</span>/final_golden_genes<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>nr<span style="color: #990000">.</span>golden<span style="color: #990000">.</span>optimization<span style="color: #990000">.</span>good<span style="color: #990000">.</span>gb<span style="color: #990000">.</span>fasta <span style="color: #990000">..</span>/final_golden_genes<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>nr<span style="color: #990000">.</span>golden<span style="color: #990000">.</span>train<span style="color: #990000">.</span>good<span style="color: #990000">.</span>gb<span style="color: #990000">.</span>fasta <span style="color: #990000">&gt;</span> complete_reference_training_set<span style="color: #990000">.</span>fasta
-<span style="font-style: italic"><span style="color: #9A1900"># prepare hints for training set reference: RNA-Seq and repeatmasking/exons</span></span>
-<span style="color: #009900">$JAMG_PATH</span>/bin/align_rnaseq_gsnap<span style="color: #990000">.</span>pl -fasta complete_reference_training_set<span style="color: #990000">.</span>fasta -dbname reference_training -pattern<span style="color: #993399">1</span> _1_ -pattern<span style="color: #993399">2</span> _2_ -nofail
-<span style="color: #009900">$JAMG_PATH</span>/bin/augustus_RNAseq_hints<span style="color: #990000">.</span>pl -bam <span style="color: #990000">*</span>uniq_mult<span style="color: #990000">.</span>bam -genome complete_reference_training_set<span style="color: #990000">.</span>fasta
-<span style="color: #009900">$JAMG_PATH</span>/bin/prepare_domain_exon_annotation<span style="color: #990000">.</span>pl -fasta complete_reference_training_set<span style="color: #990000">.</span>fasta -engine localmpi</tt></pre></div></div>
-<div class="paragraph"><p>The next step is optimizing the parameters using for the HMM buidling. You can&#8217;t run these in parallel, they must run sequentially&#8230;</p></div>
+ln -s <span style="color: #990000">[</span>path from prepare_golden_genes<span style="color: #990000">]</span> final_golden_genes<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>nr<span style="color: #990000">.</span>golden<span style="color: #990000">.*.</span>good<span style="color: #990000">.</span>gb<span style="color: #990000">*</span> <span style="color: #990000">.</span></tt></pre></div></div>
+<div class="paragraph"><p>In this section we have to do the slightly complicated task of preparing a configuration file for how to weight the external evidence (e.g. RNASeq). Even though eventually we will run Augustus with our genome, to create the configuration we must use a test dataset for which we know the <em>truth</em>. This is our <em>golden genes</em>, which we have split in training, test and optimization (a small subset of training). In order to get the configuration file we must create evidence tracks for our RNAseq (etc) against these datasets. So we need to rerun our alignments:</p></div>
 <div class="listingblock">
 <div class="content"><!-- Generator: GNU source-highlight 3.1.5
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
-<pre><tt><span style="font-style: italic"><span style="color: #9A1900"># the following will train the coding sequence models.</span></span>
+<pre><tt><span style="font-style: italic"><span style="color: #9A1900"># now we need to prepare some files for optimizing the extrinsic evidence scores. Specifically we need to recreate the hints for use with our 'test data' derived from the genbank files.</span></span>
+mkdir optimization<span style="color: #990000">;</span> cd optimization
+cat <span style="color: #990000">..</span>/final_golden_genes<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>nr<span style="color: #990000">.</span>golden<span style="color: #990000">.</span>optimization<span style="color: #990000">.</span>good<span style="color: #990000">.</span>gb<span style="color: #990000">.</span>fasta <span style="color: #990000">..</span>/final_golden_genes<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>nr<span style="color: #990000">.</span>golden<span style="color: #990000">.</span>train<span style="color: #990000">.</span>good<span style="color: #990000">.</span>gb<span style="color: #990000">.</span>fasta <span style="color: #990000">&gt;</span> complete_reference_training_set<span style="color: #990000">.</span>fasta
+<span style="font-style: italic"><span style="color: #9A1900"># prepare hints for training set reference: RNA-Seq and repeatmasking/exons</span></span>
+mkdir rnaseqalign<span style="color: #990000">;</span> cd rnaseqalign
+ln <span style="color: #990000">..</span>/complete_reference_training_set<span style="color: #990000">.</span>fasta <span style="color: #990000">.</span>
+<span style="color: #009900">$JAMG_PATH</span>/bin/align_rnaseq_gsnap<span style="color: #990000">.</span>pl -fasta complete_reference_training_set<span style="color: #990000">.</span>fasta -gmap_dir <span style="color: #990000">.</span> -suffix -dbname reference_training -pattern<span style="color: #993399">1</span> _1_ -pattern<span style="color: #993399">2</span> _2_ -nofail
+<span style="color: #009900">$JAMG_PATH</span>/bin/augustus_RNAseq_hints<span style="color: #990000">.</span>pl -bam <span style="color: #990000">*</span>uniq_mult<span style="color: #990000">.</span>bam -genome complete_reference_training_set<span style="color: #990000">.</span>fasta
+cd <span style="color: #990000">..</span>
+<span style="font-style: italic"><span style="color: #9A1900"># domains and repeats</span></span>
+mkdir repeats <span style="color: #990000">;</span> cd repeats
+ln <span style="color: #990000">..</span>/complete_reference_training_set<span style="color: #990000">.</span>fasta <span style="color: #990000">.</span>
+<span style="color: #009900">$JAMG_PATH</span>/bin/prepare_domain_exon_annotation<span style="color: #990000">.</span>pl -fasta complete_reference_training_set<span style="color: #990000">.</span>fasta -engine localmpi -repthreads <span style="color: #009900">$LOCAL_CPUS</span> -mpi_cpus <span style="color: #009900">$LOCAL_CPUS</span>
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/bin/maskFastaFromBed -soft -fi complete_reference_training_set<span style="color: #990000">.</span>fasta -fo complete_reference_training_set<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>softmasked  -bed complete_reference_training_set<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>out<span style="color: #990000">.</span>gff
+cd <span style="color: #990000">..</span>
+<span style="font-style: italic"><span style="color: #9A1900"># Foreign proteins</span></span>
+mkdir foreign<span style="color: #990000">;</span> cd foreign
+ln <span style="color: #990000">..</span>/repeats/complete_reference_training_set<span style="color: #990000">.</span>fasta<span style="color: #990000">*</span> <span style="color: #990000">.</span>
+<span style="color: #009900">$JAMG_PATH</span>/bin/prepare_golden_genes_for_predictors<span style="color: #990000">.</span>pl -identical <span style="color: #993399">40</span> -similar <span style="color: #993399">70</span> -mismatch_cutoff <span style="color: #993399">100</span> -genome complete_reference_training_set<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>masked -softmasked complete_reference_training_set<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>softmasked -peptides foreign_proteins<span style="color: #990000">.</span>nr90  -intron <span style="color: #009900">$MAX_INTRON_LENGTH</span> -cpu <span style="color: #009900">$LOCAL_CPUS</span> -norefine
+cd <span style="color: #990000">..</span></tt></pre></div></div>
+<div class="paragraph"><p>Except preparing the above evidence, we also want to create our HMM.</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-style: italic"><span style="color: #9A1900"># the following will train the coding sequence models. The --metapars must point to a valid configuration which you're welcome to change if you want - here I used a rather broad parameter search.</span></span>
 <span style="color: #009900">$JAMG_PATH</span>/bin/optimize_augustus<span style="color: #990000">.</span>pl --species <span style="color: #009900">$SPECIES</span> --optimize <span style="color: #990000">..</span>/final_golden_genes<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>nr<span style="color: #990000">.</span>golden<span style="color: #990000">.</span>optimization<span style="color: #990000">.</span>good<span style="color: #990000">.</span>gb --onlytrain <span style="color: #990000">..</span>/final_golden_genes<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>nr<span style="color: #990000">.</span>golden<span style="color: #990000">.</span>train<span style="color: #990000">.</span>good<span style="color: #990000">.</span>gb <span style="color: #990000">\</span>
  --cpus <span style="color: #009900">$LOCAL_CPUS</span> --kfold <span style="color: #009900">$LOCAL_CPUS</span> --metapars <span style="color: #009900">$JAMG_PATH</span>/configs/metaparameters_broad<span style="color: #990000">.</span>cfg <span style="color: #990000">|</span> tee opt_cds<span style="color: #990000">.</span>log
-<span style="font-style: italic"><span style="color: #9A1900"># now also train the UTR</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># Once the above finishes, now also train the UTR</span></span>
 <span style="color: #009900">$JAMG_PATH</span>/bin/optimize_augustus<span style="color: #990000">.</span>pl --species <span style="color: #009900">$SPECIES</span> --optimize <span style="color: #990000">..</span>/final_golden_genes<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>nr<span style="color: #990000">.</span>golden<span style="color: #990000">.</span>optimization<span style="color: #990000">.</span>good<span style="color: #990000">.</span>gb --onlytrain <span style="color: #990000">..</span>/final_golden_genes<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>nr<span style="color: #990000">.</span>golden<span style="color: #990000">.</span>train<span style="color: #990000">.</span>good<span style="color: #990000">.</span>gb <span style="color: #990000">\</span>
- --cpus <span style="color: #009900">$LOCAL_CPUS</span> --kfold <span style="color: #009900">$LOCAL_CPUS</span> --onlyutr --metapars metaparameters_utr_broad<span style="color: #990000">.</span>cfg <span style="color: #990000">|</span> tee opt_utr<span style="color: #990000">.</span>log
-<span style="font-style: italic"><span style="color: #9A1900"># now train extrinsic evidence, especially the RNA-Seq derived data. In this case, also taking UTR values into account:</span></span>
+ --cpus <span style="color: #009900">$LOCAL_CPUS</span> --kfold <span style="color: #009900">$LOCAL_CPUS</span> --onlyutr --metapars <span style="color: #009900">$JAMG_PATH</span>/configs/metaparameters_utr_broad<span style="color: #990000">.</span>cfg <span style="color: #990000">|</span> tee opt_utr<span style="color: #990000">.</span>log</tt></pre></div></div>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<img src="./images/icons/tip.png" alt="Tip" />
+</td>
+<td class="content">Each of the above commands can be run in parallel (with the exception of the last optimize_augustus.pl -onlyutr command above which must be run after the other optimize_augustus.pl command).</td>
+</tr></table>
+</div>
+<div class="paragraph"><p>We have now prepared all our evidence for creating the configuration, our the HMM parameters have been set and our HMM has been trained. Prepare our evidence configuration file will determine how much each type of evidence (e.g. RNASeq, RepeatMasker etc) affects the prediction of each type of feature (exon, intron etc).</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>cat complete_reference_training_set<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>repeatmasked<span style="color: #990000">.</span>hints foreign/final_golden_genes<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>nr<span style="color: #990000">.</span>hints hhr<span style="color: #990000">.</span>complete_reference_training_set<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>masked<span style="color: #990000">.</span>exons<span style="color: #990000">.</span>aa<span style="color: #990000">.</span>trim<span style="color: #990000">.</span>db<span style="color: #990000">.</span>transposon<span style="color: #990000">.</span>db<span style="color: #990000">.</span>results<span style="color: #990000">.</span>hints hhr<span style="color: #990000">.</span>complete_reference_training_set<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>masked<span style="color: #990000">.</span>exons<span style="color: #990000">.</span>aa<span style="color: #990000">.</span>trim<span style="color: #990000">.</span>norep<span style="color: #990000">.</span>db<span style="color: #990000">.</span>uniprot<span style="color: #990000">.</span>db<span style="color: #990000">.</span>results<span style="color: #990000">.</span>hints  rnaseqalign/master_bamfile<span style="color: #990000">.</span>bam<span style="color: #990000">.</span>rnaseq<span style="color: #990000">.</span>hints <span style="color: #990000">|</span> sort -n -k <span style="color: #993399">4</span><span style="color: #990000">,</span><span style="color: #993399">4</span> <span style="color: #990000">|</span> sort -s -n -k <span style="color: #993399">5</span><span style="color: #990000">,</span><span style="color: #993399">5</span> <span style="color: #990000">|</span> sort -s -n -k <span style="color: #993399">3</span><span style="color: #990000">,</span><span style="color: #993399">3</span> <span style="color: #990000">|</span> sort -s -k <span style="color: #993399">1</span><span style="color: #990000">,</span><span style="color: #993399">1</span> <span style="color: #990000">&gt;</span> complete_reference_training_set<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>all<span style="color: #990000">.</span>hints
+cp <span style="color: #009900">$JAMG_PATH</span>/configs/extrinsic_meta<span style="color: #990000">.</span>cfg <span style="color: #990000">.</span>
+<span style="font-style: italic"><span style="color: #9A1900"># We need to edit the above file to remove any missing src that are missing from our .hints:</span></span>
+grep -oP <span style="color: #FF0000">'src=[^;]+'</span> complete_reference_training_set<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>all<span style="color: #990000">.</span>hints <span style="color: #990000">|</span>sort -u
+<span style="font-style: italic"><span style="color: #9A1900"># edit the extrinsic_meta.cfg and remove anything not present in the above grep command</span></span>
+vim extrinsic_meta<span style="color: #990000">.</span>cfg
+<span style="font-style: italic"><span style="color: #9A1900"># now run the optimisation, note the -utr option requires the above --onlyutr to have completed successfully (otherwise remove -utr).</span></span>
 <span style="color: #009900">$JAMG_PATH</span>/bin/optimize_extrinsic_augustus<span style="color: #990000">.</span>pl --species <span style="color: #009900">$SPECIES</span> -opt <span style="color: #990000">..</span>/final_golden_genes<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>nr<span style="color: #990000">.</span>golden<span style="color: #990000">.</span>optimization<span style="color: #990000">.</span>good<span style="color: #990000">.</span>gb --train <span style="color: #990000">..</span>/final_golden_genes<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>nr<span style="color: #990000">.</span>golden<span style="color: #990000">.</span>train<span style="color: #990000">.</span>good<span style="color: #990000">.</span>gb <span style="color: #990000">\</span>
- -cpu <span style="color: #009900">$LOCAL_CPUS</span> -notrain -hint <span style="color: #990000">*</span>uniq_mult<span style="color: #990000">.</span>bam<span style="color: #990000">.</span>rnaseq<span style="color: #990000">.</span>hints -utr -extr <span style="color: #009900">$JAMG_PATH</span>/configs/extrinsic_meta<span style="color: #990000">.</span>cfg <span style="color: #990000">|</span> tee opt_extr<span style="color: #990000">.</span>log</tt></pre></div></div>
+ -cpu <span style="color: #009900">$LOCAL_CPUS</span> -notrain -hint complete_reference_training_set<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>all<span style="color: #990000">.</span>hints -utr -extr <span style="color: #990000">.</span>/extrinsic_meta<span style="color: #990000">.</span>cfg <span style="color: #990000">|</span> tee opt_extr<span style="color: #990000">.</span>log</tt></pre></div></div>
+<div class="paragraph"><p>Check the opt_extr.log file for instruction on which configuration file to pick and copy it as your new configuration, e.g. <em>extrinsic_chosen.cfg</em>. You&#8217;re almost done!</p></div>
+<div class="paragraph"><p>Finally run Augustus. We have a helper script that allows you to run each scaffold independenly:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>mkdir genome_run<span style="color: #990000">;</span> cd genome_run
+<span style="font-style: italic"><span style="color: #9A1900"># gather all the hints produced using the $GENOME_PATH reference</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># ALEXIE NOTE: document this: util/hhblits/parse_hhsearch2hints.pl -in $GENOME_PATH.masked.exons.aa.trim.trim.db.uniprot.all.db -is_from_getorf</span></span>
+cat <span style="color: #990000">[</span>your hint files<span style="color: #990000">]</span>  <span style="color: #990000">|</span> sort -n -k <span style="color: #993399">4</span><span style="color: #990000">,</span><span style="color: #993399">4</span> <span style="color: #990000">|</span> sort -s -n -k <span style="color: #993399">5</span><span style="color: #990000">,</span><span style="color: #993399">5</span> <span style="color: #990000">|</span> sort -s -n -k <span style="color: #993399">3</span><span style="color: #990000">,</span><span style="color: #993399">3</span> <span style="color: #990000">|</span> sort -s -k <span style="color: #993399">1</span><span style="color: #990000">,</span><span style="color: #993399">1</span> <span style="color: #990000">&gt;</span> genome_augustus<span style="color: #990000">.</span>all<span style="color: #990000">.</span>hints
+<span style="font-style: italic"><span style="color: #9A1900"># ALEXIE NOTE: check and document this note: "final configuration: we are not optimizing GLD, give it the same as XNT"</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># check which sources we have</span></span>
+grep -oP <span style="color: #FF0000">'src=[^;]+'</span> genome_augustus<span style="color: #990000">.</span>all<span style="color: #990000">.</span>hints <span style="color: #990000">|</span>sort -u
+<span style="font-style: italic"><span style="color: #9A1900"># sed -i -e 'GLD/XNT/' genome_augustus.all.hints</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># Now we can split our genome for each scaffold and run augustus</span></span>
+cp <span style="color: #009900">$JAMG_PATH</span>/bin/run_split_augustus<span style="color: #990000">.</span>cmd  <span style="color: #990000">.</span>
+<span style="font-style: italic"><span style="color: #9A1900"># edit ./run_split_augustus.cmd and make sure the top two variables are correct</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">#   MAX_CONTIGS=9999 #NB if there are more than 9999 scaffold, then change the number</span></span>
+<span style="font-style: italic"><span style="color: #9A1900">#   PREFIX_GENOME="scaffold_" # after prefix a number is experted, 0 to $MAX_CONTIGS</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># Follow the instructions, making sure you export the AUGUSTUS_CONFIG variable in your compute nodes.</span></span>
+<span style="color: #990000">.</span>/run_split_augustus<span style="color: #990000">.</span>cmd <span style="color: #009900">$GENOME_PATH</span> genome_augustus<span style="color: #990000">.</span>all<span style="color: #990000">.</span>hints extrinsic_chosen<span style="color: #990000">.</span>cfg</tt></pre></div></div>
 <div class="admonitionblock">
 <table><tr>
 <td class="icon">
@@ -1284,7 +1345,7 @@ http://www.gnu.org/software/src-highlite -->
 <div id="footer">
 <div id="footer-text">
 Version RC1<br />
-Last updated 2014-04-17 13:26:51 EST
+Last updated 2014-09-27 17:23:37 EST
 </div>
 </div>
 </body>

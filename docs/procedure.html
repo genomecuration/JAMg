@@ -996,6 +996,7 @@ http://www.gnu.org/software/src-highlite -->
  -uniprot_db <span style="color: #009900">$JAMG_PATH</span>/databases/hhblits/refseq_insecta_march13_just_useful <span style="color: #990000">\</span>
  -trans <span style="color: #009900">$JAMG_PATH</span>/databases/hhblits/transposons <span style="color: #990000">\</span>
  -engine mpi -hosts morgan<span style="color: #990000">:</span><span style="color: #993399">5</span>-haldane<span style="color: #993399">3</span><span style="color: #990000">:</span><span style="color: #993399">12</span>-haldane<span style="color: #993399">2</span><span style="color: #990000">:</span><span style="color: #993399">10</span>-haldane<span style="color: #993399">1</span><span style="color: #990000">:</span><span style="color: #993399">5</span>-haldane<span style="color: #993399">4</span><span style="color: #990000">:</span><span style="color: #993399">12</span> -mpi <span style="color: #993399">44</span> <span style="color: #990000">\</span>
+ -repthreads <span style="color: #009900">$LOCAL_CPUS</span> -mpi_cpus <span style="color: #009900">$LOCAL_CPUS</span> <span style="color: #990000">\</span>
  -scratch /dev/shm<span style="color: #990000">/</span><span style="color: #009900">$USER</span>
 <span style="font-style: italic"><span style="color: #9A1900"># RepeatMasker is going to be run above. Once finished, run this as later we will need a "soft-masked" genome:</span></span>
 <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/bin/maskFastaFromBed -soft -fi <span style="color: #009900">$GENOME_PATH</span> -fo <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>softmasked <span style="color: #990000">\</span>
@@ -1084,7 +1085,7 @@ bin/prepare_trinity_genome_assembly_pbs.pl prepares everything you need for a TG
 </li>
 <li>
 <p>
-also <em>util/trinity_gg_helper</em> can be used to (re)run batches of Trinity-guided assemblies on a PBS cluster.
+also <em>$JAMG_PATH/bin/JAMG_TGG_cmds.pl</em> can be used to (re)run batches of Trinity-guided assemblies on a PBS cluster.
 </p>
 </li>
 </ul></div>
@@ -1103,7 +1104,7 @@ http://www.gnu.org/software/src-highlite -->
 <span style="font-style: italic"><span style="color: #9A1900"># prepare TGG output</span></span>
 <span style="color: #009900">$JAMG_PATH</span>/bin/prepare_trinity_genome_assembly_pbs<span style="color: #990000">.</span>pl -files <span style="color: #990000">./*.</span>concordant_uniq<span style="color: #990000">.</span>bam -intron <span style="color: #009900">$MAX_INTRON_LENGTH</span>
 ls <span style="color: #990000">*</span>cmds <span style="font-style: italic"><span style="color: #9A1900"># Run each one using your method of choice, e.g. ParaFly</span></span>
-find Dir_<span style="color: #990000">*</span>  -name <span style="color: #FF0000">"*inity.fasta"</span> <span style="color: #990000">|</span> <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/trinityrnaseq/util/GG_trinity_accession_incrementer<span style="color: #990000">.</span>pl <span style="color: #990000">&gt;</span> Trinity_GG<span style="color: #990000">.</span>fasta
+find Dir_<span style="color: #990000">*</span>  -name <span style="color: #FF0000">"*inity.fasta"</span> <span style="color: #990000">|</span> <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/trinityrnaseq/util/support_scripts/GG_trinity_accession_incrementer<span style="color: #990000">.</span>pl <span style="color: #990000">&gt;</span> Trinity_GG<span style="color: #990000">.</span>fasta
 <span style="font-style: italic"><span style="color: #9A1900"># compile TGG and TDN outputs into one file.</span></span>
 cat Trinity_denovo<span style="color: #990000">.</span>fasta Trinity_GG<span style="color: #990000">.</span>fasta <span style="color: #990000">&gt;</span> transcripts<span style="color: #990000">.</span>fasta</tt></pre></div></div>
 </li>
@@ -1452,7 +1453,7 @@ ParaFly -c <span style="color: #009900">$GENOME_NAME</span><span style="color: #
 </li>
 <li>
 <p>
-<a id="projection"></a>If we have a closely species that is well annotated, a good approach is to <em>project</em> that genome&#8217;s gene models to our unannotated one.This script is still under construction but once ready we can use it like so:
+<a id="projection"></a>If we have a closely species that is well annotated, a good approach is to <em>project</em> that genome&#8217;s gene models to our unannotated one. This script, by Gavin Huttley () is still under construction but once ready we can use it like so:
 </p>
 <div class="listingblock">
 <div class="content"><!-- Generator: GNU source-highlight 3.1.5
@@ -1501,6 +1502,15 @@ cd-hit -c <span style="color: #993399">0.90</span> -i foreign_proteins<span styl
 <p>
 <em>Running Augustus</em>
 </p>
+<div class="paragraph"><p>Augustus is our more powerful gene predictor for the simple fact that it accepts a number of tracks with external evidence (and also it is still actively maintained). In practice, in my projects I barely provide the other gene predictors with external evidence and just rely on Augustus. JAMg was written before Augustus 3 was released and I have had time to test it so JAMg uses the latest Augustus 2 (also Augustus 3 is under the rather <em>viral</em> GPL so there is the headache of changing the license). In any case, moving on: the input to Augustus is your genome FASTA, a subset of your golden gene predictions and your evidence tracks and two sets of configuration. The first set is to parameterize how Augustus builds the HMM. It is very important to do that once per species. Then the second configuration file is about your external evidence: how much weight to give to each type of evidence (on a per feature type basis, exon, intron etc). JAMg uses a modified script from Augustus to conduct the former and a new script to do the latter. Both are quite easy to use but may take a day to run. The major complication is that for the second configuration we must create a set of evidence tracks using our <em>test</em> sequence as a reference, not our genome. This is happening because our <em>golden genes</em> are used to create a train/test set and therefore we must create our evidence tracks using these as a reference:</p></div>
+<div class="listingblock">
+<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>mkdir augustus<span style="color: #990000">;</span> cd augustus
+cat <span style="color: #990000">..</span>/final_golden_genes<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>nr<span style="color: #990000">.</span>golden<span style="color: #990000">.</span>optimization<span style="color: #990000">.</span>good<span style="color: #990000">.</span>gb<span style="color: #990000">.</span>fasta <span style="color: #990000">..</span>/final_golden_genes<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>nr<span style="color: #990000">.</span>golden<span style="color: #990000">.</span>train<span style="color: #990000">.</span>good<span style="color: #990000">.</span>gb<span style="color: #990000">.</span>fasta <span style="color: #990000">&gt;</span> complete_reference_training_set<span style="color: #990000">.</span>fasta</tt></pre></div></div>
+<div class="paragraph"><p>Therefore, we must rerun our scripts: for the RNASeq: <em>align_rnaseq_gsnap.pl</em> and <em>augustus_RNAseq_hints.pl</em>, for repeats and domains: <em>prepare_domain_exon_annotation.pl</em> and <em>maskFastaFromBed</em>, and for our Foreign proteins prepare_golden_genes_for_predictors.pl. See the <a href="tutorial.html#augustus_training">tutorial section 2C</a> on how we are doing this exactly.</p></div>
 </li>
 <li>
 <p>
@@ -1631,7 +1641,7 @@ Feature
 <div id="footer">
 <div id="footer-text">
 Version RC1<br />
-Last updated 2014-04-09 16:53:51 EST
+Last updated 2014-09-27 17:04:19 EST
 </div>
 </div>
 </body>
