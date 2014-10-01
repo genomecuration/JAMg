@@ -579,7 +579,7 @@ sub prepare_local() {
    &just_run_my_commands("$fasta.hhblits.transposon.cmds");
  }
 
-  my $transposon_results = &parse_hhr( "$fasta.transposon.hhr", 70, 1e-3, 1e-6, 100, 50, 30, 'yes' );
+  my $transposon_results = &parse_hhr( "$fasta.transposons.hhr", 70, 1e-3, 1e-6, 100, 50, 30, 'yes' );
   $fasta = &remove_transposons( $fasta, $transposon_results );
   &process_cmd("$ffindex_from_fasta_exec -s $fasta.db $fasta.db.idx $fasta")  unless -s "$fasta.db";
   $number_of_entries = `wc -l < $fasta.db.idx`;
@@ -668,7 +668,7 @@ sub prepare_cluster() {
  if ( -d $workdir ) {
   warn
 "Working directory $workdir already exists! I don't want to overwrite anything so I won't create any files for 'cluster' unless you delete it\n";
-  return;
+ # return;
  }
  else {
   mkdir($workdir);
