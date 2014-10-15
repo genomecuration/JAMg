@@ -9,7 +9,7 @@ print out new hint file with only the src that we are testing
 =head1 NAME
 
 Optimize extrinsic configuration for Augustus. Based on optimize_augustus by Mario Stanke, 23.04.2007 
-
+Modified by Jeremy Zucker <djinnome@gmail.com> to include local malus. 
 =head1 USAGE 
 
 Mandatory parameters:
@@ -38,6 +38,11 @@ Optional parameters:
 
         CSIRO Ecosystem Sciences
         alexie@butterflybase.org
+
+ Jeremy Zucker
+
+       Orion Genomics
+       djinnome@gmail.com
 
 Based on work by Mario Stanke, 23.04.2007
 
@@ -658,6 +663,15 @@ sub parse_extrinsic_meta() {
  close IN;
  foreach my $head (@feature_headers) {
   $basic_cfg{'M'}->{$head}->{'value'} = 1e+100;
+ }
+ if (!exists $basic_cfg{'local malus'}) {
+   my $basic = 1;
+   my @parameters = ($basic);
+   foreach my $head (@feature_headers) {
+     
+        $basic_cfg{'local malus'}->{$head}->{'value'} = $basic;
+	$extrinsic_hash{'local malus'}->{ $head }->{'value'} = \@parameters;
+      }
  }
  return (\%sources_that_need_to_be_checked,\@feature_headers, \%extrinsic_hash, $cfg_extra, \%basic_cfg );
 }
