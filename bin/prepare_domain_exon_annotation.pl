@@ -78,12 +78,12 @@ my $minsize       = 150;
 my $cpus          = 2;
 my $hhblits_cpus  = 10;
 my $engine        = 'local';
-my $transposon_db = $ENV{'HOME'} . "/databases/hhsearch/transposons";
+my $transposon_db = $ENV{'HOME'} . "/src/jamg/databases/hhblits/transposons";
 my $uniprot_db =
-  $ENV{'HOME'} . "/databases/hhsearch/uniprot20_2013_03/uniprot20_2013_03";
+  $ENV{'HOME'} . "/src/jamg/databases/hhblits/refseq_plant";
 my $min_exons_before_reporting = 2;
 
-pod2usage $! unless GetOptions(
+GetOptions(
             'fasta|genome|in:s' => \$genome,
             'minsize:i'         => \$minsize,
             'circular'          => \$circular,
@@ -121,7 +121,7 @@ my ( $getorf_exec, $repeatmasker_exec ) =
   &check_program( 'getorf', 'RepeatMasker' );
 
 unless (-s $genome . '.masked'){
-  &do_repeat_masking();
+  &do_repeat_masking($repeatmasker_options);
 }
 
 die "Could not find masked genome $genome.\n" unless -s $genome;
@@ -136,10 +136,12 @@ my $exons = "$genome.exons";
 my $getorf_options .= $circular ? '-circular' : '';
 
 &process_cmd(
-       "$getorf_exec -sequence $genome -outseq $exons.aa -minsize 150 -find 0 ")
+       #"$getorf_exec -sequence $genome -outseq $exons.aa -minsize 150 -find 0 ")
+       "$getorf_exec -sequence $genome -outseq $exons.aa -minsize 300 -find 0 ")
   unless -s $exons . '.aa';
 &process_cmd(
-       "$getorf_exec -sequence $genome -outseq $exons.nt -minsize 150 -find 2 ")
+       #"$getorf_exec -sequence $genome -outseq $exons.nt -minsize 150 -find 2 ")
+       "$getorf_exec -sequence $genome -outseq $exons.nt -minsize 300 -find 2 ")
   unless -s $exons . '.nt';
 die "No exon file could be produced.\n"
   unless -s $exons . '.aa' && -s $exons . '.nt';
@@ -389,7 +391,7 @@ sub prepare_localmpi() {
   chomp($number_of_entries);
   print "Processing $number_of_entries entries with $hhblits_cpus threads...\n";
   my $transposon_cmd ="$mpirun_exec -n $hhblits_cpus $ffindex_apply_mpi_exec -d $exons.aa.trim.db.transposon.db -i $exons.aa.trim.db.transposon.db.idx $exons.aa.trim.db $exons.aa.trim.db.idx  \\
- -- $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 2>/dev/null
+ -- $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 2>mpi_err.log
  ";
   &process_cmd($transposon_cmd) unless $number_of_entries == 0 || -s "$exons.aa.trim.db.transposon.db" ;
  }
@@ -406,7 +408,7 @@ sub prepare_localmpi() {
 "Processing $number_of_entries entries with $hhblits_cpus threads for uniprot...\n";
   my $uniprot_cmd =
 "$mpirun_exec -n $hhblits_cpus $ffindex_apply_mpi_exec -d $noreps_fasta.db.uniprot.db -i $noreps_fasta.db.uniprot.db.idx $noreps_fasta.db $noreps_fasta.db.idx  \\
- -- $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 2>/dev/null
+ -- $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 2>mpi_err.log
  ";
 
   &process_cmd($uniprot_cmd)  unless $number_of_entries == 0 || -s "$noreps_fasta.db.uniprot.db";
@@ -469,7 +471,7 @@ sub prepare_mpi() {
   chomp($number_of_entries);
   print "Processing $number_of_entries entries with $hhblits_cpus threads for transposons...\n";
   &process_cmd("$mpirun_exec -machinefile $workers_file -n $hhblits_cpus $ffindex_apply_mpi_exec -d $exons.aa.trim.db.transposon.db -i $exons.aa.trim.db.transposon.db.idx $exons.aa.trim.db $exons.aa.trim.db.idx  \\
- -- $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 2>/dev/null
+ -- $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 2> mpi_errors.log
  ") unless $number_of_entries == 0 || -s "$exons.aa.trim.db.transposon.db" ;
  }
  my $transposon_results = &parse_hhr( "$exons.aa.trim.db.transposon.db", 70, 1e-3, 1e-6, 100, 50, 30, 'yes' ) unless -s "hhr.$exons.aa.trim.transposon.db";
@@ -488,7 +490,7 @@ sub prepare_mpi() {
 
   &process_cmd(
 "$mpirun_exec -machinefile $workers_file -n $hhblits_cpus $ffindex_apply_mpi_exec -d $noreps_fasta.db.uniprot.db -i $noreps_fasta.db.uniprot.db.idx $noreps_fasta.db $noreps_fasta.db.idx  \\
- -- $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 2>/dev/null
+ -- $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 2>mpi_errs.log
  "
   ) unless $number_of_entries == 0 || -s "$noreps_fasta.db.uniprot.db";
   &parse_hhr( "$noreps_fasta.db.uniprot.db", 70, 1e-3, 1e-6, 100, 50, 30 ) unless -s "hhr.$noreps_fasta.uniprot.db";
@@ -545,7 +547,8 @@ sub remove_transposons() {
 
 sub remove_zero_bytes() {
  my $infile    = shift;
- my $outfile = "hhr.$infile";
+ my ($name, $path, $suffix) = fileparse($infile);
+ my $outfile = $path ."hhr.$name$suffix";
  return $outfile if (-s $outfile);
  &process_cmd("cat $infile*.idx* > $outfile.idx");
  system("rm -f $infile*.idx*");
@@ -566,7 +569,7 @@ sub prepare_local() {
  unless ( -s "$fasta.hhblits.transposon.cmds" || -s "hhr.$exons.aa.trim.transposon.db" || $no_transposon_search || $number_of_entries == 0 ) {
    open( CMD, ">$fasta.hhblits.transposon.cmds" );
    for ( my $i = 1 ; $i <= $number_of_entries ; $i++ ) {
-    print CMD "$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0  >> $fasta.transposons.hhr 2>/dev/null\n"; 
+    print CMD "$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0  >> $fasta.transposons.hhr 2>mpi_err.log\n"; 
    }
    close CMD;
   }
@@ -576,7 +579,7 @@ sub prepare_local() {
    &just_run_my_commands("$fasta.hhblits.transposon.cmds");
  }
 
-  my $transposon_results = &parse_hhr( "$fasta.transposon.hhr", 70, 1e-3, 1e-6, 100, 50, 30, 'yes' );
+  my $transposon_results = &parse_hhr( "$fasta.transposons.hhr", 70, 1e-3, 1e-6, 100, 50, 30, 'yes' );
   $fasta = &remove_transposons( $fasta, $transposon_results );
   &process_cmd("$ffindex_from_fasta_exec -s $fasta.db $fasta.db.idx $fasta")  unless -s "$fasta.db";
   $number_of_entries = `wc -l < $fasta.db.idx`;
@@ -586,7 +589,7 @@ sub prepare_local() {
   unless ( -s "$fasta.hhblits.uniprot.cmds" || -s "hhr.$exons.aa.trim.uniprot.db" || $no_uniprot_search || $number_of_entries == 0) {
    open( CMD, ">$fasta.hhblits.uniprot.cmds" );
    for ( my $i = 1 ; $i <= $number_of_entries ; $i++ ) {
-    print CMD "$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 >> $fasta.uniprot.hhr 2>/dev/null\n";
+    print CMD "$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 >> $fasta.uniprot.hhr 2>mpi_err.log\n";
    }
    close CMD;
   }
@@ -665,7 +668,7 @@ sub prepare_cluster() {
  if ( -d $workdir ) {
   warn
 "Working directory $workdir already exists! I don't want to overwrite anything so I won't create any files for 'cluster' unless you delete it\n";
-  return;
+ # return;
  }
  else {
   mkdir($workdir);
@@ -685,15 +688,25 @@ sub prepare_cluster() {
    }
    close CMD;
   }
-  unless ($no_uniprot_search) {
-   open( CMD, ">$fasta.hhblits.uniprot.cmds" );
-   for ( my $i = 1 ; $i <= $number_of_entries ; $i++ ) {
-    print CMD
-"$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 2 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 >> $fasta.uniprot.hhr 2>/dev/null\n";
-   }
-   close CMD;
+
+  if ( -s "$fasta.transposon.hhr" ){
+    my $transposon_results = &parse_hhr( "$fasta.transposon.hhr", 70, 1e-3, 1e-6, 100, 50, 30, 'yes' );
+    $fasta = &remove_transposons( $fasta, $transposon_results );
+    &process_cmd("$ffindex_from_fasta_exec -s $fasta.db $fasta.db.idx $fasta")  unless -s "$fasta.db";
+    $number_of_entries = `wc -l < $fasta.db.idx`;
+    chomp($number_of_entries);
+
+    
+    unless ($no_uniprot_search) {
+      open( CMD, ">$fasta.hhblits.uniprot.cmds" );
+      for ( my $i = 1 ; $i <= $number_of_entries ; $i++ ) {
+	print CMD
+	  "$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 2 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 >> $fasta.uniprot.hhr 2>/dev/null\n";
+      }
+      close CMD;
+    }
   }
- }
+}
  print "Done, prepared for 2 CPUs per node. See $workdir/*cmds\n";
 }
 
@@ -761,7 +774,8 @@ sub parse_hhr() {
  my ( $infile, $homology_prob_cut, $eval_cut, $pval_cut, $score_cut,
       $align_col_cut, $template_aln_size_cut, $is_repeat )
    = @_;
- my $outfile = "hhr.$infile.results";
+ my ($name, $path, $suffix) = fileparse($infile);
+ my $outfile = $path . "hhr.$name$suffix.results";
  return $outfile if (-s $outfile);  
  return if !$infile || !-s $infile;
  $infile = &remove_zero_bytes( $infile);
@@ -917,8 +931,10 @@ sub parse_hhr() {
 
 
 sub do_repeat_masking(){
+  my $repeatmasker_options = shift;
   print "Masking repeats with $cpus CPUs (cf $genome.repeatmasking.log)..\n";
-  &process_cmd("$repeatmasker_exec -e ncbi -frag 5000000 -gff -pa $cpus -qq $genome 2>&1 > $genome.repeatmasking.log");
+  print "Repeat options: $repeatmasker_options\n";
+  &process_cmd("$repeatmasker_exec $repeatmasker_options -e ncbi -frag 5000000 -gff -pa $cpus -qq $genome 2>&1 > $genome.repeatmasking.log");
   my $repeat_gff_file = $genome.".out.gff";
   die "Repeatmasking failed to produce $repeat_gff_file\n" unless -s $repeat_gff_file;
   my $repeat_hints_file = $repeat_gff_file;

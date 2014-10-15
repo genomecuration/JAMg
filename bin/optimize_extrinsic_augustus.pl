@@ -9,7 +9,7 @@ print out new hint file with only the src that we are testing
 =head1 NAME
 
 Optimize extrinsic configuration for Augustus. Based on optimize_augustus by Mario Stanke, 23.04.2007 
-
+Modified by Jeremy Zucker <djinnome@gmail.com> to include local malus. 
 =head1 USAGE 
 
 Mandatory parameters:
@@ -38,6 +38,11 @@ Optional parameters:
 
         CSIRO Ecosystem Sciences
         alexie@butterflybase.org
+
+ Jeremy Zucker
+
+       Orion Genomics
+       djinnome@gmail.com
 
 Based on work by Mario Stanke, 23.04.2007
 
@@ -144,17 +149,20 @@ foreach my $src ( keys %sources_that_need_to_be_checked ) {
   next if $feat eq 'feature';
   my $bonus_range = $metaextrinsic_hash_ref->{'bonus'}->{$feat}->{'value'};
   my $malus_range = $metaextrinsic_hash_ref->{'malus'}->{$feat}->{'value'};
+  my $local_malus_range = $metaextrinsic_hash_ref->{'local malus'}->{$feat}->{'value'};
   foreach my $bonus ( @{$bonus_range} ) {
    foreach my $malus ( @{$malus_range} ) {
-    my $parameter_range = $metaextrinsic_hash_ref->{$src}->{$feat}->{'value'};
-    if ( scalar(@$parameter_range) > 1 ) {
-     foreach my $value (@$parameter_range) {
-      $todo++;
+     foreach my $local_malus (@{$local_malus_range} ) {
+       my $parameter_range = $metaextrinsic_hash_ref->{$src}->{$feat}->{'value'};
+       if ( scalar(@$parameter_range) > 1 ) {
+	 foreach my $value (@$parameter_range) {
+	   $todo++;
+	 }
+       }
      }
-    }
    }
-  }
  }
+}
 }
 
 print "Will search for $todo parameters with $cpus CPUs\n";
@@ -174,28 +182,34 @@ foreach my $src ( keys %sources_that_need_to_be_checked ) {
   next if $feat eq 'feature';
   my $bonus_range = $metaextrinsic_hash_ref->{'bonus'}->{$feat}->{'value'};
   my $malus_range = $metaextrinsic_hash_ref->{'malus'}->{$feat}->{'value'};
+  my $local_malus_range = $metaextrinsic_hash_ref->{'local malus'}->{$feat}->{'value'};
 
   # for every bonus range
   foreach my $bonus ( @{$bonus_range} ) {
 
    # for every malus range
    foreach my $malus ( @{$malus_range} ) {
-    my $parameter_range = $metaextrinsic_hash_ref->{$src}->{$feat}->{'value'};
-    if ( scalar(@$parameter_range) > 1 ) {
-     foreach my $value (@$parameter_range) {
-      # checks every value against the basic_cfg
-      my $cfg_hash = dclone $basic_cfg_ref;
-      $cfg_hash->{$src}->{$feat}->{'value'}    = $value;
-      $cfg_hash->{'bonus'}->{$feat}->{'value'} = $bonus;
-      $cfg_hash->{'malus'}->{$feat}->{'value'} = $malus;
-      my $cfg_serial = Dumper $cfg_hash;
-      if (!$cfg_track{$cfg_serial}){
-	      my $thread = threads->create( 'write_extrinsic_cfg', $cfg_hash, $cfg_extra,$track_fh );
-	      $thread_helper->add_thread($thread);
-	      $cfg_track{$cfg_serial}++;
-      }
+
+     # for every local malus range
+     foreach my $local_malus ( @{$local_malus_range} ) {
+       my $parameter_range = $metaextrinsic_hash_ref->{$src}->{$feat}->{'value'};
+       if ( scalar(@$parameter_range) > 1 ) {
+	 foreach my $value (@$parameter_range) {
+	   # checks every value against the basic_cfg
+	   my $cfg_hash = dclone $basic_cfg_ref;
+	   $cfg_hash->{$src}->{$feat}->{'value'}    = $value;
+	   $cfg_hash->{'bonus'}->{$feat}->{'value'} = $bonus;
+	   $cfg_hash->{'malus'}->{$feat}->{'value'} = $malus;
+	   $cfg_hash->{'local malus'}->{$feat}->{'value'} = $local_malus;
+	   my $cfg_serial = Dumper $cfg_hash;
+	   if (!$cfg_track{$cfg_serial}){
+	     my $thread = threads->create( 'write_extrinsic_cfg', $cfg_hash, $cfg_extra,$track_fh );
+	     $thread_helper->add_thread($thread);
+	     $cfg_track{$cfg_serial}++;
+	   }
+	 }
+       }
      }
-    }
    }
   }
  }
@@ -492,7 +506,7 @@ sub write_extrinsic_cfg() {
  my $local_species_extrinsic_file = $main_species_extrinsic_file;
   my $prn = "[SOURCES]\n";
   foreach my $src ( keys %{$extrinsic_ref} ) {
-   $prn .= $src . ' ' unless $src eq 'bonus' || $src eq 'malus';
+   $prn .= $src . ' ' unless $src eq 'bonus' || $src eq 'malus' || $src eq 'local malus';
   }
   chop($prn);
   $prn .= "\n";
@@ -508,12 +522,17 @@ sub write_extrinsic_cfg() {
        $extrinsic_ref->{'malus'}->{$feature}->{'value'}
      ? $extrinsic_ref->{'malus'}->{$feature}->{'value'}
      : 1;
-   $prn .= $feature . "\t$bonus $malus ";
+   my $local_malus = 
+     $extrinsic_ref->{'local malus'}->{$feature}->{'value'}
+       ? $extrinsic_ref->{'local malus'}->{$feature}->{'value'}
+	 :1;
+
+   $prn .= $feature . "\t$bonus $malus $local_malus";
    $prn .= "\t" if length($feature) <= 7;
    $prn .= "\tM 1 " . $extrinsic_ref->{'M'}->{$feature}->{'value'};
 
    foreach my $source ( keys %{$extrinsic_ref} ) {
-      next if $source eq 'bonus' || $source eq 'malus' || $source eq 'M';
+      next if $source eq 'bonus' || $source eq 'malus' || $source eq 'M' || $source eq 'local malus';
       my $multiplier = $extrinsic_ref->{$source}->{$feature}->{'value'} || die "No bonus found for $source $feature\n";
       $prn .= "\t$source 1 $multiplier";
    }
@@ -613,7 +632,7 @@ sub parse_extrinsic_meta() {
    if ( $score =~ /,/ ) {
     @parameters = split( ',', $score );
     $sources_that_need_to_be_checked{$source} = 1
-      unless $source eq 'bonus' || $source eq 'malus';
+      unless $source eq 'bonus' || $source eq 'malus' || $source eq 'local malus';
    }
    elsif ( $score =~ /-/ ) {
     my ( $min, $max ) = split( '-', $score );
@@ -628,7 +647,7 @@ sub parse_extrinsic_meta() {
     }
     $parameters[-1] = $max;
     $sources_that_need_to_be_checked{$source} = 1
-      unless $source eq 'bonus' || $source eq 'malus';
+      unless $source eq 'bonus' || $source eq 'malus' || $source eq 'local malus';
    }
    else {
     $basic      = $score;
@@ -644,6 +663,15 @@ sub parse_extrinsic_meta() {
  close IN;
  foreach my $head (@feature_headers) {
   $basic_cfg{'M'}->{$head}->{'value'} = 1e+100;
+ }
+ if (!exists $basic_cfg{'local malus'}) {
+   my $basic = 1;
+   my @parameters = ($basic);
+   foreach my $head (@feature_headers) {
+     
+        $basic_cfg{'local malus'}->{$head}->{'value'} = $basic;
+	$extrinsic_hash{'local malus'}->{ $head }->{'value'} = \@parameters;
+      }
  }
  return (\%sources_that_need_to_be_checked,\@feature_headers, \%extrinsic_hash, $cfg_extra, \%basic_cfg );
 }

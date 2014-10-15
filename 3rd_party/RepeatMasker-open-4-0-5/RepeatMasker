@@ -1,4 +1,4 @@
-#!/u1/local/bin/perl
+#!/usr/bin/perl
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) RepeatMasker
@@ -587,10 +587,10 @@ while ( <INVERS> ) {
     last;
   }
   if ( /^(CC|##)\s+RELEASE\s+(\d+)(-min)*;/ ) {
-    die "The RepeatMasker.lib file is out of date.  This version of "
-        . "RepeatMasker requires library version $minLibraryVersion or "
-        . "higher.  Your version is $2.\n"
-        unless ( $2 >= $minLibraryVersion );
+    #die "The RepeatMasker.lib file is out of date.  This version of "
+    #    . "RepeatMasker requires library version $minLibraryVersion or "
+    #    . "higher.  Your version is $2.\n"
+    #    unless ( $2 >= $minLibraryVersion );
     $repbaseVersion   = $2 . $3;
     $rmLibraryVersion = $2 . $3;
     $dbversion        =
