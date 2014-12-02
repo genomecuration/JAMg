@@ -1,8 +1,8 @@
-#! /bin/sh
+#! /bin/bash
 
 # libtool - Provide generalized library-building support services.
 # Generated automatically by config.status (jellyfish) 1.1.11
-# Libtool was configured on host niveum:
+# Libtool was configured on host athena:
 # NOTE: Changes made to this file will be lost: look at ltmain.sh.
 #
 #   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005,
@@ -56,7 +56,7 @@ pic_mode=default
 fast_install=yes
 
 # Shell to use when invoking shell scripts.
-SHELL="/bin/sh"
+SHELL="/bin/bash"
 
 # An echo program that protects backslashes.
 ECHO="printf %s\\n"
@@ -90,13 +90,13 @@ EGREP="/bin/grep -E"
 FGREP="/bin/grep -F"
 
 # A BSD- or MS-compatible name lister.
-NM="/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/bin/nm -B"
+NM="/usr/bin/nm -B"
 
 # Whether we need soft or hard links.
 LN_S="ln -s"
 
 # What is the maximum length of a command?
-max_cmd_len=98304
+max_cmd_len=3458764513820540925
 
 # Object file suffix (normally "o").
 objext=o
@@ -272,10 +272,10 @@ finish_eval=""
 hardcode_into_libs=yes
 
 # Compile-time system search path for libraries.
-sys_lib_search_path_spec="/broad/software/free/Linux/redhat_5_x86_64/pkgs/openssl_1.0.1e/lib64 /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib64 /broad/software/free/Linux/redhat_5_x86_64/pkgs/r_2.15.2/lib64 /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4 /lib64 /usr/lib64 /broad/software/free/Linux/redhat_5_x86_64/pkgs/git_1.8.4/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/curl_7.33.0/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/neon_0.30.0/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/db_4.8.26/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/sqlite_3.7.17/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/subversion_1.6.5/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/gtk+_2.18.6/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/fontconfig_2.8.0/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/freetype_2.3.11/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/atk_1.28.0/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/pango_1.26.2/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/cairo_1.8.8/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/pixman_0.16.4/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/atlas_3.10.0/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/oracle-java-jdk_1.6.0-35_x86_64/lib /broad/software/nonfree/Linux/redhat_5_x86_64/pkgs/oracle_full_client/111_client/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/netcdf_4.0.1/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/python_2.7.1-sqlite3-rtrees/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/hdf5_1.8.4/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/tcltk8.5.9/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/glib_2.22.4/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/gettext_0.17/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/libiconv_1.13.1/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/perl_5.8.9/lib /broad/software/nonfree/Linux/redhat_5_x86_64/pkgs/oracle_instantclient-10.2.0.4.0/instantclient_10_2 /broad/software/free/Linux/redhat_5_x86_64/pkgs/graphviz_2.26.3/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/lsf_drmaa-1.0.3/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/x86_64-unknown-linux-gnu/lib "
+sys_lib_search_path_spec="/usr/lib/gcc/x86_64-linux-gnu/4.7 /usr/lib/x86_64-linux-gnu /usr/lib /lib/x86_64-linux-gnu /lib "
 
 # Run-time system search path for libraries.
-sys_lib_dlsearch_path_spec="/lib64 /usr/lib64 /lib /usr/lib /usr/lib64/atlas /usr/lib64/mysql /usr/lib/nsr /usr/lib/nsr/lib64 /usr/lib64/qt-3.3/lib /usr/lib64/qt4/lib64 /opt/dell/srvadmin/lib /opt/dell/srvadmin/lib/openmanage /opt/dell/srvadmin/lib /opt/dell/srvadmin/idrac/bin /opt/dell/srvadmin/idrac/libs /opt/dell/srvadmin/idrac/bin /opt/dell/srvadmin/idrac/libs /opt/dell/srvadmin/lib /opt/dell/srvadmin/lib/srvadmin-isvc /opt/dell/srvadmin/lib /opt/dell/srvadmin/lib /opt/dell/srvadmin/lib/openmanage /opt/dell/srvadmin/lib /opt/dell/srvadmin/lib/openmanage /opt/dell/srvadmin/lib /opt/dell/srvadmin/lib/openmanage /opt/dell/srvadmin/lib/openmanage/smpop /usr/lib64/Img1.3 /usr/lib64/xulrunner-1.9.2 "
+sys_lib_dlsearch_path_spec="/lib64 /usr/lib64 /lib /usr/lib /usr/lib/i386-linux-gnu/mesa /lib/i386-linux-gnu /usr/lib/i386-linux-gnu /lib/i686-linux-gnu /usr/lib/i686-linux-gnu /usr/local/lib /lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/mesa /lib32 /usr/lib32 "
 
 # Whether dlopen is supported.
 dlopen_support=unknown
@@ -292,7 +292,7 @@ striplib="strip --strip-unneeded"
 
 
 # The linker used to build libraries.
-LD="/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/x86_64-unknown-linux-gnu/bin/ld -m elf_x86_64"
+LD="/usr/bin/ld -m elf_x86_64"
 
 # How to create reloadable object files.
 reload_flag=" -r"
@@ -10093,7 +10093,7 @@ build_old_libs=`case $build_libtool_libs in yes) echo no;; *) echo yes;; esac`
 # ### BEGIN LIBTOOL TAG CONFIG: CXX
 
 # The linker used to build libraries.
-LD="/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/x86_64-unknown-linux-gnu/bin/ld -m elf_x86_64"
+LD="/usr/bin/ld -m elf_x86_64"
 
 # How to create reloadable object files.
 reload_flag=" -r"
@@ -10224,17 +10224,17 @@ file_list_spec=""
 hardcode_action=immediate
 
 # The directories searched by this compiler when creating a shared library.
-compiler_lib_search_dirs="/broad/software/free/Linux/redhat_5_x86_64/pkgs/openssl_1.0.1e/lib/../lib64 /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib64/../lib64 /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/../lib64 /broad/software/free/Linux/redhat_5_x86_64/pkgs/r_2.15.2/lib64/../lib64 /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4 /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../lib64 /lib/../lib64 /usr/lib/../lib64 /broad/software/free/Linux/redhat_5_x86_64/pkgs/git_1.8.4/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/openssl_1.0.1e/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/curl_7.33.0/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/neon_0.30.0/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/db_4.8.26/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/sqlite_3.7.17/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib64 /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/subversion_1.6.5/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/r_2.15.2/lib64 /broad/software/free/Linux/redhat_5_x86_64/pkgs/gtk+_2.18.6/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/fontconfig_2.8.0/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/freetype_2.3.11/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/atk_1.28.0/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/pango_1.26.2/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/cairo_1.8.8/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/pixman_0.16.4/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/atlas_3.10.0/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/oracle-java-jdk_1.6.0-35_x86_64/lib /broad/software/nonfree/Linux/redhat_5_x86_64/pkgs/oracle_full_client/111_client/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/netcdf_4.0.1/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/python_2.7.1-sqlite3-rtrees/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/hdf5_1.8.4/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/tcltk8.5.9/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/glib_2.22.4/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/gettext_0.17/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/libiconv_1.13.1/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/perl_5.8.9/lib /broad/software/nonfree/Linux/redhat_5_x86_64/pkgs/oracle_instantclient-10.2.0.4.0/instantclient_10_2 /broad/software/free/Linux/redhat_5_x86_64/pkgs/graphviz_2.26.3/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/lsf_drmaa-1.0.3/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../x86_64-unknown-linux-gnu/lib /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../.."
+compiler_lib_search_dirs="/usr/lib/gcc/x86_64-linux-gnu/4.7 /usr/lib/gcc/x86_64-linux-gnu/4.7/../../../x86_64-linux-gnu /usr/lib/gcc/x86_64-linux-gnu/4.7/../../../../lib /lib/x86_64-linux-gnu /lib/../lib /usr/lib/x86_64-linux-gnu /usr/lib/../lib /usr/lib/gcc/x86_64-linux-gnu/4.7/../../.."
 
 # Dependencies to place before and after the objects being linked to
 # create a shared library.
-predep_objects="/usr/lib/../lib64/crti.o /broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/crtbeginS.o"
-postdep_objects="/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/crtendS.o /usr/lib/../lib64/crtn.o"
+predep_objects="/usr/lib/gcc/x86_64-linux-gnu/4.7/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/4.7/crtbeginS.o"
+postdep_objects="/usr/lib/gcc/x86_64-linux-gnu/4.7/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/4.7/../../../x86_64-linux-gnu/crtn.o"
 predeps=""
 postdeps="-lstdc++ -lm -lgcc_s -lc -lgcc_s"
 
 # The library search path used internally by the compiler when linking
 # a shared library.
-compiler_lib_search_path="-L/broad/software/free/Linux/redhat_5_x86_64/pkgs/openssl_1.0.1e/lib/../lib64 -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib64/../lib64 -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/../lib64 -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/r_2.15.2/lib64/../lib64 -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4 -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/git_1.8.4/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/openssl_1.0.1e/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/curl_7.33.0/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/neon_0.30.0/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/db_4.8.26/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/sqlite_3.7.17/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib64 -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/subversion_1.6.5/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/r_2.15.2/lib64 -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/gtk+_2.18.6/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/fontconfig_2.8.0/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/freetype_2.3.11/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/atk_1.28.0/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/pango_1.26.2/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/cairo_1.8.8/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/pixman_0.16.4/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/atlas_3.10.0/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/oracle-java-jdk_1.6.0-35_x86_64/lib -L/broad/software/nonfree/Linux/redhat_5_x86_64/pkgs/oracle_full_client/111_client/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/netcdf_4.0.1/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/python_2.7.1-sqlite3-rtrees/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/hdf5_1.8.4/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/tcltk8.5.9/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/glib_2.22.4/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/gettext_0.17/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/libiconv_1.13.1/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/perl_5.8.9/lib -L/broad/software/nonfree/Linux/redhat_5_x86_64/pkgs/oracle_instantclient-10.2.0.4.0/instantclient_10_2 -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/graphviz_2.26.3/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/lsf_drmaa-1.0.3/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../../../x86_64-unknown-linux-gnu/lib -L/broad/software/free/Linux/redhat_5_x86_64/pkgs/gcc_4.4.4/lib/gcc/x86_64-unknown-linux-gnu/4.4.4/../../.."
+compiler_lib_search_path="-L/usr/lib/gcc/x86_64-linux-gnu/4.7 -L/usr/lib/gcc/x86_64-linux-gnu/4.7/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/4.7/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/4.7/../../.."
 
 # ### END LIBTOOL TAG CONFIG: CXX

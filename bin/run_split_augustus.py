@@ -79,7 +79,7 @@ def split_fasta_by_hints( fasta, seqs_of_chunk, chunks_of_seq, rundir, verbose )
         if verbose:
             sys.stderr.write('Writing %d seqs to chunk %d\n' % (len(seqs_of_chunk[c]), c) )        
         out[c] = open( chunkfile( rundir, fasta.name, c ), 'w' )
-        SeqIO.write([records[r] for r in seqs_of_chunk[c]], 
+        SeqIO.write([records[r] for r in seqs_of_chunk[c] if r in records], 
                     out[c], 'fasta')
         out[c].close()
     out[c+1] = open(chunkfile( rundir, fasta.name, c+1 ), 'w')

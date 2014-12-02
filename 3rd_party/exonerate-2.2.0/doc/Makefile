@@ -11,12 +11,12 @@
 # PARTICULAR PURPOSE.
 
 
-SHELL = /bin/sh
+SHELL = /bin/bash
 
 srcdir = .
 top_srcdir = ..
 
-prefix = /home/pap056/workspace/transcripts4community/jamg/3rd_party/exonerate-2.2.0/../
+prefix = /loginhome/jzucker/src/jamg-code/3rd_party/exonerate/../
 exec_prefix = ${prefix}
 
 bindir = ${exec_prefix}/bin
@@ -40,9 +40,9 @@ pkgincludedir = $(includedir)/exonerate
 
 top_builddir = ..
 
-ACLOCAL = /home/pap056/workspace/transcripts4community/jamg/3rd_party/exonerate-2.2.0/missing aclocal-1.4
+ACLOCAL = /loginhome/jzucker/src/jamg-code/3rd_party/exonerate/missing aclocal-1.4
 AUTOCONF = autoconf
-AUTOMAKE = /home/pap056/workspace/transcripts4community/jamg/3rd_party/exonerate-2.2.0/missing automake-1.4
+AUTOMAKE = /loginhome/jzucker/src/jamg-code/3rd_party/exonerate/missing automake-1.4
 AUTOHEADER = autoheader
 
 INSTALL = /usr/bin/install -c
@@ -64,18 +64,18 @@ GLIB_CONFIG =
 HAVE_LIB = @HAVE_LIB@
 LIB = @LIB@
 LTLIB = @LTLIB@
-MAKEINFO = /home/pap056/workspace/transcripts4community/jamg/3rd_party/exonerate-2.2.0/missing makeinfo
+MAKEINFO = /loginhome/jzucker/src/jamg-code/3rd_party/exonerate/missing makeinfo
 PACKAGE = exonerate
 PKG_CONFIG = /usr/bin/pkg-config
 VERSION = 2.2.0
 codegen_extra_ldadd = viterbi.o scheduler.o c4_model_archive.a
 codegen_extra_sources = c4_model_archive.h
 datarootdir = ${prefix}/share
-glib_cflags = -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include  
+glib_cflags = -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include  
 glib_libs = -lglib-2.0  
 host = x86_64-unknown-linux-gnu
 installed_util_list =                                                fastaclean fastaclip fastachecksum fastacomposition            fastadiff fastaexplode fastafetch fastahardmask                fastaindex fastalength fastanrdb fastaoverlap                  fastareformat fastaremove fastarevcomp fastasoftmask           fastasort fastasplit fastasubseq fastatranslate                fastavalidcds fasta2esd fastaannotatecdna esd2esi
-source_root_dir = /home/pap056/workspace/transcripts4community/jamg/3rd_party/exonerate-2.2.0
+source_root_dir = /loginhome/jzucker/src/jamg-code/3rd_party/exonerate
 use_pthreads = 
 
 SUBDIRS = man

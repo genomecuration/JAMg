@@ -15,7 +15,7 @@
 #define HAVE_EXECINFO_H 1
 
 /* Define if type __int128 is supported */
-/* #undef HAVE_INT128 */
+#define HAVE_INT128 1
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1

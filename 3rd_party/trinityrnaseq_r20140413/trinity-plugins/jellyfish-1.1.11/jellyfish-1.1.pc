@@ -1,4 +1,4 @@
-prefix=/home/unix/bhaas/SVN/trinityrnaseq/trunk/trinity-plugins/jellyfish
+prefix=/loginhome/jzucker/src/jamg-code/3rd_party/trinityrnaseq/trinity-plugins/jellyfish
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include

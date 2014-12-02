@@ -79,6 +79,7 @@ all: 	$(PROGS)
 
 
 install: $(PROGS)
+	mkdir -p $(BINDIR)
 	cp $(PROGS) $(BINDIR)/
 
 clean:

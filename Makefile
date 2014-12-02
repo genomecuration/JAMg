@@ -5,7 +5,7 @@ all:
 	if [ ! -d 3rd_party/lib64 ]; then mkdir 3rd_party/lib64; fi
 	cd 3rd_party/hhsuite && cp lib64/libffindex.so.0.1 ../lib64/
 	cd 3rd_party/ncbi-blast/bin && ln -fs `pwd`/* ../../bin/
-	cd 3rd_party/exonerate && ./configure --prefix=`pwd`/../ && $(MAKE) && $(MAKE) install
+	#cd 3rd_party/exonerate && ./configure --prefix=`pwd`/../ && $(MAKE) && $(MAKE) install
 	cd 3rd_party/cdbtools/cdbfasta && $(MAKE) && cp cdbfasta ../../bin/ && cp cdbyank ../../bin/ && $(MAKE) clean
 	cd 3rd_party/parafly && ./configure --prefix=`pwd`/../ && if [ ! -d bin ]; then mkdir bin; fi && $(MAKE) install
 	cd 3rd_party/aatpackage && ./configure --prefix=`pwd`/../ && $(MAKE) install && cp -r bin/* matrices ../bin/ && $(MAKE) clean

@@ -57,6 +57,7 @@ It is provided "as is" without warranty of any kind.
 use strict;
 use warnings;
 use Data::Dumper;
+use File::Basename;
 use File::Copy;
 use Pod::Usage;
 use Getopt::Long;
@@ -492,7 +493,8 @@ sub check_options() {
  $common_parameters .= " --/Constant/min_coding_len=" . $min_coding
    if ($min_coding);
  $cpus = 1 if !$cpus || $cpus < 1;
- $output_directory = "tmp_opt_extrinsic_$species";
+ 
+ $output_directory = fileparse($extrinsic, (".cfg")); # "tmp_opt_extrinsic_$species";
  mkdir($output_directory) unless -d $output_directory;
  die unless -d $output_directory;
 

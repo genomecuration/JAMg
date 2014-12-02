@@ -11,12 +11,12 @@
 # PARTICULAR PURPOSE.
 
 
-SHELL = /bin/sh
+SHELL = /bin/bash
 
 srcdir = .
 top_srcdir = ../..
 
-prefix = /home/pap056/workspace/transcripts4community/jamg/3rd_party/exonerate-2.2.0/../
+prefix = /loginhome/jzucker/src/jamg-code/3rd_party/exonerate/../
 exec_prefix = ${prefix}
 
 bindir = ${exec_prefix}/bin
@@ -40,9 +40,9 @@ pkgincludedir = $(includedir)/exonerate
 
 top_builddir = ../..
 
-ACLOCAL = /home/pap056/workspace/transcripts4community/jamg/3rd_party/exonerate-2.2.0/missing aclocal-1.4
+ACLOCAL = /loginhome/jzucker/src/jamg-code/3rd_party/exonerate/missing aclocal-1.4
 AUTOCONF = autoconf
-AUTOMAKE = /home/pap056/workspace/transcripts4community/jamg/3rd_party/exonerate-2.2.0/missing automake-1.4
+AUTOMAKE = /loginhome/jzucker/src/jamg-code/3rd_party/exonerate/missing automake-1.4
 AUTOHEADER = autoheader
 
 INSTALL = /usr/bin/install -c
@@ -64,23 +64,23 @@ GLIB_CONFIG =
 HAVE_LIB = @HAVE_LIB@
 LIB = @LIB@
 LTLIB = @LTLIB@
-MAKEINFO = /home/pap056/workspace/transcripts4community/jamg/3rd_party/exonerate-2.2.0/missing makeinfo
+MAKEINFO = /loginhome/jzucker/src/jamg-code/3rd_party/exonerate/missing makeinfo
 PACKAGE = exonerate
 PKG_CONFIG = /usr/bin/pkg-config
 VERSION = 2.2.0
 codegen_extra_ldadd = viterbi.o scheduler.o c4_model_archive.a
 codegen_extra_sources = c4_model_archive.h
 datarootdir = ${prefix}/share
-glib_cflags = -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include  
+glib_cflags = -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include  
 glib_libs = -lglib-2.0  
 host = x86_64-unknown-linux-gnu
 installed_util_list =                                                fastaclean fastaclip fastachecksum fastacomposition            fastadiff fastaexplode fastafetch fastahardmask                fastaindex fastalength fastanrdb fastaoverlap                  fastareformat fastaremove fastarevcomp fastasoftmask           fastasort fastasplit fastasubseq fastatranslate                fastavalidcds fasta2esd fastaannotatecdna esd2esi
-source_root_dir = /home/pap056/workspace/transcripts4community/jamg/3rd_party/exonerate-2.2.0
+source_root_dir = /loginhome/jzucker/src/jamg-code/3rd_party/exonerate
 use_pthreads = 
 
 bin_PROGRAMS = exonerate ipcress exonerate-server
 
-INCLUDES = -I$(top_srcdir)/src/sequence              -I$(top_srcdir)/src/database              -I$(top_srcdir)/src/comparison            -I$(top_srcdir)/src/struct                -I$(top_srcdir)/src/c4                    -I$(top_srcdir)/src/bsdp                  -I$(top_srcdir)/src/sdp                   -I$(top_srcdir)/src/model                 -I$(top_srcdir)/src/hub                   -I$(top_srcdir)/src/general               -DHOSTTYPE="\"x86_64-unknown-linux-gnu\""                   -DSOURCE_ROOT_DIR="\"/home/pap056/workspace/transcripts4community/jamg/3rd_party/exonerate-2.2.0\""
+INCLUDES = -I$(top_srcdir)/src/sequence              -I$(top_srcdir)/src/database              -I$(top_srcdir)/src/comparison            -I$(top_srcdir)/src/struct                -I$(top_srcdir)/src/c4                    -I$(top_srcdir)/src/bsdp                  -I$(top_srcdir)/src/sdp                   -I$(top_srcdir)/src/model                 -I$(top_srcdir)/src/hub                   -I$(top_srcdir)/src/general               -DHOSTTYPE="\"x86_64-unknown-linux-gnu\""                   -DSOURCE_ROOT_DIR="\"/loginhome/jzucker/src/jamg-code/3rd_party/exonerate\""
 
 
 # Missing viterb.o and scheduler.o so codegen versions may be substituted
@@ -118,7 +118,7 @@ PROGRAMS =  $(bin_PROGRAMS)
 
 
 DEFS = -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"exonerate\" -DVERSION=\"2.2.0\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_LIMITS_H=1 -DHAVE_ERRNO_H=1 -DHAVE_MATH_H=1 -DHAVE_STRINGS_H=1 -DHAVE_CTYPE_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_TIME_H=1 -DHAVE_UNISTD_H=1 -I. -I$(srcdir) 
-CPPFLAGS =  -fPIC 
+CPPFLAGS = 
 LDFLAGS =  -lpthread
 LIBS =  -lglib-2.0  
 exonerate_OBJECTS =  exonerate.o
@@ -162,7 +162,7 @@ $(top_srcdir)/src/sequence/codonsubmat.o \
 $(top_srcdir)/src/general/compoundfile.o \
 $(top_srcdir)/src/general/lineparse.o
 exonerate_server_LDFLAGS = 
-CFLAGS = -g -O2 -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include   -DG_DISABLE_ASSERT -O3 -finline-functions -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -DUSE_PTHREADS
+CFLAGS = -g -O2 -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include   -DG_DISABLE_ASSERT -O3 -finline-functions -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -DUSE_PTHREADS
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
