@@ -29,9 +29,7 @@ use Pod::Usage;
 use POSIX qw(ceil);
 use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
-$ENV{PATH} =
-"$RealBin:$RealBin/../3rd_party/bin/:$RealBin:$RealBin/../3rd_party/evidencemodeler/"
-  . $ENV{PATH};
+$ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/:$RealBin:$RealBin/../3rd_party/evidencemodeler/";
 use Gene_obj;
 use Gene_validator;
 
