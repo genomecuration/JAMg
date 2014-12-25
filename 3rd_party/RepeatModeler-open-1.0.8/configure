@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) configure
@@ -237,13 +237,13 @@ $repMaskLocation =~ s/(.*)\/$/$1/;
 ##
 ## RECON location
 ##
-my $reconLocation = "$FindBin::Bin/../RECON";;
+my $reconLocation = "$FindBin::Bin/../RECON/bin";;
 do
 {
   $goodParam = 1;
   my $prompt =
 "**RECON INSTALLATION PATH**\n\n  This is the path to the location where\n  the RECON program suite can be found.\n";
-  $reconLocation = &promptScreen( $prompt, "Enter path [default: $reconlocation]", $reconLocation );
+  $reconLocation = &promptScreen( $prompt, "Enter path [default: $reconLocation]", $reconLocation );
   if ( $reconLocation ne "" )
   {
     unless ( -d "$reconLocation" )
@@ -516,14 +516,14 @@ sub configRMBlast
   my $configFile = shift;
 
   my $answer;
-  my $pgLocation;
+  my $pgLocation = "$FindBin::Bin/../ncbi-blast/bin";
   do
   {
     $goodParam = 1;
     $pgLocation = &promptScreen(
 "**RMBlast (rmblastn) INSTALLATION PATH**\n\n  This is the path to the location where\n  the rmblastn and makeblastdb programs can be found.\n",
       "Enter path",
-      ""
+      $pgLocation
     );
     if ( $pgLocation ne "" )
     {
@@ -586,7 +586,7 @@ sub configRMBlast
             . "  RepeatClassifier.  Please obtain the full repeat database\n"
             . "  from http://www.girinst.org and rerun RepeatMasker/configure\n"
             . "  and the RepeatModeler/configure scripts.\n";
-        exit;
+        #exit;
       }
     }
   }

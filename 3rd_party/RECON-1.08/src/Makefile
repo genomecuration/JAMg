@@ -18,7 +18,7 @@ CC = gcc
 #  -pedantic clashes with -DMEMDEBUG??
 #
 #CFLAGS = -g -Wall -pedantic
-CFLAGS = -O
+CFLAGS = -O -pg
 #CFLAGS = -g
 #CFLAGS = -TARG:exc_max -64 -Ofast=ip27   #specific SGI Origin200  compiler#
 

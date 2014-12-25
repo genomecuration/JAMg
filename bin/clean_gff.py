@@ -1,4 +1,4 @@
-from gff_utils import order_rule, clean_type_rule, add_exons_rule, sort_gff_rule, add_uniquid, remove_bad_parents_rule, encompass_children_rule, remove_big_genes, remove_orphans_rule, clean_gff2, MAX_INTRON, sanitize_notes_rule, merge_adjacent_features_rule, add_header_rule, add_UTR_rule
+from gff_utils import order_rule, clean_type_rule, add_exons_rule, sort_gff_rule, add_uniquid, remove_bad_parents_rule, encompass_children_rule, remove_big_genes, remove_orphans_rule, clean_gff2, MAX_INTRON, sanitize_notes_rule, merge_adjacent_features_rule, add_header_rule, add_UTR_rule, remove_comments_rule
 import re, argparse, sys
 
 
@@ -9,6 +9,7 @@ rules = [#('add header', add_header_rule),
          #('sanitize Notes field', sanitize_notes_rule),
          ('Add Exons for each CDS', add_exons_rule),
          ('sort gff', sort_gff_rule),
+         ('remove comments', remove_comments_rule),
          ('add uniqueid', add_uniquid),
          ('Add UTRs for each mRNA', add_UTR_rule),
          ('remove parents whose children have a different seqid or strand', remove_bad_parents_rule),

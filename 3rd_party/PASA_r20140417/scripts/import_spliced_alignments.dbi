@@ -135,6 +135,7 @@ sub parse_GFF3_file_load_alignments {
     
     while (<$fh>) {
         unless (/\w/) { next; }
+	if (/^#/) {next;}
 		#print;
         chomp;
         my @x = split (/\t/);

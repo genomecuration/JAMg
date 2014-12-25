@@ -128,6 +128,14 @@ def encompass_children_rule( features, children, uniquid ):
                 feature['end'] = str(max([int(c['end']) for c in children[feature['atts']['ID']] if c['seqid'] == feature['seqid']] ) )
     return features, children, uniquid
 
+def remove_comments_rule( features, children, uniquid ):
+    newfeatures = ['##gff-version 3\n']
+    for feature in features:
+        if type(feature) is dict:
+            newfeatures.append( feature )
+    return newfeatures, children, uniquid 
+
+
 def clean_type_rule( features, children, uniquid ):
     newfeatures = []
     for feature in features:
@@ -138,7 +146,7 @@ def clean_type_rule( features, children, uniquid ):
             elif feature['type'] in ['transcript','.']:
                 feature['type'] = 'mRNA'
                 newfeatures.append( feature )
-            elif feature['type'] not in ['intron']:
+            else: # feature['type'] not in ['intron']:
                 newfeatures.append( feature )
         else:
             newfeatures.append( feature )
@@ -286,7 +294,7 @@ def add_UTR_rule( features, children, uniquid ):
     newfeatures = []
     parents = by_key( features, 'Parent' )
     featuretypes = by_key( features, 'type' )
-    if 'three_prime_UTR' not in featuretypes and 'five_prime_UTR' not in featuretypes:
+    if 'three_prime_UTR' not in featuretypes and 'five_prime_UTR' not in featuretypes and 'three_prime_utr' not in featuretypes and 'five_prime_utr' not in featuretypes:
         for feature in features:
             if type(feature) is dict and feature['type'] == 'mRNA':
                 newfeatures.extend( make_utr( feature, parents ) )
@@ -478,6 +486,77 @@ def exonerategff2_to_gff3( exonerategff, outgff3 ):
                     feature['attributes'] = 'ID=%s' % feature['atts']['Query']
                 out.write(template % feature )
 
+def parse_classification(classfile):
+    t = {}
+    mips = {}
+    if type(classfile) is str:
+        classfile = open(classfile)
+    for line in classfile:
+        if line[0] == '>':
+            if line.find('#') != -1:
+                target, rest = line[1:-1].split('#', 1)
+                rmclass, notes = rest.split(' ',1)
+                notes = notes.strip('()')
+            else:
+                notes = line[1:-1]
+                target = notes.split('|')[0]
+                rmclass = notes.split('|')[2]
+            t[target]  = {'Name': rmclass, 'Note': urllib.quote(rmclass + ' ' + target + ' ' + notes) }
+            c = notes.split('|')
+            if len(c) == 4:
+                mips[target] = {'MIPS': c[1], 'Name': c[0], 'Note': urllib.quote(rmclass + ' ' + target + ' ' + notes) }
+    return t, mips
+
+def parse_rmgff( gff, classfile={}, fields=['seqid','source','type','start','end','score','strand','phase','attributes']):
+    ssr = ['##gff-version 3\n']
+    retro = ['##gff-version 3\n']
+    semicolonRE = re.compile(r'''((?:[^;"']|"[^"]*"|'[^']*')+)''')
+    equalsRE =  re.compile(r'''((?:[^="']|"[^"]*"|'[^']*')+)''')
+    commaRE = re.compile(r'''((?:[^,"']|"[^"]*"|'[^']*')+)''')
+    spaceRE = re.compile(r'''((?:[^ "']|"[^"]*"|'[^']*')+)''')
+    if type(gff) is str:
+        gff = open(gff)
+    uniquids = []
+    count = 1
+    for line in gff:
+        col = [c.strip() for c in line.split('\t')]
+        if len(col) == len(fields):
+            feature = {}
+            for i, field in enumerate(fields):
+                feature[field] = col[i].strip()
+                if field == 'attributes':
+                    feature['atts'] = {}
+                    uniquid = 'retroelement:%s:%d-%d' % (feature['seqid'], int(feature['start']), int(feature['end']))
+                    if uniquid in uniquids:
+                        uniquid += ':%d' % count
+                        count += 1
+                        uniquids.append( uniquid )
+                    feature['atts']['ID'] = uniquid
+                    for attval in semicolonRE.split(feature[field])[1::2]:
+                        if attval.strip() != '':
+                            att, val = attval.split(' ', 1)
+                            motif, start, stop = spaceRE.split(val)[1::2]
+                            motif, target = motif.strip('"').split(':')
+                            feature['atts'][att] = target
+                            if target in classfile:
+                                for k in classfile[target]:
+                                    feature['atts'][k] = classfile[target][k]
+                    feature[field] = ';'.join(['%s=%s' % (a,feature['atts'][a]) for a in feature['atts']])
+            if feature['atts']['Target'].split('|')[0] in classfile:
+                retro.append(feature)
+            else:
+                ssr.append(feature)
+    return retro, ssr
+
+def add_ID( features ):
+    count = 0
+    for f in features:
+        if type(f) is dict and 'ID' not in f['atts']:
+            f['atts']['ID'] = ':'.join([f['atts']['Parent'], f['type'], str(count)])
+            f['attributes'] = ';'.join(['%s=%s' % (a, f['atts'][a]) for a in f['atts']])
+            count += 1
+    return features
+            
 def read_gff( gff, fields=['seqid','source','type','start','end','score','strand','phase','attributes']):
     features = []
     semicolonRE = re.compile(r'''((?:[^;"']|"[^"]*"|'[^']*')+)''')
@@ -485,7 +564,7 @@ def read_gff( gff, fields=['seqid','source','type','start','end','score','strand
     commaRE = re.compile(r'''((?:[^,"']|"[^"]*"|'[^']*')+)''')
     noteRE = re.compile(r'''Note=([^;]+)(;?)''')
     urlRE = re.compile(r"[^A-Za-z0-9%._/]")
-    attsRE = re.compile(r'''Note=|ID=|Name=|Alias=|Parent=|Target=|Gap=|Derives_from=|Dbxref=|Ontology_term=|Is_circular=|exontype=|orf_start=|orf_end=|full_length_transcript=|_AED=|_eAED=|_QI=|src=|grp=|mult=|pri=''')
+    attsRE = re.compile(r'''Note=|ID=|Name=|Alias=|Parent=|Target=|Gap=|Derives_from=|Dbxref=|Ontology_term=|Is_circular=|exontype=|orf_start=|orf_end=|full_length_transcript=|_AED=|_eAED=|_QI=|src=|grp=|mult=|pri=|aaloc=''')
     for line in gff:
         col = [c.strip() for c in line.split('\t')]
         if len(col) == len(fields) and col[0][0] != '#':

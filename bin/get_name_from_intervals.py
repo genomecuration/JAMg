@@ -1,5 +1,5 @@
 import argparse, re, sys, os
-from gff_utils import read_gff, by_key
+from gff_utils import read_gff, by_key, add_ID
 import urllib
 
 def read_interval( infasta, lineRE=re.compile(r'>([^:]+):([0-9]+)-([0-9]+)\(([+-])\)') ):
@@ -34,6 +34,7 @@ def combine_field_from_intervals( infasta, ingff, outfasta, field, filt ):
     fields = ['seqid','source','type','start','end','score','strand','phase','attributes']
     template = '\t'.join(['%%(%s)s' % f for f in fields])  + '\n'
     features = read_gff( ingff, fields )
+    #features = add_ID( features )
     parents = by_key( features, 'ID' )
     fff = by_key( features, field )
     with outfasta as out:

@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 ##---------------------------------------------------------------------------##
 ##  File:
 ##      @(#) RepeatModeler
@@ -117,6 +117,7 @@ use File::Copy;
 use File::Spec;
 use File::Path;
 use File::Basename;
+use Cwd 'abs_path';
 use Cwd;
 use Data::Dumper;
 
@@ -1330,10 +1331,10 @@ sub runRECON
 
   # If these two do not exist imagespread will fail
   # TODO: Make sure they aren't already here.
-  system( "mkdir images" );
-  system( "mkdir summary" );
+  system( "mkdir -p images" );
+  system( "mkdir -p summary" );
 
-  print "  - RECON: Running imagespread..\n";
+  print "  - RECON: Running imagespread.. $RECON_DIR/imagespread\n";
   `$RECON_DIR/imagespread seqnames msps.out`;
   `mv gmon.out imagespread-gmon.out` if ( -f "gmon.out" );
 
