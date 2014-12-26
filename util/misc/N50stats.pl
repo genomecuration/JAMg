@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 
 =pod
 
@@ -35,6 +35,8 @@ None known so far.
 =cut
 
 use strict;
+use warnings;
+use Data::Dumper;
 use Time::Progress;
 use Getopt::Long;
 use Pod::Usage;
@@ -59,14 +61,15 @@ die "Cannot ask for both reads and noreads options at the same time!\n" if $is_r
 if ($is_reads && !$isnot_reads){
 	print "Processing all data as reads\n";
 }
-if ($user_genome_size && $user_genome_size=~/\D/){
-	if ($user_genome_size=~/^(\d+)kb$/i){
+$user_genome_size=~s/,//g if $user_genome_size;
+if ($user_genome_size && $user_genome_size=~/\D$/){
+	if ($user_genome_size=~/^(\d+)k/i){
 		$user_genome_size=int($1.'000');
 	}
-	elsif ($user_genome_size=~/^(\d+)mb$/i){
+	elsif ($user_genome_size=~/^(\d+)m/i){
 		$user_genome_size=int($1.'000000');
 	}
-	elsif ($user_genome_size=~/^(\d+)gb$/i){
+	elsif ($user_genome_size=~/^(\d+)g/i){
 		$user_genome_size=int($1.'000000000');
 	}
 	print "Genome set to ".&thousands($user_genome_size)." b.p.\n";
@@ -78,9 +81,8 @@ foreach my $infile (@infiles){
 	$outfile.='g' if ($user_genome_size);
 	warn ("Outfile $outfile already exists\n") if -s $outfile && !$overwrite;
 	next  if -s $outfile && !$overwrite;
-	my $total=int(0);
-	my $gaps = int(0);
-	my $seq_ref;
+	my $total=int(0);my $gaps = int(0);
+	my ($seq_ref,$gap_distrib_ref);
 	my @head=`head $infile`;
 	foreach (@head){
 		if ($_=~/^>\S/){
@@ -96,7 +98,7 @@ foreach my $infile (@infiles){
 
 	print "Parsing file $infile...\n";
 	if ($is_fasta){
-		($total,$gaps,$seq_ref) = &process_fasta($infile);
+		($total,$seq_ref,$gap_distrib_ref) = &process_fasta($infile);
 	}
 	elsif($is_fastq){
 		($total,$gaps,$seq_ref) = &process_fastq($infile);
@@ -113,20 +115,33 @@ foreach my $infile (@infiles){
 		$stat->add_data($seq_ref);
 		#my $skew='';sprintf("%.2f",$stat->skewness());
 		my $mean = sprintf("%.2f",$mean);
-		my $median = $stat->median();
+		my $median =  sprintf("%.1f",$stat->median());
 		my $var = sprintf("%.2f",$stat->variance());
 		my $sd = sprintf("%.2f",$stat->standard_deviation());
+		my $gap_mean = int(0);my $gap_median =int(0);my $gap_number=int(0);
+		if ($gap_distrib_ref){
+			my $gap_stat = Statistics::Descriptive::Full->new();
+			$gap_stat ->add_data($gap_distrib_ref);
+			$gaps = $gap_stat->sum();
+			if ($gaps){
+				$gap_number = $gap_stat->count();
+				$gap_mean = sprintf("%.2f",$gap_stat->mean());
+				$gap_median = sprintf("%.1f",$gap_stat->median());
+			}
+		}
+
 		if (!$scaffolds || $scaffolds == 0){
 			$scaffolds=$sequence_number;
 			$scaffolds_size=$smallest;
 		}
 		print OUT "File: $infile\n";
 		print OUT "TOTAL: ".&thousands($total)." bp in ".&thousands($sequence_number)." sequences\n";
-		print OUT "\tof which ".&thousands($gaps)." are Ns/gaps.\n";
+		print OUT "\tof which ".&thousands($gaps)." are Ns/gaps (occurences: $gap_number; mean: $gap_mean; median: $gap_median).\n";
 		print OUT "Mean: ".&thousands($mean)."\nStdev: ".&thousands($sd)."\n";
 		print OUT "Median: ".&thousands($median)."\n";
 		print OUT "Smallest: ".&thousands($smallest)."\nLargest: ".&thousands($largest)."\n";
 		if (($mean >=1000 && !$is_reads) || $isnot_reads){
+			print OUT "Assuming genome size of ".&thousands($user_genome_size)." for N50 Stats:\n" if $user_genome_size;
 			print OUT "N10 length: ".&thousands($n10_length)."\nN10 Number: ".&thousands($n10)."\n";
 			print OUT "N25 length: ".&thousands($n25_length)."\nN25 Number: ".&thousands($n25)."\n";
 			print OUT "N50 length: ".&thousands($n50_length)."\nN50 Number: ".&thousands($n50)."\n";
@@ -156,8 +171,8 @@ sub process_fasta(){
 	print "Processing as FASTA\n";
 	my $infile=shift;
 	my @array ;
+	my @gap_distrib ;
 	my $total=int(0);
-	my $gaps=int(0);
 	my $timer   = new Time::Progress;
         $timer->attr( min => 0, max => -s $infile );
 	my $counter = int(0);
@@ -170,7 +185,9 @@ sub process_fasta(){
 	                my $length=length($seq)-1; # newline
 			$counter+=length($seq_id)+$length+1;
 	                next unless $length;
-			$gaps+=($seq=~tr/[N\-]//);
+			while ($seq=~/([nN\-]+)/g){
+				push(@gap_distrib,length($1));
+			}
 	                push(@array,$length);
         	        $total+=$length;
 		}
@@ -191,7 +208,9 @@ sub process_fasta(){
 			$seq=~s/\s+//g;
 			my $length=length($seq);
 			next unless $length;
-			$gaps+=($seq=~tr/[N\-]//);
+			while ($seq=~/([nN\-]+)/g){
+				push(@gap_distrib,length($1));
+			}
 			push(@array,$length);
 	        	$total+=$length;
 	        }
@@ -200,7 +219,7 @@ sub process_fasta(){
 	}
 	print "\n";
 	die "No data found or wrong format\n" unless $total;
-	return ($total,$gaps,\@array);
+	return ($total,\@array,\@gap_distrib);
 }
 sub process_fastq(){
 	print "Processing as FASTQ\n";
@@ -219,7 +238,7 @@ sub process_fastq(){
 		my $length=length($seq)-1; #newline
 		$counter+=length($seq_id)+$length+1;
 		next unless $length;
-		$gaps+=($seq=~tr/[N\-]//);
+		$gaps+=($seq=~tr/[nN\-]//);
                 push(@array,$length);
                 $total+=$length;
        }
