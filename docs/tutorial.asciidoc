@@ -86,14 +86,14 @@ ascp \
 find . -name "*sra" -exec fastq-dump --split-spot --split-files --skip-technical -F -Q 33 -W -T -R pass '{}' \;
 find . -name "*sra" -delete # delete primary data if you don't need the backup
 # quality pre-process:
-find . -name "pass" -type d -exec $JAMG_PATH/3rd_party/preprocess_reads/preprocess_illumina.pl \
+find . -name "pass" -type d -exec $JAMG_PATH/3rd_party/justpreprocessmyreads/preprocess_illumina.pl \
  -cdna -no_screen -paired '{}/1/fastq' '{}/2/fastq' \;
 # let's see what we produced:
 ls -l SRR*/pass/1/fastq.trimmomatic.bz2 # All 'left' files of a pair
 ls -l SRR*/pass/2/fastq.trimmomatic.bz2 # 'right' files of a pair
 ls -l SRR*/pass/?/fastq.unpaired.bz2 # remnant unpaired files when the pair has been discarded
 # let's rename them to something easier to use.
-$JAMG_PATH/3rd_party/preprocess_reads/rename_SRA_sra_fastq.pl
+$JAMG_PATH/3rd_party/justpreprocessmyreads/rename_SRA_sra_fastq.pl
 ls -l *.trimmomatic.bz2
 bunzip2 -k *.trimmomatic.bz2 # highly recommend pbzip2 -d
 
@@ -163,7 +163,7 @@ $JAMG_PATH/3rd_party/trinityrnaseq/Trinity.pl --seqType fq --min_kmer_cov 2 \
 # In parallel prepare for TGG. First align the reads to the genome:
 mkdir TGG; cd TGG
 $JAMG_PATH/bin/align_rnaseq_gsnap.pl -fasta $GENOME_PATH -dbname $GENOME_NAME -cpus $LOCAL_CPUS \
- -nofail -suffix -input_dir ../../ |& tee tgg.log
+-gmap_dir . -nofail -suffix -input_dir ../../ |& tee tgg.log
 
 In the above we have prepared the input for TDN and TGG (Trinity de-novo and Trinity Genome-guided). For this tutorial, for TDN we use '--min_kmer_cov 2' because it saves time and resources but in a real world scenario of annotating a genome, don't use it if you don't have to. For TGG we use '-suffix' because we don't expect any substantial polymorphism for Drosophila melanogaster. If you have a species with polymorphism then don't use '-suffix' (actually in my tests using -suffix made the search slower rather than faster, the opposite of what is expected). Once the alignment of the RNASeq is complete we can continue with the TGG process. Some files will be mapped multiple times. We know that Drosophila is well assembled so these RNASeq are almost certainly repeats, for this tutorial we will not use them. The overall process above will take about 16-24h if you're doing both in parallel and using 5 CPUs for TDN and 10 CPUs for TGG.
 
