@@ -156,7 +156,7 @@ While the previous step is running, prepare TDN and TGG assemblies (Trinity de-n
 
 [source,bash]
 mkdir Trinity_assemblies; cd Trinity_assemblies
-$JAMG_PATH/3rd_party/trinityrnaseq/Trinity.pl --seqType fq --min_kmer_cov 2 \
+$JAMG_PATH/3rd_party/trinityrnaseq/Trinity --seqType fq --min_kmer_cov 2 \
  --left ../*1_fastq.trimmomatic ../*_unpaired_fastq.trimmomatic --right ../*_2_fastq.trimmomatic \
  --output TDN --JM "$MAX_MEMORY_G"G --CPU $LOCAL_CPUS --full_cleanup |& tee tdn.log # expected output is a Trinity.fasta
 # the above will take some time. First step is unzipping all the input files before JellyFish start running
