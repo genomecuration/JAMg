@@ -85,7 +85,7 @@ use FindBin qw/$RealBin/;
 $ENV{PATH} .= ":$RealBin:$RealBin/3rd_party/FastQC/";
 
 my ( $pbzip_exec, $fastqc_exec ) = &check_program( 'pbzip2', 'fastqc' );
-
+$fastqc_exec = $fastqc_exec . ' -java /loginhome/jzucker/src/jdk/bin/java';
 my (
      $is_sanger,   $do_fasta,     $genome_size,  $use_meryl,
      $is_illumina, $delete_fastb, $is_cdna,      $no_preprocess,
@@ -253,7 +253,7 @@ if ( $is_paired && $trimmomatic_exec ) {
  print "Pre-processing $file1 and $file2\n";
  my $check1 = &check_fastq_format($file1);
  my $check2 = &check_fastq_format($file2);
- my $cmd = "java -jar $trimmomatic_exec PE -threads 1 -phred33 $file1 $file2 $file1.trimmomatic $file1.unpaired $file2.trimmomatic $file2.unpaired MINLEN:32 ";
+ my $cmd = "/loginhome/jzucker/src/jdk/bin/java -jar $trimmomatic_exec PE -threads 1 -phred33 $file1 $file2 $file1.trimmomatic $file1.unpaired $file2.trimmomatic $file2.unpaired MINLEN:32 ";
  $cmd .= " ILLUMINACLIP:$adapters_db:2:40:15 " if $adapters_db ;
  $cmd .= " HEADCROP:$trim_5 " if $trim_5;
  $cmd .= " CROP:$trim_3 " if $trim_3;
@@ -288,7 +288,7 @@ else {
   my $file = $files[$i];
   print "Pre-processing $file\n";
   my $check = &check_fastq_format($file);
-  my $cmd = "java -jar $trimmomatic_exec SE -threads 1 -phred33 $file $file.trimmomatic MINLEN:32 ";
+  my $cmd = "/loginhome/jzucker/src/jdk/bin/java -jar $trimmomatic_exec SE -threads 1 -phred33 $file $file.trimmomatic MINLEN:32 ";
   $cmd .= " ILLUMINACLIP:$adapters_db:2:40:15 " if  $adapters_db;
   $cmd .= " HEADCROP:$trim_5 " if $trim_5;
   $cmd .= " CROP:$trim_3 " if $trim_3;

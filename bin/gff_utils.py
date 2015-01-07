@@ -140,13 +140,13 @@ def clean_type_rule( features, children, uniquid ):
     newfeatures = []
     for feature in features:
         if type(feature) is dict: 
-            if feature['type'] in ['singleexon', 'firstexon', 'lastexon']:
+            if feature['type'] in ['singleexon', 'firstexon', 'lastexon', 'First', 'Internal', 'Terminal']:
                 feature['type'] = 'exon'
                 newfeatures.append( feature )
             elif feature['type'] in ['transcript','.']:
                 feature['type'] = 'mRNA'
                 newfeatures.append( feature )
-            else: # feature['type'] not in ['intron']:
+            elif feature['type'] not in ['intron']:
                 newfeatures.append( feature )
         else:
             newfeatures.append( feature )
@@ -213,7 +213,19 @@ def add_names(features, children, uniquid, MAPPING_FILE='mapping_old2new_names.t
             feature['attributes'] = ';'.join(['%s=%s' % (a, feature['atts'][a]) for a in sorted( feature['atts'])])
     return features, children, uniquid 
 
-def add_uniquid( features, children, uniquid ):
+def add_parent_rule( features, children, uniquid ):
+    for feature in features:
+        if type(feature) is dict and ('atts' not in feature or len(feature['atts']) == 0):
+            feature['atts'] = {}
+            feature['atts']['Parent'] = feature['attributes']
+            feature['attributes'] = ';'.join(['%s=%s' % (a, feature['atts'][a]) for a in feature['atts']])
+            if feature['atts']['Parent'] in children:
+                children[feature['atts']['Parent']].append( feature )
+            else:
+                children[feature['atts']['Parent']] = [feature]
+    return features, children, uniquid
+            
+def add_uniquid_rule( features, children, uniquid ):
     for feature in features:
         if type(feature) is dict and 'ID' not in feature['atts']:
             feature['atts']['ID'] = feature['atts']['Parent'] + ':' + feature['type'] 
@@ -242,18 +254,18 @@ def clean_gff2( gffin, gffout, rules ):
     nfeatures = 1e100
     count = 0
     while nfeatures != len(features):
-        print "Applying round %d to %d features:" % (count, len(features))
+        sys.stderr.write( "Applying round %d to %d features:\n" % (count, len(features)) )
         count +=1 
         nfeatures = len(features)
         for desc, apply_rule in rules:
             lastfeatures = len(features)
             features, children, uniquid = apply_rule(features, children, uniquid )
             if len(features) > lastfeatures:
-                print "\t%s added %d out of %d features (%0.2f)%%" % (desc, len(features)-lastfeatures,lastfeatures, len(features)/float(lastfeatures)*100.0 - 100)
+                sys.stderr.write( "\t%s added %d out of %d features (%0.2f)%%\n" % (desc, len(features)-lastfeatures,lastfeatures, len(features)/float(lastfeatures)*100.0 - 100) )
             elif len(features) < lastfeatures:
-                print "\t%s removed %d out of %d features (%0.2f)%%" % (desc, lastfeatures - len(features),lastfeatures, 100 - len(features)/float(lastfeatures)*100.0)
+                sys.stderr.write( "\t%s removed %d out of %d features (%0.2f)%%\n" % (desc, lastfeatures - len(features),lastfeatures, 100 - len(features)/float(lastfeatures)*100.0) )
             else:
-                print "\t%s did not add or remove features" %desc
+                sys.stderr.write( "\t%s did not add or remove features\n" %desc )
     with gffout as out:
         for feature in features:
             if type( feature ) is dict:

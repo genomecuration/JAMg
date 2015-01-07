@@ -1,4 +1,5 @@
-from gff_utils import order_rule, clean_type_rule, add_exons_rule, sort_gff_rule, add_uniquid, remove_bad_parents_rule, encompass_children_rule, remove_big_genes, remove_orphans_rule, clean_gff2, MAX_INTRON, sanitize_notes_rule, merge_adjacent_features_rule, add_header_rule, add_UTR_rule, remove_comments_rule
+#!/usr/bin/env python
+from gff_utils import order_rule, clean_type_rule, add_exons_rule, sort_gff_rule, add_uniquid_rule, add_parent_rule, remove_bad_parents_rule, encompass_children_rule, remove_big_genes, remove_orphans_rule, clean_gff2, MAX_INTRON, sanitize_notes_rule, merge_adjacent_features_rule, add_header_rule, add_UTR_rule, remove_comments_rule, remove_overlapping_exons_rule
 import re, argparse, sys
 
 
@@ -10,13 +11,15 @@ rules = [#('add header', add_header_rule),
          ('Add Exons for each CDS', add_exons_rule),
          ('sort gff', sort_gff_rule),
          ('remove comments', remove_comments_rule),
-         ('add uniqueid', add_uniquid),
+         ('add parent attribute', add_parent_rule),
+         ('add uniqueid', add_uniquid_rule),
          ('Add UTRs for each mRNA', add_UTR_rule),
          ('remove parents whose children have a different seqid or strand', remove_bad_parents_rule),
          ('parent encompasses children', encompass_children_rule),
          ('merge adjacent features', merge_adjacent_features_rule),
          ('remove genes larger than %d bp' % MAX_INTRON, remove_big_genes),
-         ('remove orphans', remove_orphans_rule)
+         ('remove orphans', remove_orphans_rule),
+         ('remove overlapping regions', remove_overlapping_exons_rule),
          ]
 
 

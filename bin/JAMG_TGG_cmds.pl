@@ -56,7 +56,7 @@ while (<$fh>) {
     
     my $cmd = "$trinity_exec --seqType fa --single \"$file\" --JM 2G --CPU 4 --output \"$file.out\" --full_cleanup_ET ";
     $cmd .= " --run_as_paired " if $paired_flag;
-    $cmd .= " --SS_lib_type F " if $$_flag;
+    $cmd .= " --SS_lib_type F " if $SS_flag;
     $cmd .= " --jaccard_clip " if $jaccard_clip;
     $cmd .= " --normalize_reads --normalize_max_read_cov 100 " if ($normalize);
     $cmd .= " --bfly_opts \"$bfly_opts\" " if $bfly_opts;

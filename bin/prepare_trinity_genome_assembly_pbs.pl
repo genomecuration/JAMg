@@ -93,8 +93,9 @@ if (!$read_files[0]){
 			}else{
 				&process_cmd("$samtools_exec view -@ $cpus -F4 ".$bam_files[0]." > $sam_file") unless -s $sam_file;
 			}
-			pod2usage ("Can't produce SAM file from input... Are they sorted by co-ordinate?\n") unless @sam_files && -s $sam_files[0];
 			push(@sam_files,$sam_file);
+			pod2usage ("Can't produce SAM file from input... Are they sorted by co-ordinate?\n") unless @sam_files && -s $sam_files[0];
+
 		}
 	}
 
