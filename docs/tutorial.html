@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
-<meta name="generator" content="AsciiDoc 8.6.6" />
+<meta name="generator" content="AsciiDoc 8.6.9" />
 <title>Just Annotate My Genome (JAMg) tutorial</title>
 <style type="text/css">
 /* Shared CSS for AsciiDoc xhtml11 and html5 backends */
@@ -87,9 +87,15 @@ ul, ol, li > p {
 ul > li     { color: #aaa; }
 ul > li > * { color: black; }
 
-pre {
+.monospaced, code, pre {
+  font-family: "Courier New", Courier, monospace;
+  font-size: inherit;
+  color: navy;
   padding: 0;
   margin: 0;
+}
+pre {
+  white-space: pre-wrap;
 }
 
 #author {
@@ -219,7 +225,7 @@ div.exampleblock > div.content {
 }
 
 div.imageblock div.content { padding-left: 0; }
-span.image img { border-style: none; }
+span.image img { border-style: none; vertical-align: text-bottom; }
 a.image:visited { color: white; }
 
 dl {
@@ -349,7 +355,7 @@ div.colist td img {
   margin-bottom: 0.1em;
 }
 
-div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
+div.toclevel0, div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -407,17 +413,13 @@ span.underline { text-decoration: underline; }
 span.overline { text-decoration: overline; }
 span.line-through { text-decoration: line-through; }
 
+div.unbreakable { page-break-inside: avoid; }
+
 
 /*
  * xhtml11 specific
  *
  * */
-
-tt {
-  font-family: monospace;
-  font-size: inherit;
-  color: navy;
-}
 
 div.tableblock {
   margin-top: 1.0em;
@@ -451,12 +453,6 @@ div.tableblock > table[frame="vsides"] {
  * html5 specific
  *
  * */
-
-.monospaced {
-  font-family: monospace;
-  font-size: inherit;
-  color: navy;
-}
 
 table.tableblock {
   margin-top: 1.0em;
@@ -537,6 +533,8 @@ body.manpage div.sectionbody {
 @media print {
   body.manpage div#toc { display: none; }
 }
+
+
 </style>
 <script type="text/javascript">
 /*<![CDATA[*/
@@ -581,7 +579,7 @@ toc: function (toclevels) {
 
   function tocEntries(el, toclevels) {
     var result = new Array;
-    var re = new RegExp('[hH]([2-'+(toclevels+1)+'])');
+    var re = new RegExp('[hH]([1-'+(toclevels+1)+'])');
     // Function that scans the DOM tree for header elements (the DOM2
     // nodeIterator API would be a better technique but not supported by all
     // browsers).
@@ -610,7 +608,7 @@ toc: function (toclevels) {
   var i;
   for (i = 0; i < toc.childNodes.length; i++) {
     var entry = toc.childNodes[i];
-    if (entry.nodeName == 'div'
+    if (entry.nodeName.toLowerCase() == 'div'
      && entry.getAttribute("class")
      && entry.getAttribute("class").match(/^toclevel/))
       tocEntriesToRemove.push(entry);
@@ -656,7 +654,7 @@ footnotes: function () {
   var entriesToRemove = [];
   for (i = 0; i < noteholder.childNodes.length; i++) {
     var entry = noteholder.childNodes[i];
-    if (entry.nodeName == 'div' && entry.getAttribute("class") == "footnote")
+    if (entry.nodeName.toLowerCase() == 'div' && entry.getAttribute("class") == "footnote")
       entriesToRemove.push(entry);
   }
   for (i = 0; i < entriesToRemove.length; i++) {
@@ -737,7 +735,7 @@ asciidoc.install();
 <div id="header">
 <h1>Just Annotate My Genome (JAMg) tutorial</h1>
 <span id="author">Alexie Papanicolaou</span><br />
-<span id="email"><tt>&lt;<a href="mailto:alexie@butterflybase.org">alexie@butterflybase.org</a>&gt;</tt></span><br />
+<span id="email"><code>&lt;<a href="mailto:alexie@butterflybase.org">alexie@butterflybase.org</a>&gt;</code></span><br />
 <span id="revnumber">version RC1,</span>
 <span id="revdate">December 2013</span>
 </div>
@@ -765,7 +763,7 @@ asciidoc.install();
 <div class="paragraph"><p>I&#8217;m assuming you&#8217;ve downloaded the software from somewhere and unpacked it. The next step is to store the path in an environmental variable so you can copy-paste for the rest of the tutorial. Also we will export any other parameters that are species specific and we will use for the rest of the tutorial. You will also need to run <em>make</em> which make take some time (unzipping files etc) but it ought to be un-attended (any errors will cause it to crash).</p></div>
 <div class="paragraph"><p>Basic installation instructions:</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -777,7 +775,7 @@ make <span style="font-style: italic"><span style="color: #9A1900"># will instal
 <div class="paragraph"><p>Then download the refseq_insecta_march13_just_useful.tar.bz2 HHblits database from <a href="https://sourceforge.net/projects/jamg/files/databases/">here</a> and uncompress it in $JAMG_PATH/databases/hhblits</p></div>
 <div class="paragraph"><p>Finally, we also assume you have correctly installed PASA (and mySQL) to work with your computing environment. Prepare the configuration file</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -794,7 +792,7 @@ vim <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/
 <div class="paragraph"><p>This is all you need to do to setup PASA these days.</p></div>
 <div class="paragraph"><p>Next let us prepare for the Tutorial (i.e. tutorial-specific instructions follow). First, setup some variables:</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -808,7 +806,7 @@ http://www.gnu.org/software/src-highlite -->
 <span style="font-weight: bold"><span style="color: #0000FF">export</span></span> <span style="color: #009900">PATH</span><span style="color: #990000">=</span><span style="color: #009900">$JAMG_PATH</span>/bin<span style="color: #990000">:</span><span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/bin<span style="color: #990000">:</span><span style="color: #009900">$PATH</span></tt></pre></div></div>
 <div class="paragraph"><p>These ought to be project specific so if you store the above in a file you can use this command to import them in your environment. That way you don&#8217;t have to type them every time and you will also remember what you used.</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -816,7 +814,7 @@ http://www.gnu.org/software/src-highlite -->
  <span style="color: #990000">.</span> <span style="color: #990000">.</span>/env_vash<span style="color: #990000">.</span>sh <span style="font-style: italic"><span style="color: #9A1900"># that is a dot in the beginning</span></span></tt></pre></div></div>
 <div class="paragraph"><p>Next preparing some data. First of all, since this is a tutorial and we are analyzing on of the better assembled/annotated genomes out there (<em>Drosophila melanogaster</em>, the fruitfly), we want to be able to evaluate if what we do is correct. For that we will need the official FlyBase annotations. Sadly the GFF3 provided by FlyBase is often corrupt (e.g. CDS lines appear before a gene etc) so we have post-processed their GFF, cleaned it and provide a GTF that will be used for our evaluation. It sits in the test_suite directory so:</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -824,7 +822,7 @@ http://www.gnu.org/software/src-highlite -->
 bunzip dmel-all-no-analysis-r<span style="color: #993399">5.53</span><span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>clean<span style="color: #990000">.</span>gtf<span style="color: #990000">.</span>bz2 <span style="font-style: italic"><span style="color: #9A1900"># we will use this later during evaluation.</span></span></tt></pre></div></div>
 <div class="paragraph"><p>Now we need some input data. JAMg is specifically built for RNA-Seq type of data (for example Illumina, but it doesn&#8217;t need to be NGS data, could be Sanger too - just not cost-effective to produce them anymore). How we can get some RNA-Seq data? Well we can download them from NCBI and run the following script to pre-process them:</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -841,14 +839,14 @@ ascp <span style="color: #990000">\</span>
 find <span style="color: #990000">.</span> -name <span style="color: #FF0000">"*sra"</span> -exec fastq-dump --split-spot --split-files --skip-technical -F -Q <span style="color: #993399">33</span> -W -T -R pass <span style="color: #FF0000">'{}'</span> <span style="color: #990000">\;</span>
 find <span style="color: #990000">.</span> -name <span style="color: #FF0000">"*sra"</span> -delete <span style="font-style: italic"><span style="color: #9A1900"># delete primary data if you don't need the backup</span></span>
 <span style="font-style: italic"><span style="color: #9A1900"># quality pre-process:</span></span>
-find <span style="color: #990000">.</span> -name <span style="color: #FF0000">"pass"</span> -type d -exec <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/preprocess_reads/preprocess_illumina<span style="color: #990000">.</span>pl <span style="color: #990000">\</span>
+find <span style="color: #990000">.</span> -name <span style="color: #FF0000">"pass"</span> -type d -exec <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/justpreprocessmyreads/preprocess_illumina<span style="color: #990000">.</span>pl <span style="color: #990000">\</span>
  -cdna -no_screen -paired <span style="color: #FF0000">'{}/1/fastq'</span> <span style="color: #FF0000">'{}/2/fastq'</span> <span style="color: #990000">\;</span>
 <span style="font-style: italic"><span style="color: #9A1900"># let's see what we produced:</span></span>
 ls -l SRR<span style="color: #990000">*</span>/pass<span style="color: #990000">/</span><span style="color: #993399">1</span>/fastq<span style="color: #990000">.</span>trimmomatic<span style="color: #990000">.</span>bz2 <span style="font-style: italic"><span style="color: #9A1900"># All 'left' files of a pair</span></span>
 ls -l SRR<span style="color: #990000">*</span>/pass<span style="color: #990000">/</span><span style="color: #993399">2</span>/fastq<span style="color: #990000">.</span>trimmomatic<span style="color: #990000">.</span>bz2 <span style="font-style: italic"><span style="color: #9A1900"># 'right' files of a pair</span></span>
 ls -l SRR<span style="color: #990000">*</span>/pass<span style="color: #990000">/?</span>/fastq<span style="color: #990000">.</span>unpaired<span style="color: #990000">.</span>bz2 <span style="font-style: italic"><span style="color: #9A1900"># remnant unpaired files when the pair has been discarded</span></span>
 <span style="font-style: italic"><span style="color: #9A1900"># let's rename them to something easier to use.</span></span>
-<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/preprocess_reads/rename_SRA_sra_fastq<span style="color: #990000">.</span>pl
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/justpreprocessmyreads/rename_SRA_sra_fastq<span style="color: #990000">.</span>pl
 ls -l <span style="color: #990000">*.</span>trimmomatic<span style="color: #990000">.</span>bz2
 bunzip2 -k <span style="color: #990000">*.</span>trimmomatic<span style="color: #990000">.</span>bz2 <span style="font-style: italic"><span style="color: #9A1900"># highly recommend pbzip2 -d</span></span></tt></pre></div></div>
 <div class="admonitionblock">
@@ -860,7 +858,7 @@ bunzip2 -k <span style="color: #990000">*.</span>trimmomatic<span style="color: 
 </tr></table>
 </div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -884,7 +882,7 @@ pbzip2 -dck SRR<span style="color: #990000">*</span>/pass<span style="color: #99
 </tr></table>
 </div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -907,7 +905,7 @@ ls -l dmel-X-r5.53.fasta dmel-X-r5.53.repeat.hard dmel-X-r5.53.repeat.soft melan
 <div class="paragraph"><p>In this step you will check if there are any domains that are coding. This will provide evidence even in the absence
 of RNA-Seq data. The script will also run RepeatMasker the output of which we will use later on.</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -931,7 +929,7 @@ ln exon_search<span style="color: #990000">/*</span>masked exon_search<span styl
 <div class="paragraph"><p>Purely FYI: in my local cluster environment using MPI with 44 CPUs and the databases copied to /dev/shm (first command above), this step took 36h (36h and 17 minutes to be exact). The network speed used for MPI was a bottleneck (we just have 10gb Ethernet not infiniband).</p></div>
 <div class="paragraph"><p>Now apply the repeatmasking output file $GENOME_PATH.out.gff to create a 'soft&#8217;masked file that we will use later on:</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -943,19 +941,19 @@ http://www.gnu.org/software/src-highlite -->
 <div class="sectionbody">
 <div class="paragraph"><p>While the previous step is running, prepare TDN and TGG assemblies (Trinity de-novo and Trinity genome-guided) for the RNA-seq data.</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
 <pre><tt>mkdir Trinity_assemblies<span style="color: #990000">;</span> cd Trinity_assemblies
-<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/trinityrnaseq/Trinity<span style="color: #990000">.</span>pl --seqType fq --min_kmer_cov <span style="color: #993399">2</span> <span style="color: #990000">\</span>
+<span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/trinityrnaseq/Trinity --seqType fq --min_kmer_cov <span style="color: #993399">2</span> <span style="color: #990000">\</span>
  --left <span style="color: #990000">../*</span>1_fastq<span style="color: #990000">.</span>trimmomatic <span style="color: #990000">../*</span>_unpaired_fastq<span style="color: #990000">.</span>trimmomatic --right <span style="color: #990000">../*</span>_2_fastq<span style="color: #990000">.</span>trimmomatic <span style="color: #990000">\</span>
  --output TDN --JM <span style="color: #FF0000">"$MAX_MEMORY_G"</span>G --CPU <span style="color: #009900">$LOCAL_CPUS</span> --full_cleanup <span style="color: #990000">|&amp;</span> tee tdn<span style="color: #990000">.</span>log <span style="font-style: italic"><span style="color: #9A1900"># expected output is a Trinity.fasta</span></span>
 <span style="font-style: italic"><span style="color: #9A1900"># the above will take some time. First step is unzipping all the input files before JellyFish start running</span></span>
 <span style="font-style: italic"><span style="color: #9A1900"># In parallel prepare for TGG. First align the reads to the genome:</span></span>
 mkdir TGG<span style="color: #990000">;</span> cd TGG
 <span style="color: #009900">$JAMG_PATH</span>/bin/align_rnaseq_gsnap<span style="color: #990000">.</span>pl -fasta <span style="color: #009900">$GENOME_PATH</span> -dbname <span style="color: #009900">$GENOME_NAME</span> -cpus <span style="color: #009900">$LOCAL_CPUS</span> <span style="color: #990000">\</span>
- -nofail -suffix -input_dir <span style="color: #990000">../../</span> <span style="color: #990000">|&amp;</span> tee tgg<span style="color: #990000">.</span>log</tt></pre></div></div>
+-gmap_dir <span style="color: #990000">.</span> -nofail -suffix -input_dir <span style="color: #990000">../../</span> <span style="color: #990000">|&amp;</span> tee tgg<span style="color: #990000">.</span>log</tt></pre></div></div>
 <div class="paragraph"><p>In the above we have prepared the input for TDN and TGG (Trinity de-novo and Trinity Genome-guided). For this tutorial, for TDN we use <em>--min_kmer_cov 2</em> because it saves time and resources but in a real world scenario of annotating a genome, don&#8217;t use it if you don&#8217;t have to. For TGG we use <em>-suffix</em> because we don&#8217;t expect any substantial polymorphism for Drosophila melanogaster. If you have a species with polymorphism then don&#8217;t use <em>-suffix</em> (actually in my tests using -suffix made the search slower rather than faster, the opposite of what is expected). Once the alignment of the RNASeq is complete we can continue with the TGG process. Some files will be mapped multiple times. We know that Drosophila is well assembled so these RNASeq are almost certainly repeats, for this tutorial we will not use them. The overall process above will take about 16-24h if you&#8217;re doing both in parallel and using 5 CPUs for TDN and 10 CPUs for TGG.</p></div>
 <div class="admonitionblock">
 <table><tr>
@@ -974,7 +972,7 @@ mkdir TGG<span style="color: #990000">;</span> cd TGG
 </tr></table>
 </div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1006,7 +1004,7 @@ ParaFly -CPU <span style="color: #009900">$LOCAL_CPUS</span> -v -c small_trinity
 </div>
 <div class="paragraph"><p>While this ParaFly procedure is running, we can post-process the alignments to create RNA-Seq coverage data for Augustus (it will take considerable time):</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1014,7 +1012,7 @@ http://www.gnu.org/software/src-highlite -->
 <span style="color: #009900">$JAMG_PATH</span>/bin/augustus_RNAseq_hints<span style="color: #990000">.</span>pl -bam RNASeq_TGG_input<span style="color: #990000">.</span>bam -genome <span style="color: #009900">$GENOME_PATH</span></tt></pre></div></div>
 <div class="paragraph"><p>Once TGG and TDN are complete, we can integrate TGG and TDN using <a href="http://pasa.sourceforge.net/">PASA2</a>.</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1052,7 +1050,7 @@ ls jamg_drosie_tutorial<span style="color: #990000">.</span>assemblies<span styl
 </tr></table>
 </div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1068,7 +1066,7 @@ GRANT SELECT<span style="color: #990000">,</span>INSERT<span style="color: #9900
 <div class="paragraph"><p>There are some predictors that use no training at all.</p></div>
 <div class="paragraph"><p>GeneMarkES is one such example:</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1084,7 +1082,7 @@ http://www.gnu.org/software/src-highlite -->
 <div class="paragraph"><p>We require to identify some gene models that are complete and of very high quality. These can be use downstream to train our de-novo predictors. Traditionally, fewer than 100 genes have been used but this was a limitation of the availability of data. In this part we can identify <em>1000s</em> of such golden models but we will only use a subset: some we will keep for validation of the output.</p></div>
 <div class="paragraph"><p>Now we need to create a golden gene set for training. First, PASA has a script that uses TransDecoder to convert the PASA output to CDS-aware genome co-ordinates. As we will show later, there is a significant number of not-so-golden genes in that subset (sensitivity is very low). So with JAMG we can use the <em>prepare_golden_genes_for_predictors.pl</em> to acquire a subset of good gene models informed by a splice aware aligner such as exonerate.</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1100,7 +1098,7 @@ http://www.gnu.org/software/src-highlite -->
 ls -l <span style="color: #990000">*</span>golden<span style="color: #990000">.</span>gff3</tt></pre></div></div>
 <div class="paragraph"><p>Evaluate [todo]</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1114,7 +1112,7 @@ http://www.gnu.org/software/src-highlite -->
 <div class="paragraph"><p>Some predictors like SNAP and GlimmerHMM can use evidence as an option but they (GlimmerHMM at least) takes longer and the results in a small test I did were not as good as without adding additional weights. Regardless, we first need to train them using our golden gene sets from above.</p></div>
 <div class="paragraph"><p>First, training and running SNAP is very easy now that we have the ZFF files:</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1146,7 +1144,7 @@ cd <span style="color: #990000">../../</span></tt></pre></div></div>
 <div class="paragraph"><p>Snap is very fast. For Drosophila, this will take some time (5-10 minutes) because our genome is split in whole chromosomes, i.e. only 15 commands each of which will take considerable time. In most NGS projects you will have thousands (or dozens) of scaffolds so each one will be rather quick. By the way, if you want to use external evidence, please check out the <a href="procedure.html#snap-external">procedure for SNAP external evidence</a> documentation.</p></div>
 <div class="paragraph"><p>Next we process GlimmerHMM.</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1170,7 +1168,7 @@ cd <span style="color: #990000">../</span></tt></pre></div></div>
 </tr></table>
 </div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1180,7 +1178,7 @@ ln -s <span style="color: #990000">[</span>path from trinity genome guided<span 
 ln -s <span style="color: #990000">[</span>path from prepare_golden_genes<span style="color: #990000">]</span> final_golden_genes<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>nr<span style="color: #990000">.</span>golden<span style="color: #990000">.*.</span>good<span style="color: #990000">.</span>gb<span style="color: #990000">*</span> <span style="color: #990000">.</span></tt></pre></div></div>
 <div class="paragraph"><p>In this section we have to do the slightly complicated task of preparing a configuration file for how to weight the external evidence (e.g. RNASeq). Even though eventually we will run Augustus with our genome, to create the configuration we must use a test dataset for which we know the <em>truth</em>. This is our <em>golden genes</em>, which we have split in training, test and optimization (a small subset of training). In order to get the configuration file we must create evidence tracks for our RNAseq (etc) against these datasets. So we need to rerun our alignments:</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1206,7 +1204,7 @@ ln <span style="color: #990000">..</span>/repeats/complete_reference_training_se
 cd <span style="color: #990000">..</span></tt></pre></div></div>
 <div class="paragraph"><p>Except preparing the above evidence, we also want to create our HMM.</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1226,7 +1224,7 @@ http://www.gnu.org/software/src-highlite -->
 </div>
 <div class="paragraph"><p>We have now prepared all our evidence for creating the configuration, our the HMM parameters have been set and our HMM has been trained. Prepare our evidence configuration file will determine how much each type of evidence (e.g. RNASeq, RepeatMasker etc) affects the prediction of each type of feature (exon, intron etc).</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1242,7 +1240,7 @@ vim extrinsic_meta<span style="color: #990000">.</span>cfg
 <div class="paragraph"><p>Check the opt_extr.log file for instruction on which configuration file to pick and copy it as your new configuration, e.g. <em>extrinsic_chosen.cfg</em>. You&#8217;re almost done!</p></div>
 <div class="paragraph"><p>Finally run Augustus. We have a helper script that allows you to run each scaffold independenly:</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1285,7 +1283,7 @@ cp <span style="color: #009900">$JAMG_PATH</span>/bin/run_split_augustus<span st
 <div class="sectionbody">
 <div class="paragraph"><p>For phase 3, we assume you have completed all of the previous steps (except perhaps running the other de-novo predictors). First let&#8217;s collate all the data and then run it. It&#8217;s actually pretty straightforward if you want to use a single machine or know how to distribute a file with commands to your HPC. Simply:</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1297,7 +1295,7 @@ http://www.gnu.org/software/src-highlite -->
 <div class="sectionbody">
 <div class="paragraph"><p>Phase 4 requires all of the previous phases to have been completed.</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1327,7 +1325,7 @@ find <span style="color: #990000">.</span> -name evm<span style="color: #990000"
 <div class="sectionbody">
 <div class="paragraph"><p>Phase 5 is required if you are happy with your annotation and now you&#8217;d like to manually curate it.</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1345,7 +1343,7 @@ http://www.gnu.org/software/src-highlite -->
 <div id="footer">
 <div id="footer-text">
 Version RC1<br />
-Last updated 2014-09-27 17:23:37 EST
+Last updated 2015-05-14 06:52:28 EST
 </div>
 </div>
 </body>

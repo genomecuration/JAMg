@@ -131,7 +131,7 @@ export LOCAL_CPUS=4 # example number of CPUs to use
 +
 ** Do some mild trimming of your sequences, see 3rd_party/preprocess_reads (you can use the -noscreen option to improve speed).
 ** Prepare Trinity RNA-Seq 'de-novo' assemblies (a.k.a. TDN) with all the data concatanated (separately for -left and -right for paired end; any additional single end reads can be concatanated to the -left).
-** Prepare http://trinityrnaseq.sourceforge.net/genome_guided_trinity.html[Trinity RNA-Seq genome-guided assemblies] (a.k.a. TGG) with the same input data.
+** Prepare http://trinityrnaseq.github.io/#genome_guided[Trinity RNA-Seq genome-guided assemblies] (a.k.a. TGG) with the same input data.
 *** Make sure you *keep the aligment .bam files*. We will use them down the line.
 *** If you are assembling transcripts from microbial genomes, make sure you use the --jaccard_clip option.
 *** If you annotating a large eukaryotic genome (e.g. mouse), feel free to use Cufflinks as well but use gsnap as an aligner, not Tophat. If your genome is compact (e.g. Drosophila, microbes), just don't...

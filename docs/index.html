@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
-<meta name="generator" content="AsciiDoc 8.6.6" />
+<meta name="generator" content="AsciiDoc 8.6.9" />
 <title>Just Annotate My Genome (JAMg) info</title>
 <style type="text/css">
 /* Shared CSS for AsciiDoc xhtml11 and html5 backends */
@@ -87,9 +87,15 @@ ul, ol, li > p {
 ul > li     { color: #aaa; }
 ul > li > * { color: black; }
 
-pre {
+.monospaced, code, pre {
+  font-family: "Courier New", Courier, monospace;
+  font-size: inherit;
+  color: navy;
   padding: 0;
   margin: 0;
+}
+pre {
+  white-space: pre-wrap;
 }
 
 #author {
@@ -219,7 +225,7 @@ div.exampleblock > div.content {
 }
 
 div.imageblock div.content { padding-left: 0; }
-span.image img { border-style: none; }
+span.image img { border-style: none; vertical-align: text-bottom; }
 a.image:visited { color: white; }
 
 dl {
@@ -349,7 +355,7 @@ div.colist td img {
   margin-bottom: 0.1em;
 }
 
-div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
+div.toclevel0, div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -407,17 +413,13 @@ span.underline { text-decoration: underline; }
 span.overline { text-decoration: overline; }
 span.line-through { text-decoration: line-through; }
 
+div.unbreakable { page-break-inside: avoid; }
+
 
 /*
  * xhtml11 specific
  *
  * */
-
-tt {
-  font-family: monospace;
-  font-size: inherit;
-  color: navy;
-}
 
 div.tableblock {
   margin-top: 1.0em;
@@ -451,12 +453,6 @@ div.tableblock > table[frame="vsides"] {
  * html5 specific
  *
  * */
-
-.monospaced {
-  font-family: monospace;
-  font-size: inherit;
-  color: navy;
-}
 
 table.tableblock {
   margin-top: 1.0em;
@@ -537,6 +533,8 @@ body.manpage div.sectionbody {
 @media print {
   body.manpage div#toc { display: none; }
 }
+
+
 </style>
 <script type="text/javascript">
 /*<![CDATA[*/
@@ -581,7 +579,7 @@ toc: function (toclevels) {
 
   function tocEntries(el, toclevels) {
     var result = new Array;
-    var re = new RegExp('[hH]([2-'+(toclevels+1)+'])');
+    var re = new RegExp('[hH]([1-'+(toclevels+1)+'])');
     // Function that scans the DOM tree for header elements (the DOM2
     // nodeIterator API would be a better technique but not supported by all
     // browsers).
@@ -610,7 +608,7 @@ toc: function (toclevels) {
   var i;
   for (i = 0; i < toc.childNodes.length; i++) {
     var entry = toc.childNodes[i];
-    if (entry.nodeName == 'div'
+    if (entry.nodeName.toLowerCase() == 'div'
      && entry.getAttribute("class")
      && entry.getAttribute("class").match(/^toclevel/))
       tocEntriesToRemove.push(entry);
@@ -656,7 +654,7 @@ footnotes: function () {
   var entriesToRemove = [];
   for (i = 0; i < noteholder.childNodes.length; i++) {
     var entry = noteholder.childNodes[i];
-    if (entry.nodeName == 'div' && entry.getAttribute("class") == "footnote")
+    if (entry.nodeName.toLowerCase() == 'div' && entry.getAttribute("class") == "footnote")
       entriesToRemove.push(entry);
   }
   for (i = 0; i < entriesToRemove.length; i++) {
@@ -737,7 +735,7 @@ asciidoc.install();
 <div id="header">
 <h1>Just Annotate My Genome (JAMg) info</h1>
 <span id="author">Alexie Papanicolaou</span><br />
-<span id="email"><tt>&lt;<a href="mailto:alexie@butterflybase.org">alexie@butterflybase.org</a>&gt;</tt></span><br />
+<span id="email"><code>&lt;<a href="mailto:alexie@butterflybase.org">alexie@butterflybase.org</a>&gt;</code></span><br />
 <span id="revnumber">version RC1,</span>
 <span id="revdate">December 2013</span>
 </div>
@@ -752,18 +750,18 @@ asciidoc.install();
 <h3 id="_genome_annotation">Genome annotation</h3>
 <div class="paragraph"><p>When genome biologists talk about annotation they can mean one of two things: <strong>feature annotation</strong> is identifying which parts of the genome are coding, the structure of the gene (where does each exon and ORF start &amp; end) and identifying any alternative splicing events. This allows us to build a database of transcripts and proteins for the entire species and the field of de-novo gene prediction (e.g. SNAP, Augustus, GeneMark etc) is a good example of the output. The second definition of annotation is <strong>functional annotation</strong>: what does a particular gene actually do. The Gene Ontology consortium is a good example of a group of scientists that deliver functional annotation knowledge: they read the literature and integrate it with any <em>in-silico</em> information that may exist. Alternatively, pure <em>in-silico</em> information (e.g. BLAST to a known protein) can deliver some information via inference.</p></div>
 <div class="paragraph"><p><strong>Feature annotation</strong> is a mature field and an excellent example of the interdisciplinary use of maths, computer science and biology. There are a number of de-novo gene predictors (each with its strengths and weaknesses) and all rely on building a predictive model that is applied genome-wide (see <a href="http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3207268/">Haas et al 2011</a>). The use of models (such as Hidden Markov Models) trained by a handful of known sequences has performed exceptionally well as it seems that - as far as it is known - that species (or taxa) have a remarkable specific way of constructing their coding seqeunce (e.g. taxon-specific codon usage). However, it is naturally prone to a high rate of false positives (type II errors). The problem is a direct result of a large search space (millions of letters) that contain a dispersed and relatively small amount of signal (e.g. can be as low as 10 % of the total). Type I errors are less likely to occur because of the characteristics of coding sequences (we have a well understood structure such as a start, stop, no stop codons in the middle, exon/intron splice sites etc). Type II errors, however, occur when a stretch of stop-codon-free sequence looks coding but in fact it isn&#8217;t (either because it never was or it has become a pseudogene - worse still with modern genome sequencing: it could be a misassembly). Further, even if a gene model is predicted, it is not possible to identify the actual transcripts generated by this gene unless we have some external information: known transcripts from other species or transcriptomes. Finally, the ability to annotate UTR features is limited: the paucity of conserved signals and variability in the sequence complexity makes it difficult even though correct prediction of a long UTR (even if approximatelly correct) prevents from false positives being predicted in those regions.</p></div>
-<div class="paragraph"><p>These two lines of evidence can help improve both the accuracy of genome annotation and construct the exact transcripts produced. The known transcripts can be from the same (e.g. <a href="http://trinityrnaseq.sourceforge.net/">de-novo transcript assembly</a>) or a related species (that has been annotated - but see below for <em>'propagation of annotation error</em>'). There are disadvantages to both approaches: the former relies on the transcript being actually expressed and correctly reconstructed, the latter requires the gene to be sufficiently conserved - a situation that will improve as we sequence and annotate more species. Most de-novo gene predictors do not or only mildly support such external evidence (they use it to add some weight on some predictions). A bright exception is AUGUSTUS which - if used correctly - has the in-built feature of using such lines of evidence to weight predictions, join exons into a single gene and identify alternative transcription events (via the use of <em>junction reads</em>).</p></div>
+<div class="paragraph"><p>These two lines of evidence can help improve both the accuracy of genome annotation and construct the exact transcripts produced. The known transcripts can be from the same (e.g. <a href="http://trinityrnaseq.github.io">de-novo transcript assembly</a>) or a related species (that has been annotated - but see below for <em>'propagation of annotation error</em>'). There are disadvantages to both approaches: the former relies on the transcript being actually expressed and correctly reconstructed, the latter requires the gene to be sufficiently conserved - a situation that will improve as we sequence and annotate more species. Most de-novo gene predictors do not or only mildly support such external evidence (they use it to add some weight on some predictions). A bright exception is AUGUSTUS which - if used correctly - has the in-built feature of using such lines of evidence to weight predictions, join exons into a single gene and identify alternative transcription events (via the use of <em>junction reads</em>).</p></div>
 <div class="paragraph"><p>Further, even before the availability of such external evidence, an approach - used widely - is the use multiple de-novo gene predictors and use a voting mechanism (e.g. GLEAN or EvidenceModeller). These tools have the ability to bring together not only gene predictions but other lines of evidence (such as manually curated genes) and build a <em>consensus gene set</em>. Finally, even though we can use transcript evidence to guide gene prediction (and with AUGUSTUS also transcript prediction), once gene prediction is complete that transcript evidence must then be incorporated back into the consensus gene set, enabling us to identify more alternative transcripts and - now that we know what are the ORFs of the transcripts - accurately identify their UTR features. After manual inspection and correction of errors (i.e. curation), the biologist can subsequently repeat the entire process to deliver incrementally improved genome annotations. Alternatively, if multiple species are available, they can annotate an entire taxon and having purging obvious errors and low quality data, run a second annotation round informed with high quality models.</p></div>
 <div class="literalblock">
 <div class="content">
-<pre><tt>_TODO_ improve clarity of some sentences</tt></pre>
+<pre><code>_TODO_ improve clarity of some sentences</code></pre>
 </div></div>
 </div>
 <div class="sect2">
 <h3 id="_propagation_of_annotation_error_and_curation">Propagation of annotation error and curation</h3>
 <div class="literalblock">
 <div class="content">
-<pre><tt>(which happen often due to Type II error)... _TODO_</tt></pre>
+<pre><code>(which happen often due to Type II error)... _TODO_</code></pre>
 </div></div>
 </div>
 <div class="sect2">
@@ -790,7 +788,7 @@ asciidoc.install();
 </div>
 <div class="sect2">
 <h3 id="_obtaining_jamg">Obtaining JAMg</h3>
-<div class="paragraph"><p>Freely distributed from <a href="https://sourceforge.net/projects/jamg/files/RC/">here</a>. Please subscribe to the <a href="https://lists.sourceforge.net/lists/listinfo/jamg-users">user mailing list</a>.</p></div>
+<div class="paragraph"><p>Freely distributed from <a href="https://github.com/genomecuration/JAMg">here</a>. Please subscribe to the <a href="https://lists.sourceforge.net/lists/listinfo/jamg-users">user mailing list</a>.</p></div>
 <div class="paragraph"><p>It&#8217;s not published. We really appreciate any comments and feedback you can provide, so please do no matter how minor you think they are (e.g. typos in this document).</p></div>
 <div class="paragraph"><p>We support only 64bit Linux (Ubuntu preferred) but users should feel free try other platforms. Repositories such as that from Ubuntu allow users to quickly install secondary software such as samtools.</p></div>
 <div class="paragraph"><p>We found it painful to have to find and install all the various bit of software that are needed. For that reason, we distribute a number of 3rd party software (see 3rd_party) within the distribute to facilitate installation (often under the Agglomeration terms of GPL) but we assume that users have a 64bit Linux Operating System.</p></div>
@@ -835,12 +833,12 @@ Then, read the <a href="tutorial.html">tutorial</a>.</p></div>
 </li>
 <li>
 <p>
-<a href="http://trinityrnaseq.sourceforge.net/">Trinity RNA-Seq</a>: Arguably, the best de-novo RNA-seq assembler out there.
+<a href="http://trinityrnaseq.github.io/">Trinity RNA-Seq</a>: Arguably, the best de-novo RNA-seq assembler out there.
 </p>
 </li>
 <li>
 <p>
-<a href="http://transdecoder.sourceforge.net">TransDecoder</a>: protein prediction from RNA-Seq assemblies, bundled in PASA2 so no need to install it separately.
+<a href="http://transdecoder.github.io/">TransDecoder</a>: protein prediction from RNA-Seq assemblies, bundled in PASA2 so no need to install it separately.
 </p>
 </li>
 <li>
@@ -917,7 +915,7 @@ Tomcat and Apache webserver
 </ul></div>
 <div class="paragraph"><p>All of the above software are installed with</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.5
+<div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -948,9 +946,9 @@ Tutorials and videos
    <a href="mailto:alexie@butterflybase.org">alexie@butterflybase.org</a></p></div>
 <div class="literalblock">
 <div class="content">
-<pre><tt>Copyright CSIRO 2013-2014.
+<pre><code>Copyright CSIRO 2013-2014.
 This software is released under the Mozilla Public License v.2. You can find the terms and conditions at http://www.mozilla.org/MPL/2.0.
-It is provided "as is" without warranty of any kind.</tt></pre>
+It is provided "as is" without warranty of any kind.</code></pre>
 </div></div>
 </div>
 </div>
@@ -960,7 +958,7 @@ It is provided "as is" without warranty of any kind.</tt></pre>
 <div id="footer">
 <div id="footer-text">
 Version RC1<br />
-Last updated 2014-04-18 17:06:53 EST
+Last updated 2015-05-15 02:21:55 EST
 </div>
 </div>
 </body>
