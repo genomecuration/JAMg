@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 
-$path = "";
+$path = $ENV{'JAMG_PATH'}."/3rd_party/RECON/bin";
 
 if (!$path) {
     die "Please modifiy this script to specify the path to the binaries.\n";
