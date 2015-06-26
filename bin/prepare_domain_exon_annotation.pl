@@ -21,7 +21,7 @@ Optional
 
  -minsize         :i   => Minimum number of nucleotides without a stop codon to define an exon (def. 150bp)
  -circular             => If genome is a circular molecule (bacteria, mtDNA etc)
- -repeatoptions        => Any options to pass on to repeatmasker (e.g. -species)
+ -repeatoptions        => Any options to pass on to repeatmasker using key=value notation. Pass multiple options delimited by :colon: (e.g. -repeatoptions species=vertebrates:nopost:frag=1000000)
  
  -repthreads      :i   => Number of CPUs to use for Repeatmasking (def. 2)
  -mpi_cpus        :i   => Number of MPI threads (or CPUs for local and nodes for cluster) to use (if applicable; def to 2). Careful of memory usage if local!
@@ -933,7 +933,16 @@ sub parse_hhr() {
 sub do_repeat_masking(){
   my $repeatmasker_options = shift;
   print "Masking repeats with $cpus CPUs (cf $genome.repeatmasking.log)..\n";
-  print "Repeat options: $repeatmasker_options\n";
+  if ($repeatmasker_options){
+    my @option_array = split(":",$repeatmasker_options);
+    $repeatmasker_options = '';
+    foreach my $option (@option_array){
+      my @key_value = split("=",$option);
+      $repeatmasker_options.=' -'.$key_value[0].' '.$key_value[1] if $key_value[1];
+      $repeatmasker_options.=' -'.$key_value[0] if !$key_value[1];
+    }
+    print "Repeat options: $repeatmasker_options\n";
+  } 
   &process_cmd("$repeatmasker_exec $repeatmasker_options -e ncbi -frag 5000000 -gff -pa $cpus -qq $genome 2>&1 > $genome.repeatmasking.log");
   my $repeat_gff_file = $genome.".out.gff";
   die "Repeatmasking failed to produce $repeat_gff_file\n" unless -s $repeat_gff_file;

@@ -1,0 +1,7 @@
+
+git clone https://github.com/trinityrnaseq/trinityrnaseq.git
+
+
+autoreconf --install
+
+
