@@ -8,9 +8,8 @@ Prepare data for Trinity Genome Guided. Run it on the base directory where align
 
 Mandatory Options:
 
-	   -bam   :s  => BAM file, co-ordinate sorted
-	OR -sam   :s  => SAM file, co-ordinate sorted
-        OR -files :s  => Many BAM files, co-ordinate sorted
+	   -bam |files  :s  => BAM files, co-ordinate sorted
+	OR -sam         :s  => SAM files, co-ordinate sorted
 
 Optional:
 
@@ -24,6 +23,7 @@ Optional:
 	-cpu             :i => Number of CPUs (def 4)
 	-memory          :s => Sorting memory to use, give as e.g. 20G (def 20G).
 	-split_scaffolds    => Split alignments to one per reference sequence
+	-size_scaffold   :i => Minimum size of scaffolds for -split_scaffolds (def. 3000)
 
  Note: Except for -intron, the defaults should be ok for most projects. 
 
@@ -45,6 +45,7 @@ $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/trinityrnaseq/util/support_script
 
 my $cwd   = `pwd`;
 chomp($cwd);
+my $scaffold_size_cutoff = 3000;
 my $intron_max_size = 70000;
 my $minimum_reads = 50;
 my $small_cut     = 1024 * 1024 * 1024;
@@ -106,15 +107,15 @@ if (!$read_files[0]){
 		my $TGG_prep_cmd = "$TGG_prep_exec --coord_sorted_SAM  $sam_file -I $intron_max_size --sort_buffer $memory ";
 		$TGG_prep_cmd .= " --SS_lib_type $is_single_stranded " if $is_single_stranded;
 		$TGG_prep_cmd .= " --min_reads_per_partition $minimum_reads ";
-		&process_cmd($TGG_prep_cmd);
-		unlink($sam_file) if $delete_sam;
-		@read_files = `find . -maxdepth 6 -name "*.reads"`;
-		chomp(@read_files);
+		my $res = &process_cmd($TGG_prep_cmd);
+		unlink($sam_file) if $delete_sam && (!$res || $res == 256);
 	}
 }
 
 ############### PART TWO ###########################
 
+push(@read_files, `find . -maxdepth 6 -name "*.reads"`);
+chomp(@read_files);
 print "Now searching for .reads files within a depth of 6 subdirectories and producing new *_trinity_GG commands...\n";
 die "No read files found.\n" unless @read_files && scalar(@read_files) > 1;
 
@@ -181,7 +182,7 @@ if ( -s "small_trinity_GG.cmds" ) {
  open( IN, "small_trinity_GG.cmds" );
  my @array;
  while ( my $ln = <IN> ) {
-  $ln =~ s/JM 2G --CPU 4/JM 1G --CPU 1/;
+  $ln =~ s/JM 2G --CPU 4/JM 2G --CPU 2/;
   chomp($ln);
   $ln .= " >/dev/null\n";
   push( @array, $ln );
@@ -199,7 +200,7 @@ if ( -s "medium_trinity_GG.cmds" ) {
  open( IN, "medium_trinity_GG.cmds" );
  my @array;
  while ( my $ln = <IN> ) {
-  $ln =~ s/JM 2G --CPU 4/JM 3G --CPU 2/;
+  $ln =~ s/JM 2G --CPU 4/JM 4G --CPU 4/;
   chomp($ln);
   $ln .= " >/dev/null\n";
   push( @array, $ln );
@@ -217,7 +218,7 @@ if ( -s "large_trinity_GG.cmds" ) {
  open( IN,  "large_trinity_GG.cmds" );
  open( OUT, ">large_trinity_GG.cmds." );
  while ( my $ln = <IN> ) {
-  $ln =~ s/JM 2G --CPU 4/JM 3G --CPU 6/;
+  $ln =~ s/JM 2G --CPU 4/JM 4G --CPU 6/;
   chomp($ln);
   $ln .= " >/dev/null\n";
   print OUT $ln;
@@ -257,7 +258,7 @@ sub process_cmd {
   die "Error, cmd died with ret $ret\n";
  }
  chdir($cwd) if $dir;
- return;
+ return $ret;
 }
 
 sub mytime() {
@@ -279,16 +280,19 @@ sub mytime() {
 sub split_scaffold_sam(){
 	my $bam_file = shift;
 	return unless $bam_file && -s $bam_file;
-	print "Splitting alignments per genome sequence\n";
 	my @scaff_sams;
 	my @scaff_id_lines;
 	&process_cmd($samtools_exec." index $bam_file" ) unless -s "$bam_file.bai";	
 	my @bam_scaff_ids = `$samtools_exec view -H $bam_file |grep '^\@SQ' `;
 	foreach my $ln (@bam_scaff_ids){
-		if ($ln=~/\bSN:(\S+)\b/){	
-			push(@scaff_id_lines,$1);
+		if ($ln=~/\bSN:(\S+)\b\tLN:(\d+)/){
+			my $id = $1; my $size = $2;
+			next if !$size || $size < $scaffold_size_cutoff;
+			push(@scaff_id_lines,$id);
 		}
 	}
+	my $total_scaffolds = scalar(@scaff_id_lines);
+	print "Splitting alignments per genome sequence above $scaffold_size_cutoff b.p. ($total_scaffolds)\n";
 	foreach my $scaff_id (@scaff_id_lines){
 		my $sam_file = "$bam_file.$scaff_id.sam";
 		&process_cmd($samtools_exec."  view -@ $cpus -F4 $bam_file $scaff_id > $sam_file" ) unless -s $sam_file;
