@@ -24,6 +24,8 @@ Optional:
 	-memory          :s => Sorting memory to use, give as e.g. 20G (def 20G).
 	-split_scaffolds    => Split alignments to one per reference sequence
 	-size_scaffold   :i => Minimum size of scaffolds for -split_scaffolds (def. 3000)
+        -scaffold_thread :i => Number of parallel processes to use with -split_scaffolds (def 3)
+	-skip_sam	    => Jump into the processing regardless existing .reads regardless of the -bam / -sam option
 
  Note: Except for -intron, the defaults should be ok for most projects. 
 
@@ -38,10 +40,14 @@ use Time::localtime;
 use List::Util 'shuffle';
 use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
+
 $ENV{PATH} .= ":$RealBin:$RealBin/";
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin";
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/trinityrnaseq/util";
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/trinityrnaseq/util/support_scripts";
+
+#threaded
+use Thread_helper;    # threads -1
 
 my $cwd   = `pwd`;
 chomp($cwd);
@@ -53,6 +59,8 @@ my ($medium_cut,@sam_files,@bam_files,$delete_sam,@read_files,$is_single_strande
 my $debug = 1;
 my $cpus = 4;
 my $memory = '20G';
+my $threads                = 3;
+my $skip_sam;
 pod2usage $! unless &GetOptions(
 	'memory:s'     => \$memory,
 	'cpu|thread:i' => \$cpus,
@@ -66,14 +74,17 @@ pod2usage $! unless &GetOptions(
 	'intron_max:i'   => $intron_max_size,
 	'single_stranded:s' => \$is_single_stranded,
 	'single_end' => \$single_end,
-	'split_scaffolds' => \$do_split_scaffolds
+	'split_scaffolds' => \$do_split_scaffolds,
+	'scaffold_threads:i'    => \$threads,
+	'skip_sam'           => \$skip_sam
 );
 pod2usage if $help;
 my ($samtools_exec,$TGG_prep_exec,$TGG_exec) = &check_program('samtools','prep_rnaseq_alignments_for_genome_assisted_assembly.pl','JAMG_TGG_cmds.pl');
 
-@read_files = `find . -maxdepth 6 -name "*.reads"`;
-chomp(@read_files);
-
+if ($skip_sam){
+	@read_files = `find . -maxdepth 6 -name "*.reads"`;
+	chomp(@read_files);
+}
 ############### PART ONE ###########################
 
 if (!$read_files[0]){
@@ -103,18 +114,18 @@ if (!$read_files[0]){
 	pod2usage ("Can't find SAM files\n") unless @sam_files && -s $sam_files[0];
         print "Will use SAM as input:\n".join(" ",@sam_files)."\n";
 
+ 	my $thread_helper = new Thread_helper($threads);
 	foreach my $sam_file (@sam_files){
-		my $TGG_prep_cmd = "$TGG_prep_exec --coord_sorted_SAM  $sam_file -I $intron_max_size --sort_buffer $memory ";
-		$TGG_prep_cmd .= " --SS_lib_type $is_single_stranded " if $is_single_stranded;
-		$TGG_prep_cmd .= " --min_reads_per_partition $minimum_reads ";
-		my $res = &process_cmd($TGG_prep_cmd);
-		unlink($sam_file) if $delete_sam && (!$res || $res == 256);
+		my $thread = threads->create( 'process_sam_file', $sam_file );
+		$thread_helper->add_thread($thread);
 	}
+	$thread_helper->wait_for_all_threads_to_complete();
 }
+
 
 ############### PART TWO ###########################
 
-push(@read_files, `find . -maxdepth 6 -name "*.reads"`);
+@read_files = `find . -maxdepth 6 -name "*.reads"`;
 chomp(@read_files);
 print "Now searching for .reads files within a depth of 6 subdirectories and producing new *_trinity_GG commands...\n";
 die "No read files found.\n" unless @read_files && scalar(@read_files) > 1;
@@ -182,7 +193,7 @@ if ( -s "small_trinity_GG.cmds" ) {
  open( IN, "small_trinity_GG.cmds" );
  my @array;
  while ( my $ln = <IN> ) {
-  $ln =~ s/JM 2G --CPU 4/JM 2G --CPU 2/;
+  $ln =~ s/max_memory 2G --CPU 4/max_memory 2G --CPU 2/;
   chomp($ln);
   $ln .= " >/dev/null\n";
   push( @array, $ln );
@@ -200,7 +211,7 @@ if ( -s "medium_trinity_GG.cmds" ) {
  open( IN, "medium_trinity_GG.cmds" );
  my @array;
  while ( my $ln = <IN> ) {
-  $ln =~ s/JM 2G --CPU 4/JM 4G --CPU 4/;
+  $ln =~ s/max_memory 2G --CPU 4/max_memory 4G --CPU 4/;
   chomp($ln);
   $ln .= " >/dev/null\n";
   push( @array, $ln );
@@ -218,7 +229,7 @@ if ( -s "large_trinity_GG.cmds" ) {
  open( IN,  "large_trinity_GG.cmds" );
  open( OUT, ">large_trinity_GG.cmds." );
  while ( my $ln = <IN> ) {
-  $ln =~ s/JM 2G --CPU 4/JM 4G --CPU 6/;
+  $ln =~ s/max_memory 2G --CPU 4/max_memory 4G --CPU 6/;
   chomp($ln);
   $ln .= " >/dev/null\n";
   print OUT $ln;
@@ -301,4 +312,14 @@ sub split_scaffold_sam(){
 	}
 	die "No SAM files produced from genome\n" unless @scaff_sams && -s $scaff_sams[0];
 	return @scaff_sams;
+}
+
+sub process_sam_file(){
+	my $sam_file = shift;
+	return unless -s $sam_file;
+	my $TGG_prep_cmd = "$TGG_prep_exec --coord_sorted_SAM  $sam_file -I $intron_max_size --sort_buffer $memory ";
+	$TGG_prep_cmd .= " --SS_lib_type $is_single_stranded " if $is_single_stranded;
+	$TGG_prep_cmd .= " --min_reads_per_partition $minimum_reads ";
+	my $res = &process_cmd($TGG_prep_cmd);
+	unlink($sam_file) if $delete_sam && (!$res || $res == 256);
 }
