@@ -19,7 +19,7 @@ Mandatory
  
 Optional
 
- -minsize         :i   => Minimum number of nucleotides without a stop codon to define an exon (def. 150bp)
+ -minsize         :i   => Minimum number of nucleotides without a stop codon to define an exon (def. 100bp)
  -circular             => If genome is a circular molecule (bacteria, mtDNA etc)
  -repeatoptions        => Any options to pass on to repeatmasker using key=value notation. Pass multiple options delimited by :colon: (e.g. -repeatoptions species=vertebrates:nopost:frag=1000000)
  
@@ -34,6 +34,8 @@ Optional
  -verbose              => Print out every command before it is executed.
 
  -only_repeat	       => Only do RepeatMasking and then exit
+
+ -only_parse      :s   => Just parse this HHblits output and then exit. Useful if ran outside this script and want to produce .hints/gff files.
  
 =head1 NOTES
             
@@ -72,9 +74,9 @@ $ENV{HHLIB} =  "$RealBin/../3rd_party/hhsuite/lib/hh";
 my (
      $genome,          $circular,          $repeatmasker_options,
      $mpi_host_string, $help,              $verbose,$only_repeat,
-     $scratch_dir,     $no_uniprot_search, $no_transposon_search
+     $scratch_dir,     $no_uniprot_search, $no_transposon_search, $only_parse
 );
-my $minsize       = 150;
+my $minsize       = 100;
 my $cpus          = 2;
 my $hhblits_cpus  = 10;
 my $engine        = 'local';
@@ -100,10 +102,20 @@ GetOptions(
             'no_uniprot'        => \$no_uniprot_search,
             'no_transposon'     => \$no_transposon_search,
             'only_repeat'       => \$only_repeat,
+            'only_parse:s'       => \$only_parse,
             'min_exons_hints:i' =>\$min_exons_before_reporting
 );
 
 pod2usage( -verbose => 2 ) if $help;
+
+
+if ($only_parse){
+ die "Cannot find HHBlits output file $only_parse\n" unless -s $only_parse;
+ my $parse_results = &parse_hhr(  $only_parse, 70, 1e-3, 1e-6, 100, 50, 30 );
+ print "Completed, see $parse_results\n";
+ exit(0);
+}
+
 die "-mpi_cpus needs to be larger than 1 (not $hhblits_cpus)\n" if $hhblits_cpus < 2;
 die pod2usage "No genome FASTA provided\n" unless $genome && -s $genome;
 $engine = lc($engine);
@@ -117,6 +129,7 @@ die pod2usage "Engine must be local, localmpi or PBS\n"
 pod2usage "For MPI engine I need a host definition with -hosts\n"
   if $engine && $engine eq 'mpi' && !$mpi_host_string;
 
+
 my ( $getorf_exec, $repeatmasker_exec ) =
   &check_program( 'getorf', 'RepeatMasker' );
 
@@ -126,7 +139,7 @@ unless (-s $genome . '.masked'){
 
 die "Could not find masked genome $genome.\n" unless -s $genome;
 if ($only_repeat){
-	print "User stop requested after RepeatmMasking step.\n";
+	print "User stop requested after RepeatMasking step.\n";
 	exit;
 }
 

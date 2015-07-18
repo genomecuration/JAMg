@@ -44,7 +44,7 @@ my $DEBUG = $opt_d;
 my $fasta_db = $opt_t or die "Must specify cdna fasta db filename.\n";
 our $SEE = $opt_v;
 
-my $fl_acc_list_file = $opt_f;
+my $fl_acc_list_file = $opt_f unless $opt_f eq 'NULL';
 my $TDN_list_file = $opt_T;
 
 my $MYSQLserver = &Pasa_conf::getParam("MYSQLSERVER");
@@ -54,7 +54,7 @@ my $password = &Pasa_conf::getParam("MYSQL_RW_PASSWORD");
 my ($dbproc) = &Mysql_connect::connect_to_db($MYSQLserver,$MYSQLdb,$user,$password);
 
 my %FL;
-if ($fl_acc_list_file && $fl_acc_list_file ne "NULL") {
+if ($fl_acc_list_file) {
     open (my $fh, $fl_acc_list_file) or die "Error, cannot open $fl_acc_list_file";
     while (<$fh>) {
         my @x = split (/\s+/);
@@ -78,7 +78,6 @@ if ($TDN_list_file) {
     }
 }
 
-
 my $seen_FL_acc_flag = 0; # make sure that if FL are specified, that we encounter one in the fasta db.
 my $seen_TDN_flag = 0;
 my $fasta_reader = new Fasta_reader($fasta_db);
@@ -92,7 +91,6 @@ while (my $seqObj = $fasta_reader->next()) {
 
     my $fl_flag = $FL{$acc} || 0;
     my $TDN_flag = $TDN{$acc} || 0;
-
     my $query = qq { insert cdna_info (cdna_acc, is_assembly, is_fli, is_TDN, length, header) values (?,?,?,?,?,?) };
     &RunMod($dbproc, $query, $acc, 0, $fl_flag, $TDN_flag, $seq_length, $header);
     
@@ -112,8 +110,8 @@ if (%FL && !$seen_FL_acc_flag) {
     die "Error, no accession in the fl_acc_file ($fl_acc_list_file) was encountered in database ($fasta_db)";
 }
 
-if (%TDN && ! $seen_TDN_flag) {
-    die "Error, no acc in the $TDN_list_file was encoutnered in the database ($fasta_db)";
+if (%TDN && !$seen_TDN_flag) {
+    die "Error, no acc in the $TDN_list_file was encountered in the database ($fasta_db)";
 }
 
 $dbproc->disconnect;

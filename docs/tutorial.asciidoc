@@ -213,7 +213,7 @@ $JAMG_PATH/3rd_party/PASA/scripts/Launch_PASA_pipeline.pl -c alignAssembly.confi
  --TDN tdn.accs -x > pasa.alignAssembly.commands.to.run
 # Now run it.
 $JAMG_PATH/3rd_party/PASA/scripts/Launch_PASA_pipeline.pl -c alignAssembly.config -C -R \
- -g $GENOME_PATH --MAX_INTRON_LENGTH $max_intron_length \
+ -g $GENOME_PATH --MAX_INTRON_LENGTH $MAX_INTRON_LENGTH \
  --ALIGNERS blat,gmap --TRANSDECODER --CPU $LOCAL_CPUS \
  -T -t transcripts.fasta.clean -u transcripts.fasta \
  --TDN tdn.accs |& tee pasa.log
