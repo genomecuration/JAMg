@@ -82,7 +82,7 @@ my $seen_FL_acc_flag = 0; # make sure that if FL are specified, that we encounte
 my $seen_TDN_flag = 0;
 my $fasta_reader = new Fasta_reader($fasta_db);
 $dbproc->{dbh}->{AutoCommit} = 0;
-
+my $counter=1;
 while (my $seqObj = $fasta_reader->next()) {
     my $acc = $seqObj->get_accession();
     my $header = $seqObj->get_header();
@@ -100,20 +100,22 @@ while (my $seqObj = $fasta_reader->next()) {
     if ($TDN_flag) {
         $seen_TDN_flag = 1;
     }
+    $dbproc->{dbh}->commit() if $counter % 100 == 0;
+    $counter++;
 }
 
 print STDERR "Committing...\n";
 $dbproc->{dbh}->commit();
+$dbproc->disconnect;
 
 
 if (%FL && !$seen_FL_acc_flag) {
-    die "Error, no accession in the fl_acc_file ($fl_acc_list_file) was encountered in database ($fasta_db)";
+    warn "Error, no accession in the fl_acc_file ($fl_acc_list_file) was encountered in database ($fasta_db)";
 }
 
 if (%TDN && !$seen_TDN_flag) {
-    die "Error, no acc in the $TDN_list_file was encountered in the database ($fasta_db)";
+    warn "Error, no acc in the $TDN_list_file was encountered in the database ($fasta_db)";
 }
 
-$dbproc->disconnect;
 exit(0);
 

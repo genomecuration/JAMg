@@ -352,7 +352,8 @@ sub get_TDN_component {
         $component = $1;
     }
     else {
-        confess "Error, cannot extract component info from trinity de novo assembly: $cdna_acc";
+        warn "Error, cannot extract component info from trinity de novo assembly: $cdna_acc. Assuming not a Trinity transcript\n";
+        return($cdna_acc);
     }
     
     return($component);

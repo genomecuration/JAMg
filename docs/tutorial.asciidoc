@@ -6,7 +6,7 @@
 
 A tutorial for Just_Annotate_My_genome using 'Drosophila melanogaster', a small amount (50 million pairs) of RNA-Seq and public Sanger sequences.
 
-In modern projects you will have substantially more RNA-Seq (at least 150 million, i.e. one HiSeq lane) and probably little to no Sanger/454 sequences. However, this makes the tutorial shorter and shows how even established genomes can be annotated (it is also a shameless plug for http://insectacentral.org[InsectaCentral].
+In modern projects you will have substantially more RNA-Seq (at least 150 million, i.e. one HiSeq lane) and probably little to no Sanger/454 sequences. However, this makes the tutorial shorter and shows how even established genomes can be annotated (it is also a shameless plug for link:http://insectacentral.org[InsectaCentral].
 
 This tutorial assumes you know how to use a (ba)sh Linux shell, can create and navigate through directories. In the tutorial we don't create any special directories, but in real-world scenarios you would. You'd also keep a log of what you've done (and why), keeping track if something didn't work. If it was a bug from our side, please let us know (but first ask your system administrator if you don't know how to use Linux too well). I also assume you know not to overload your server(s) in terms of CPUs and I/O (hard disk) or network bandwidth. Use 'top' to see if you caused such a bottleneck.
 
@@ -24,7 +24,7 @@ Basic installation instructions:
 [source,bash]
 cd $JAMG_PATH
 make # will install the various software, including RepeatMasker
-# Go to www.giriinst.org and install the repeat library in $JAMG_PATH/3rd_party/RepeatMasker
+# Go to link:http://www.giriinst.org[giriinst.org] and install the repeat library in $JAMG_PATH/3rd_party/RepeatMasker
 # Run configure. Use the RMBlast NCBI option when asked about an engine (the engine is in $JAMG_PATH/3rd_party/bin/)
 $JAMG_PATH/3rd_party/RepeatMasker/configure
 
@@ -103,7 +103,7 @@ pbzip2 -dck SRR*/pass/1/fastq.trimmomatic.bz2 > drosoph_ALL.Left.fastq
 pbzip2 -dck SRR*/pass/2/fastq.trimmomatic.bz2 > drosoph_ALL.Right.fastq
 pbzip2 -dck SRR*/pass/?/fastq.unpaired.bz2 >> drosoph_ALL.Left.fastq # unpaired remnants can go to any file
 
-TIP: We can also use 454 and Sanger data! Then go to http://insectacentral.org/genes4all/download/request[InsectaCentral] and download a FASTA of all 'Drosophila melanogaster' (Diptera:Drosophilidae) contigs. This is a MIRA assembly of all Sanger and 454 data that was available for D. melanogaster at the time. For the tutorial we'll assume you saved them as 'D_melanogaster_ICcontigs.fsa'.
+TIP: We can also use 454 and Sanger data! Then go to link:http://insectacentral.org/genes4all/download/request[InsectaCentral] and download a FASTA of all 'Drosophila melanogaster' (Diptera:Drosophilidae) contigs. This is a MIRA assembly of all Sanger and 454 data that was available for D. melanogaster at the time. For the tutorial we'll assume you saved them as 'D_melanogaster_ICcontigs.fsa'.
 
 TIP: If you want to increase the amount of data for this tutorial (and i.e are willing to wait much longer, then you can download these data which were used for testing JAMg). This will increase TGG's run time by 4 days and TDN by about half a day.
 [source,bash]
@@ -193,7 +193,7 @@ While this ParaFly procedure is running, we can post-process the alignments to c
 # RNASeq_TGG_input.bam is from prepare_trinity_genome_assembly_pbs.pl above
 $JAMG_PATH/bin/augustus_RNAseq_hints.pl -bam RNASeq_TGG_input.bam -genome $GENOME_PATH 
  
-Once TGG and TDN are complete, we can integrate TGG and TDN using http://pasa.sourceforge.net/[PASA2].
+Once TGG and TDN are complete, we can integrate TGG and TDN using link:http://pasa.sourceforge.net/[PASA2].
 
 [source,bash]
 find TGG/Dir_* -name "*inity.fasta" | $JAMG_PATH/3rd_party/trinityrnaseq/util/support_scripts/GG_trinity_accession_incrementer.pl > Trinity_GG.fasta
@@ -234,10 +234,10 @@ GRANT SELECT,INSERT,UPDATE,DELETE ON *.* TO 'user_demo'@'localhost';
 == Step 1c: run de-novo predictors that require no training
 There are some predictors that use no training at all. 
 
-GeneMarkES is one such example:
+GeneMarkES is one such example. Note that you have to install it yourself due to licensing restrictions (link:http://exon.gatech.edu/genemark/license_download.cgi[GeneMark website]):
 
 [source,bash]
-$HOME/software/genemark/gm_es_bp_linux64_v2.3e/gmes/gm_es.pl $GENOME_PATH.masked |tee genemark.log
+$JAMG_PATH/3rd_party/genemark/gm_es_bp_linux64_v2.3e/gmes/gm_es.pl $GENOME_PATH.masked |tee genemark.log
 
 GeneMark will take some time, about overnight. Note that we used the masked version of our genome. Always use a masked version unless you're using Augustus (for which we will specify the repeat co-ordinates separately).
 

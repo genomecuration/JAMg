@@ -769,7 +769,7 @@ http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
 <pre><tt>cd <span style="color: #009900">$JAMG_PATH</span>
 make <span style="font-style: italic"><span style="color: #9A1900"># will install the various software, including RepeatMasker</span></span>
-<span style="font-style: italic"><span style="color: #9A1900"># Go to www.giriinst.org and install the repeat library in $JAMG_PATH/3rd_party/RepeatMasker</span></span>
+<span style="font-style: italic"><span style="color: #9A1900"># Go to link:http://www.giriinst.org[giriinst.org] and install the repeat library in $JAMG_PATH/3rd_party/RepeatMasker</span></span>
 <span style="font-style: italic"><span style="color: #9A1900"># Run configure. Use the RMBlast NCBI option when asked about an engine (the engine is in $JAMG_PATH/3rd_party/bin/)</span></span>
 <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/RepeatMasker/configure</tt></pre></div></div>
 <div class="paragraph"><p>Then download the refseq_insecta_march13_just_useful.tar.bz2 HHblits database from <a href="https://sourceforge.net/projects/jamg/files/databases/">here</a> and uncompress it in $JAMG_PATH/databases/hhblits</p></div>
@@ -1033,7 +1033,7 @@ cp <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/<
  --TDN tdn<span style="color: #990000">.</span>accs -x <span style="color: #990000">&gt;</span> pasa<span style="color: #990000">.</span>alignAssembly<span style="color: #990000">.</span>commands<span style="color: #990000">.</span>to<span style="color: #990000">.</span>run
 <span style="font-style: italic"><span style="color: #9A1900"># Now run it.</span></span>
 <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/scripts/Launch_PASA_pipeline<span style="color: #990000">.</span>pl -c alignAssembly<span style="color: #990000">.</span>config -C -R <span style="color: #990000">\</span>
- -g <span style="color: #009900">$GENOME_PATH</span> --MAX_INTRON_LENGTH <span style="color: #009900">$max_intron_length</span> <span style="color: #990000">\</span>
+ -g <span style="color: #009900">$GENOME_PATH</span> --MAX_INTRON_LENGTH <span style="color: #009900">$MAX_INTRON_LENGTH</span> <span style="color: #990000">\</span>
  --ALIGNERS blat<span style="color: #990000">,</span>gmap --TRANSDECODER --CPU <span style="color: #009900">$LOCAL_CPUS</span> <span style="color: #990000">\</span>
  -T -t transcripts<span style="color: #990000">.</span>fasta<span style="color: #990000">.</span>clean -u transcripts<span style="color: #990000">.</span>fasta <span style="color: #990000">\</span>
  --TDN tdn<span style="color: #990000">.</span>accs <span style="color: #990000">|&amp;</span> tee pasa<span style="color: #990000">.</span>log
@@ -1064,13 +1064,13 @@ GRANT SELECT<span style="color: #990000">,</span>INSERT<span style="color: #9900
 <h2 id="_step_1c_run_de_novo_predictors_that_require_no_training">Step 1c: run de-novo predictors that require no training</h2>
 <div class="sectionbody">
 <div class="paragraph"><p>There are some predictors that use no training at all.</p></div>
-<div class="paragraph"><p>GeneMarkES is one such example:</p></div>
+<div class="paragraph"><p>GeneMarkES is one such example. Note that you have to install it yourself due to licensing restrictions (<a href="http://exon.gatech.edu/genemark/license_download.cgi">GeneMark website</a>):</p></div>
 <div class="listingblock">
 <div class="content"><!-- Generator: GNU source-highlight 3.1.7
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
-<pre><tt><span style="color: #009900">$HOME</span>/software/genemark/gm_es_bp_linux64_v2<span style="color: #990000">.</span>3e/gmes/gm_es<span style="color: #990000">.</span>pl <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>masked <span style="color: #990000">|</span>tee genemark<span style="color: #990000">.</span>log</tt></pre></div></div>
+<pre><tt><span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/genemark/gm_es_bp_linux64_v2<span style="color: #990000">.</span>3e/gmes/gm_es<span style="color: #990000">.</span>pl <span style="color: #009900">$GENOME_PATH</span><span style="color: #990000">.</span>masked <span style="color: #990000">|</span>tee genemark<span style="color: #990000">.</span>log</tt></pre></div></div>
 <div class="paragraph"><p>GeneMark will take some time, about overnight. Note that we used the masked version of our genome. Always use a masked version unless you&#8217;re using Augustus (for which we will specify the repeat co-ordinates separately).</p></div>
 <div class="paragraph"><p>Another tool (under development) is Gavin Huttley&#8217;s <em>projection</em> approach. This approach takes a well annotated genome and <em>projects</em> its gene models to your un-annotated genome. We will not use it for this tutorial but see the <a href="procedure.html#projection">procedure</a> on how to use it.</p></div>
 </div>
@@ -1343,7 +1343,7 @@ http://www.gnu.org/software/src-highlite -->
 <div id="footer">
 <div id="footer-text">
 Version RC1<br />
-Last updated 2015-05-14 06:52:28 EST
+Last updated 2015-08-01 14:12:06 EST
 </div>
 </div>
 </body>
