@@ -18,6 +18,7 @@ Provide a GFF3 file and a genome FASTA file to phase and create sequence feature
   -name            Use Transcript common name as the main ID in the output.
   -lettername      Use -R[two letters] notation for alternative transcript instead of .[digits]  
   -verbose         Print progress and debug info
+  -skip_delete     Skip Status=Delete mRNAs
  
 NB: -name means that the common name has no spaces and is unique (will be checked). Useful for WebApollo
  
@@ -25,6 +26,7 @@ NB: -name means that the common name has no spaces and is unique (will be checke
 
 use strict;
 use warnings;
+use Data::Dumper;
 use Getopt::Long;
 use Pod::Usage;
 use Carp;
@@ -106,7 +108,7 @@ sub gff3_process() {
     next unless $isoform->has_CDS() || !$isoform->get_CDS_span();
     my @model_span  = $isoform->get_CDS_span();
     next if ( abs( $model_span[0] - $model_span[1] ) < 3 );
-
+warn Dumper $isoform;
     my $common_name = $isoform->{transcript_name} || $isoform->{com_name};
     my $description = '';
     my $alt_name    = '';

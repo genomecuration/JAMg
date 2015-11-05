@@ -117,7 +117,8 @@ The Gene_obj contains several attributes which can be manipulated directly (or b
     is_pseudogene # 0|1
     curated_com_name # 0|1
     curated_gene_structure # 0|1
-    
+    status # Deleted Accepted etc
+
     ## Other attributes set internally  Access-only, do not set directly.
         
     gene_length  # length of gene span (int).
@@ -155,6 +156,7 @@ sub new {
   curated_gene_structure => 0,
   pub_comment            => undef,             #text
   ec_num                 => undef,             #text (enzyme commission number)
+  status                 => undef,
   gene_type              => "protein-coding"
   , #default type for gene object.  Could be changed to "rRNA|snoRNA|snRNA|tRNA" to accomodate other gene or feature types.
   gene_sym => undef,    #text (gene symbol)

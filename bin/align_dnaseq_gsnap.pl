@@ -97,7 +97,8 @@ my $pe_distance        = 10000;
              'split_input:i'   => \$split_input,
              'notpaired'       => \$notpaired,
 	     'matepair'        => \$matepair,
-             'piccard_0m'      => \$piccard_0m
+             'piccard_0m'      => \$piccard_0m,
+	     'input_dir:s'     => \$input_dir
 );
 
 pod2usage if $help;
@@ -153,6 +154,8 @@ else {
  $align_cmd =
 "$gsnap_exec --use-sarray=0 -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam --no-sam-headers ";
 }
+
+die "Failed to build genome ($genome.faidx and $gmap_dir/$genome_dbname) " unless -s "$genome.faidx" && -d "$gmap_dir/$genome_dbname";
 
 $align_cmd .= " --nofails "                  if $nofails;
 $align_cmd .= " --pairmax-dna=$pe_distance " if !$notpaired;

@@ -32,7 +32,7 @@ sub index_GFF3_gene_objs {
  my %transcript_names;    #common names for transcript eg -RA
  my %transcript_to_gene;
  my %cds_phases;
-
+ my %mrna_status; #Approved, etc
  my %gene_names;
  my %loci;
 
@@ -107,6 +107,8 @@ sub index_GFF3_gene_objs {
   $gene_info =~ /Parent=([^;\s]+);?/;
   my $parent_str = $1 or die "Error, couldn't get the parent info $_";
   my @parents = split(',',$parent_str);
+  
+
   foreach my $parent (@parents){
 
 
@@ -120,6 +122,15 @@ sub index_GFF3_gene_objs {
    ## just get the identifier info
    $transcript_to_gene{$id} = $parent;
    next;
+  }
+
+  
+  if ( $gene_info =~ /Name=([^\;]+)/ ) {
+    $transcript_names{$id} = $1;          # only one currently
+   }
+
+  if ( $gene_info =~ /status=([^\;]+)/ ) {
+        $mrna_status{$id}=$1;
   }
 
   my $transcript_id = $parent;
@@ -206,6 +217,7 @@ sub index_GFF3_gene_objs {
     $gene_obj->{Model_feat_name} = $transcript_id;
     $gene_obj->{TU_feat_name}    = $gene_id;
     $gene_obj->{asmbl_id}        = $asmbl_id;
+    $gene_obj->{status} = $mrna_status{$transcript_id};
 
     if ( my $gene_locus = $loci{$gene_id} ) {
      $gene_obj->{pub_locus} = $gene_locus;

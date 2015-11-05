@@ -278,9 +278,9 @@ mkdir snap; cd snap
 #train
 mkdir train ; cd train 
 # also copy/link the relevant .fasta .zff data used below
-ln -s ../../*zff* ../../*gff3.fasta .
-$JAMG_PATH/3rd_party/bin/fathom ./*golden.train.zff ./*golden.train.gff3.fasta -gene-stats | tee gene.statistics.log
-$JAMG_PATH/3rd_party/bin/fathom ./*golden.train.zff ./*golden.train.gff3.fasta -categorize 1000
+ln -s ../../*zff* ../../*golden.train.gff3.fasta .
+$JAMG_PATH/3rd_party/bin/fathom ./*golden.train.zff ./*golden.train.gff3.fasta -gene-stats 2>snap_warnings1.log | tee gene.statistics.log
+$JAMG_PATH/3rd_party/bin/fathom ./*golden.train.zff ./*golden.train.gff3.fasta -categorize 1000 2> snap_warnings2.log 
 $JAMG_PATH/3rd_party/bin/fathom -export 1000 -plus uni.ann uni.dna
 $JAMG_PATH/3rd_party/snap/forge export.ann export.dna
 $JAMG_PATH/3rd_party/snap/hmm-assembler.pl $GENOME_NAME . > $GENOME_NAME.hmm # model to use to predict
@@ -332,6 +332,7 @@ cat ../final_golden_genes.gff3.nr.golden.optimization.good.gb.fasta ../final_gol
 # prepare hints for training set reference: RNA-Seq and repeatmasking/exons
 mkdir rnaseqalign; cd rnaseqalign
 ln ../complete_reference_training_set.fasta .
+# symlink the RNA-Seq raw data here.
 $JAMG_PATH/bin/align_rnaseq_gsnap.pl -fasta complete_reference_training_set.fasta -gmap_dir . -suffix -dbname reference_training -pattern1 _1_ -pattern2 _2_ -nofail
 $JAMG_PATH/bin/augustus_RNAseq_hints.pl -bam *uniq_mult.bam -genome complete_reference_training_set.fasta 
 cd ..

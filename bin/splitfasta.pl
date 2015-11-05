@@ -39,43 +39,49 @@ my ($flag);
 my $filecount=0;
 my $seqcount=0;
 mkdir $splitfiledir;			 # to allow multiple runs of this program in wrapper
-open (FILE, "$file2split");
+
+my $orig_sep = $/;
+$/ =  ">";
+
+open (FILE, "$file2split") || die $!;
 print "Processing $file2split\n";
-while (my $line=<FILE>){
-	if ($line=~/^\s*$/){next;}	#empty line
-	elsif ($line=~/^>(\S+)/)
-	 {
-		if ($depth==1){
-			$label=$1;$label=~s/\|/_/g;
-			$label=~s/_+$//;
+
+while (my $record=<FILE>){
+	chomp($record);
+	next unless $record;
+	my @lines = split("\n",$record);
+	my $id = shift (@lines);
+	next unless $id;
+	my $label = $id;
+	$label =~ s/^(\S+).*$/$1/;
+	$label =~ s/\|/_/g;
+	$label =~ s/_+$//;
+	$seqcount++;
+
+	if (!$flag){
+		$filecount++;
+		my $outfile=$label;
+		if ($depth>1){$outfile.="_".$filecount;}
+		$outfile.=$suffix;
+		open (OUT, ">$splitfiledir\/$outfile");
+		$flag=1;
+	}
+	elsif ($seqcount>=$depth){
+		$seqcount=0;
+		$filecount++;
+		my $outfile=$label;
+		if ($depth>1){$outfile.="_".$filecount;}
+		$outfile.=$suffix;
+		close (OUT);
+		open (OUT, ">$splitfiledir\/$outfile");
+		if ($depth>1){
+			print ".";
 		}
-		$seqcount++;
-		if (!$flag){
-			$filecount++;
-			my $outfile=$label;
-			if ($depth>1){$outfile.="_".$filecount;}
-			$outfile.=$suffix;
-			open (OUT, ">$splitfiledir\/$outfile");
-			$flag=1;
-		}
-		elsif ($seqcount>=$depth){
-			$seqcount=0;
-			$filecount++;
-			my $outfile=$label;
-			if ($depth>1){$outfile.="_".$filecount;}
-			$outfile.=$suffix;
-			close (OUT);
-			open (OUT, ">$splitfiledir\/$outfile");
-			if ($depth>1){
-				print ".";
-			}
-		 }
-		 print OUT $line;
 	 }
-	else { print OUT $line; }
+	 print OUT $record;
 }
 close (FILE);
 close (OUT);
-
+$/=$orig_sep;
 
 print "\nProcessed $filecount files.\n";
