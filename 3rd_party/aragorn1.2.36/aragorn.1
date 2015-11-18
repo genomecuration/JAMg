@@ -1,0 +1,390 @@
+'\" t
+.\"     Title: aragorn
+.\"    Author: [see the "AUTHORS" section]
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 02/24/2013
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "ARAGORN" "1" "02/24/2013" "\ \&" "\ \&"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+aragorn \- detect tRNA genes in nucleotide sequences
+.SH "SYNOPSIS"
+.sp
+\fBaragorn\fR [\fIOPTION\fR]\&... \fIFILE\fR
+.SH "OPTIONS"
+.PP
+\fB\-m\fR
+.RS 4
+Search for tmRNA genes\&.
+.RE
+.PP
+\fB\-t\fR
+.RS 4
+Search for tRNA genes\&. By default, all are detected\&. If one of
+\fB\-m\fR
+or
+\fB\-t\fR
+is specified, then the other is not detected unless specified as well\&.
+.RE
+.PP
+\fB\-mt\fR
+.RS 4
+Search for Metazoan mitochondrial tRNA genes\&. tRNA genes with introns not detected\&.
+\fB\-i\fR,
+\fB\-sr\fR
+switchs ignored\&. Composite Metazoan mitochondrial genetic code used\&.
+.RE
+.PP
+\fB\-mtmam\fR
+.RS 4
+Search for Mammalian mitochondrial tRNA genes\&.
+\fB\-i\fR,
+\fB\-sr\fR
+switchs ignored\&.
+\fB\-tv\fR
+switch set\&. Mammalian mitochondrial genetic code used\&.
+.RE
+.PP
+\fB\-mtx\fR
+.RS 4
+Same as
+\fB\-mt\fR
+but low scoring tRNA genes are not reported\&.
+.RE
+.PP
+\fB\-mtd\fR
+.RS 4
+Overlapping metazoan mitochondrial tRNA genes on opposite strands are reported\&.
+.RE
+.PP
+\fB\-gc\fR[\fInum\fR]
+.RS 4
+Use the GenBank transl_table = [\fInum\fR] genetic code\&. Individual modifications can be appended using
+\fI,BBB\fR=<aa> B = A,C,G, or T\&. <aa> is the three letter code for an amino\-acid\&. More than one modification can be specified\&. eg
+\fB\-gcvert\fR,aga=Trp,agg=Trp uses the Vertebrate Mitochondrial code and the codons AGA and AGG changed to Tryptophan\&.
+.RE
+.PP
+\fB\-gcstd\fR
+.RS 4
+Use standard genetic code\&.
+.RE
+.PP
+\fB\-gcmet\fR
+.RS 4
+Use composite Metazoan mitochondrial genetic code\&.
+.RE
+.PP
+\fB\-gcvert\fR
+.RS 4
+Use Vertebrate mitochondrial genetic code\&.
+.RE
+.PP
+\fB\-gcinvert\fR
+.RS 4
+Use Invertebrate mitochondrial genetic code\&.
+.RE
+.PP
+\fB\-gcyeast\fR
+.RS 4
+Use Yeast mitochondrial genetic code\&.
+.RE
+.PP
+\fB\-gcprot\fR
+.RS 4
+Use Mold/Protozoan/Coelenterate mitochondrial genetic code\&.
+.RE
+.PP
+\fB\-gcciliate\fR
+.RS 4
+Use Ciliate genetic code\&.
+.RE
+.PP
+\fB\-gcflatworm\fR
+.RS 4
+Use Echinoderm/Flatworm mitochondrial genetic code
+.RE
+.PP
+\fB\-gceuplot\fR
+.RS 4
+Use Euplotid genetic code\&.
+.RE
+.PP
+\fB\-gcbact\fR
+.RS 4
+Use Bacterial/Plant Chloroplast genetic code\&.
+.RE
+.PP
+\fB\-gcaltyeast\fR
+.RS 4
+Use alternative Yeast genetic code\&.
+.RE
+.PP
+\fB\-gcascid\fR
+.RS 4
+Use Ascidian Mitochondrial genetic code\&.
+.RE
+.PP
+\fB\-gcaltflat\fR
+.RS 4
+Use alternative Flatworm Mitochondrial genetic code\&.
+.RE
+.PP
+\fB\-gcblep\fR
+.RS 4
+Use Blepharisma genetic code\&.
+.RE
+.PP
+\fB\-gcchloroph\fR
+.RS 4
+Use Chlorophycean Mitochondrial genetic code\&.
+.RE
+.PP
+\fB\-gctrem\fR
+.RS 4
+Use Trematode Mitochondrial genetic code\&.
+.RE
+.PP
+\fB\-gcscen\fR
+.RS 4
+Use Scenedesmus obliquus Mitochondrial genetic code\&.
+.RE
+.PP
+\fB\-gcthraust\fR
+.RS 4
+Use Thraustochytrium Mitochondrial genetic code\&.
+.RE
+.PP
+\fB\-tv\fR
+.RS 4
+Do not search for mitochondrial TV replacement loop tRNA genes\&. Only relevant if
+\fB\-mt\fR
+used\&.
+.RE
+.PP
+\fB\-c7\fR
+.RS 4
+Search for tRNA genes with 7 base C\-loops only\&.
+.RE
+.PP
+\fB\-i\fR
+.RS 4
+Search for tRNA genes with introns in anticodon loop with maximum length 3000 bases\&. Minimum intron length is 0 bases\&. Ignored if
+\fB\-m\fR
+is specified\&.
+.RE
+.PP
+\fB\-i\fR[\fImax\fR]
+.RS 4
+Search for tRNA genes with introns in anticodon loop with maximum length [\fImax\fR] bases\&. Minimum intron length is 0 bases\&. Ignored if
+\fB\-m\fR
+is specified\&.
+.RE
+.PP
+\fB\-i\fR[\fImin\fR],[\fImax\fR]
+.RS 4
+Search for tRNA genes with introns in anticodon loop with maximum length [\fImax\fR] bases, and minimum length [\fImin\fR] bases\&. Ignored if
+\fB\-m\fR
+is specified\&.
+.RE
+.PP
+\fB\-io\fR
+.RS 4
+Same as
+\fB\-i\fR, but allow tRNA genes with long introns to overlap shorter tRNA genes\&.
+.RE
+.PP
+\fB\-if\fR
+.RS 4
+Same as
+\fB\-i\fR, but fix intron between positions 37 and 38 on C\-loop (one base after anticodon)\&.
+.RE
+.PP
+\fB\-ifo\fR
+.RS 4
+Same as
+\fB\-if\fR
+and
+\fB\-io\fR
+combined\&.
+.RE
+.PP
+\fB\-ir\fR
+.RS 4
+Same as
+\fB\-i\fR, but report tRNA genes with minimum length [\fImin\fR] bases rather than search for tRNA genes with minimum length [\fImin\fR] bases\&. With this switch, [\fImin\fR] acts as an output filter, minimum intron length for searching is still 0 bases\&.
+.RE
+.PP
+\fB\-c\fR
+.RS 4
+Assume that each sequence has a circular topology\&. Search wraps around each end\&. Default setting\&.
+.RE
+.PP
+\fB\-l\fR
+.RS 4
+Assume that each sequence has a linear topology\&. Search does not wrap\&.
+.RE
+.PP
+\fB\-d\fR
+.RS 4
+Double\&. Search both strands of each sequence\&. Default setting\&.
+.RE
+.PP
+\fB\-s\fR or \fB\-s+\fR
+.RS 4
+Single\&. Do not search the complementary (antisense) strand of each sequence\&.
+.RE
+.PP
+\fB\-sc\fR or \fB\-s\-\fR
+.RS 4
+Single complementary\&. Do not search the sense strand of each sequence\&.
+.RE
+.PP
+\fB\-ps\fR
+.RS 4
+Lower scoring thresholds to 95% of default levels\&.
+.RE
+.PP
+\fB\-ps\fR[\fInum\fR]
+.RS 4
+Change scoring thresholds to [\fInum\fR] percent of default levels\&.
+.RE
+.PP
+\fB\-rp\fR
+.RS 4
+Flag possible pseudogenes (score < 100 or tRNA anticodon loop <> 7 bases long)\&. Note that genes with score < 100 will not be detected or flagged if scoring thresholds are not also changed to below 100% (see \-ps switch)\&.
+.RE
+.PP
+\fB\-seq\fR
+.RS 4
+Print out primary sequence\&.
+.RE
+.PP
+\fB\-br\fR
+.RS 4
+Show secondary structure of tRNA gene primary sequence using round brackets\&.
+.RE
+.PP
+\fB\-fasta\fR
+.RS 4
+Print out primary sequence in fasta format\&.
+.RE
+.PP
+\fB\-fo\fR
+.RS 4
+Print out primary sequence in fasta format only (no secondary structure)\&.
+.RE
+.PP
+\fB\-fon\fR
+.RS 4
+Same as
+\fB\-fo\fR, with sequence and gene numbering in header\&.
+.RE
+.PP
+\fB\-fos\fR
+.RS 4
+Same as
+\fB\-fo\fR, with no spaces in header\&.
+.RE
+.PP
+\fB\-fons\fR
+.RS 4
+Same as
+\fB\-fo\fR, with sequence and gene numbering, but no spaces\&.
+.RE
+.PP
+\fB\-w\fR
+.RS 4
+Print out in Batch mode\&.
+.RE
+.PP
+\fB\-ss\fR
+.RS 4
+Use the stricter canonical 1\-2 bp spacer1 and 1 bp spacer2\&. Ignored if
+\fB\-mt\fR
+set\&. Default is to allow 3 bp spacer1 and 0\-2 bp spacer2, which may degrade selectivity\&.
+.RE
+.PP
+\fB\-v\fR
+.RS 4
+Verbose\&. Prints out information during search to STDERR\&.
+.RE
+.PP
+\fB\-a\fR
+.RS 4
+Print out tRNA domain for tmRNA genes\&.
+.RE
+.PP
+\fB\-a7\fR
+.RS 4
+Restrict tRNA astem length to a maximum of 7 bases
+.RE
+.PP
+\fB\-aa\fR
+.RS 4
+Display message if predicted iso\-acceptor species does not match species in sequence name (if present)\&.
+.RE
+.PP
+\fB\-j\fR
+.RS 4
+Display 4\-base sequence on 3\*(Aq end of astem regardless of predicted amino\-acyl acceptor length\&.
+.RE
+.PP
+\fB\-jr\fR
+.RS 4
+Allow some divergence of 3\*(Aq amino\-acyl acceptor sequence from NCCA\&.
+.RE
+.PP
+\fB\-jr4\fR
+.RS 4
+Allow some divergence of 3\*(Aq amino\-acyl acceptor sequence from NCCA, and display 4 bases\&.
+.RE
+.PP
+\fB\-q\fR
+.RS 4
+Dont print configuration line (which switchs and files were used)\&.
+.RE
+.PP
+\fB\-rn\fR
+.RS 4
+Repeat sequence name before summary information\&.
+.RE
+.PP
+\fB\-O\fR [\fIoutfile\fR]
+.RS 4
+Print output to
+\fI\&. If [\*(Aqoutfile\fR] already exists, it is overwritten\&. By default all output goes to stdout\&.
+.RE
+.SH "DESCRIPTION"
+.sp
+aragorn detects tRNA, mtRNA, and tmRNA genes\&. A minimum requirement is at least a 32 bit compiler architecture (variable types int and unsigned int are at least 4 bytes long)\&.
+.sp
+[\fIFILE\fR] is assumed to contain one or more sequences in FASTA format\&. Results of the search are printed to STDOUT\&. All switches are optional and case\-insensitive\&. Unless \-i is specified, tRNA genes containing introns are not detected\&.
+.SH "AUTHORS"
+.sp
+Bjorn Canback <bcanback@acgt\&.se>, Dean Laslett <gaiaquark@gmail\&.com>
+.SH "REFERENCES"
+.sp
+Laslett, D\&. and Canback, B\&. (2004) ARAGORN, a program for the detection of transfer RNA and transfer\-messenger RNA genes in nucleotide sequences Nucleic Acids Research, 32;11\-16
+.sp
+Laslett, D\&. and Canback, B\&. (2008) ARWEN: a program to detect tRNA genes in metazoan mitochondrial nucleotide sequences Bioinformatics, 24(2); 172\-175\&.
