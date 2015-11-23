@@ -10,7 +10,7 @@ FASTOOL_CODE=fstrozzi-Fastool-7c3e034f05
 PARAFLY_CODE=parafly-code
 TRIMMOMATIC_CODE=Trimmomatic-0.32
 
-trinity_essentials: jellyfish scaffold_iworm_contigs_target fastool_target parafly_target trimmomatic_target samtools
+trinity_essentials: jellyfish scaffold_iworm_contigs_target fastool_target parafly_target trimmomatic_target
 
 trimmomatic_target:
 	ln -sf ${TRIMMOMATIC_CODE} Trimmomatic
