@@ -21,7 +21,7 @@ Mandatory:
 Optional:
  
  -input_dir      :s  Directory with read files (defaults to current working directory)
- -gmap_dir       :s  Where the GMAP databases are meant to live (def. ~/databases/gmap)
+ -gmap_dir       :s  Where the GMAP databases are meant to live (def. JAMG_PATH/databases/gmap)
  -cpus           :i  Number of CPUs/threads (def. 6). I don't recommend more than 6 in a system that has 12 CPUs
  -help
  -pattern1           Pattern for automatching left pair files with *'pattern1'*.fastq (defaults to '_1_')
@@ -73,7 +73,7 @@ my ( $input_dir, $pattern2, $debug, $genome, $genome_dbname, $nofails, $suffix,$
      $help, $just_write_out_commands, $split_input, $notpaired, $verbose, $matepair );
 my $cwd = `pwd`;
 chomp($cwd);
-my $gmap_dir           = $ENV{'HOME'} . '/databases/gmap/';
+my $gmap_dir           = "$RealBin/../databases/gmap/";
 my $repeat_path_number = 50;
 my $cpus               = 6;
 my $memory             = '35G';
