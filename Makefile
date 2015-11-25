@@ -3,7 +3,7 @@ SHELL := /bin/bash
 all: 
 	if [ ! -d 3rd_party/bin ]; then mkdir 3rd_party/bin; fi
 	if [ ! -d 3rd_party/lib64 ]; then mkdir 3rd_party/lib64; fi
-	cd 3rd_party/EMBOSS && ./configure --prefix=`pwd`/../ --without-x --without-java --without-pngdriver --enable-64 && $(MAKE) && $(MAKE) install
+	cd 3rd_party/EMBOSS && bunzip2 -k emboss/data/TAXONOMY/*bz2 && ./configure --prefix=`pwd`/../ --without-x --without-java --without-pngdriver --enable-64 && $(MAKE) && $(MAKE) install
 	cd 3rd_party/hhsuite && cp lib64/libffindex.so.0.1 ../lib64/
 	cd 3rd_party/ncbi-blast/bin && ln -fs `pwd`/* ../../bin/
 	cd 3rd_party/cdbtools/cdbfasta && $(MAKE) && cp cdbfasta ../../bin/ && cp cdbyank ../../bin/ && $(MAKE) clean
