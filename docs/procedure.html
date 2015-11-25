@@ -854,15 +854,16 @@ JAMp to functionally annotate your predicted proteins and (in near future) integ
 <h4 id="_installing_pre_requisites">Installing pre-requisites</h4>
 <div class="paragraph"><p>For the rest of the instructions, I&#8217;ll assume your genome FASTA file is <em>genome.fasta</em> and the scripts are in an environmental variable called <strong>JAMG_PATH</strong>.</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
 <pre><tt><span style="font-weight: bold"><span style="color: #0000FF">export</span></span> <span style="color: #009900">JAMG_PATH</span><span style="color: #990000">=</span><span style="color: #009900">$HOME</span>/software/jamg
+<span style="font-weight: bold"><span style="color: #0000FF">export</span></span> <span style="color: #009900">LD_LIBRARY_PATH</span><span style="color: #990000">=</span><span style="color: #009900">$LD_LIBRARY_PATH</span><span style="color: #990000">:</span><span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/lib<span style="color: #993399">64</span><span style="color: #990000">/</span>
 ls -l <span style="color: #009900">$JAMG</span> <span style="font-style: italic"><span style="color: #9A1900"># try it</span></span></tt></pre></div></div>
 <div class="paragraph"><p>First you need to install the <a href="index.html#software">required software</a>. PASA might be slightly challenging if you have never used mySQL before. We distribute most of the software you will need under 3rd_party (when licensed to do so). To automatically install things, use this <em>make</em> command.</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -891,7 +892,7 @@ Also, there is a script <em>download_my_sequences.pl</em> that you can use to do
 </li>
 </ol></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -939,7 +940,7 @@ this software installed on a server that can access the HPC
 </ul></div>
 <div class="paragraph"><p>If your genome has a lot of small scaffolds, you can use the following command to keep scaffolds above a certain size:</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -986,7 +987,7 @@ Haas, B., Zeng, Q. &amp; Pearson, M., 2011. Approaches to fungal genome annotati
 <div class="paragraph"><p>You can choose which <em>known protein</em> database to use after the transposons. It can be the entire Uniprot distributed with HHblits or one of the taxon-specific databases we provide from RefSeq.
 These databases are in the folder databases/hhblits/. This script can make use of MPI so that if you have a computing PC-Farm (i.e. no batch system) you can do this:</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1021,7 +1022,7 @@ The last option <em>-scratch</em>, tells the program to copy all the database fi
 Choose the maximum intron expected in your species (in base pairs). For the rest of these instructions, we will store in the env. variable $MAX_INTRON_LENGTH:
 </p>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1093,7 +1094,7 @@ also <em>$JAMG_PATH/bin/JAMG_TGG_cmds.pl</em> can be used to (re)run batches of 
 This is the last command you will need for the genome-guided part:
 </p>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1118,7 +1119,7 @@ Before we continue with the assembly, we ought to prepare the RNA-Seq files for 
 First, converting the BAM alignment files of RNA-Seq to something that Augustus can appreciate and also identify the intron/exon junction reads
 </p>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1131,7 +1132,7 @@ http://www.gnu.org/software/src-highlite -->
 Now follow the PASA <a href="http://pasa.sourceforge.net/">guidelines</a> to assemble them as transcripts. If you are having issues installing PASA, look at the <a href="tutorial.html">tutorial</a> for advice.
 </p>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1188,7 +1189,7 @@ The output file of interest is the one matching <em>*.assemblies.fasta</em>, let
 The standard PASA approach is to use the genome and a perl script to convert <em>my.assemblies.fasta</em> into gene models. This will create a lot of gene models, most of which will be not be correct. So we also need to identify a subset of really good ones (golden) that can be used for training <em>de-novo</em> gene prediction (including generating the different file formats these predictors expect):
 </p>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1206,7 +1207,7 @@ Once that is complete use the <em>prepare_golden_genes_for_predictors.pl</em> sc
 This script uses exonerate with an initial step to find the approximate regions. In this scenario the approximate regions have been identified by PASA (and pasa_asmbls_to_training_set.dbi) but the script could be used in other scenarios that have no transdecoder data (see the -peptide option - in that case BLAST or the AATPACKAGE will be used to find the approximate regions). Exonerate works better if it knows that certain regions are repetitive so we will create a soft-(repeat)masked version of your genome using bedtools.
 </p>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1238,7 +1239,7 @@ I find that -norefine is quicker and makes little difference (but as always I co
 <a id="pasa-statistics"></a> Let&#8217;s explore the output and find some statistics:
 </p>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1247,7 +1248,7 @@ http://www.gnu.org/software/src-highlite -->
 <span style="color: #009900">$JAMG_PATH</span><span style="color: #990000">/</span>3rd_party/PASA/misc_utilities/gff3_to_feature_types<span style="color: #990000">.</span>pl final_golden_genes<span style="color: #990000">.</span>gff3<span style="color: #990000">.</span>nr<span style="color: #990000">.</span>golden<span style="color: #990000">.</span>gff3 <span style="color: #993399">2</span><span style="color: #990000">&gt;</span> /dev/null</tt></pre></div></div>
 <div class="paragraph"><p>You can then use R to get for example the (median) size of introns, exons etc.</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1285,7 +1286,7 @@ For almost all gene predictors, use the RepeatMasked genome (.masked, above).
 GeneMark-ES does not require any training but you should still use the repeatmasked genome. You also need to install (and accept the license) of GeneMark. Genemark will take a couple of days to complete.
 </p>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1306,7 +1307,7 @@ Glimmerhmm and snap can use external evidence but when we run a validation we sa
 SNAP:
 </p>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1343,7 +1344,7 @@ cd <span style="color: #990000">../../</span></tt></pre></div></div>
 If you don&#8217;t like the results, you can create a new training directory and try training with fewer, or more genes. Alternatively you can use external evidence (see <em>snap -help</em>) in order to improve specificity and prevent wrong overlapping gene models from being predicted. <a id="snap-external"></a> First create an external evidence file for snap using the training genes and then run snap with an extra option:
 </p>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1379,7 +1380,7 @@ First, I should say that the zff2hintzff.pl script has room for improvement (spe
 Glimmer:
 </p>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1402,7 +1403,7 @@ You can provide the options <em>-f</em>, <em>-l</em> and <em>-n</em> which are t
 Glimmer asks you set certain false positive/negative thresholds: they are found in the false. files: <em>false.acc</em> for acceptor sites, <em>false.don</em> for donor sites, <em>false.atg</em> for start sites. These are thresholds and are defined in the <em>.cfg</em> file and some defaults are already stored, they are often not very good. You can opt to change these defaults in order to balance over- with under- predicting. I tend to pick something that prevents over-prediction (i.e. when false positives jumps down to something acceptable). NB: make sure you only use <em>two and only two decimal places</em> in the cfg file. Now you can start predicting:
 </p>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1436,7 +1437,7 @@ cat <span style="color: #009900">$GENOME_NAME</span><span style="color: #990000"
 Geneid
 </p>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1454,7 +1455,7 @@ ParaFly -c <span style="color: #009900">$GENOME_NAME</span><span style="color: #
 <a id="projection"></a>If we have a closely species that is well annotated, a good approach is to <em>project</em> that genome&#8217;s gene models to our unannotated one. This script, by Gavin Huttley () is still under construction but once ready we can use it like so:
 </p>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1477,7 +1478,7 @@ Pick a species or taxon, download data, align
 First get some foreign proteins from a taxon that makes sense. Then go to <a href="http://uniprot.org">UniProt</a> or <a href="ftp://ftp.ncbi.nlm.nih.gov/refseq/release/">RefSeq</a> and download something appropriate. Alternatively, you could bulk download some taxa you&#8217;d like to sue with the <em>download_my_sequences</em> script. I highly recommend you use the <a href="http://weizhong-lab.ucsd.edu/cd-hit/download.php">cd-hit</a> program to reduce redundancy. Regardless, when you have your data, you can align them to your genome using some kind of cutoff (your guess will depend on the data and will be as good as my guess&#8230;).
 </p>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1502,7 +1503,7 @@ cd-hit -c <span style="color: #993399">0.90</span> -i foreign_proteins<span styl
 </p>
 <div class="paragraph"><p>Augustus is our more powerful gene predictor for the simple fact that it accepts a number of tracks with external evidence (and also it is still actively maintained). In practice, in my projects I barely provide the other gene predictors with external evidence and just rely on Augustus. JAMg was written before Augustus 3 was released and I have had time to test it so JAMg uses the latest Augustus 2 (also Augustus 3 is under the rather <em>viral</em> GPL so there is the headache of changing the license). In any case, moving on: the input to Augustus is your genome FASTA, a subset of your golden gene predictions and your evidence tracks and two sets of configuration. The first set is to parameterize how Augustus builds the HMM. It is very important to do that once per species. Then the second configuration file is about your external evidence: how much weight to give to each type of evidence (on a per feature type basis, exon, intron etc). JAMg uses a modified script from Augustus to conduct the former and a new script to do the latter. Both are quite easy to use but may take a day to run. The major complication is that for the second configuration we must create a set of evidence tracks using our <em>test</em> sequence as a reference, not our genome. This is happening because our <em>golden genes</em> are used to create a train/test set and therefore we must create our evidence tracks using these as a reference:</p></div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1535,7 +1536,7 @@ cat <span style="color: #990000">..</span>/final_golden_genes<span style="color:
 Adding more data to WebApollo
 </p>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1563,7 +1564,7 @@ http://www.gnu.org/software/src-highlite -->
 </tr></table>
 </div>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1590,7 +1591,7 @@ Usage<span style="color: #990000">:</span>
 MPI is free. We recommend openMPI but we also support MPICH2. You can install it from repositories, e.g. on Debian/Ubuntu:
 </p>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1602,7 +1603,7 @@ Tell FFINDEX where the shared libraries are. FFINDEX is installed as part of tra
   You ought to include it in your $HOME/.bashrc or your sys-admin can copy the libraries in a system-wide path.
 </p>
 <div class="listingblock">
-<div class="content"><!-- Generator: GNU source-highlight 3.1.7
+<div class="content"><!-- Generator: GNU source-highlight 3.1.6
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
@@ -1639,7 +1640,7 @@ Feature
 <div id="footer">
 <div id="footer-text">
 Version RC1<br />
-Last updated 2015-07-21 15:29:50 EST
+Last updated 2015-11-25 12:01:21 AEDT
 </div>
 </div>
 </body>

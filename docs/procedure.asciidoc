@@ -39,6 +39,7 @@ Then:
 For the rest of the instructions, I'll assume your genome FASTA file is 'genome.fasta' and the scripts are in an environmental variable called *JAMG_PATH*.
 [source,bash]
 export JAMG_PATH=$HOME/software/jamg
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$JAMG_PATH/3rd_party/lib64/
 ls -l $JAMG # try it
 
 First you need to install the link:index.html#software[required software]. PASA might be slightly challenging if you have never used mySQL before. We distribute most of the software you will need under 3rd_party (when licensed to do so). To automatically install things, use this 'make' command.

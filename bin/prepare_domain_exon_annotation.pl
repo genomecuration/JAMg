@@ -567,8 +567,6 @@ sub remove_zero_bytes() {
  my ($name, $path, $suffix) = fileparse($infile);
  my $outfile = $path ."hhr.$name$suffix";
  return $outfile if (-s $outfile);
- &process_cmd("cat $infile*.idx* > $outfile.idx");
- system("rm -f $infile*.idx*");
  &process_cmd("cat $infile* | tr -d '\\000' > $outfile");
  system("rm -f $infile*");
  return $outfile;

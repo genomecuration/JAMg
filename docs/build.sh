@@ -5,9 +5,9 @@ You have run this:
 find . -name '*.asciidoc' -exec asciidoc -a icons '{}' \;
 then after connecting to web.sf.net:
 cd htdocs
-put :
+put *html
+exit
 "
-ls -l *html
 
 sftp alpapan,jamg@web.sf.net
 
