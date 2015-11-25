@@ -1,0 +1,383 @@
+                                 featreport
+
+
+
+Wiki
+
+   The master copies of EMBOSS documentation are available at
+   http://emboss.open-bio.org/wiki/Appdocs on the EMBOSS Wiki.
+
+   Please help by correcting and extending the Wiki pages.
+
+Function
+
+   Read and write a feature table
+
+Description
+
+   featreport reads a sequence and a feature table and writes a standard
+   report output.
+
+Usage
+
+   Here is a sample session with featreport
+
+
+% featreport
+Read and write a feature table
+Input sequence: paamir.fasta
+Input feature table: paamir.gff
+Output report [x13776.featreport]: test.out
+
+
+   Go to the input files for this example
+   Go to the output files for this example
+
+Command line arguments
+
+Read and write a feature table
+Version: EMBOSS:6.6.0.0
+
+   Standard (Mandatory) qualifiers:
+  [-sequence]          sequence   Sequence filename and optional format, or
+                                  reference (input USA)
+  [-features]          features   (no help text) features value
+  [-outfile]           report     [*.featreport] Output report file name
+                                  (default -rformat gff)
+
+   Additional (Optional) qualifiers: (none)
+   Advanced (Unprompted) qualifiers: (none)
+   Associated qualifiers:
+
+   "-sequence" associated qualifiers
+   -sbegin1            integer    Start of the sequence to be used
+   -send1              integer    End of the sequence to be used
+   -sreverse1          boolean    Reverse (if DNA)
+   -sask1              boolean    Ask for begin/end/reverse
+   -snucleotide1       boolean    Sequence is nucleotide
+   -sprotein1          boolean    Sequence is protein
+   -slower1            boolean    Make lower case
+   -supper1            boolean    Make upper case
+   -scircular1         boolean    Sequence is circular
+   -squick1            boolean    Read id and sequence only
+   -sformat1           string     Input sequence format
+   -iquery1            string     Input query fields or ID list
+   -ioffset1           integer    Input start position offset
+   -sdbname1           string     Database name
+   -sid1               string     Entryname
+   -ufo1               string     UFO features
+   -fformat1           string     Features format
+   -fopenfile1         string     Features file name
+
+   "-features" associated qualifiers
+   -fformat2           string     Features format
+   -iquery2            string     Input query fields or ID list
+   -ioffset2           integer    Input start position offset
+   -fopenfile2         string     Features file name
+   -fask2              boolean    Prompt for begin/end/reverse
+   -fbegin2            integer    Start of the features to be used
+   -fend2              integer    End of the features to be used
+   -freverse2          boolean    Reverse (if DNA)
+   -fcircular2         boolean    Circular sequence features
+
+   "-outfile" associated qualifiers
+   -rformat3           string     Report format
+   -rname3             string     Base file name
+   -rextension3        string     File name extension
+   -rdirectory3        string     Output directory
+   -raccshow3          boolean    Show accession number in the report
+   -rdesshow3          boolean    Show description in the report
+   -rscoreshow3        boolean    Show the score in the report
+   -rstrandshow3       boolean    Show the nucleotide strand in the report
+   -rusashow3          boolean    Show the full USA in the report
+   -rmaxall3           integer    Maximum total hits to report
+   -rmaxseq3           integer    Maximum hits to report for one sequence
+
+   General qualifiers:
+   -auto               boolean    Turn off prompts
+   -stdout             boolean    Write first file to standard output
+   -filter             boolean    Read first file from standard input, write
+                                  first file to standard output
+   -options            boolean    Prompt for standard and additional values
+   -debug              boolean    Write debug output to program.dbg
+   -verbose            boolean    Report some/full command line options
+   -help               boolean    Report command line options and exit. More
+                                  information on associated and general
+                                  qualifiers can be found with -help -verbose
+   -warning            boolean    Report warnings
+   -error              boolean    Report errors
+   -fatal              boolean    Report fatal errors
+   -die                boolean    Report dying program messages
+   -version            boolean    Report version number and exit
+
+
+Input file format
+
+   featreport reads any nucleotide or protein sequences with features.
+
+   The input is a standard EMBOSS sequence query (also known as a 'USA')
+   with associated feature information.
+
+   Major sequence database sources defined as standard in EMBOSS
+   installations include srs:embl, srs:uniprot and ensembl
+
+   Data can also be read from sequence output in any supported format
+   written by an EMBOSS or third-party application.
+
+   The input format can be specified by using the command-line qualifier
+   -sformat xxx, where 'xxx' is replaced by the name of the required
+   format. The available format names are: text, html, xml (uniprotxml),
+   obo, embl (swissprot)
+
+   Where the sequence format has no feature information, a second file can
+   be read to load the feature data. The file is specified with the
+   qualifier -ufo xxx and the feature format is specified with the
+   qualifier -fformat xxx
+
+   See: http://emboss.sf.net/docs/themes/SequenceFormats.html for further
+   information on sequence formats.
+
+   See: http://emboss.sf.net/docs/themes/FeatureFormats.html for further
+   information on feature formats.
+
+  Input files for usage example
+
+  File: paamir.fasta
+
+>X13776 X13776.1 Pseudomonas aeruginosa amiC and amiR gene for aliphatic amidase
+ regulation
+ggtaccgctggccgagcatctgctcgatcaccaccagccgggcgacgggaactgcacgat
+ctacctggcgagcctggagcacgagcgggttcgcttcgtacggcgctgagcgacagtcac
+aggagaggaaacggatgggatcgcaccaggagcggccgctgatcggcctgctgttctccg
+aaaccggcgtcaccgccgatatcgagcgctcgcacgcgtatggcgcattgctcgcggtcg
+agcaactgaaccgcgagggcggcgtcggcggtcgcccgatcgaaacgctgtcccaggacc
+ccggcggcgacccggaccgctatcggctgtgcgccgaggacttcattcgcaaccgggggg
+tacggttcctcgtgggctgctacatgtcgcacacgcgcaaggcggtgatgccggtggtcg
+agcgcgccgacgcgctgctctgctacccgaccccctacgagggcttcgagtattcgccga
+acatcgtctacggcggtccggcgccgaaccagaacagtgcgccgctggcggcgtacctga
+ttcgccactacggcgagcgggtggtgttcatcggctcggactacatctatccgcgggaaa
+gcaaccatgtgatgcgccacctgtatcgccagcacggcggcacggtgctcgaggaaatct
+acattccgctgtatccctccgacgacgacttgcagcgcgccgtcgagcgcatctaccagg
+cgcgcgccgacgtggtcttctccaccgtggtgggcaccggcaccgccgagctgtatcgcg
+ccatcgcccgtcgctacggcgacggcaggcggccgccgatcgccagcctgaccaccagcg
+aggcggaggtggcgaagatggagagtgacgtggcagaggggcaggtggtggtcgcgcctt
+acttctccagcatcgatacgcccgccagccgggccttcgtccaggcctgccatggtttct
+tcccggagaacgcgaccatcaccgcctgggccgaggcggcctactggcagaccttgttgc
+tcggccgcgccgcgcaggccgcaggcaactggcgggtggaagacgtgcagcggcacctgt
+acgacatcgacatcgacgcgccacaggggccggtccgggtggagcgccagaacaaccaca
+gccgcctgtcttcgcgcatcgcggaaatcgatgcgcgcggcgtgttccaggtccgctggc
+agtcgcccgaaccgattcgccccgacccttatgtcgtcgtgcataacctcgacgactggt
+ccgccagcatgggcgggggaccgctcccatgagcgccaactcgctgctcggcagcctgcg
+cgagttgcaggtgctggtcctcaacccgccgggggaggtcagcgacgccctggtcttgca
+gctgatccgcatcggttgttcggtgcgccagtgctggccgccgccggaagccttcgacgt
+gccggtggacgtggtcttcaccagcattttccagaatggccaccacgacgagatcgctgc
+gctgctcgccgccgggactccgcgcactaccctggtggcgctggtggagtacgaaagccc
+cgcggtgctctcgcagatcatcgagctggagtgccacggcgtgatcacccagccgctcga
+tgcccaccgggtgctgcctgtgctggtatcggcgcggcgcatcagcgaggaaatggcgaa
+gctgaagcagaagaccgagcagctccaggaccgcatcgccggccaggcccggatcaacca
+ggccaaggtgttgctgatgcagcgccatggctgggacgagcgcgaggcgcaccagcacct
+gtcgcgggaagcgatgaagcggcgcgagccgatcctgaagatcgctcaggagttgctggg
+aaacgagccgtccgcctgagcgatccgggccgaccagaacaataacaagaggggtatcgt
+catcatgctgggactggttctgctgtacgttggcgcggtgctgtttctcaatgccgtctg
+gttgctgggcaagatcagcggtcgggaggtggcggtgatcaacttcctggtcggcgtgct
+gagcgcctgcgtcgcgttctacctgatcttttccgcagcagccgggcagggctcgctgaa
+ggccggagcgctgaccctgctattcgcttttacctatctgtgggtggccgccaaccagtt
+cctcgag
+
+  File: paamir.gff
+
+##gff-version 2.0
+##date 2003-02-14
+##Type DNA PAAMIR
+PAAMIR  EMBL    source  1       2167    0.000   +       .       Sequence "PAAMIR
+.1" ; db_xref "taxon:287" ; organism "Pseudomonas aeruginosa" ; strain "PAC" ; i
+solate "PAC 1" ; map "38 min"
+PAAMIR  EMBL    CDS     1289    1879    0.000   +       .       Sequence "PAAMIR
+.2" ; db_xref "SWISS-PROT:P10932" ; note "aliphatic amidase regulator, positive
+regulator of amiE" ; transl_table 11 ; gene "amiR" ; protein_id "CAA32023.1" ; t
+ranslation "MSANSLLGSLRELQVLVLNPPGEVSDALVLQLIRIGCSVRQCWPPPEAFDVPVDVVFTSIFQNGHHDE
+IAALLAAGTPRTTLVALVEYESPAVLSQIIELECHGVITQPLDAHRVLPVLVSARRISEEMAKLKQKTEQLQDRIAGQAR
+INQAKVLLMQRHGWDEREAHQHLSREAMKRREPILKIAQELLGNEPSA"
+PAAMIR  EMBL    CDS     135     1292    0.000   +       .       Sequence "PAAMIR
+.3" ; db_xref "SWISS-PROT:P27017" ; note "negative regulator of amiR" ; transl_t
+able 11 ; gene "amiC" ; protein_id "CAA32024.1" ; translation "MGSHQERPLIGLLFSET
+GVTADIERSHAYGALLAVEQLNREGGVGGRPIETLSQDPGGDPDRYRLCAEDFIRNRGVRFLVGCYMSHTRKAVMPVVER
+ADALLCYPTPYEGFEYSPNIVYGGPAPNQNSAPLAAYLIRHYGERVVFIGSDYIYPRESNHVMRHLYRQHGGTVLEEIYI
+PLYPSDDDLQRAVERIYQARADVVFSTVVGTGTAELYRAIARRYGDGRRPPIASLTTSEAEVAKMESDVAEGQVVVAPYF
+SSIDTPASRAFVQACHGFFPENATITAWAEAAYWQTLLLGRAAQAAGNWRVEDVQRHLYDIDIDAPQGPVRVERQNNHSR
+LSSRIAEIDARGVFQVRWQSPEPIRPDPYVVVHNLDDWSASMGGGPLP"
+PAAMIR  EMBL    promoter        8       24      0.000   +       .       Sequence
+ "PAAMIR.4" ; note "proposed rpoN-dependent promoter"
+PAAMIR  EMBL    promoter        65      81      0.000   +       .       Sequence
+ "PAAMIR.5" ; note "proposed rpoN-dependent promoter"
+PAAMIR  EMBL    RBS     121     126     0.000   +       .       Sequence "PAAMIR
+.6" ; note "proposed Shine-Dalgarno sequence"
+PAAMIR  EMBL    variation       912     1167    0.000   +       .       Sequence
+ "PAAMIR.7" ; note "ClaI fragment deleted in pSW36, constitutive phenotype" ; re
+place "" ; gene "amiC"
+PAAMIR  EMBL    misc_feature    1       1       0.000   +       .       Sequence
+ "PAAMIR.8" ; FeatFlags "0x40" ; note "last base of an XhoI site"
+PAAMIR  EMBL    misc_feature    648     653     0.000   +       .       Sequence
+ "PAAMIR.9" ; note "end of 658bp XhoI fragment, deletion in pSW3 causes constitu
+tive expression of amiE"
+PAAMIR  EMBL    conflict        1281    1281    0.000   +       .       Sequence
+ "PAAMIR.10" ; FeatFlags "0x40" ; replace "g" ; citation [3]
+
+Output file format
+
+   The output is a standard EMBOSS report file.
+
+   The results can be output in one of several styles by using the
+   command-line qualifier -rformat xxx, where 'xxx' is replaced by the
+   name of the required format. The available format names are: embl,
+   genbank, gff, pir, swiss, dasgff, debug, listfile, dbmotif, diffseq,
+   draw, restrict, excel, feattable, motif, nametable, regions, seqtable,
+   simple, srs, table, tagseq.
+
+   See: http://emboss.sf.net/docs/themes/ReportFormats.html for further
+   information on report formats.
+
+   By default the report is in 'gff' feature format.
+
+  Output files for usage example
+
+  File: test.out
+
+##gff-version 3
+##sequence-region PAAMIR 1 2167
+#!Date 2013-07-15
+#!Type DNA
+#!Source-version EMBOSS 6.6.0.0
+PAAMIR  EMBL    databank_entry  1       2167    .       +       .       ID=PAAMI
+R.1;db_xref=taxon:287;organism=Pseudomonas aeruginosa;strain=PAC;isolate=PAC 1;m
+ap=38 min
+PAAMIR  EMBL    CDS     1289    1879    .       +       0       ID=PAAMIR.2;db_x
+ref=SWISS-PROT:P10932;note=aliphatic amidase regulator%2C positive regulator of
+amiE;transl_table=11;gene=amiR;protein_id=CAA32023.1;translation=MSANSLLGSLRELQV
+LVLNPPGEVSDALVLQLIRIGCSVRQCWPPPEAFDVPVDVVFTSIFQNGHHDEIAALLAAGTPRTTLVALVEYESPAVLS
+QIIELECHGVITQPLDAHRVLPVLVSARRISEEMAKLKQKTEQLQDRIAGQARINQAKVLLMQRHGWDEREAHQHLSREA
+MKRREPILKIAQELLGNEPSA
+PAAMIR  EMBL    CDS     135     1292    .       +       0       ID=PAAMIR.3;db_x
+ref=SWISS-PROT:P27017;note=negative regulator of amiR;transl_table=11;gene=amiC;
+protein_id=CAA32024.1;translation=MGSHQERPLIGLLFSETGVTADIERSHAYGALLAVEQLNREGGVGG
+RPIETLSQDPGGDPDRYRLCAEDFIRNRGVRFLVGCYMSHTRKAVMPVVERADALLCYPTPYEGFEYSPNIVYGGPAPNQ
+NSAPLAAYLIRHYGERVVFIGSDYIYPRESNHVMRHLYRQHGGTVLEEIYIPLYPSDDDLQRAVERIYQARADVVFSTVV
+GTGTAELYRAIARRYGDGRRPPIASLTTSEAEVAKMESDVAEGQVVVAPYFSSIDTPASRAFVQACHGFFPENATITAWA
+EAAYWQTLLLGRAAQAAGNWRVEDVQRHLYDIDIDAPQGPVRVERQNNHSRLSSRIAEIDARGVFQVRWQSPEPIRPDPY
+VVVHNLDDWSASMGGGPLP
+PAAMIR  EMBL    promoter        8       24      .       +       .       ID=PAAMI
+R.4;note=proposed rpoN-dependent promoter
+PAAMIR  EMBL    promoter        65      81      .       +       .       ID=PAAMI
+R.5;note=proposed rpoN-dependent promoter
+PAAMIR  EMBL    ribosome_entry_site     121     126     .       +       .
+ID=PAAMIR.6;note=proposed Shine-Dalgarno sequence
+PAAMIR  EMBL    sequence_variant        912     1167    .       +       .
+ID=PAAMIR.7;note=ClaI fragment deleted in pSW36%2C constitutive phenotype;replac
+e=;gene=amiC
+PAAMIR  EMBL    sequence_feature        1       1       .       +       .
+ID=PAAMIR.8;note=last base of an XhoI site
+PAAMIR  EMBL    sequence_feature        648     653     .       +       .
+ID=PAAMIR.9;note=end of 658bp XhoI fragment%2C deletion in pSW3 causes constitut
+ive expression of amiE
+PAAMIR  EMBL    sequence_conflict       1281    1281    .       +       .
+ID=PAAMIR.10;replace=g;citation=[3]
+
+Data files
+
+   None.
+
+Notes
+
+   None.
+
+References
+
+   None.
+
+Warnings
+
+   None.
+
+Diagnostic Error Messages
+
+   None.
+
+Exit status
+
+   It always exits with status 0.
+
+Known bugs
+
+   None.
+
+See also
+
+   Program name     Description
+   aligncopy        Read and write alignments
+   aligncopypair    Read and write pairs from alignments
+   biosed           Replace or delete sequence sections
+   codcopy          Copy and reformat a codon usage table
+   cutseq           Remove a section from a sequence
+   degapseq         Remove non-alphabetic (e.g. gap) characters from sequences
+   descseq          Alter the name or description of a sequence
+   entret           Retrieve sequence entries from flatfile databases and files
+   extractalign     Extract regions from a sequence alignment
+   extractfeat      Extract features from sequence(s)
+   extractseq       Extract regions from a sequence
+   featcopy         Read and write a feature table
+   featmerge        Merge two overlapping feature tables
+   feattext         Return a feature table original text
+   listor           Write a list file of the logical OR of two sets of sequences
+   makenucseq       Create random nucleotide sequences
+   makeprotseq      Create random protein sequences
+   maskambignuc     Mask all ambiguity characters in nucleotide sequences with
+                    N
+   maskambigprot    Mask all ambiguity characters in protein sequences with X
+   maskfeat         Write a sequence with masked features
+   maskseq          Write a sequence with masked regions
+   newseq           Create a sequence file from a typed-in sequence
+   nohtml           Remove mark-up (e.g. HTML tags) from an ASCII text file
+   noreturn         Remove carriage return from ASCII files
+   nospace          Remove whitespace from an ASCII text file
+   notab            Replace tabs with spaces in an ASCII text file
+   notseq           Write to file a subset of an input stream of sequences
+   nthseq           Write to file a single sequence from an input stream of
+                    sequences
+   nthseqset        Read and write (return) one set of sequences from many
+   pasteseq         Insert one sequence into another
+   revseq           Reverse and complement a nucleotide sequence
+   seqcount         Read and count sequences
+   seqret           Read and write (return) sequences
+   seqretsetall     Read and write (return) many sets of sequences
+   seqretsplit      Read sequences and write them to individual files
+   sizeseq          Sort sequences by size
+   skipredundant    Remove redundant sequences from an input set
+   skipseq          Read and write (return) sequences, skipping first few
+   splitsource      Split sequence(s) into original source sequences
+   splitter         Split sequence(s) into smaller sequences
+   trimest          Remove poly-A tails from nucleotide sequences
+   trimseq          Remove unwanted characters from start and end of sequence(s)
+   trimspace        Remove extra whitespace from an ASCII text file
+   union            Concatenate multiple sequences into a single sequence
+   vectorstrip      Remove vectors from the ends of nucleotide sequence(s)
+   yank             Add a sequence reference (a full USA) to a list file
+
+Author(s)
+
+   Peter Rice
+   European Bioinformatics Institute, Wellcome Trust Genome Campus,
+   Hinxton, Cambridge CB10 1SD, UK
+
+   Please report all bugs to the EMBOSS bug team
+   (emboss-bug (c) emboss.open-bio.org) not to the original author.
+
+History
+
+Target users
+
+   This program is intended to be used by everyone and everything, from
+   naive users to embedded scripts.
+
+Comments
+
+   None

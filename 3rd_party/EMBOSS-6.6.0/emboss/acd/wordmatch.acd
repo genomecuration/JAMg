@@ -1,0 +1,95 @@
+application: wordmatch [
+  documentation: "Find regions of identity (exact matches) of two sequences"
+  groups: "Alignment:Local"
+    relations: "EDAM_topic:0182 Sequence alignment"
+    relations: "EDAM_operation:0288 Sequence word comparison"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  seqset: asequence [
+    parameter: "Y"
+    aligned: "N"  
+    type: "any"                                         
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+  seqall: bsequence [
+    parameter: "Y"
+    type: "@($(acdprotein) ? stopprotein : nucleotide)"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+endsection: input
+
+section: required [
+  information: "Required section"
+  type: "page"
+]
+
+  integer: wordsize [
+    standard: "Y"
+    default: "4"
+    minimum: "2"
+    information: "Word size"
+    relations: "EDAM_data:1250 Word size"
+  ]
+
+endsection: required
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  toggle: dumpalign [
+    default: "Y"
+    additional: "Y"
+    information: "Dump matches as alignments"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+  
+  align: outfile [
+    parameter: "Y"
+    nullok: "@(!$(dumpalign))"
+    aformat: "match"
+    minseqs: "2"
+    relations: "EDAM_data:1381 Sequence alignment (pair)"
+  ]
+ 
+  outfile: logfile [
+    additional: "Y"
+    default: "wordmatch.log"
+    knowntype: "wordmatch log"
+    information: "Wordmatch log output file"
+    help: "Statistics on distribution of kmers and matches"
+    relations: "EDAM_data:1678 Tool log"
+  ]
+  
+  toggle: dumpfeat [
+    default: "Y"
+    additional: "Y"
+    information: "Dump matches as feature files"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  featout: aoutfeat [
+    parameter: "Y"
+    nullok: "@(!$(dumpfeat))"
+    ofname: "$(asequence.name)"
+    offormat: "gff"
+    relations: "EDAM_data:1255 Feature record"
+  ]
+
+  featout: boutfeat [
+    parameter: "Y"
+    ofname: "$(bsequence.name)"
+    offormat: "gff"
+    nullok: "@(!$(dumpfeat))"
+    relations: "EDAM_data:1255 Feature record"
+  ]
+ 
+endsection: output

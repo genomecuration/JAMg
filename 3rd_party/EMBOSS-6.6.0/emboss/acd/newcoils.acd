@@ -1,0 +1,99 @@
+application: newcoils [
+  documentation: "Predict coiled protein secondary structure"
+  groups: "Protein:2D Structure"
+    relations: "EDAM_topic:0178 Protein secondary structure prediction"
+    relations: "EDAM_operation:0470 Protein secondary structure prediction
+                (coils)"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  seqall: sequence [
+    parameter: "Y"
+    type: "PureProtein"
+    relations: "EDAM_data:2886 Sequence record (protein)"
+  ]
+
+  datafile: datafile [
+    information: "Program newcoils data file"
+    default: "Enewcoils.mat"
+    knowntype: "newcoils datafile"
+    relations: "EDAM_data:2082 Matrix"
+  ]
+
+endsection: input
+
+section: required [
+  information: "Required section"
+  type: "page"
+]
+
+  integer: window [
+    standard: "Y"
+    minimum: "1"
+    maximum: "$(sequence.end)"
+    default: "21"
+    information: "Window size"
+    relations: "EDAM_data:1251 Window size"
+  ]
+
+  integer: weighted [
+    standard: "Y"
+    minimum: "0"
+    default: "0"
+    information: "Weighted value"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  integer: verb [
+    standard: "Y"
+    minimum: "0"
+    default: "0"
+    information: "Verb - matrix file"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  integer: mode [
+    standard: "Y"
+    minimum: "0"
+    maximum: "2"
+    default: "0"
+    information: "Display Mode"
+    relations: "EDAM_data:2152 Rendering parameter"
+  ]
+
+  integer: minseg [
+    standard: "Y"
+    minimum: "0"
+    maximum: "10"
+    default: "1"
+    information: "Minimum number of seqments"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  float: minp [
+    standard: "Y"
+    minimum: "0."
+    maximum: "100."
+    default: "0.50"
+    information: "Minimum p"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+endsection: required
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  outfile: outfile [
+    parameter: "Y"
+    knowntype: "newcoils output"
+    relations: "EDAM_data:0876 Protein secondary structure"
+  ]
+
+endsection: output

@@ -1,0 +1,38 @@
+application: codcopy [
+  documentation: "Copy and reformat a codon usage table"
+  groups: "Data retrieval, Nucleic:Codon usage, Edit"
+    relations: "EDAM_topic:0107 Codon usage analysis"
+    relations: "EDAM_topic:0090 Data search and retrieval"
+    relations: "EDAM_operation:0563 Codon usage table reformatting"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  codon: infile [
+    parameter: "Y"
+    relations: "EDAM_data:1597 Codon usage table"
+  ]
+
+endsection: input
+
+section: advanced [
+  information: "Advanced section"
+  type: "page"
+]
+
+endsection: advanced
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  outcodon: outfile [
+    parameter: "Y"
+    relations: "EDAM_data:1597 Codon usage table"
+  ]
+
+endsection: output

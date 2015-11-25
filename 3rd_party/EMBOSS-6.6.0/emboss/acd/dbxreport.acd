@@ -1,0 +1,79 @@
+application: dbxreport [
+  groups: "Utils:Database indexing"
+  documentation: "Validate index and report internals for dbx databases"
+  gui: "no"
+  batch: "no"
+  cpu: "medium"
+    relations: "EDAM_topic:0091 Data handling"
+    relations: "EDAM_operation:0228 Data index analysis"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  string: dbname [
+    parameter: "Y"
+    maxlength: "19"
+    minlength: "2"
+    information: "EMBOSS database name"
+    knowntype: "emboss database name"
+    pattern: "[A-z][A-z0-9_]+"
+    relations: "EDAM_identifier:1056 Database name"
+  ]
+
+  string: fields [
+    parameter: "y"
+    default: "id"
+    information: "Index fields"
+    knowntype: "emboss database field"
+    help: "A list of index fields separated by spaces or commas."
+    relations: "EDAM_identifier:2219 Database field name"
+  ]
+
+  directory: indexdir [
+    default: ""
+    information: "Index directory (optional)"
+    knowntype: "emboss database index"
+    relations: "EDAM_identifier:1049 Directory name"
+    nullok: "Y"
+    nulldefault: "Y"
+  ]
+
+endsection: input
+
+section: required [
+  information: "Required section"
+  type: "page"
+]
+
+endsection: required
+
+section: advanced [
+  information: "Advanced section"
+  type: "page"
+]
+
+  boolean: fullreport [
+    information: "Write full details to debug file"
+    default: "N"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+
+endsection: advanced
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  outfile: outfile [
+    standard: "y"
+    name: "$(dbname)"
+    knowntype: "dbxreport output"
+    relations: "EDAM_data:2048 Report"
+  ]
+
+endsection: output

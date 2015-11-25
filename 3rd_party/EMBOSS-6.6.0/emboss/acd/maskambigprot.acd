@@ -1,0 +1,46 @@
+# with a comment
+application: maskambigprot [
+  documentation: "Mask all ambiguity characters in protein sequences with X"
+  groups: "Edit"
+    relations: "EDAM_topic:0091 Data handling"
+    relations: "EDAM_operation:0368 Sequence masking"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  boolean: feature [
+    information: "Use feature information"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  seqall: sequence [
+    parameter: "Y"
+    type: "gapproteinsimple"
+    features: "$(feature)"
+    relations: "EDAM_data:2886 Sequence record (protein)"
+  ]
+
+endsection: input
+
+section: advanced [
+  information: "Advanced section"
+  type: "page"
+]
+
+endsection: advanced
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  seqoutall: outseq [
+    parameter: "Y"
+    features: "$(feature)"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+endsection: output

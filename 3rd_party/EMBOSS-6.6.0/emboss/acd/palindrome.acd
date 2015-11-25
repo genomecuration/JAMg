@@ -1,0 +1,90 @@
+application: palindrome [
+  documentation: "Find inverted repeats in nucleotide sequence(s)"
+  groups: "Nucleic:Repeats"
+    relations: "EDAM_topic:0157 Sequence composition analysis"
+    relations: "EDAM_operation:0379 Repeat sequence detection"
+    relations: "EDAM_operation:0278 RNA secondary structure prediction"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  seqall: sequence [
+    parameter: "Y"
+    type: "nucleotide"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+endsection: input
+
+section: required [
+  information: "Required section"
+  type: "page"
+]
+
+  integer: minpallen [
+    standard: "Y"
+    default: "10"
+    minimum: "1"
+    maximum: "@($(sequence.length)/2)"
+    failrange: "N"
+    trueminimum: "Y"
+    information: "Enter minimum length of palindrome"
+    relations: "EDAM_data:1249 Sequence length"
+  ]
+
+  integer: maxpallen [
+    standard: "Y"
+    default: "100"
+    minimum: "$(minpalLen)"
+    maximum: "@($(sequence.length)/2)"
+    failrange: "N"
+    trueminimum: "Y"
+    information: "Enter maximum length of palindrome"
+    relations: "EDAM_data:1249 Sequence length"
+  ]
+
+  integer: gaplimit [
+    standard: "Y"
+    default: "100"
+    minimum: "0"
+    maximum: "$(sequence.length)"
+    failrange: "N"
+    trueminimum: "Y"
+    information: "Enter maximum gap between repeated regions"
+    relations: "EDAM_data:1249 Sequence length"
+  ]
+
+  integer: nummismatches [
+    standard: "Y"
+    default: "0"
+    minimum: "0"
+    information: "Number of mismatches allowed"
+    valid: "Positive integer"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+endsection: required
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  outfile: outfile [
+    parameter: "Y"
+    extension: "pal"
+    knowntype: "palindrome output"
+    relations: "EDAM_data:1299 Sequence features (repeats)"
+  ]
+
+  boolean: overlap [
+    standard: "Y"
+    information: "Report overlapping matches"
+    default: "Y"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+endsection: output

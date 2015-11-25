@@ -1,0 +1,61 @@
+application: patmatmotifs [
+  documentation: "Scan a protein sequence with motifs from the PROSITE database"
+  groups: "Protein:Motifs"
+    relations: "EDAM_topic:0158 Sequence motifs"
+    relations: "EDAM_operation:3087 Protein site detection"
+    relations: "EDAM_operation:0340 Protein secondary database search"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  sequence: sequence [
+    parameter: "Y"
+    type: "Protein"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+endsection: input
+
+section: additional [
+  information: "Additional section"
+  type: "page"
+]
+
+  boolean: full [
+    additional: "Y"
+    default: "N"
+    information: "Provide full documentation for matching
+                  patterns"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  boolean: prune [
+    additional: "Y"
+    default: "Y"
+    information: "Ignore simple patterns"
+    help: "Ignore simple patterns. If this is true then these simple
+           post-translational modification sites are not reported: myristyl,
+           asn_glycosylation, camp_phospho_site, pkc_phospho_site,
+           ck2_phospho_site, and tyr_phospho_site."
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+endsection: additional
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  report: outfile [
+    parameter: "Y"
+    rformat: "dbmotif"
+    taglist: "str:motif=Motif"
+    precision: "0"
+    relations: "EDAM_data:1298 Sequence features (motifs)"
+  ]
+
+endsection: output

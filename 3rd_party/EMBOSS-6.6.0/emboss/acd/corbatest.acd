@@ -1,0 +1,34 @@
+application: corbatest [
+  documentation: "Test of EMBL corba retrieval"
+  groups: "Test"
+    relations: "EDAM_topic:0220 File handling"
+    relations: "EDAM_operation:0336 File debugging"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  string: entry [
+    parameter: "Y"
+    information: "Enter an EMBL ID or ACCNO"
+    default: "hsfau"
+    knowntype: "sequence id input"
+    relations: "EDAM_identifier:1063 Sequence identifier"
+  ]
+
+endsection: input
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  outfile: outfile [
+    parameter: "Y"
+    knowntype: "corbatest output"
+    relations: "EDAM_data:0969 Text"
+  ]
+
+endsection: output

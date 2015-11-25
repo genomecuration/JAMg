@@ -1,0 +1,8 @@
+application: acdtable [
+  documentation: "Generate an HTML table of parameters from an application
+                  ACD file"
+  gui: "no"
+  groups: "Acd, Data retrieval:Tool data"
+  relations: "EDAM_topic:0091 Data handling"
+  relations: "EDAM_operation:0515 Data retrieval (tool metadata)"
+]

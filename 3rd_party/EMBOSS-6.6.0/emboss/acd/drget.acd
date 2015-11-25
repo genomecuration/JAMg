@@ -1,0 +1,58 @@
+application: drget [
+  documentation: "Get data resource entries"
+  groups: "Data retrieval:Resource data"
+  relations: "EDAM_topic:0090 Data search and retrieval"
+  relations: "EDAM_operation:0516 Data retrieval (database metadata)"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+  resource: resources [
+     default: ""
+     parameter: "Y"
+     relations: "EDAM_data:0957 Database metadata"
+  ]
+
+endsection: input
+
+
+
+
+
+section: additional [
+  information: "Additional section"
+  type: "page"
+]
+
+endsection: additional
+
+
+
+
+
+section: advanced [
+  information: "Advanced section"
+  type: "page"
+]
+
+endsection: advanced
+
+
+
+
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  outresource: outfile [
+    parameter: "Y"
+    relations: "EDAM_data:0957 Database metadata"
+  ]
+
+endsection: output
+
+

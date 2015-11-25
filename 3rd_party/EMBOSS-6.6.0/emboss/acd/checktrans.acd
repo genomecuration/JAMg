@@ -1,0 +1,82 @@
+application: checktrans [
+  documentation: "Report STOP codons and ORF statistics of a
+                  protein"
+  groups: "Nucleic:Gene finding, Nucleic:Translation"
+  relations: "EDAM_topic:0109 Gene finding"
+  relations: "EDAM_topic:0108 Translation"
+  relations: "EDAM_operation:0436 Coding region prediction"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  seqall: sequence [
+    parameter: "Y"
+    type: "stopprotein"
+    relations: "EDAM_data:2886 Sequence record (protein)"
+  ]
+
+endsection: input
+
+section: required [
+  information: "Required section"
+  type: "page"
+]
+
+  integer: orfml [
+    standard: "Y"
+    minimum: "1"
+    default: "100"
+    information: "Minimum ORF Length to report"
+    relations: "EDAM_data:1249 Sequence length"
+  ]
+
+endsection: required
+
+section: additional [
+  information: "Additional section"
+  type: "page"
+]
+
+  boolean: addlast [
+    additional: "Y"
+    default: "Y"
+    information: "Force the sequence to end with an asterisk"
+    help: "An asterisk in the protein sequence indicates the position
+           of a STOP codon. Checktrans assumes that all ORFs end in a STOP
+           codon. Forcing the sequence to end with an asterisk, if there is
+           not one there already, makes checktrans treat the end as a
+           potential ORF. If an asterisk is added, it is not included in the
+           reported count of STOPs."
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+endsection: additional
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  outfile: outfile [
+    parameter: "Y"
+    knowntype: "checktrans output"
+    relations: "EDAM_data:1313 Nucleic acid features (coding sequence)"
+  ]
+
+  seqoutall: outseq [
+    parameter: "Y"
+    help: "Sequence file to hold output ORF sequences"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+  featout: outfeat [
+    parameter: "Y"
+    help: "File for output features"
+    type: "protein"
+    relations: "EDAM_data:1277 Protein features"
+  ]
+
+endsection: output

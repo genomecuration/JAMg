@@ -1,0 +1,113 @@
+application: edamclean
+[
+  documentation: "Validate and fix EDAM OBO ontology"
+  groups: "Ontology:EDAM"
+    relations: "EDAM_topic:0220 Data file processing"
+    relations: "EDAM_operation:0336 File validation"
+]
+
+
+
+
+
+section: input 
+[
+  information: "Input section"
+  type: "page"
+]
+
+  infile: edaminfile
+  [
+    parameter: "Y"
+    information: "EDAM input file"
+    default: "/homes/jison/edam/EDAM.obo"
+    knowntype: "obo file"
+  ]
+
+  directory: taxdirectory
+  [
+     information: "Taxonomy directory"
+#        default: "/data1/users/pmr/taxonomy"
+     knowntype: "ncbi taxonomy"
+  ]
+endsection: input
+
+
+
+
+
+section: required 
+[
+  information: "Required section"
+  type: "page"
+]
+
+  selection: mode 
+  [
+    standard: "Y"
+    default: "Report only"
+    values: "Report only;Renumber terms;Fix relations;Output PURL XML (single file); Output PURL XML (one file / term);"
+    information: "Mode of operation"
+  ]
+
+endsection: required
+
+
+
+
+
+section: advanced 
+[
+  information: "Advanced section"
+  type: "page"
+]
+endsection: advanced
+
+
+
+
+
+section: output 
+[
+  information: "Output section"
+  type: "page"
+]
+
+  outfile: edamoutfile
+  [
+    parameter: "Y"
+    information: "EDAM output file"
+    default: "EDAM_out.obo"
+    knowntype: "obo file"
+  ]
+
+  outfile: logfile
+  [
+    parameter: "Y"
+    information: "General log output file"
+    relations: "EDAM_data:1678 Tool log"
+    default: "EDAM_out.log"
+    knowntype: "log"
+  ]
+
+  outfile: xmlfile
+  [
+#Does not work!
+#standard: "@($(mode)=='1')"
+    parameter: "Y"
+    information: "PURL XML file"
+    default: "EDAM_out.xml"
+    knowntype: "XML file"
+  ]
+
+  outdir: xmloutdir 
+  [
+#Does not work!
+#standard: "@($(mode)=='2')"
+    parameter: "Y"
+    information: "XML file output directory"
+    knowntype: "emboss database directory"
+    relations:  "EDAM_identifier:1049 Directory name"
+  ]
+
+endsection: output

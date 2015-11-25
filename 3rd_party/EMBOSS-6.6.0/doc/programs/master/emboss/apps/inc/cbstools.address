@@ -1,0 +1,9 @@
+This program is an EMBOSS wrapper for a program written by the CBS group
+http://www.cbs.dtu.dk/index.shtml
+
+<p>
+The original CBS group application must be licensed and installed to
+use this wrapper.
+
+<p>
+Please report all bugs to the EMBOSS bug team (emboss-bug&nbsp;&copy;&nbsp;emboss.open-bio.org) not to the original author.

@@ -1,0 +1,61 @@
+application: drtext [
+  documentation: "Get data resource entries complete text"
+  groups: "Data retrieval:Resource data, Data retrieval:Text data"
+    relations: "EDAM_topic:0090 Data search and retrieval"
+    relations: "EDAM_operation:0516 Data retrieval (database metadata)"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+  resource: resources [
+     default: ""
+     parameter: "Y"
+     entry: "Y"
+     relations: "EDAM_data:0957 Database metadata"
+  ]
+
+endsection: input
+
+
+
+
+
+section: additional [
+  information: "Additional section"
+  type: "page"
+]
+
+endsection: additional
+
+
+
+
+
+section: advanced [
+  information: "Advanced section"
+  type: "page"
+]
+
+endsection: advanced
+
+
+
+
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  outfile: outfile [
+    parameter: "Y"
+    information: "Full text output file"
+    knowntype: "entry full text"
+    relations: "EDAM_data:0957 Database metadata"
+  ]
+
+endsection: output
+
+

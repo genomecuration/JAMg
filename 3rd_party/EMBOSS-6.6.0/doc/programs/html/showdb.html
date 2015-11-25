@@ -1,0 +1,1558 @@
+<HTML>
+
+<HEAD>
+  <TITLE>
+  EMBOSS: showdb
+  </TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF" text="#000000">
+
+<table align=center border=0 cellspacing=0 cellpadding=0>
+<tr><td valign=top>
+<A HREF="/" ONMOUSEOVER="self.status='Go to the EMBOSS home page';return true"><img border=0 src="/images/emboss_icon.jpg" alt="" width=150 height=48></a>
+</td>
+<td align=left valign=middle>
+<b><font size="+6">
+showdb
+</font></b>
+</td></tr>
+</table>
+<br>&nbsp;
+<p>
+
+
+<H2>
+Wiki
+</H2>
+
+The master copies of EMBOSS documentation are available
+at <a href="http://emboss.open-bio.org/wiki/Appdocs">
+http://emboss.open-bio.org/wiki/Appdocs</a>
+on the EMBOSS Wiki.
+
+<p>
+Please help by correcting and extending the Wiki pages.
+
+<H2>
+    Function
+</H2>
+Display information on configured databases
+
+<H2>
+    Description
+</H2>
+
+<p><b>showdb</b> displays a table with the names, contents and access methods of the sequence databases configured for your EMBOSS installation.</p>
+
+
+
+
+<H2>
+    Usage
+</H2>
+Here is a sample session with <b>showdb</b>
+<p>
+Display information on the currently available databases: 
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>showdb </b>
+Display information on configured databases
+
+# Name            Type                          Comment
+# =============== ============================= =======
+bpsw              Protein,Protfeatures          BioPerl OBDA index of test SwissProt
+bpworm            Protein                       BioPerl OBDA index of test wormpep fasta file
+qapblast          Protein                       BLAST swissnew
+qapblastall       Protein                       BLAST swissnew, all fields indexed
+qapblastsplit     Protein                       BLAST swissnew split in 5 files
+qapblastsplitexc  Protein                       BLAST swissnew split in 5 files, not file 02
+qapblastsplitinc  Protein                       BLAST swissnew split in 5 files, only file 02
+qapfasta          Protein                       FASTA file swissnew entries
+qapflat           Protein,Protfeatures          SpTrEmbl flatfile
+qapflatall        Protein,Protfeatures          SpTrEmbl flatfiles, all fields indexed
+qapir             Protein,Protfeatures          Test PIR indexed by dbigcg
+qapirall          Protein,Protfeatures          Test PIR indexed by dbigcg with fields
+qapirexc          Protein,Protfeatures          Test PIR indexed by dbigcg except file pir1
+qapirinc          Protein,Protfeatures          Test PIR indexed by dbigcg file pir1
+qapxfasta         Protein                       FASTA file swissnew entries
+qapxflat          Protein                       Swissnew flatfiles
+qasrswww          Protein,Protfeatures          Remote SRS web server
+qaxpir            Protein,Protfeatures          PIR indexed by dbxgcg
+qaxpirall         Protein,Protfeatures          Test PIR indexed by dbxgcg with fields
+qaxpirexc         Protein,Protfeatures          Test PIR indexed by dbxgcg except pir1
+qaxpirinc         Protein,Protfeatures          Test PIR indexed by dbxgcg file pir1
+tpir              Protein                       Test PIR using NBRF access for 4 files
+tsw               Protein,Protfeatures,Text     Swissprot native format with EMBL CD-ROM index
+tswnew            Protein,Protfeatures          SpTrEmbl as 3 files in native format with EMBL CD-ROM index
+bpembl            Nucleotide,Nucfeatures        BioPerl OBDA index of test EMBL
+bpgb              Nucleotide,Nucfeatures        BioPerl OBDA index of test GenBank
+ena               Nucleotide,Nucfeatures        ENA via URL
+qanfasta          Nucleotide                    FASTA file EMBL rodents
+qanfastaall       Nucleotide                    FASTA file EMBL rodents, all fields indexed
+qanflat           Nucleotide,Nucfeatures,Refseq EMBL flatfiles
+qanflatall        Nucleotide,Nucfeatures,Refseq EMBL flatfiles
+qanflatexc        Nucleotide,Nucfeatures        EMBL flatfiles, no rodent file
+qanflatinc        Nucleotide,Nucfeatures        EMBL flatfiles, only rodent file
+qangcg            Nucleotide,Nucfeatures        GCG format test EMBL
+qangcgall         Nucleotide,Nucfeatures        GCG format test EMBL
+qangcgexc         Nucleotide,Nucfeatures        GCG format test EMBL without prokaryotes
+qangcginc         Nucleotide,Nucfeatures        GCG format test EMBL only prokaryotes
+qanxfasta         Nucleotide                    FASTA file EMBL rodents
+qanxfastaall      Nucleotide                    FASTA file EMBL rodents, all fields indexed
+qanxflat          Nucleotide,Nucfeatures,Refseq EMBL flatfiles
+qanxflatall       Nucleotide,Nucfeatures,Refseq EMBL flatfiles, all fields indexed
+qanxflatexc       Nucleotide,Nucfeatures,Refseq EMBL flatfiles, no rodent file
+qanxflatinc       Nucleotide,Nucfeatures        EMBL flatfiles, only rodent file
+qanxgcg           Nucleotide,Nucfeatures        GCG format EMBL
+qanxgcgall        Nucleotide,Nucfeatures        GCG format EMBL indexed by dbxgcg with query fields
+qanxgcgexc        Nucleotide,Nucfeatures        GCG format EMBL without prokaryotes
+qanxgcginc        Nucleotide,Nucfeatures        GCG format EMBL only prokaryotes
+qawfasta          Nucleotide                    FASTA file wormpep entries
+qawxfasta         Nucleotide                    FASTA file wormpep entries
+qaxembl           Nucleotide,Nucfeatures,Refseq EMBL flatfiles
+tembl             Nucleotide,Refseq,Nucfeatures EMBL in native format with EMBL CD-ROM index
+temblall          Nucleotide,Nucfeatures,Refseq EMBL in native format with EMBL CD-ROM index
+temblrest         Nucleotide,Nucfeatures,Refseq EMBL in native format with EMBL CD-ROM index
+temblvrt          Nucleotide,Nucfeatures        EMBL in native format with EMBL CD-ROM index
+tensembldasgrch37 Nucleotide                    Homo_sapiens Reference server based on GRCh37 assembly
+testdb            Nucleotide                    test sequence data
+tgb               Nucleotide,Nucfeatures        Genbank by SRS at DKFZ
+tgenbank          Nucleotide,Nucfeatures        Test GenBank in native format with EMBL CD-ROM index
+tgenedashuman     Nucleotide                    The Ensembl human Gene_ID reference source
+tflybase          Features                      Flybase CHADO server
+tgenedb           Features                      GeneDb CHADO server
+ttax              Taxonomy                      NCBI taxonomy test data
+taxon             Taxonomy                      NCBI taxonomy
+drcat             Resource                      Data Resource Catalogue
+tedam             Obo                           Test EDAM using dbxedam test indexes
+tobo              Obo                           Test EDAM using dbxobo test indexes
+chebi             Obo                           Chemical Entities of Biological Interest
+eco               Obo                           Evidence code ontology
+edam              Obo                           EMBRACE Data and Methods ontology
+edam_data         Obo                           EMBRACE Data and Methods ontology (data)
+edam_format       Obo                           EMBRACE Data and Methods ontology (formats)
+edam_identifier   Obo                           EMBRACE Data and Methods ontology (identifiers)
+edam_operation    Obo                           EMBRACE Data and Methods ontology (operations)
+edam_topic        Obo                           EMBRACE Data and Methods ontology (topics)
+go                Obo                           Gene Ontology
+go_component      Obo                           Gene Ontology (cellular components)
+go_function       Obo                           Gene Ontology (molecular functions)
+go_process        Obo                           Gene Ontology (biological processes)
+pw                Obo                           Pathways ontology
+ro                Obo                           Relations ontology
+so                Obo                           Sequence ontology
+swo               Obo                           Software ontology
+
+</pre></td></tr></table><p>
+<p>
+<p>
+<p>
+<b>Example 2</b>
+<p>
+Write the results to a file: 
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>showdb -outfile showdb.out </b>
+Display information on configured databases
+
+</pre></td></tr></table><p>
+<p>
+<a href="#output.2">Go to the output files for this example</a><p><p>
+<p>
+<b>Example 3</b>
+<p>
+Display information on one explicit database: 
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>showdb -database tsw </b>
+Display information on configured databases
+
+# Name         Type                      Comment
+# ============ ========================= =======
+tsw            Protein,Protfeatures,Text Swissprot native format with EMBL CD-ROM index
+
+</pre></td></tr></table><p>
+<p>
+<a href="#input.3">Go to the input files for this example</a><br><p>
+<p>
+<b>Example 4</b>
+<p>
+Display information on the databases formatted in HTML: 
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>showdb -html </b>
+Display information on configured databases
+
+<table border cellpadding=4 bgcolor="#FFFFF0">
+<tr><th>Name</th><th>Type</th><th>Comment</th></tr>
+<tr><td>bpsw</td><td>Protein Protfeatures</td><td>BioPerl OBDA index of test SwissProt</td></tr>
+<tr><td>bpworm</td><td>Protein</td><td>BioPerl OBDA index of test wormpep fasta file</td></tr>
+<tr><td>qapblast</td><td>Protein</td><td>BLAST swissnew</td></tr>
+<tr><td>qapblastall</td><td>Protein</td><td>BLAST swissnew, all fields indexed</td></tr>
+<tr><td>qapblastsplit</td><td>Protein</td><td>BLAST swissnew split in 5 files</td></tr>
+<tr><td>qapblastsplitexc</td><td>Protein</td><td>BLAST swissnew split in 5 files, not file 02</td></tr>
+<tr><td>qapblastsplitinc</td><td>Protein</td><td>BLAST swissnew split in 5 files, only file 02</td></tr>
+<tr><td>qapfasta</td><td>Protein</td><td>FASTA file swissnew entries</td></tr>
+<tr><td>qapflat</td><td>Protein Protfeatures</td><td>SpTrEmbl flatfile</td></tr>
+<tr><td>qapflatall</td><td>Protein Protfeatures</td><td>SpTrEmbl flatfiles, all fields indexed</td></tr>
+<tr><td>qapir</td><td>Protein Protfeatures</td><td>Test PIR indexed by dbigcg</td></tr>
+<tr><td>qapirall</td><td>Protein Protfeatures</td><td>Test PIR indexed by dbigcg with fields</td></tr>
+<tr><td>qapirexc</td><td>Protein Protfeatures</td><td>Test PIR indexed by dbigcg except file pir1</td></tr>
+<tr><td>qapirinc</td><td>Protein Protfeatures</td><td>Test PIR indexed by dbigcg file pir1</td></tr>
+<tr><td>qapxfasta</td><td>Protein</td><td>FASTA file swissnew entries</td></tr>
+<tr><td>qapxflat</td><td>Protein</td><td>Swissnew flatfiles</td></tr>
+<tr><td>qasrswww</td><td>Protein Protfeatures</td><td>Remote SRS web server</td></tr>
+<tr><td>qaxpir</td><td>Protein Protfeatures</td><td>PIR indexed by dbxgcg</td></tr>
+<tr><td>qaxpirall</td><td>Protein Protfeatures</td><td>Test PIR indexed by dbxgcg with fields</td></tr>
+<tr><td>qaxpirexc</td><td>Protein Protfeatures</td><td>Test PIR indexed by dbxgcg except pir1</td></tr>
+<tr><td>qaxpirinc</td><td>Protein Protfeatures</td><td>Test PIR indexed by dbxgcg file pir1</td></tr>
+<tr><td>tpir</td><td>Protein</td><td>Test PIR using NBRF access for 4 files</td></tr>
+<tr><td>tsw</td><td>Protein Protfeatures Text</td><td>Swissprot native format with EMBL CD-ROM index</td></tr>
+<tr><td>tswnew</td><td>Protein Protfeatures</td><td>SpTrEmbl as 3 files in native format with EMBL CD-ROM index</td></tr>
+<tr><td>bpembl</td><td>Nucleotide Nucfeatures</td><td>BioPerl OBDA index of test EMBL</td></tr>
+<tr><td>bpgb</td><td>Nucleotide Nucfeatures</td><td>BioPerl OBDA index of test GenBank</td></tr>
+<tr><td>ena</td><td>Nucleotide Nucfeatures</td><td>ENA via URL</td></tr>
+<tr><td>qanfasta</td><td>Nucleotide</td><td>FASTA file EMBL rodents</td></tr>
+<tr><td>qanfastaall</td><td>Nucleotide</td><td>FASTA file EMBL rodents, all fields indexed</td></tr>
+<tr><td>qanflat</td><td>Nucleotide Nucfeatures Refseq</td><td>EMBL flatfiles</td></tr>
+<tr><td>qanflatall</td><td>Nucleotide Nucfeatures Refseq</td><td>EMBL flatfiles</td></tr>
+<tr><td>qanflatexc</td><td>Nucleotide Nucfeatures</td><td>EMBL flatfiles, no rodent file</td></tr>
+<tr><td>qanflatinc</td><td>Nucleotide Nucfeatures</td><td>EMBL flatfiles, only rodent file</td></tr>
+<tr><td>qangcg</td><td>Nucleotide Nucfeatures</td><td>GCG format test EMBL</td></tr>
+<tr><td>qangcgall</td><td>Nucleotide Nucfeatures</td><td>GCG format test EMBL</td></tr>
+<tr><td>qangcgexc</td><td>Nucleotide Nucfeatures</td><td>GCG format test EMBL without prokaryotes</td></tr>
+<tr><td>qangcginc</td><td>Nucleotide Nucfeatures</td><td>GCG format test EMBL only prokaryotes</td></tr>
+<tr><td>qanxfasta</td><td>Nucleotide</td><td>FASTA file EMBL rodents</td></tr>
+<tr><td>qanxfastaall</td><td>Nucleotide</td><td>FASTA file EMBL rodents, all fields indexed</td></tr>
+<tr><td>qanxflat</td><td>Nucleotide Nucfeatures Refseq</td><td>EMBL flatfiles</td></tr>
+<tr><td>qanxflatall</td><td>Nucleotide Nucfeatures Refseq</td><td>EMBL flatfiles, all fields indexed</td></tr>
+<tr><td>qanxflatexc</td><td>Nucleotide Nucfeatures Refseq</td><td>EMBL flatfiles, no rodent file</td></tr>
+<tr><td>qanxflatinc</td><td>Nucleotide Nucfeatures</td><td>EMBL flatfiles, only rodent file</td></tr>
+<tr><td>qanxgcg</td><td>Nucleotide Nucfeatures</td><td>GCG format EMBL</td></tr>
+<tr><td>qanxgcgall</td><td>Nucleotide Nucfeatures</td><td>GCG format EMBL indexed by dbxgcg with query fields</td></tr>
+<tr><td>qanxgcgexc</td><td>Nucleotide Nucfeatures</td><td>GCG format EMBL without prokaryotes</td></tr>
+<tr><td>qanxgcginc</td><td>Nucleotide Nucfeatures</td><td>GCG format EMBL only prokaryotes</td></tr>
+<tr><td>qawfasta</td><td>Nucleotide</td><td>FASTA file wormpep entries</td></tr>
+<tr><td>qawxfasta</td><td>Nucleotide</td><td>FASTA file wormpep entries</td></tr>
+<tr><td>qaxembl</td><td>Nucleotide Nucfeatures Refseq</td><td>EMBL flatfiles</td></tr>
+<tr><td>tembl</td><td>Nucleotide Refseq Nucfeatures</td><td>EMBL in native format with EMBL CD-ROM index</td></tr>
+<tr><td>temblall</td><td>Nucleotide Nucfeatures Refseq</td><td>EMBL in native format with EMBL CD-ROM index</td></tr>
+<tr><td>temblrest</td><td>Nucleotide Nucfeatures Refseq</td><td>EMBL in native format with EMBL CD-ROM index</td></tr>
+<tr><td>temblvrt</td><td>Nucleotide Nucfeatures</td><td>EMBL in native format with EMBL CD-ROM index</td></tr>
+<tr><td>tensembldasgrch37</td><td>Nucleotide</td><td>Homo_sapiens Reference server based on GRCh37 assembly</td></tr>
+<tr><td>testdb</td><td>Nucleotide</td><td>test sequence data</td></tr>
+<tr><td>tgb</td><td>Nucleotide Nucfeatures</td><td>Genbank by SRS at DKFZ</td></tr>
+<tr><td>tgenbank</td><td>Nucleotide Nucfeatures</td><td>Test GenBank in native format with EMBL CD-ROM index</td></tr>
+<tr><td>tgenedashuman</td><td>Nucleotide</td><td>The Ensembl human Gene_ID reference source</td></tr>
+<tr><td>tflybase</td><td>Features</td><td>Flybase CHADO server</td></tr>
+<tr><td>tgenedb</td><td>Features</td><td>GeneDb CHADO server</td></tr>
+<tr><td>ttax</td><td>Taxonomy</td><td>NCBI taxonomy test data</td></tr>
+<tr><td>taxon</td><td>Taxonomy</td><td>NCBI taxonomy</td></tr>
+<tr><td>drcat</td><td>Resource</td><td>Data Resource Catalogue</td></tr>
+<tr><td>tedam</td><td>Obo</td><td>Test EDAM using dbxedam test indexes</td></tr>
+<tr><td>tobo</td><td>Obo</td><td>Test EDAM using dbxobo test indexes</td></tr>
+<tr><td>chebi</td><td>Obo</td><td>Chemical Entities of Biological Interest</td></tr>
+<tr><td>eco</td><td>Obo</td><td>Evidence code ontology</td></tr>
+<tr><td>edam</td><td>Obo</td><td>EMBRACE Data and Methods ontology</td></tr>
+<tr><td>edam_data</td><td>Obo</td><td>EMBRACE Data and Methods ontology (data)</td></tr>
+<tr><td>edam_format</td><td>Obo</td><td>EMBRACE Data and Methods ontology (formats)</td></tr>
+<tr><td>edam_identifier</td><td>Obo</td><td>EMBRACE Data and Methods ontology (identifiers)</td></tr>
+<tr><td>edam_operation</td><td>Obo</td><td>EMBRACE Data and Methods ontology (operations)</td></tr>
+<tr><td>edam_topic</td><td>Obo</td><td>EMBRACE Data and Methods ontology (topics)</td></tr>
+<tr><td>go</td><td>Obo</td><td>Gene Ontology</td></tr>
+<tr><td>go_component</td><td>Obo</td><td>Gene Ontology (cellular components)</td></tr>
+<tr><td>go_function</td><td>Obo</td><td>Gene Ontology (molecular functions)</td></tr>
+<tr><td>go_process</td><td>Obo</td><td>Gene Ontology (biological processes)</td></tr>
+<tr><td>pw</td><td>Obo</td><td>Pathways ontology</td></tr>
+<tr><td>ro</td><td>Obo</td><td>Relations ontology</td></tr>
+<tr><td>so</td><td>Obo</td><td>Sequence ontology</td></tr>
+<tr><td>swo</td><td>Obo</td><td>Software ontology</td></tr>
+</table>
+
+</pre></td></tr></table><p>
+<p>
+<p>
+<p>
+<b>Example 5</b>
+<p>
+Display protein databases only: 
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>showdb -nonucleic </b>
+Display information on configured databases
+
+# Name            Type                          Comment
+# =============== ============================= =======
+bpsw              Protein,Protfeatures          BioPerl OBDA index of test SwissProt
+bpworm            Protein                       BioPerl OBDA index of test wormpep fasta file
+qapblast          Protein                       BLAST swissnew
+qapblastall       Protein                       BLAST swissnew, all fields indexed
+qapblastsplit     Protein                       BLAST swissnew split in 5 files
+qapblastsplitexc  Protein                       BLAST swissnew split in 5 files, not file 02
+qapblastsplitinc  Protein                       BLAST swissnew split in 5 files, only file 02
+qapfasta          Protein                       FASTA file swissnew entries
+qapflat           Protein,Protfeatures          SpTrEmbl flatfile
+qapflatall        Protein,Protfeatures          SpTrEmbl flatfiles, all fields indexed
+qapir             Protein,Protfeatures          Test PIR indexed by dbigcg
+qapirall          Protein,Protfeatures          Test PIR indexed by dbigcg with fields
+qapirexc          Protein,Protfeatures          Test PIR indexed by dbigcg except file pir1
+qapirinc          Protein,Protfeatures          Test PIR indexed by dbigcg file pir1
+qapxfasta         Protein                       FASTA file swissnew entries
+qapxflat          Protein                       Swissnew flatfiles
+qasrswww          Protein,Protfeatures          Remote SRS web server
+qaxpir            Protein,Protfeatures          PIR indexed by dbxgcg
+qaxpirall         Protein,Protfeatures          Test PIR indexed by dbxgcg with fields
+qaxpirexc         Protein,Protfeatures          Test PIR indexed by dbxgcg except pir1
+qaxpirinc         Protein,Protfeatures          Test PIR indexed by dbxgcg file pir1
+tpir              Protein                       Test PIR using NBRF access for 4 files
+tsw               Protein,Protfeatures,Text     Swissprot native format with EMBL CD-ROM index
+tswnew            Protein,Protfeatures          SpTrEmbl as 3 files in native format with EMBL CD-ROM index
+tflybase          Features                      Flybase CHADO server
+tgenedb           Features                      GeneDb CHADO server
+ttax              Taxonomy                      NCBI taxonomy test data
+taxon             Taxonomy                      NCBI taxonomy
+drcat             Resource                      Data Resource Catalogue
+tedam             Obo                           Test EDAM using dbxedam test indexes
+tobo              Obo                           Test EDAM using dbxobo test indexes
+chebi             Obo                           Chemical Entities of Biological Interest
+eco               Obo                           Evidence code ontology
+edam              Obo                           EMBRACE Data and Methods ontology
+edam_data         Obo                           EMBRACE Data and Methods ontology (data)
+edam_format       Obo                           EMBRACE Data and Methods ontology (formats)
+edam_identifier   Obo                           EMBRACE Data and Methods ontology (identifiers)
+edam_operation    Obo                           EMBRACE Data and Methods ontology (operations)
+edam_topic        Obo                           EMBRACE Data and Methods ontology (topics)
+go                Obo                           Gene Ontology
+go_component      Obo                           Gene Ontology (cellular components)
+go_function       Obo                           Gene Ontology (molecular functions)
+go_process        Obo                           Gene Ontology (biological processes)
+pw                Obo                           Pathways ontology
+ro                Obo                           Relations ontology
+so                Obo                           Sequence ontology
+swo               Obo                           Software ontology
+
+</pre></td></tr></table><p>
+<p>
+<p>
+<p>
+<b>Example 6</b>
+<p>
+Display the information with no headings: 
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>showdb -noheading </b>
+Display information on configured databases
+
+bpsw              Protein,Protfeatures          BioPerl OBDA index of test SwissProt
+bpworm            Protein                       BioPerl OBDA index of test wormpep fasta file
+qapblast          Protein                       BLAST swissnew
+qapblastall       Protein                       BLAST swissnew, all fields indexed
+qapblastsplit     Protein                       BLAST swissnew split in 5 files
+qapblastsplitexc  Protein                       BLAST swissnew split in 5 files, not file 02
+qapblastsplitinc  Protein                       BLAST swissnew split in 5 files, only file 02
+qapfasta          Protein                       FASTA file swissnew entries
+qapflat           Protein,Protfeatures          SpTrEmbl flatfile
+qapflatall        Protein,Protfeatures          SpTrEmbl flatfiles, all fields indexed
+qapir             Protein,Protfeatures          Test PIR indexed by dbigcg
+qapirall          Protein,Protfeatures          Test PIR indexed by dbigcg with fields
+qapirexc          Protein,Protfeatures          Test PIR indexed by dbigcg except file pir1
+qapirinc          Protein,Protfeatures          Test PIR indexed by dbigcg file pir1
+qapxfasta         Protein                       FASTA file swissnew entries
+qapxflat          Protein                       Swissnew flatfiles
+qasrswww          Protein,Protfeatures          Remote SRS web server
+qaxpir            Protein,Protfeatures          PIR indexed by dbxgcg
+qaxpirall         Protein,Protfeatures          Test PIR indexed by dbxgcg with fields
+qaxpirexc         Protein,Protfeatures          Test PIR indexed by dbxgcg except pir1
+qaxpirinc         Protein,Protfeatures          Test PIR indexed by dbxgcg file pir1
+tpir              Protein                       Test PIR using NBRF access for 4 files
+tsw               Protein,Protfeatures,Text     Swissprot native format with EMBL CD-ROM index
+tswnew            Protein,Protfeatures          SpTrEmbl as 3 files in native format with EMBL CD-ROM index
+bpembl            Nucleotide,Nucfeatures        BioPerl OBDA index of test EMBL
+bpgb              Nucleotide,Nucfeatures        BioPerl OBDA index of test GenBank
+ena               Nucleotide,Nucfeatures        ENA via URL
+qanfasta          Nucleotide                    FASTA file EMBL rodents
+qanfastaall       Nucleotide                    FASTA file EMBL rodents, all fields indexed
+qanflat           Nucleotide,Nucfeatures,Refseq EMBL flatfiles
+qanflatall        Nucleotide,Nucfeatures,Refseq EMBL flatfiles
+qanflatexc        Nucleotide,Nucfeatures        EMBL flatfiles, no rodent file
+qanflatinc        Nucleotide,Nucfeatures        EMBL flatfiles, only rodent file
+qangcg            Nucleotide,Nucfeatures        GCG format test EMBL
+qangcgall         Nucleotide,Nucfeatures        GCG format test EMBL
+qangcgexc         Nucleotide,Nucfeatures        GCG format test EMBL without prokaryotes
+qangcginc         Nucleotide,Nucfeatures        GCG format test EMBL only prokaryotes
+qanxfasta         Nucleotide                    FASTA file EMBL rodents
+qanxfastaall      Nucleotide                    FASTA file EMBL rodents, all fields indexed
+qanxflat          Nucleotide,Nucfeatures,Refseq EMBL flatfiles
+qanxflatall       Nucleotide,Nucfeatures,Refseq EMBL flatfiles, all fields indexed
+qanxflatexc       Nucleotide,Nucfeatures,Refseq EMBL flatfiles, no rodent file
+qanxflatinc       Nucleotide,Nucfeatures        EMBL flatfiles, only rodent file
+qanxgcg           Nucleotide,Nucfeatures        GCG format EMBL
+qanxgcgall        Nucleotide,Nucfeatures        GCG format EMBL indexed by dbxgcg with query fields
+qanxgcgexc        Nucleotide,Nucfeatures        GCG format EMBL without prokaryotes
+qanxgcginc        Nucleotide,Nucfeatures        GCG format EMBL only prokaryotes
+qawfasta          Nucleotide                    FASTA file wormpep entries
+qawxfasta         Nucleotide                    FASTA file wormpep entries
+qaxembl           Nucleotide,Nucfeatures,Refseq EMBL flatfiles
+tembl             Nucleotide,Refseq,Nucfeatures EMBL in native format with EMBL CD-ROM index
+temblall          Nucleotide,Nucfeatures,Refseq EMBL in native format with EMBL CD-ROM index
+temblrest         Nucleotide,Nucfeatures,Refseq EMBL in native format with EMBL CD-ROM index
+temblvrt          Nucleotide,Nucfeatures        EMBL in native format with EMBL CD-ROM index
+tensembldasgrch37 Nucleotide                    Homo_sapiens Reference server based on GRCh37 assembly
+testdb            Nucleotide                    test sequence data
+tgb               Nucleotide,Nucfeatures        Genbank by SRS at DKFZ
+tgenbank          Nucleotide,Nucfeatures        Test GenBank in native format with EMBL CD-ROM index
+tgenedashuman     Nucleotide                    The Ensembl human Gene_ID reference source
+tflybase          Features                      Flybase CHADO server
+tgenedb           Features                      GeneDb CHADO server
+ttax              Taxonomy                      NCBI taxonomy test data
+taxon             Taxonomy                      NCBI taxonomy
+drcat             Resource                      Data Resource Catalogue
+tedam             Obo                           Test EDAM using dbxedam test indexes
+tobo              Obo                           Test EDAM using dbxobo test indexes
+chebi             Obo                           Chemical Entities of Biological Interest
+eco               Obo                           Evidence code ontology
+edam              Obo                           EMBRACE Data and Methods ontology
+edam_data         Obo                           EMBRACE Data and Methods ontology (data)
+edam_format       Obo                           EMBRACE Data and Methods ontology (formats)
+edam_identifier   Obo                           EMBRACE Data and Methods ontology (identifiers)
+edam_operation    Obo                           EMBRACE Data and Methods ontology (operations)
+edam_topic        Obo                           EMBRACE Data and Methods ontology (topics)
+go                Obo                           Gene Ontology
+go_component      Obo                           Gene Ontology (cellular components)
+go_function       Obo                           Gene Ontology (molecular functions)
+go_process        Obo                           Gene Ontology (biological processes)
+pw                Obo                           Pathways ontology
+ro                Obo                           Relations ontology
+so                Obo                           Sequence ontology
+swo               Obo                           Software ontology
+
+</pre></td></tr></table><p>
+<p>
+<p>
+<p>
+<b>Example 7</b>
+<p>
+Display just a list of the available database names: 
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>showdb -noheading -notype -noid -noquery -noall -nocomment -auto </b>
+
+bpsw              
+bpworm            
+qapblast          
+qapblastall       
+qapblastsplit     
+qapblastsplitexc  
+qapblastsplitinc  
+qapfasta          
+qapflat           
+qapflatall        
+qapir             
+qapirall          
+qapirexc          
+qapirinc          
+qapxfasta         
+qapxflat          
+qasrswww          
+qaxpir            
+qaxpirall         
+qaxpirexc         
+qaxpirinc         
+tpir              
+tsw               
+tswnew            
+bpembl            
+bpgb              
+ena               
+qanfasta          
+qanfastaall       
+qanflat           
+qanflatall        
+qanflatexc        
+qanflatinc        
+qangcg            
+qangcgall         
+qangcgexc         
+qangcginc         
+qanxfasta         
+qanxfastaall      
+qanxflat          
+qanxflatall       
+qanxflatexc       
+qanxflatinc       
+qanxgcg           
+qanxgcgall        
+qanxgcgexc        
+qanxgcginc        
+qawfasta          
+qawxfasta         
+qaxembl           
+tembl             
+temblall          
+temblrest         
+temblvrt          
+tensembldasgrch37 
+testdb            
+tgb               
+tgenbank          
+tgenedashuman     
+tflybase          
+tgenedb           
+ttax              
+taxon             
+drcat             
+tedam             
+tobo              
+chebi             
+eco               
+edam              
+edam_data         
+edam_format       
+edam_identifier   
+edam_operation    
+edam_topic        
+go                
+go_component      
+go_function       
+go_process        
+pw                
+ro                
+so                
+swo               
+
+</pre></td></tr></table><p>
+<p>
+<p>
+<p>
+<b>Example 8</b>
+<p>
+Display only the names and types: 
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>showdb -only -type </b>
+Display information on configured databases
+
+bpsw              Protein,Protfeatures          
+bpworm            Protein                       
+qapblast          Protein                       
+qapblastall       Protein                       
+qapblastsplit     Protein                       
+qapblastsplitexc  Protein                       
+qapblastsplitinc  Protein                       
+qapfasta          Protein                       
+qapflat           Protein,Protfeatures          
+qapflatall        Protein,Protfeatures          
+qapir             Protein,Protfeatures          
+qapirall          Protein,Protfeatures          
+qapirexc          Protein,Protfeatures          
+qapirinc          Protein,Protfeatures          
+qapxfasta         Protein                       
+qapxflat          Protein                       
+qasrswww          Protein,Protfeatures          
+qaxpir            Protein,Protfeatures          
+qaxpirall         Protein,Protfeatures          
+qaxpirexc         Protein,Protfeatures          
+qaxpirinc         Protein,Protfeatures          
+tpir              Protein                       
+tsw               Protein,Protfeatures,Text     
+tswnew            Protein,Protfeatures          
+bpembl            Nucleotide,Nucfeatures        
+bpgb              Nucleotide,Nucfeatures        
+ena               Nucleotide,Nucfeatures        
+qanfasta          Nucleotide                    
+qanfastaall       Nucleotide                    
+qanflat           Nucleotide,Nucfeatures,Refseq 
+qanflatall        Nucleotide,Nucfeatures,Refseq 
+qanflatexc        Nucleotide,Nucfeatures        
+qanflatinc        Nucleotide,Nucfeatures        
+qangcg            Nucleotide,Nucfeatures        
+qangcgall         Nucleotide,Nucfeatures        
+qangcgexc         Nucleotide,Nucfeatures        
+qangcginc         Nucleotide,Nucfeatures        
+qanxfasta         Nucleotide                    
+qanxfastaall      Nucleotide                    
+qanxflat          Nucleotide,Nucfeatures,Refseq 
+qanxflatall       Nucleotide,Nucfeatures,Refseq 
+qanxflatexc       Nucleotide,Nucfeatures,Refseq 
+qanxflatinc       Nucleotide,Nucfeatures        
+qanxgcg           Nucleotide,Nucfeatures        
+qanxgcgall        Nucleotide,Nucfeatures        
+qanxgcgexc        Nucleotide,Nucfeatures        
+qanxgcginc        Nucleotide,Nucfeatures        
+qawfasta          Nucleotide                    
+qawxfasta         Nucleotide                    
+qaxembl           Nucleotide,Nucfeatures,Refseq 
+tembl             Nucleotide,Refseq,Nucfeatures 
+temblall          Nucleotide,Nucfeatures,Refseq 
+temblrest         Nucleotide,Nucfeatures,Refseq 
+temblvrt          Nucleotide,Nucfeatures        
+tensembldasgrch37 Nucleotide                    
+testdb            Nucleotide                    
+tgb               Nucleotide,Nucfeatures        
+tgenbank          Nucleotide,Nucfeatures        
+tgenedashuman     Nucleotide                    
+tflybase          Features                      
+tgenedb           Features                      
+ttax              Taxonomy                      
+taxon             Taxonomy                      
+drcat             Resource                      
+tedam             Obo                           
+tobo              Obo                           
+chebi             Obo                           
+eco               Obo                           
+edam              Obo                           
+edam_data         Obo                           
+edam_format       Obo                           
+edam_identifier   Obo                           
+edam_operation    Obo                           
+edam_topic        Obo                           
+go                Obo                           
+go_component      Obo                           
+go_function       Obo                           
+go_process        Obo                           
+pw                Obo                           
+ro                Obo                           
+so                Obo                           
+swo               Obo                           
+
+</pre></td></tr></table><p>
+<p>
+<p>
+<p>
+<b>Example 9</b>
+<p>
+Display everything 
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>showdb -full </b>
+Display information on configured databases
+
+# Name            Type                          ID  Qry All Method    Taxon                       Fields                                                                                                Aliases         Examples           Defined  Release             Comment
+# =============== ============================= ==  === === ========= =========================== ===================================================================================================== =============== ================== ======== =================== =======
+bpsw              Protein,Protfeatures          OK  OK  OK  obda      -                                2 id,acc                                                                                               0 -              0 -         special                      BioPerl OBDA index of test SwissProt
+bpworm            Protein                       OK  OK  OK  obda      -                                1 id                                                                                                   0 -              0 -         special                      BioPerl OBDA index of test wormpep fasta file
+qapblast          Protein                       OK  OK  OK  blast     1_all                            2 id,acc                                                                                               0 -              0 -         special                      BLAST swissnew
+qapblastall       Protein                       OK  OK  OK  blast     1_all                            4 sv,des                                                                                               0 -              0 -         special                      BLAST swissnew, all fields indexed
+qapblastsplit     Protein                       OK  OK  OK  blast     1_all                            2 id,acc                                                                                               0 -              0 -         special                      BLAST swissnew split in 5 files
+qapblastsplitexc  Protein                       OK  OK  OK  blast     1_all                            2 id,acc                                                                                               0 -              0 -         special                      BLAST swissnew split in 5 files, not file 02
+qapblastsplitinc  Protein                       OK  OK  OK  blast     1_all                            2 id,acc                                                                                               0 -              0 -         special                      BLAST swissnew split in 5 files, only file 02
+qapfasta          Protein                       OK  OK  OK  emblcd    1_all                            2 id,acc                                                                                               0 -              0 -         special                      FASTA file swissnew entries
+qapflat           Protein,Protfeatures          OK  OK  OK  emblcd    1_all                            2 id,acc                                                                                               0 -              0 -         special                      SpTrEmbl flatfile
+qapflatall        Protein,Protfeatures          OK  OK  OK  emblcd    1_all                            6 sv,des,org,key                                                                                       0 -              0 -         special                      SpTrEmbl flatfiles, all fields indexed
+qapir             Protein,Protfeatures          OK  OK  OK  gcg       1_all                            2 id,acc                                                                                               0 -              0 -         special                      Test PIR indexed by dbigcg
+qapirall          Protein,Protfeatures          OK  OK  OK  gcg       1_all                            5 des,org,key                                                                                          0 -              0 -         special                      Test PIR indexed by dbigcg with fields
+qapirexc          Protein,Protfeatures          OK  OK  OK  gcg       1_all                            2 id,acc                                                                                               0 -              0 -         special                      Test PIR indexed by dbigcg except file pir1
+qapirinc          Protein,Protfeatures          OK  OK  OK  gcg       1_all                            2 id,acc                                                                                               0 -              0 -         special                      Test PIR indexed by dbigcg file pir1
+qapxfasta         Protein                       OK  OK  OK  emboss    1_all                            2 id,acc                                                                                               0 -              0 -         special                      FASTA file swissnew entries
+qapxflat          Protein                       OK  OK  OK  emboss    1_all                            2 id,acc                                                                                               0 -              0 -         special                      Swissnew flatfiles
+qasrswww          Protein,Protfeatures          OK  OK  OK  srswww    1_all                            6 sv,des,org,key                                                                                       0 -              0 -         special                      Remote SRS web server
+qaxpir            Protein,Protfeatures          OK  OK  OK  embossgcg 1_all                            2 id,acc                                                                                               0 -              0 -         special                      PIR indexed by dbxgcg
+qaxpirall         Protein,Protfeatures          OK  OK  OK  embossgcg 1_all                            5 des,org,key                                                                                          0 -              0 -         special                      Test PIR indexed by dbxgcg with fields
+qaxpirexc         Protein,Protfeatures          OK  OK  OK  embossgcg 1_all                            2 id,acc                                                                                               0 -              0 -         special                      Test PIR indexed by dbxgcg except pir1
+qaxpirinc         Protein,Protfeatures          OK  OK  OK  embossgcg 1_all                            2 id,acc                                                                                               0 -              0 -         special                      Test PIR indexed by dbxgcg file pir1
+tpir              Protein                       OK  OK  OK  gcg       1_all                            5 des,org,key                                                                                          0 -              0 -         special                      Test PIR using NBRF access for 4 files
+tsw               Protein,Protfeatures,Text     OK  OK  OK  emblcd    1_all                            6 id,acc,sv,des,org,key                                                                                0 -              1 hba_human special  36                  Swissprot native format with EMBL CD-ROM index
+tswnew            Protein,Protfeatures          OK  OK  OK  emblcd    1_all                            6 sv,des,org,key                                                                                       0 -              0 -         special  37                  SpTrEmbl as 3 files in native format with EMBL CD-ROM index
+bpembl            Nucleotide,Nucfeatures        OK  OK  OK  obda      -                                2 id,acc                                                                                               0 -              0 -         special                      BioPerl OBDA index of test EMBL
+bpgb              Nucleotide,Nucfeatures        OK  OK  OK  obda      -                                2 id,acc                                                                                               0 -              0 -         special                      BioPerl OBDA index of test GenBank
+ena               Nucleotide,Nucfeatures        OK  OK  OK  url       1_all                            2 id,acc                                                                                               0 -              0 -         special                      ENA via URL
+qanfasta          Nucleotide                    OK  OK  OK  emblcd    9989_rodentia                    2 id,acc                                                                                               0 -              0 -         special                      FASTA file EMBL rodents
+qanfastaall       Nucleotide                    OK  OK  OK  emblcd    9989_rodentia                    4 sv,des                                                                                               0 -              0 -         special                      FASTA file EMBL rodents, all fields indexed
+qanflat           Nucleotide,Nucfeatures,Refseq OK  OK  OK  emblcd    1_all                            2 id,acc                                                                                               0 -              0 -         special                      EMBL flatfiles
+qanflatall        Nucleotide,Nucfeatures,Refseq OK  OK  OK  emblcd    1_all                            2 id,acc                                                                                               0 -              0 -         special                      EMBL flatfiles
+qanflatexc        Nucleotide,Nucfeatures        OK  OK  OK  emblcd    1_all                            2 id,acc                                                                                               0 -              0 -         special                      EMBL flatfiles, no rodent file
+qanflatinc        Nucleotide,Nucfeatures        OK  OK  OK  emblcd    -                                2 id,acc                                                                                               0 -              0 -         special                      EMBL flatfiles, only rodent file
+qangcg            Nucleotide,Nucfeatures        OK  OK  OK  gcg       1_all                            2 id,acc                                                                                               0 -              0 -         special                      GCG format test EMBL
+qangcgall         Nucleotide,Nucfeatures        OK  OK  OK  gcg       1_all                            6 sv,des,org,key                                                                                       0 -              0 -         special                      GCG format test EMBL
+qangcgexc         Nucleotide,Nucfeatures        OK  OK  OK  gcg       1_all                            2 id,acc                                                                                               0 -              0 -         special                      GCG format test EMBL without prokaryotes
+qangcginc         Nucleotide,Nucfeatures        OK  OK  OK  gcg       1_all                            2 id,acc                                                                                               0 -              0 -         special                      GCG format test EMBL only prokaryotes
+qanxfasta         Nucleotide                    OK  OK  OK  emboss    9989_rodentia                    2 id,acc                                                                                               0 -              0 -         special                      FASTA file EMBL rodents
+qanxfastaall      Nucleotide                    OK  OK  OK  emboss    9989_rodentia                    4 sv,des                                                                                               0 -              0 -         special                      FASTA file EMBL rodents, all fields indexed
+qanxflat          Nucleotide,Nucfeatures,Refseq OK  OK  OK  emboss    1_all                            2 id,acc                                                                                               0 -              0 -         special                      EMBL flatfiles
+qanxflatall       Nucleotide,Nucfeatures,Refseq OK  OK  OK  emboss    1_all                            6 des,org,key,sv                                                                                       0 -              0 -         special                      EMBL flatfiles, all fields indexed
+qanxflatexc       Nucleotide,Nucfeatures,Refseq OK  OK  OK  emboss    1_all                            2 id,acc                                                                                               0 -              0 -         special                      EMBL flatfiles, no rodent file
+qanxflatinc       Nucleotide,Nucfeatures        OK  OK  OK  emboss    1_all                            2 id,acc                                                                                               0 -              0 -         special                      EMBL flatfiles, only rodent file
+qanxgcg           Nucleotide,Nucfeatures        OK  OK  OK  embossgcg 1_all                            2 id,acc                                                                                               0 -              0 -         special                      GCG format EMBL
+qanxgcgall        Nucleotide,Nucfeatures        OK  OK  OK  embossgcg 1_all                            6 sv,des,org,key                                                                                       0 -              0 -         special                      GCG format EMBL indexed by dbxgcg with query fields
+qanxgcgexc        Nucleotide,Nucfeatures        OK  OK  OK  embossgcg 1_all                            2 id,acc                                                                                               0 -              0 -         special                      GCG format EMBL without prokaryotes
+qanxgcginc        Nucleotide,Nucfeatures        OK  OK  OK  embossgcg 1_all                            2 id,acc                                                                                               0 -              0 -         special                      GCG format EMBL only prokaryotes
+qawfasta          Nucleotide                    OK  OK  OK  emblcd    6239_caenorhabditis_elegans      2 id,acc                                                                                               0 -              0 -         special                      FASTA file wormpep entries
+qawxfasta         Nucleotide                    OK  OK  OK  emboss    6239_caenorhabditis_elegans      2 id,acc                                                                                               0 -              0 -         special                      FASTA file wormpep entries
+qaxembl           Nucleotide,Nucfeatures,Refseq OK  OK  OK  emboss    1_all                            2 id,acc                                                                                               0 -              0 -         special                      EMBL flatfiles
+tembl             Nucleotide,Refseq,Nucfeatures OK  OK  OK  emblcd    1_all                            6 sv,des,org,key                                                                                       0 -              1 x13776    special  57                  EMBL in native format with EMBL CD-ROM index
+temblall          Nucleotide,Nucfeatures,Refseq OK  OK  OK  direct    1_all                            6 sv,des,org,key                                                                                       0 -              0 -         special  57                  EMBL in native format with EMBL CD-ROM index
+temblrest         Nucleotide,Nucfeatures,Refseq OK  OK  OK  direct    1_all                            6 sv,des,org,key                                                                                       0 -              0 -         special  57                  EMBL in native format with EMBL CD-ROM index
+temblvrt          Nucleotide,Nucfeatures        OK  OK  OK  direct    9711_chordata                    6 sv,des,org,key                                                                                       0 -              0 -         special  57                  EMBL in native format with EMBL CD-ROM index
+tensembldasgrch37 Nucleotide                    OK  OK  -   das       9606_homo_sapiens                2 id,acc                                                                                               0 -              0 -         special                      Homo_sapiens Reference server based on GRCh37 assembly
+testdb            Nucleotide                    OK  OK  OK  emblcd    -                                3 des                                                                                                  0 -              0 -         special  01                  test sequence data
+tgb               Nucleotide,Nucfeatures        OK  OK  OK  srswww    1_all                            6 sv,des,org,key                                                                                       0 -              0 -         special                      Genbank by SRS at DKFZ
+tgenbank          Nucleotide,Nucfeatures        OK  OK  OK  emblcd    1_all                            6 sv,des,org,key                                                                                       0 -              0 -         special  01                  Test GenBank in native format with EMBL CD-ROM index
+tgenedashuman     Nucleotide                    OK  OK  -   das       9606_homo_sapiens                2 id,acc                                                                                               0 -              0 -         special                      The Ensembl human Gene_ID reference source
+tflybase          Features                      OK  -   -   chado(id) 1_all                            2 uniquename                                                                                           0 -              0 -         special                      Flybase CHADO server
+tgenedb           Features                      OK  -   -   chado(id) 1_all                            2 uniquename                                                                                           0 -              0 -         special                      GeneDb CHADO server
+ttax              Taxonomy                      OK  OK  OK  embosstax -                                7 id,acc,nam,rnk,up,gc,mgc                                                                             0 -              0 -         special                      NCBI taxonomy test data
+taxon             Taxonomy                      OK  OK  OK  embosstax 1                                7 id,acc,tax,rnk,up,gc,mgc                                                                             0 -              0 -         standard July 2012           NCBI taxonomy
+drcat             Resource                      OK  OK  OK  emboss    none                            21 id,acc,nam,des,url,cat,edat,efmt,eid,etpc,xref,qout,qfmt,qin,qurl,cc,rest,soap,stat,xref,taxid       0 -              0 -         standard alpha 1 21-jun-2011 Data Resource Catalogue
+tedam             Obo                           OK  OK  OK  emboss    -                               12 id,acc,nam,isa,des,ns,hasattr,hasin,hasout,isid,isfmt,issrc                                          0 -              0 -         special  beta11              Test EDAM using dbxedam test indexes
+tobo              Obo                           OK  OK  OK  emboss    -                               12 id,acc,nam,isa,des,ns,hasattr,hasin,hasout,isid,isfmt,issrc                                          0 -              0 -         special  beta11              Test EDAM using dbxobo test indexes
+chebi             Obo                           OK  OK  OK  emboss    none                             5 id,acc,nam,isa,des                                                                                   0 -              0 -         standard 93                  Chemical Entities of Biological Interest
+eco               Obo                           OK  OK  OK  emboss    none                             5 id,acc,nam,isa,des                                                                                   0 -              0 -         standard 2.02                Evidence code ontology
+edam              Obo                           OK  OK  OK  emboss    none                            12 id,acc,nam,isa,des,ns,hasattr,hasin,hasout,isid,isfmt,issrc                                          0 -              0 -         standard 1.1                 EMBRACE Data and Methods ontology
+edam_data         Obo                           OK  OK  OK  emboss    none                            12 id,acc,nam,isa,des,ns,hasattr,hasin,hasout,isid,isfmt,issrc                                          0 -              0 -         standard 1.1                 EMBRACE Data and Methods ontology (data)
+edam_format       Obo                           OK  OK  OK  emboss    none                            12 id,acc,nam,isa,des,ns,hasattr,hasin,hasout,isid,isfmt,issrc                                          0 -              0 -         standard 1.1                 EMBRACE Data and Methods ontology (formats)
+edam_identifier   Obo                           OK  OK  OK  emboss    none                            12 id,acc,nam,isa,des,ns,hasattr,hasin,hasout,isid,isfmt,issrc                                          0 -              0 -         standard 1.1                 EMBRACE Data and Methods ontology (identifiers)
+edam_operation    Obo                           OK  OK  OK  emboss    none                            12 id,acc,nam,isa,des,ns,hasattr,hasin,hasout,isid,isfmt,issrc                                          0 -              0 -         standard 1.1                 EMBRACE Data and Methods ontology (operations)
+edam_topic        Obo                           OK  OK  OK  emboss    none                            12 id,acc,nam,isa,des,ns,hasattr,hasin,hasout,isid,isfmt,issrc                                          0 -              0 -         standard 1.1                 EMBRACE Data and Methods ontology (topics)
+go                Obo                           OK  OK  OK  emboss    1_all                            6 id,acc,nam,isa,des,ns                                                                                0 -              0 -         standard 1.1.3300            Gene Ontology
+go_component      Obo                           OK  OK  OK  emboss    1_all                            6 id,acc,nam,isa,des,ns                                                                                0 -              0 -         standard 1.1.3300            Gene Ontology (cellular components)
+go_function       Obo                           OK  OK  OK  emboss    1_all                            6 id,acc,nam,isa,des,ns                                                                                0 -              0 -         standard 1.1.3300            Gene Ontology (molecular functions)
+go_process        Obo                           OK  OK  OK  emboss    1_all                            6 id,acc,nam,isa,des,ns                                                                                0 -              0 -         standard 1.1.3300            Gene Ontology (biological processes)
+pw                Obo                           OK  OK  OK  emboss    1_all                            5 id,acc,nam,isa,des                                                                                   0 -              0 -         standard 12:06:2012 11:03    Pathways ontology
+ro                Obo                           OK  OK  OK  emboss    none                             5 id,acc,nam,isa,des                                                                                   0 -              0 -         standard 20:03:2009 11:58    Relations ontology
+so                Obo                           OK  OK  OK  emboss    none                             5 id,acc,nam,isa,des                                                                                   0 -              0 -         standard 02:05:2012 11:08    Sequence ontology
+swo               Obo                           OK  OK  OK  emboss    none                             5 id,acc,nam,isa,des                                                                                   0 -              0 -         standard 12-jul-2012         Software ontology
+
+</pre></td></tr></table><p>
+<p>
+<p>
+
+
+<H2>
+    Command line arguments
+</H2>
+<table CELLSPACING=0 CELLPADDING=3 BGCOLOR="#f5f5ff" ><tr><td>
+<pre>
+Display information on configured databases
+Version: EMBOSS:6.6.0.0
+
+   Standard (Mandatory) qualifiers: (none)
+   Additional (Optional) qualifiers:
+   -database           string     Name of a single database to give
+                                  information on (Any string)
+   -html               boolean    [N] Format output as an HTML table
+   -[no]protein        boolean    [Y] Display protein databases
+   -[no]nucleic        boolean    [Y] Display nucleotide databases
+   -[no]sequence       boolean    [Y] Display general sequence databases
+   -[no]feature        boolean    [Y] Display feature annotation databases
+   -[no]text           boolean    [Y] Display text databases
+   -[no]taxonomy       boolean    [Y] Display taxonomy databases
+   -[no]resource       boolean    [Y] Display resource databases
+   -[no]assembly       boolean    [Y] Display sequence assembly databases
+   -[no]obo            boolean    [Y] Display obo bio-ontology databases
+   -[no]xml            boolean    [Y] Display XML databases
+   -[no]standard       boolean    [Y] Display standard databases
+   -[no]user           boolean    [Y] Display user-defined databases
+   -[no]include        boolean    [Y] Display databases defined in included
+                                  files
+   -full               boolean    [N] Display all columns
+   -access             boolean    [$(full)] This displays the levels of access
+                                  that can be used on this database
+   -methods            boolean    [$(full)] This displays the access methods
+                                  that can be used on this database, for all,
+                                  query or ID access
+   -taxscope           boolean    [$(full)] This displays the taxons covered
+                                  by this database
+   -fields             boolean    [$(full)] This displays the search fields
+                                  that can be used on this database, including
+                                  the standard 'id' or 'acc' fields
+   -numfields          boolean    [$(full)] This displays the number of search
+                                  fields that can be used on this database,
+                                  including the standard 'id' or 'acc' fields
+   -aliases            boolean    [$(full)] This displays the alias names that
+                                  can be used for this database
+   -numaliases         boolean    [$(full)] This displays the number of alias
+                                  names that can be used for this database
+   -examples           boolean    [$(full)] This displays the example queries
+                                  that can be used to test this database
+   -numexamples        boolean    [$(full)] This displays the number of
+                                  example queries that can be used to test
+                                  this database
+   -defined            boolean    [$(full)] This displays a short name for the
+                                  file containing the database definition
+   -release            boolean    [$(full)] Display 'release' column
+   -outfile            outfile    [stdout] Output file name
+
+   Advanced (Unprompted) qualifiers:
+   -only               toggle     [N] This is a way of shortening the command
+                                  line if you only want a few standard columns
+                                  to be displayed. Instead of specifying:
+                                  '-nohead -notype -noid -noquery -noall'
+                                  to get only the comment output, you can
+                                  specify
+                                  '-only -comment'
+   -heading            boolean    [@(!$(only))] Display column headings
+   -type               boolean    [@(!$(only))] Display 'type' column
+   -id                 boolean    [@(!$(only))] Display 'id' access column
+   -query              boolean    [@(!$(only))] Display 'qry' access column
+   -all                boolean    [@(!$(only))] Display 'all' access column
+   -comment            boolean    [@(!$(only))] Display 'comment' column
+
+   Associated qualifiers:
+
+   "-outfile" associated qualifiers
+   -odirectory         string     Output directory
+
+   General qualifiers:
+   -auto               boolean    Turn off prompts
+   -stdout             boolean    Write first file to standard output
+   -filter             boolean    Read first file from standard input, write
+                                  first file to standard output
+   -options            boolean    Prompt for standard and additional values
+   -debug              boolean    Write debug output to program.dbg
+   -verbose            boolean    Report some/full command line options
+   -help               boolean    Report command line options and exit. More
+                                  information on associated and general
+                                  qualifiers can be found with -help -verbose
+   -warning            boolean    Report warnings
+   -error              boolean    Report errors
+   -fatal              boolean    Report fatal errors
+   -die                boolean    Report dying program messages
+   -version            boolean    Report version number and exit
+
+</pre>
+</td></tr></table>
+<P>
+
+<table border cellspacing=0 cellpadding=3 bgcolor="#ccccff">
+<tr bgcolor="#FFFFCC">
+<th align="left">Qualifier</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+<th align="left">Allowed values</th>
+<th align="left">Default</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>Standard (Mandatory) qualifiers</th>
+</tr>
+
+<tr>
+<td colspan=5>(none)</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>Additional (Optional) qualifiers</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-database</td>
+<td>string</td>
+<td>Name of a single database to give information on</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-html</td>
+<td>boolean</td>
+<td>Format output as an HTML table</td>
+<td>Boolean value Yes/No</td>
+<td>No</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-[no]protein</td>
+<td>boolean</td>
+<td>Display protein databases</td>
+<td>Boolean value Yes/No</td>
+<td>Yes</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-[no]nucleic</td>
+<td>boolean</td>
+<td>Display nucleotide databases</td>
+<td>Boolean value Yes/No</td>
+<td>Yes</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-[no]sequence</td>
+<td>boolean</td>
+<td>Display general sequence databases</td>
+<td>Boolean value Yes/No</td>
+<td>Yes</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-[no]feature</td>
+<td>boolean</td>
+<td>Display feature annotation databases</td>
+<td>Boolean value Yes/No</td>
+<td>Yes</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-[no]text</td>
+<td>boolean</td>
+<td>Display text databases</td>
+<td>Boolean value Yes/No</td>
+<td>Yes</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-[no]taxonomy</td>
+<td>boolean</td>
+<td>Display taxonomy databases</td>
+<td>Boolean value Yes/No</td>
+<td>Yes</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-[no]resource</td>
+<td>boolean</td>
+<td>Display resource databases</td>
+<td>Boolean value Yes/No</td>
+<td>Yes</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-[no]assembly</td>
+<td>boolean</td>
+<td>Display sequence assembly databases</td>
+<td>Boolean value Yes/No</td>
+<td>Yes</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-[no]obo</td>
+<td>boolean</td>
+<td>Display obo bio-ontology databases</td>
+<td>Boolean value Yes/No</td>
+<td>Yes</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-[no]xml</td>
+<td>boolean</td>
+<td>Display XML databases</td>
+<td>Boolean value Yes/No</td>
+<td>Yes</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-[no]standard</td>
+<td>boolean</td>
+<td>Display standard databases</td>
+<td>Boolean value Yes/No</td>
+<td>Yes</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-[no]user</td>
+<td>boolean</td>
+<td>Display user-defined databases</td>
+<td>Boolean value Yes/No</td>
+<td>Yes</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-[no]include</td>
+<td>boolean</td>
+<td>Display databases defined in included files</td>
+<td>Boolean value Yes/No</td>
+<td>Yes</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-full</td>
+<td>boolean</td>
+<td>Display all columns</td>
+<td>Boolean value Yes/No</td>
+<td>No</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-access</td>
+<td>boolean</td>
+<td>This displays the levels of access that can be used on this database</td>
+<td>Boolean value Yes/No</td>
+<td>$(full)</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-methods</td>
+<td>boolean</td>
+<td>This displays the access methods that can be used on this database, for all, query or ID access</td>
+<td>Boolean value Yes/No</td>
+<td>$(full)</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-taxscope</td>
+<td>boolean</td>
+<td>This displays the taxons covered by this database</td>
+<td>Boolean value Yes/No</td>
+<td>$(full)</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-fields</td>
+<td>boolean</td>
+<td>This displays the search fields that can be used on this database, including the standard 'id' or 'acc' fields</td>
+<td>Boolean value Yes/No</td>
+<td>$(full)</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-numfields</td>
+<td>boolean</td>
+<td>This displays the number of search fields that can be used on this database, including the standard 'id' or 'acc' fields</td>
+<td>Boolean value Yes/No</td>
+<td>$(full)</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-aliases</td>
+<td>boolean</td>
+<td>This displays the alias names that can be used for this database</td>
+<td>Boolean value Yes/No</td>
+<td>$(full)</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-numaliases</td>
+<td>boolean</td>
+<td>This displays the number of alias names that can be used for this database</td>
+<td>Boolean value Yes/No</td>
+<td>$(full)</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-examples</td>
+<td>boolean</td>
+<td>This displays the example queries that can be used to test this database</td>
+<td>Boolean value Yes/No</td>
+<td>$(full)</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-numexamples</td>
+<td>boolean</td>
+<td>This displays the number of example queries that can be used to test this database</td>
+<td>Boolean value Yes/No</td>
+<td>$(full)</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-defined</td>
+<td>boolean</td>
+<td>This displays a short name for the file containing the database definition</td>
+<td>Boolean value Yes/No</td>
+<td>$(full)</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-release</td>
+<td>boolean</td>
+<td>Display 'release' column</td>
+<td>Boolean value Yes/No</td>
+<td>$(full)</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-outfile</td>
+<td>outfile</td>
+<td>Output file name</td>
+<td>Output file</td>
+<td>stdout</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>Advanced (Unprompted) qualifiers</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-only</td>
+<td>toggle</td>
+<td>This is a way of shortening the command line if you only want a few standard columns to be displayed. Instead of specifying:
+'-nohead -notype -noid -noquery -noall'
+to get only the comment output, you can specify
+'-only -comment'</td>
+<td>Toggle value Yes/No</td>
+<td>No</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-heading</td>
+<td>boolean</td>
+<td>Display column headings</td>
+<td>Boolean value Yes/No</td>
+<td>@(!$(only))</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-type</td>
+<td>boolean</td>
+<td>Display 'type' column</td>
+<td>Boolean value Yes/No</td>
+<td>@(!$(only))</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-id</td>
+<td>boolean</td>
+<td>Display 'id' access column</td>
+<td>Boolean value Yes/No</td>
+<td>@(!$(only))</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-query</td>
+<td>boolean</td>
+<td>Display 'qry' access column</td>
+<td>Boolean value Yes/No</td>
+<td>@(!$(only))</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-all</td>
+<td>boolean</td>
+<td>Display 'all' access column</td>
+<td>Boolean value Yes/No</td>
+<td>@(!$(only))</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-comment</td>
+<td>boolean</td>
+<td>Display 'comment' column</td>
+<td>Boolean value Yes/No</td>
+<td>@(!$(only))</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>Associated qualifiers</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td align="left" colspan=5>"-outfile" associated outfile qualifiers
+</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -odirectory</td>
+<td>string</td>
+<td>Output directory</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>General qualifiers</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -auto</td>
+<td>boolean</td>
+<td>Turn off prompts</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -stdout</td>
+<td>boolean</td>
+<td>Write first file to standard output</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -filter</td>
+<td>boolean</td>
+<td>Read first file from standard input, write first file to standard output</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -options</td>
+<td>boolean</td>
+<td>Prompt for standard and additional values</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -debug</td>
+<td>boolean</td>
+<td>Write debug output to program.dbg</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -verbose</td>
+<td>boolean</td>
+<td>Report some/full command line options</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -help</td>
+<td>boolean</td>
+<td>Report command line options and exit. More information on associated and general qualifiers can be found with -help -verbose</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -warning</td>
+<td>boolean</td>
+<td>Report warnings</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -error</td>
+<td>boolean</td>
+<td>Report errors</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -fatal</td>
+<td>boolean</td>
+<td>Report fatal errors</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -die</td>
+<td>boolean</td>
+<td>Report dying program messages</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -version</td>
+<td>boolean</td>
+<td>Report version number and exit</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+</table>
+
+
+<H2>
+    Input file format
+</H2>
+
+<b>showdb</b> examines the databases defined for this
+EMBOSS installation and for the current user.
+
+
+<p>
+
+
+<a name="input.3"></a>
+<h3>Input files for usage example 3</h3>
+
+'tsw' is a sequence entry in the example protein database 'tsw'
+<p>
+
+<H2>
+    Output file format
+</H2>
+
+
+
+<a name="output.2"></a>
+<h3>Output files for usage example 2</h3>
+<p><h3>File: showdb.out</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+# Name            Type                          Comment
+# =============== ============================= =======
+bpsw              Protein,Protfeatures          BioPerl OBDA index of test SwissProt
+bpworm            Protein                       BioPerl OBDA index of test wormpep fasta file
+qapblast          Protein                       BLAST swissnew
+qapblastall       Protein                       BLAST swissnew, all fields indexed
+qapblastsplit     Protein                       BLAST swissnew split in 5 files
+qapblastsplitexc  Protein                       BLAST swissnew split in 5 files, not file 02
+qapblastsplitinc  Protein                       BLAST swissnew split in 5 files, only file 02
+qapfasta          Protein                       FASTA file swissnew entries
+qapflat           Protein,Protfeatures          SpTrEmbl flatfile
+qapflatall        Protein,Protfeatures          SpTrEmbl flatfiles, all fields indexed
+qapir             Protein,Protfeatures          Test PIR indexed by dbigcg
+qapirall          Protein,Protfeatures          Test PIR indexed by dbigcg with fields
+qapirexc          Protein,Protfeatures          Test PIR indexed by dbigcg except file pir1
+qapirinc          Protein,Protfeatures          Test PIR indexed by dbigcg file pir1
+qapxfasta         Protein                       FASTA file swissnew entries
+qapxflat          Protein                       Swissnew flatfiles
+qasrswww          Protein,Protfeatures          Remote SRS web server
+qaxpir            Protein,Protfeatures          PIR indexed by dbxgcg
+qaxpirall         Protein,Protfeatures          Test PIR indexed by dbxgcg with fields
+qaxpirexc         Protein,Protfeatures          Test PIR indexed by dbxgcg except pir1
+qaxpirinc         Protein,Protfeatures          Test PIR indexed by dbxgcg file pir1
+tpir              Protein                       Test PIR using NBRF access for 4 files
+tsw               Protein,Protfeatures,Text     Swissprot native format with EMBL CD-ROM index
+tswnew            Protein,Protfeatures          SpTrEmbl as 3 files in native format with EMBL CD-ROM index
+bpembl            Nucleotide,Nucfeatures        BioPerl OBDA index of test EMBL
+bpgb              Nucleotide,Nucfeatures        BioPerl OBDA index of test GenBank
+ena               Nucleotide,Nucfeatures        ENA via URL
+qanfasta          Nucleotide                    FASTA file EMBL rodents
+qanfastaall       Nucleotide                    FASTA file EMBL rodents, all fields indexed
+qanflat           Nucleotide,Nucfeatures,Refseq EMBL flatfiles
+qanflatall        Nucleotide,Nucfeatures,Refseq EMBL flatfiles
+qanflatexc        Nucleotide,Nucfeatures        EMBL flatfiles, no rodent file
+qanflatinc        Nucleotide,Nucfeatures        EMBL flatfiles, only rodent file
+qangcg            Nucleotide,Nucfeatures        GCG format test EMBL
+qangcgall         Nucleotide,Nucfeatures        GCG format test EMBL
+qangcgexc         Nucleotide,Nucfeatures        GCG format test EMBL without prokaryotes
+qangcginc         Nucleotide,Nucfeatures        GCG format test EMBL only prokaryotes
+qanxfasta         Nucleotide                    FASTA file EMBL rodents
+qanxfastaall      Nucleotide                    FASTA file EMBL rodents, all fields indexed
+qanxflat          Nucleotide,Nucfeatures,Refseq EMBL flatfiles
+qanxflatall       Nucleotide,Nucfeatures,Refseq EMBL flatfiles, all fields indexed
+qanxflatexc       Nucleotide,Nucfeatures,Refseq EMBL flatfiles, no rodent file
+qanxflatinc       Nucleotide,Nucfeatures        EMBL flatfiles, only rodent file
+qanxgcg           Nucleotide,Nucfeatures        GCG format EMBL
+qanxgcgall        Nucleotide,Nucfeatures        GCG format EMBL indexed by dbxgcg with query fields
+qanxgcgexc        Nucleotide,Nucfeatures        GCG format EMBL without prokaryotes
+qanxgcginc        Nucleotide,Nucfeatures        GCG format EMBL only prokaryotes
+qawfasta          Nucleotide                    FASTA file wormpep entries
+qawxfasta         Nucleotide                    FASTA file wormpep entries
+qaxembl           Nucleotide,Nucfeatures,Refseq EMBL flatfiles
+tembl             Nucleotide,Refseq,Nucfeatures EMBL in native format with EMBL CD-ROM index
+temblall          Nucleotide,Nucfeatures,Refseq EMBL in native format with EMBL CD-ROM index
+temblrest         Nucleotide,Nucfeatures,Refseq EMBL in native format with EMBL CD-ROM index
+temblvrt          Nucleotide,Nucfeatures        EMBL in native format with EMBL CD-ROM index
+tensembldasgrch37 Nucleotide                    Homo_sapiens Reference server based on GRCh37 assembly
+testdb            Nucleotide                    test sequence data
+tgb               Nucleotide,Nucfeatures        Genbank by SRS at DKFZ
+tgenbank          Nucleotide,Nucfeatures        Test GenBank in native format with EMBL CD-ROM index
+tgenedashuman     Nucleotide                    The Ensembl human Gene_ID reference source
+tflybase          Features                      Flybase CHADO server
+tgenedb           Features                      GeneDb CHADO server
+ttax              Taxonomy                      NCBI taxonomy test data
+taxon             Taxonomy                      NCBI taxonomy
+drcat             Resource                      Data Resource Catalogue
+tedam             Obo                           Test EDAM using dbxedam test indexes
+tobo              Obo                           Test EDAM using dbxobo test indexes
+chebi             Obo                           Chemical Entities of Biological Interest
+eco               Obo                           Evidence code ontology
+edam              Obo                           EMBRACE Data and Methods ontology
+edam_data         Obo                           EMBRACE Data and Methods ontology (data)
+edam_format       Obo                           EMBRACE Data and Methods ontology (formats)
+edam_identifier   Obo                           EMBRACE Data and Methods ontology (identifiers)
+edam_operation    Obo                           EMBRACE Data and Methods ontology (operations)
+edam_topic        Obo                           EMBRACE Data and Methods ontology (topics)
+go                Obo                           Gene Ontology
+go_component      Obo                           Gene Ontology (cellular components)
+go_function       Obo                           Gene Ontology (molecular functions)
+go_process        Obo                           Gene Ontology (biological processes)
+pw                Obo                           Pathways ontology
+ro                Obo                           Relations ontology
+so                Obo                           Sequence ontology
+swo               Obo                           Software ontology
+</pre>
+</td></tr></table><p>
+
+<p>
+
+The output is a simple text table.
+
+<p>
+
+Type 'P' indicates that this is a Protein database.
+
+<p>
+
+Type 'N' indicates that this is a Nucleic database.
+
+<p>
+
+'OK' under ID, Qry or All indicates that that access method can be
+used on this database.  A '-' indicates that you cannot access this
+database in that way.
+
+<p>
+
+Note that 'OK' does not mean that the database is working correctly.  It
+simply means that <b>showdb</b> has read the database definition
+correctly and that this method of access to the database should be
+possible. 
+
+<p>
+
+If you are setting up a new database, then you should check that it
+works correctly by extracting entries from it using <b>seqret</b>. 
+
+<p>
+
+When the -html qualifier is specified, then the output will be wrapped
+in HTML tags, ready for inclusion in a Web page.  Note that tags such
+as &lt;HTML&gt;, &lt;BODY&gt;, &lt;/BODY&gt; and &lt;/HTML&gt; are not
+output by this program as the table of databases is expected to form
+only part of the contents of a web page - the rest of the web page
+must be supplied by the user.
+
+
+<H2>
+    Data files
+</H2>
+
+
+The databases are specified in the files <i>"emboss.defaults"</i> for
+site wide definitions, and <i>"~/.embossrc"</i> for the user's own
+settings.
+	
+<H2>
+    Notes
+</H2>
+
+<p>EMBOSS provides excellent database support.  All the common sequence formats you are likely to come across are supported.  There are three basic levels of database query with different ways to search for and retrieve entries:
+
+<tt>entry</tt>  A single entry specified by database ID or accession number is retrieved.  For example "embl:x13776". 
+<tt>query</tt>  One or more entries matching a wildcard string in the USA are retrieved (this can be slow for some methods). For example you can specify all of the human PAX proteins in SWISS_PROT by: <tt>swissprot:pax*_human</tt>.
+<tt>all</tt>      All entries are read sequentially from a database. For example to specify all entries in the database use <tt>embl:*</tt>.</p>
+
+<p>One or more query levels may be available for a database depending on the database in question and how it has been setup and indexed.  Each database and access method must be configured for it to be available for use.  This involves editing one of the EMBOSS configuration files, either your own personal <tt>.embossrc</tt> or the installation-wide <tt>emboss.default</tt> file. The <tt>emboss.default</tt> file will typically contain the definitions of the test databases (<tt>tsw</tt>, <tt>tembl</tt>, <tt>tpir</tt>, etc) used in the usage examples for the application documentation and serve as example database definitions.  For more information, see the EMBOSS Administrators Manual.  You can run <b>showdb</b> to see the databases and access methods that have been configured successfully.</p>
+
+<H2>
+    References
+</H2>
+
+
+None.
+
+<H2>
+    Warnings
+</H2>
+
+<p>Where the string <tt>OK</tt> is given next to a database is listed in <b>showdb</b> output, this means <b>showdb</b> has read the database definition correctly and that this access method is in principle possible, in other words, the database has been configured correctly..  It does not mean that the database or access method are available or working correctly. You should check things are ok by running, for example, <b>seqret</b> to retrieve an entry.</p>
+
+
+
+
+<H2>
+    Diagnostic Error Messages
+</H2>
+
+
+"The database 'xyz' does not exist" You have supplied the name of a
+database with the -database qualifier, but that database does not
+exist as far as EMBOSS is concerned.
+
+<H2>
+    Exit status
+</H2>
+
+
+It always exits with status 0, unless the above diagnostic message is
+displayed.
+
+<H2>
+    Known bugs
+</H2>
+
+
+None noted.
+
+<h2><a name="See also">See also</a></h2>
+<table border cellpadding=4 bgcolor="#FFFFF0">
+<tr><th>Program name</th>
+<th>Description</th></tr>
+<tr>
+<td><a href="cachedas.html">cachedas</a></td>
+<td>Generate server cache file for DAS servers or for the DAS registry</td>
+</tr>
+
+<tr>
+<td><a href="cachedbfetch.html">cachedbfetch</a></td>
+<td>Generate server cache file for Dbfetch/WSDbfetch data sources</td>
+</tr>
+
+<tr>
+<td><a href="cacheebeyesearch.html">cacheebeyesearch</a></td>
+<td>Generate server cache file for EB-eye search domains</td>
+</tr>
+
+<tr>
+<td><a href="cacheensembl.html">cacheensembl</a></td>
+<td>Generate server cache file for an Ensembl server</td>
+</tr>
+
+<tr>
+<td><a href="dbtell.html">dbtell</a></td>
+<td>Display information about a public database</td>
+</tr>
+
+<tr>
+<td><a href="servertell.html">servertell</a></td>
+<td>Display information about a public server</td>
+</tr>
+
+<tr>
+<td><a href="showserver.html">showserver</a></td>
+<td>Display information on configured servers</td>
+</tr>
+
+</table>
+
+<H2>
+    Author(s)
+</H2>
+Gary Williams formerly at:
+<br>
+MRC Rosalind Franklin Centre for Genomics Research
+Wellcome Trust Genome Campus, Hinxton, Cambridge, CB10 1SB, UK
+
+<p>
+Please report all bugs to the EMBOSS bug team (emboss-bug&nbsp;&copy;&nbsp;emboss.open-bio.org) not to the original author.
+
+
+<H2>
+    History
+</H2>
+
+Completed 6th August 1999.
+
+<H2>
+    Target users
+</H2>
+This program is intended to be used by everyone and everything, from naive users to embedded scripts.
+
+<H2>
+    Comments
+</H2>
+None
+
+</BODY>
+</HTML>
+

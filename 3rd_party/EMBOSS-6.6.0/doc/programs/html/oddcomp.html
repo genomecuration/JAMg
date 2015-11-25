@@ -1,0 +1,748 @@
+<HTML>
+
+<HEAD>
+  <TITLE>
+  EMBOSS: oddcomp
+  </TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF" text="#000000">
+
+<table align=center border=0 cellspacing=0 cellpadding=0>
+<tr><td valign=top>
+<A HREF="/" ONMOUSEOVER="self.status='Go to the EMBOSS home page';return true"><img border=0 src="/images/emboss_icon.jpg" alt="" width=150 height=48></a>
+</td>
+<td align=left valign=middle>
+<b><font size="+6">
+oddcomp
+</font></b>
+</td></tr>
+</table>
+<br>&nbsp;
+<p>
+
+
+<H2>
+Wiki
+</H2>
+
+The master copies of EMBOSS documentation are available
+at <a href="http://emboss.open-bio.org/wiki/Appdocs">
+http://emboss.open-bio.org/wiki/Appdocs</a>
+on the EMBOSS Wiki.
+
+<p>
+Please help by correcting and extending the Wiki pages.
+
+<H2>
+    Function
+</H2>
+Identify proteins with specified sequence word composition
+
+<H2>
+    Description
+</H2>
+
+<p><b>oddcomp</b> reads one or more protein sequences, identifies proteins containing regions with a specific sequence word composition, then writes a list of sequence identifiers of those proteins to an output file. The word composition is read from an input file which gives the minimum word occurence for any number of sequence words. For an input sequence to be listed in the output file, each word must be found at least the stated number of times in any window over the input sequence. The window size may be set to any value or the length of the current protein (<tt>-fullwindow</tt> option).</p>
+
+
+<H2>
+Algorithm
+</H2>
+
+<p>The input file of sequence word composition data is in the same format as the output from <b>compseq</b>. Only one word size (of any length) can be used and is specified at the top of the file. The search for words is a boolean AND meaning all words given in the file must be found in a sequence for it to be reported. </p>
+
+<p>Each word must occur at least the stated number of times in a window over an input sequence for the sequence to be reported. The word size given in the input data file must be less than the specified window size; you will not get any hits otherwise.</p>
+
+
+
+<H2>
+    Usage
+</H2>
+Here is a sample session with <b>oddcomp</b>
+<p>
+To search for entries in swissprot with at least 1 SR AND at least 2 RS: 
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>oddcomp </b>
+Identify proteins with specified sequence word composition
+Input protein sequence(s): <b>tsw:*</b>
+Program compseq output file: <b>oddcomp.comp</b>
+Window size to consider (e.g. 30 aa) [30]: <b></b>
+Output file [cru4_arath.oddcomp]: <b>out.odd</b>
+
+</pre></td></tr></table><p>
+<p>
+<a href="#input.1">Go to the input files for this example</a><br><a href="#output.1">Go to the output files for this example</a><p><p>
+
+
+<H2>
+    Command line arguments
+</H2>
+<table CELLSPACING=0 CELLPADDING=3 BGCOLOR="#f5f5ff" ><tr><td>
+<pre>
+Identify proteins with specified sequence word composition
+Version: EMBOSS:6.6.0.0
+
+   Standard (Mandatory) qualifiers (* if not always prompted):
+  [-sequence]          seqall     Protein sequence(s) filename and optional
+                                  format, or reference (input USA)
+  [-infile]            infile     This is a file in the format of the output
+                                  produced by 'compseq' that is used to set
+                                  the minimum frequencies of words in this
+                                  analysis.
+*  -window             integer    [30] This is the size of window in which to
+                                  count.
+                                  Thus if you want to count frequencies in a
+                                  40 aa stretch you should enter 40 here.
+                                  (Integer 10 or more)
+  [-outfile]           outfile    [*.oddcomp] This is the results file.
+
+   Additional (Optional) qualifiers: (none)
+   Advanced (Unprompted) qualifiers:
+   -fullwindow         toggle     [N] Set this option on (Y) if you want the
+                                  window size to be set to the length of the
+                                  current protein. Otherwise, leave this
+                                  option unset, in which case you'll be
+                                  prompted for a window size to use.
+   -[no]ignorebz       boolean    [Y] The amino acid code B represents
+                                  Asparagine or Aspartic acid and the code Z
+                                  represents Glutamine or Glutamic acid.
+                                  These are not commonly used codes and you
+                                  may wish not to count words containing them,
+                                  just noting them in the count of 'Other'
+                                  words.
+
+   Associated qualifiers:
+
+   "-sequence" associated qualifiers
+   -sbegin1            integer    Start of each sequence to be used
+   -send1              integer    End of each sequence to be used
+   -sreverse1          boolean    Reverse (if DNA)
+   -sask1              boolean    Ask for begin/end/reverse
+   -snucleotide1       boolean    Sequence is nucleotide
+   -sprotein1          boolean    Sequence is protein
+   -slower1            boolean    Make lower case
+   -supper1            boolean    Make upper case
+   -scircular1         boolean    Sequence is circular
+   -squick1            boolean    Read id and sequence only
+   -sformat1           string     Input sequence format
+   -iquery1            string     Input query fields or ID list
+   -ioffset1           integer    Input start position offset
+   -sdbname1           string     Database name
+   -sid1               string     Entryname
+   -ufo1               string     UFO features
+   -fformat1           string     Features format
+   -fopenfile1         string     Features file name
+
+   "-outfile" associated qualifiers
+   -odirectory3        string     Output directory
+
+   General qualifiers:
+   -auto               boolean    Turn off prompts
+   -stdout             boolean    Write first file to standard output
+   -filter             boolean    Read first file from standard input, write
+                                  first file to standard output
+   -options            boolean    Prompt for standard and additional values
+   -debug              boolean    Write debug output to program.dbg
+   -verbose            boolean    Report some/full command line options
+   -help               boolean    Report command line options and exit. More
+                                  information on associated and general
+                                  qualifiers can be found with -help -verbose
+   -warning            boolean    Report warnings
+   -error              boolean    Report errors
+   -fatal              boolean    Report fatal errors
+   -die                boolean    Report dying program messages
+   -version            boolean    Report version number and exit
+
+</pre>
+</td></tr></table>
+<P>
+
+<table border cellspacing=0 cellpadding=3 bgcolor="#ccccff">
+<tr bgcolor="#FFFFCC">
+<th align="left">Qualifier</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+<th align="left">Allowed values</th>
+<th align="left">Default</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>Standard (Mandatory) qualifiers</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>[-sequence]<br>(Parameter 1)</td>
+<td>seqall</td>
+<td>Protein sequence(s) filename and optional format, or reference (input USA)</td>
+<td>Readable sequence(s)</td>
+<td><b>Required</b></td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>[-infile]<br>(Parameter 2)</td>
+<td>infile</td>
+<td>This is a file in the format of the output produced by 'compseq' that is used to set the minimum frequencies of words in this analysis.</td>
+<td>Input file</td>
+<td><b>Required</b></td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-window</td>
+<td>integer</td>
+<td>This is the size of window in which to count.
+Thus if you want to count frequencies in a 40 aa stretch you should enter 40 here.</td>
+<td>Integer 10 or more</td>
+<td>30</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>[-outfile]<br>(Parameter 3)</td>
+<td>outfile</td>
+<td>This is the results file.</td>
+<td>Output file</td>
+<td><i>&lt;*&gt;</i>.oddcomp</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>Additional (Optional) qualifiers</th>
+</tr>
+
+<tr>
+<td colspan=5>(none)</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>Advanced (Unprompted) qualifiers</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-fullwindow</td>
+<td>toggle</td>
+<td>Set this option on (Y) if you want the window size to be set to the length of the current protein. Otherwise, leave this option unset, in which case you'll be prompted for a window size to use.</td>
+<td>Toggle value Yes/No</td>
+<td>No</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-[no]ignorebz</td>
+<td>boolean</td>
+<td>The amino acid code B represents Asparagine or Aspartic acid and the code Z represents Glutamine or Glutamic acid.
+These are not commonly used codes and you may wish not to count words containing them, just noting them in the count of 'Other' words.</td>
+<td>Boolean value Yes/No</td>
+<td>Yes</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>Associated qualifiers</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td align="left" colspan=5>"-sequence" associated seqall qualifiers
+</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -sbegin1<br>-sbegin_sequence</td>
+<td>integer</td>
+<td>Start of each sequence to be used</td>
+<td>Any integer value</td>
+<td>0</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -send1<br>-send_sequence</td>
+<td>integer</td>
+<td>End of each sequence to be used</td>
+<td>Any integer value</td>
+<td>0</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -sreverse1<br>-sreverse_sequence</td>
+<td>boolean</td>
+<td>Reverse (if DNA)</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -sask1<br>-sask_sequence</td>
+<td>boolean</td>
+<td>Ask for begin/end/reverse</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -snucleotide1<br>-snucleotide_sequence</td>
+<td>boolean</td>
+<td>Sequence is nucleotide</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -sprotein1<br>-sprotein_sequence</td>
+<td>boolean</td>
+<td>Sequence is protein</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -slower1<br>-slower_sequence</td>
+<td>boolean</td>
+<td>Make lower case</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -supper1<br>-supper_sequence</td>
+<td>boolean</td>
+<td>Make upper case</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -scircular1<br>-scircular_sequence</td>
+<td>boolean</td>
+<td>Sequence is circular</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -squick1<br>-squick_sequence</td>
+<td>boolean</td>
+<td>Read id and sequence only</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -sformat1<br>-sformat_sequence</td>
+<td>string</td>
+<td>Input sequence format</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -iquery1<br>-iquery_sequence</td>
+<td>string</td>
+<td>Input query fields or ID list</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -ioffset1<br>-ioffset_sequence</td>
+<td>integer</td>
+<td>Input start position offset</td>
+<td>Any integer value</td>
+<td>0</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -sdbname1<br>-sdbname_sequence</td>
+<td>string</td>
+<td>Database name</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -sid1<br>-sid_sequence</td>
+<td>string</td>
+<td>Entryname</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -ufo1<br>-ufo_sequence</td>
+<td>string</td>
+<td>UFO features</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -fformat1<br>-fformat_sequence</td>
+<td>string</td>
+<td>Features format</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -fopenfile1<br>-fopenfile_sequence</td>
+<td>string</td>
+<td>Features file name</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td align="left" colspan=5>"-outfile" associated outfile qualifiers
+</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -odirectory3<br>-odirectory_outfile</td>
+<td>string</td>
+<td>Output directory</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>General qualifiers</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -auto</td>
+<td>boolean</td>
+<td>Turn off prompts</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -stdout</td>
+<td>boolean</td>
+<td>Write first file to standard output</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -filter</td>
+<td>boolean</td>
+<td>Read first file from standard input, write first file to standard output</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -options</td>
+<td>boolean</td>
+<td>Prompt for standard and additional values</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -debug</td>
+<td>boolean</td>
+<td>Write debug output to program.dbg</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -verbose</td>
+<td>boolean</td>
+<td>Report some/full command line options</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -help</td>
+<td>boolean</td>
+<td>Report command line options and exit. More information on associated and general qualifiers can be found with -help -verbose</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -warning</td>
+<td>boolean</td>
+<td>Report warnings</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -error</td>
+<td>boolean</td>
+<td>Report errors</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -fatal</td>
+<td>boolean</td>
+<td>Report fatal errors</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -die</td>
+<td>boolean</td>
+<td>Report dying program messages</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -version</td>
+<td>boolean</td>
+<td>Report version number and exit</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+</table>
+
+
+<H2>
+    Input file format
+</H2>
+
+
+<a name="input.1"></a>
+<h3>Input files for usage example </h3>
+
+'tsw:*' is a sequence entry in the example protein database 'tsw'
+<p>
+<p><h3>File: oddcomp.comp</h3>
+<table width="90%"><tr><td bgcolor="#FFCCFF">
+<pre>
+# Example input file for oddcomp
+Word size       2
+Total count     0
+
+#
+# Word  Obs Count       Obs Frequency   Exp Frequency   Obs/Exp Frequency
+#
+RS      2               0               0               0
+SR      1               0               0               0
+
+Other   0               0               0               0
+</pre>
+</td></tr></table><p>
+
+<p>
+
+The columns "Obs Frequency", "Exp Frequency" and "Obs/Exp Frequency" are
+not required - they were simply included in this example to show the
+similarity between this input file format and the output of the program
+<A HREF="compseq.html">compseq</A>.  A compseq output file can be used as the
+input to <b>oddcomp</b> - the extra columns are ignored by
+<b>oddcomp</b>. 
+
+<p>
+
+A minimal composition input data file would look like this:
+
+<hr>
+<pre>
+Word size       2
+Total count     0
+RS      2
+SR      1
+</pre>
+<hr>
+
+<p>
+
+Blank lines and lines starting with '#' are ignored.
+
+<p>
+
+The first non-comment line should start with 'Word size' and will
+specify the word size to use.
+
+<p>
+
+A line starting with the word 'Total' is required.
+
+<p>
+
+Anything after the line starting with the word 'Total' will be read as
+word count data. 
+
+<p>
+
+Word count data consists of a word to search for and the count of that
+word to search for within the sliding window.  The columns are separated
+by one or more spaces or TAB characters. Anything after these two columns
+will be ignored. 
+
+<H2>
+    Output file format
+</H2>
+
+
+<b>oddcomp</b> writes a list of sequence name identifiers.
+
+<p>
+
+
+<a name="output.1"></a>
+<h3>Output files for usage example </h3>
+<p><h3>File: out.odd</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+#
+# Output from 'oddcomp'
+#
+# The Expected frequencies are taken from the file: ../../data/oddcomp.comp
+#
+#	Word size: 2
+	CNR1B_TAKRU
+	CO9_TAKRU
+	FOS_TAKRU
+	RS7_TAKRU
+	UBR5_RAT
+
+#	END	#
+</pre>
+</td></tr></table><p>
+
+
+<H2>
+    Data files
+</H2>
+
+None.
+
+<H2>
+    Notes
+</H2>
+
+<p><b>oddcomp</b> was originally written to identify proteins with <tt>SR</tt>/<tt>RS</tt> dimers, for example, windows of forty amino acids containing at least 3 <tt>SR</tt> and 4 <tt>RS</tt> words. More generally, it will help answer questions of the type 'which proteins contain at least x occurrences of word X and y occurences of word Y in regions of n residues'.  For example, one could search for serine rich or polyglutamine rich, collagen helix, or similar proteins using this program.</p>
+
+<p><b>oddcomp</b> does not report the location of the word matches in the sequence, merely the sequence ID. To search for a specific set of words in a sequence, you should edit the input file of sequence word composition data.</p>
+
+<H2>
+    References
+</H2>
+
+None.
+
+<H2>
+    Warnings
+</H2>
+
+None.
+
+<H2>
+    Diagnostic Error Messages
+</H2>
+
+None.
+
+<H2>
+    Exit status
+</H2>
+
+It always exits with a status of 0.
+
+<H2>
+    Known bugs
+</H2>
+
+None.
+
+<h2><a name="See also">See also</a></h2>
+<table border cellpadding=4 bgcolor="#FFFFF0">
+<tr><th>Program name</th>
+<th>Description</th></tr>
+<tr>
+<td><a href="backtranambig.html">backtranambig</a></td>
+<td>Back-translate a protein sequence to ambiguous nucleotide sequence</td>
+</tr>
+
+<tr>
+<td><a href="backtranseq.html">backtranseq</a></td>
+<td>Back-translate a protein sequence to a nucleotide sequence</td>
+</tr>
+
+<tr>
+<td><a href="compseq.html">compseq</a></td>
+<td>Calculate the composition of unique words in sequences</td>
+</tr>
+
+<tr>
+<td><a href="emowse.html">emowse</a></td>
+<td>Search protein sequences by digest fragment molecular weight</td>
+</tr>
+
+<tr>
+<td><a href="freak.html">freak</a></td>
+<td>Generate residue/base frequency table or plot</td>
+</tr>
+
+<tr>
+<td><a href="mwcontam.html">mwcontam</a></td>
+<td>Find weights common to multiple molecular weights files</td>
+</tr>
+
+<tr>
+<td><a href="mwfilter.html">mwfilter</a></td>
+<td>Filter noisy data from molecular weights file</td>
+</tr>
+
+<tr>
+<td><a href="pepdigest.html">pepdigest</a></td>
+<td>Report on protein proteolytic enzyme or reagent cleavage sites</td>
+</tr>
+
+<tr>
+<td><a href="pepinfo.html">pepinfo</a></td>
+<td>Plot amino acid properties of a protein sequence in parallel</td>
+</tr>
+
+<tr>
+<td><a href="pepstats.html">pepstats</a></td>
+<td>Calculate statistics of protein properties</td>
+</tr>
+
+<tr>
+<td><a href="wordcount.html">wordcount</a></td>
+<td>Count and extract unique words in molecular sequence(s)</td>
+</tr>
+
+</table>
+
+<H2>
+    Author(s)
+</H2>
+
+
+David Martin  
+
+<p>
+Please report all bugs to the EMBOSS bug team (emboss-bug&nbsp;&copy;&nbsp;emboss.open-bio.org) not to the original author.
+
+<H2>
+    History
+</H2>
+
+Written (1999) - David Martin
+
+<H2>
+    Target users
+</H2>
+This program is intended to be used by everyone and everything, from naive users to embedded scripts.
+
+
+<H2>
+    Comments
+</H2>
+None
+
+</BODY>
+</HTML>
+

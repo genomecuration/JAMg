@@ -1,0 +1,91 @@
+application: dotmatcher [
+  documentation: "Draw a threshold dotplot of two sequences"
+  groups: "Alignment:Dot plots"
+    relations: "EDAM_topic:0159 Sequence comparison"
+    relations: "EDAM_operation:0490 Dotplot plotting"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  sequence: asequence [
+    parameter: "y"
+    type: "any"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+  sequence: bsequence [
+    parameter: "y"
+    type: "@($(acdprotein) ? stopprotein : nucleotide)"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+  matrix: matrixfile [
+    additional: "Y"
+    information: "Matrix file"
+    protein: "$(acdprotein)"
+    help: "This is the scoring matrix file used when comparing
+           sequences. By default it is the file 'EBLOSUM62' (for proteins) or
+           the file 'EDNAFULL' (for nucleic sequences). These files are
+           found in the 'data' directory of the EMBOSS installation."
+    relations: "EDAM_data:0874 Comparison matrix"
+  ]
+
+endsection: input
+
+section: additional [
+  information: "Additional section"
+  type: "page"
+]
+
+  integer: windowsize [
+    additional: "Y"
+    information: "Window size over which to test threshold"
+    default: "10"
+    minimum: "3"
+    relations: "EDAM_data:1251 Window size"
+  ]
+
+  integer: threshold [
+    additional: "Y"
+    information: "Threshold"
+    default: "23"
+    minimum: "0"
+    relations: "EDAM_data:2146 Threshold"
+  ]
+
+endsection: additional
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  toggle: stretch [
+    default: "N"
+    information: "Stretch plot"
+    help: "Display a non-proportional graph"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  graph: graph [
+    standard: "@(!$(stretch))"
+    gtitle: "Dotmatcher: $(asequence.usa) vs $(bsequence.usa)"
+    gxtitle: "$(asequence.name)"
+    gytitle: "$(bsequence.name)"
+    relations: "EDAM_data:0862 Dotplot"
+    sequence: "Y"
+  ]
+
+  xygraph: xygraph [
+    standard: "$(stretch)"
+    gtitle: "Dotmatcher: $(asequence.usa) vs $(bsequence.usa)"
+    gxtitle: "$(asequence.name)"
+    gytitle: "$(bsequence.name)"
+    relations: "EDAM_data:0862 Dotplot"
+    sequence: "Y"
+  ]
+
+endsection: output

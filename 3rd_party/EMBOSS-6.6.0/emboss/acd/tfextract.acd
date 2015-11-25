@@ -1,0 +1,25 @@
+application: tfextract [
+  documentation: "Process TRANSFAC transcription factor database
+                  for use by tfscan"
+  groups: "Utils:Database creation"
+  gui: "no"
+  batch: "no"
+  cpu: "low"
+    relations: "EDAM_topic:0110 Transcription"
+    relations: "EDAM_topic:0091 Data handling"
+    relations: "EDAM_operation:1812 Data loading"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  infile: infile [
+    parameter: "Y"
+    information: "Transfac database sites file"
+    knowntype: "transfac site"
+    relations: "EDAM_data:0896 Protein report"
+  ]
+
+endsection: input

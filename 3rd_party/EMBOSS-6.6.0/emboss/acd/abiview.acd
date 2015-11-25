@@ -1,0 +1,99 @@
+application: abiview [
+  documentation: "Display the trace in an ABI sequencer file"
+  groups: "Data retrieval:Sequence data, Display"
+    relations: "EDAM_topic:0092 Data visualisation"
+    relations: "EDAM_topic:0090 Data search and retrieval"
+    relations: "EDAM_operation:0337 Plotting and rendering"
+    relations: "EDAM_operation:0564 Sequence rendering"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  infile: infile [
+    parameter: "Y"
+    default: ""
+    binary: "Y"
+    knowntype: "abi trace"
+    information: "ABI sequencing trace file"
+    relations: "EDAM_data:0924 Sequence trace"
+    relations: "EDAM_format:1207 nucleotide"
+  ]
+
+endsection: input
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  seqout: outseq [
+    parameter: "Y"
+    type: "dna"
+    relations: "EDAM_data:2887 Sequence record (nucleic acid)"
+  ]
+
+  xygraph: graph [
+    standard: "Y"
+    gxtitle: "Residue Position"
+    relations: "EDAM_data:2168 Sequence trace image"
+    sequence: "Y"
+  ]
+
+  integer: startbase [
+    additional: "Y"
+    default: "0"
+    minimum: "0"
+    information: "First base to report or display"
+    relations: "EDAM_data:1016 Sequence position"
+  ]
+
+  integer: endbase [
+    additional: "Y"
+    default: "0"
+    information: "Last base to report or display"
+    help: "Last sequence base to report or display. If the default is
+           set to zero then the value of this is taken as the maximum number
+           of bases."
+    relations: "EDAM_data:1016 Sequence position"
+  ]
+
+  boolean: separate [
+    default: "N"
+    information: "Separate the trace graphs for the 4 bases"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  boolean: yticks [
+    additional: "Y"
+    default: "N"
+    information: "Display y-axis ticks"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  boolean: sequence [
+    additional: "Y"
+    default: "Y"
+    information: "Display the sequence on the graph"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  integer: window [
+    additional: "Y"
+    default: "40"
+    information: "Sequence display window size"
+    relations: "EDAM_data:1251 Window size"
+  ]
+
+  string: bases [
+    additional: "Y"
+    default: "GATC"
+    information: "Base graphs to be displayed"
+    pattern: "[GATC]+"
+    knowntype: "nucleotide codes"
+    relations: "EDAM_identifier:1007 Nucleotide code"
+  ]
+
+endsection: output

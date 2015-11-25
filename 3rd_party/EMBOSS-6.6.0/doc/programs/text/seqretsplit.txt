@@ -1,0 +1,353 @@
+                                 seqretsplit
+
+
+
+Wiki
+
+   The master copies of EMBOSS documentation are available at
+   http://emboss.open-bio.org/wiki/Appdocs on the EMBOSS Wiki.
+
+   Please help by correcting and extending the Wiki pages.
+
+Function
+
+   Read sequences and write them to individual files
+
+Description
+
+   seqretsplit is a variant of the standard program for reading and
+   writing sequences, seqret. It performs exactly the same function except
+   that when it reads more than one sequence, it writes each sequence to
+   an individual file. In all other respects, skipseq is the same as
+   seqret. Its main use is therefore to split a file containing multiple
+   sequences into many files, each containing one sequence. There are many
+   options built-in into EMBOSS for detailed specification of the input
+   and output sequences, for example the sequence type and file format.
+   Optionally, feature information will be read and written.
+
+Usage
+
+   Here is a sample session with seqretsplit
+
+
+% seqretsplit tembl:m1190*
+Read sequences and write them to individual files
+output sequence(s) [m11903.fasta]:
+
+
+   Go to the input files for this example
+   Go to the output files for this example
+
+   The specification of the output file is not used in this case.
+
+   At some point this ought to change and you will not be prompted for the
+   output file at all.
+
+Command line arguments
+
+Read sequences and write them to individual files
+Version: EMBOSS:6.6.0.0
+
+   Standard (Mandatory) qualifiers:
+  [-sequence]          seqall     (Gapped) sequence(s) filename and optional
+                                  format, or reference (input USA)
+  [-outseq]            seqoutall  [.] Sequence set(s)
+                                  filename and optional format (output USA)
+
+   Additional (Optional) qualifiers: (none)
+   Advanced (Unprompted) qualifiers:
+   -feature            boolean    Use feature information
+   -firstonly          boolean    Read one sequence and stop
+
+   Associated qualifiers:
+
+   "-sequence" associated qualifiers
+   -sbegin1            integer    Start of each sequence to be used
+   -send1              integer    End of each sequence to be used
+   -sreverse1          boolean    Reverse (if DNA)
+   -sask1              boolean    Ask for begin/end/reverse
+   -snucleotide1       boolean    Sequence is nucleotide
+   -sprotein1          boolean    Sequence is protein
+   -slower1            boolean    Make lower case
+   -supper1            boolean    Make upper case
+   -scircular1         boolean    Sequence is circular
+   -squick1            boolean    Read id and sequence only
+   -sformat1           string     Input sequence format
+   -iquery1            string     Input query fields or ID list
+   -ioffset1           integer    Input start position offset
+   -sdbname1           string     Database name
+   -sid1               string     Entryname
+   -ufo1               string     UFO features
+   -fformat1           string     Features format
+   -fopenfile1         string     Features file name
+
+   "-outseq" associated qualifiers
+   -osformat2          string     Output seq format
+   -osextension2       string     File name extension
+   -osname2            string     Base file name
+   -osdirectory2       string     Output directory
+   -osdbname2          string     Database name to add
+   -ossingle2          boolean    Separate file for each entry
+   -oufo2              string     UFO features
+   -offormat2          string     Features format
+   -ofname2            string     Features file name
+   -ofdirectory2       string     Output directory
+
+   General qualifiers:
+   -auto               boolean    Turn off prompts
+   -stdout             boolean    Write first file to standard output
+   -filter             boolean    Read first file from standard input, write
+                                  first file to standard output
+   -options            boolean    Prompt for standard and additional values
+   -debug              boolean    Write debug output to program.dbg
+   -verbose            boolean    Report some/full command line options
+   -help               boolean    Report command line options and exit. More
+                                  information on associated and general
+                                  qualifiers can be found with -help -verbose
+   -warning            boolean    Report warnings
+   -error              boolean    Report errors
+   -fatal              boolean    Report fatal errors
+   -die                boolean    Report dying program messages
+   -version            boolean    Report version number and exit
+
+
+Input file format
+
+   seqretsplit reads one or more nucleotide or protein sequences.
+
+   The input is a standard EMBOSS sequence query (also known as a 'USA').
+
+   Major sequence database sources defined as standard in EMBOSS
+   installations include srs:embl, srs:uniprot and ensembl
+
+   Data can also be read from sequence output in any supported format
+   written by an EMBOSS or third-party application.
+
+   The input format can be specified by using the command-line qualifier
+   -sformat xxx, where 'xxx' is replaced by the name of the required
+   format. The available format names are: gff (gff3), gff2, embl (em),
+   genbank (gb, refseq), ddbj, refseqp, pir (nbrf), swissprot (swiss, sw),
+   dasgff and debug.
+
+   See: http://emboss.sf.net/docs/themes/SequenceFormats.html for further
+   information on sequence formats.
+
+  Input files for usage example
+
+   'tembl:m1190*' is a sequence entry in the example nucleic acid database
+   'tembl'
+
+Output file format
+
+   The output is a standard EMBOSS sequence file.
+
+   The results can be output in one of several styles by using the
+   command-line qualifier -osformat xxx, where 'xxx' is replaced by the
+   name of the required format. The available format names are: embl,
+   genbank, gff, pir, swiss, dasgff, debug, listfile, dbmotif, diffseq,
+   excel, feattable, motif, nametable, regions, seqtable, simple, srs,
+   table, tagseq.
+
+   See: http://emboss.sf.net/docs/themes/SequenceFormats.html for further
+   information on sequence formats.
+
+  Output files for usage example
+
+  File: m11903.fasta
+
+>M11903 M11903.1 Rattus norvegicus androgen-responsive protein precursor (Svf) g
+ene, exons 1 and 1A, alternatively spliced.
+cctttcaaatagaaactctcgtgaaggctgtctgagaacacaagctcaaggttgtgactg
+atttcagtgatgccgtcttgaagagggataccgtgctagagaatgactcctgatcaaccc
+tgaagacttctgcaagcccgaagtcgtgcttccccactctgaactgacatatgttcagga
+agtagagacgtgcaccgttggatgttctcaaggtaaaaaggaagatttggaagaatgctc
+tagtgttgttgccttggagaggaccagggaacagtacaagactcctactgagcagagaga
+aaggagcctgacatttaccgataagaaaggtcatttgccttccaacctgtaggcaaggcc
+agacaaggaaatatataaaggagaacctcagatcagctctcagtcaagacccttcctgac
+aagatgagtcccaccgggttcttcctccttacggtgctccttgttctggtgacagaagca
+gcctcgagggggccccgaggtgagtggcaattttgtgctatgggaaagatgtttgagaac
+tatgttctcaaaagggagtctgcagaatgctgtgttcccagggcttctccatgaaggaaa
+cttgagtcttttcaagctttaaccatagtcctactgtgagtctctgtgacttgacaagca
+acattgctggtaaggagggctgagggggaatgcgggcaacggcctcgggtaacatcctca
+ttgt
+
+  File: m11904.fasta
+
+>M11904 M11904.1 Rattus norvegicus androgen-responsive protein precursor (Svf) g
+ene, exon 2 and complete cds.
+ggtatctccaaacacagcagctggctctcaacagagagtcctcatgcacaactaatccaa
+gatacagaaagtggatatagagaatgagacattgttttctctcaacagaaaaattctcac
+agtcagctgaagacccttatagtgaaaacatgaatctaaagattctggcgagcgggaggg
+gatcaagttctacctttggggcattcagccgaagtgagaactctcggagtaacttcaaat
+caaaaagtccaagcagtatcaccagggagaaagtgaatgaggaaagcaggagtgaaatga
+gtagtaccagcagccattttggtctcaaaatgagaagatctcatggaggaggagaaatga
+atccctttgaaaccaaagtaaagacccggatcactcgcaaataatgtgttccccggccaa
+ctgaagacttgagcccaataggcaggtaagtgttatcaccaggtgagggcttacaaacta
+ctcgtgcctaatccctaggccattgtaggattgtgcacgcagtaaagttgctataagggg
+aggtatggaaacgacctacaaggcagacaaagatacgagctatactgtgt
+
+  File: m11905.fasta
+
+>M11905 M11905.1 Rattus norvegicus androgen-responsive protein precursor (Svf) g
+ene, exon 3.
+ccgtgcaatctcttcctgtgtccacacagccctgttagaagcaactctctcgttctcaag
+gccctacctgcaagaactacctttctcttcctccgcccaacaaaggaggaatgtttctgc
+ttgtgacccaccagagatgaaatatagcagtgtcctgcagtaaaggggggccccagaggc
+atgggacatacacgcattaatccctccacgtcttccctgtcctacctcacaggttgtcct
+cgttccctgggtgtcactgaactaagagaagtctatgatgtcttcaggatgcaggatccc
+acaggtgccccggaaatagtccgtgcttcttatttcctccttacacttgttttctttaag
+attccggaacctgacaagattcaaatttaaccttttcaataaaaaagatactattctgca
+tcattatctcctgaaatctcttgcttctgcagtacaggggctgggtgggattcctaaact
+tgaccagttctgccgttaaaggaagatcccttctgtgccgtatcagagactatttccaga
+ctctggataga
+
+   One file for each input sequence is written out.
+
+   The names of the files it creates are derived from the ID name of the
+   sequence, followed by an extension denoting the format of the sequence.
+   You have no control over the names of the files it writes out.
+
+   For example, if the files embl:hsfa11* are read in and the output is
+   specified as wibble.seq, then the following files are expected to be
+   created:
+
+hsfa110.fasta
+hsfa111.fasta
+hsfa112.fasta
+hsfa113.fasta
+hsfa114.fasta
+
+   (No file wibble.seq is created.)
+
+Data files
+
+   None.
+
+Notes
+
+   See the documentation for seqret to see the full range of things that
+   you can do when reading and writing sequences.
+
+   Some non-EMBOSS programs will accept only single sequences. In such
+   cases seqretsplit is useful for splitting a multiple sequence file into
+   many individual files. Some EMBOSS programs will also read only a
+   single sequence, which may, however, be one of many in a file. You can
+   specify the sequence using the USA filename:sequenceID. Nonetheless,
+   some people feel more comfortable handling one sequence per file, so
+   seqretsplit will be useful to them too.
+
+   One file for each input sequence is written. The names of the files it
+   creates are derived from the ID name of the sequence, followed by an
+   extension denoting the format of the sequence. You have no control over
+   the names of the files it writes out. For example, if the files
+   embl:hsfa11* are read in and the output is specified as wibble.seq,
+   then the following files are expected to be created:
+hsfa110.fasta
+hsfa111.fasta
+hsfa112.fasta
+hsfa113.fasta
+hsfa114.fasta
+
+   (No file wibble.seq is created.)
+
+References
+
+   None.
+
+Warnings
+
+   None.
+
+Diagnostic Error Messages
+
+   None.
+
+Exit status
+
+   It always exits with status 0.
+
+Known bugs
+
+   It shouldn't really prompt for the output filename.
+
+   This is a side effect of the way sequence output works in EMBOSS.
+   Writing multiple sequences to separate files (the -ossingle qualifier)
+   does this, and seqretsplit has set it automatically on.
+
+See also
+
+   Program name     Description
+   aligncopy        Read and write alignments
+   aligncopypair    Read and write pairs from alignments
+   biosed           Replace or delete sequence sections
+   codcopy          Copy and reformat a codon usage table
+   cutseq           Remove a section from a sequence
+   degapseq         Remove non-alphabetic (e.g. gap) characters from sequences
+   descseq          Alter the name or description of a sequence
+   entret           Retrieve sequence entries from flatfile databases and files
+   extractalign     Extract regions from a sequence alignment
+   extractfeat      Extract features from sequence(s)
+   extractseq       Extract regions from a sequence
+   featcopy         Read and write a feature table
+   featmerge        Merge two overlapping feature tables
+   featreport       Read and write a feature table
+   feattext         Return a feature table original text
+   listor           Write a list file of the logical OR of two sets of sequences
+   makenucseq       Create random nucleotide sequences
+   makeprotseq      Create random protein sequences
+   maskambignuc     Mask all ambiguity characters in nucleotide sequences with
+                    N
+   maskambigprot    Mask all ambiguity characters in protein sequences with X
+   maskfeat         Write a sequence with masked features
+   maskseq          Write a sequence with masked regions
+   newseq           Create a sequence file from a typed-in sequence
+   nohtml           Remove mark-up (e.g. HTML tags) from an ASCII text file
+   noreturn         Remove carriage return from ASCII files
+   nospace          Remove whitespace from an ASCII text file
+   notab            Replace tabs with spaces in an ASCII text file
+   notseq           Write to file a subset of an input stream of sequences
+   nthseq           Write to file a single sequence from an input stream of
+                    sequences
+   nthseqset        Read and write (return) one set of sequences from many
+   pasteseq         Insert one sequence into another
+   revseq           Reverse and complement a nucleotide sequence
+   seqcount         Read and count sequences
+   seqret           Read and write (return) sequences
+   seqretsetall     Read and write (return) many sets of sequences
+   sizeseq          Sort sequences by size
+   skipredundant    Remove redundant sequences from an input set
+   skipseq          Read and write (return) sequences, skipping first few
+   splitsource      Split sequence(s) into original source sequences
+   splitter         Split sequence(s) into smaller sequences
+   trimest          Remove poly-A tails from nucleotide sequences
+   trimseq          Remove unwanted characters from start and end of sequence(s)
+   trimspace        Remove extra whitespace from an ASCII text file
+   union            Concatenate multiple sequences into a single sequence
+   vectorstrip      Remove vectors from the ends of nucleotide sequence(s)
+   yank             Add a sequence reference (a full USA) to a list file
+
+Author(s)
+
+   Peter Rice
+   European Bioinformatics Institute, Wellcome Trust Genome Campus,
+   Hinxton, Cambridge CB10 1SD, UK
+
+   Please report all bugs to the EMBOSS bug team
+   (emboss-bug (c) emboss.open-bio.org) not to the original author.
+
+History
+
+   Written (Jan 2000) - Peter Rice
+
+Target users
+
+   This program is intended to be used by everyone and everything, from
+   naive users to embedded scripts.
+
+Comments
+
+   The specification of the output file is not used when the output file
+   names are generated automatically..
+
+   At some point this ought to change and you will not be prompted for the
+   output file at all.

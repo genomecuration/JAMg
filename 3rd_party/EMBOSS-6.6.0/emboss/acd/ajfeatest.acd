@@ -1,0 +1,33 @@
+application: ajfeatest [
+  documentation: "Read and write (return) a sequence and
+                  its features"
+  groups: "Test"
+    relations: "EDAM_topic:0220 File handling"
+    relations: "EDAM_operation:0336 File debugging"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  sequence: sequence [
+    parameter: "Y"
+    type: "any"
+    features: "Y"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+endsection: input
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  seqout: outseq [
+    parameter: "Y"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+endsection: output

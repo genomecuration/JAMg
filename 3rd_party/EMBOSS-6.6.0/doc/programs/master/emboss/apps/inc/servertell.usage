@@ -1,0 +1,28 @@
+Here is a sample session with <b>servertell</b>
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>servertell srs </b>
+Display information about a public server
+
+# srs is defined in standard
+# access levels id: Yes query: Yes all: Yes
+# scope: text
+# cache file: /homes/user/local/share/EMBOSS/server.srs
+# databases: 16
+# use -full to see complete list of databases
+
+SERVER srs [
+   method:         "srswww"
+   type:           "unknown"
+   cachefile:      "server.srs"
+   comment:        "SRS from EBI"
+   serverversion:  "7.1.3"
+   url:            "http://srs.ebi.ac.uk/srsbin/cgi-bin/wgetz"
+]
+
+</pre></td></tr></table><p>
+<p>
+<p>

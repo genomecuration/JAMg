@@ -1,0 +1,39 @@
+
+<a name="output.1"></a>
+<h3>Output files for usage example </h3>
+<p><h3>File: arf3_rat.preg</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+########################################
+# Program: preg
+# Rundate: Mon 15 Jul 2013 12:00:00
+# Commandline: preg
+#    -sequence "tsw:*_rat"
+#    -pattern "IA[QWF]A"
+# Report_format: seqtable
+# Report_file: arf3_rat.preg
+########################################
+
+#=======================================
+#
+# Sequence: UBR5_RAT     from: 1   to: 2788
+# HitCount: 1
+#
+# Pattern: IA[QWF]A
+#
+#=======================================
+
+  Start     End Pattern        Sequence
+   2289    2292 regex:IA[QWF]A IAQA
+
+#---------------------------------------
+#---------------------------------------
+
+#---------------------------------------
+# Total_sequences: 2
+# Total_length: 2969
+# Reported_sequences: 1
+# Reported_hitcount: 1
+#---------------------------------------
+</pre>
+</td></tr></table><p>

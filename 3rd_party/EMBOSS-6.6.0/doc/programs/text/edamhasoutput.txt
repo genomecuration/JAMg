@@ -1,0 +1,315 @@
+                                edamhasoutput
+
+
+
+Wiki
+
+   The master copies of EMBOSS documentation are available at
+   http://emboss.open-bio.org/wiki/Appdocs on the EMBOSS Wiki.
+
+   Please help by correcting and extending the Wiki pages.
+
+Function
+
+   Find EDAM ontology terms by has_output relation
+
+Description
+
+   edamhasoutput searches the has_output relations of EDAM terms and
+   returns matching terms. The input is read from the installed EDAM
+   database. The ontology term output can be written to screen, to file,
+   or passed to another program. A wide range of standard ontology term
+   formats may be specified for input and output.
+
+   Optionally the search can be restricted to specified EDAM namespaces.
+
+Usage
+
+   Here is a sample session with edamhasoutput
+
+
+% edamhasoutput sequence
+Find EDAM ontology terms by has_output relation
+Obo output file [edamhasoutput.obo]:
+
+
+   Go to the output files for this example
+
+Command line arguments
+
+Find EDAM ontology terms by has_output relation
+Version: EMBOSS:6.6.0.0
+
+   Standard (Mandatory) qualifiers:
+  [-identifier]        string     Identifier(s) to search for in ontology (Any
+                                  string)
+  [-outfile]           outobo     [*.edamhasoutput] Output ontology term file
+                                  name
+
+   Additional (Optional) qualifiers:
+   -namespace          menu       [*] By default all terms are returned.
+                                  Searches can be limited to one or a few
+                                  namespaces. (Values: data (Data entity);
+                                  entity (Biological entity); format (Data
+                                  format); identifier (Identifier); operation
+                                  (Bioinformatics operation); resource (Data
+                                  resource); topic (Field of bioinformatics
+                                  study))
+
+   Advanced (Unprompted) qualifiers:
+   -sensitive          boolean    [N] By default, the query keywords are
+                                  matched against the EDAM term names (and
+                                  synonyms) only. This option also matches the
+                                  keywords against the EDAM term definitions
+                                  and will therefore (typically) report more
+                                  matches.
+   -subclasses         boolean    [N] Extend the query matches to include all
+                                  terms which are specialisations (EDAM
+                                  sub-classes) of the matched type.
+   -obsolete           boolean    [N] The default behaviour is to not use or
+                                  return obsolete terms. This option if set
+                                  will include all terms.
+
+   Associated qualifiers:
+
+   "-outfile" associated qualifiers
+   -odirectory2        string     Output directory
+   -oformat2           string     Ontology term output format
+
+   General qualifiers:
+   -auto               boolean    Turn off prompts
+   -stdout             boolean    Write first file to standard output
+   -filter             boolean    Read first file from standard input, write
+                                  first file to standard output
+   -options            boolean    Prompt for standard and additional values
+   -debug              boolean    Write debug output to program.dbg
+   -verbose            boolean    Report some/full command line options
+   -help               boolean    Report command line options and exit. More
+                                  information on associated and general
+                                  qualifiers can be found with -help -verbose
+   -warning            boolean    Report warnings
+   -error              boolean    Report errors
+   -fatal              boolean    Report fatal errors
+   -die                boolean    Report dying program messages
+   -version            boolean    Report version number and exit
+
+
+Input file format
+
+   edamhasoutput queries the EDAM ontology.
+
+Output file format
+
+   The output is a standard EMBOSS ontology term file.
+
+   The results can be output in one of several styles by using the
+   command-line qualifier -oformat xxx, where 'xxx' is replaced by the
+   name of the required format. The available format names are: obo,
+   brief, list, html, xml, json, excel.
+
+   See: http://emboss.sf.net/docs/themes/OntologyFormats.html for further
+   information on ontology formats.
+
+  Output files for usage example
+
+  File: edamhasoutput.obo
+
+[Term]
+id: EDAM_operation:0290
+name: Sequence redundancy removal
+namespace: operation
+def: Compare two or more molecular sequences, identify and remove redundant sequ
+ences based on some criteria.
+subset: bioinformatics
+subset: edam
+subset: operations
+created_in: "beta12orEarlier"
+is_a: EDAM_operation:0291 ! Sequence clustering
+relationship: has_output EDAM_data:2044 ! Sequence
+relationship: has_topic EDAM_topic:0164 ! Sequence clustering
+
+[Term]
+id: EDAM_operation:1813
+name: Sequence retrieval
+namespace: operation
+def: Query a sequence data resource (typically a database) and retrieve sequence
+s and / or annotation.
+comment: This includes direct retrieval methods (e.g. the dbfetch program) but n
+ot those that perform calculations on the sequence.
+subset: bioinformatics
+subset: edam
+subset: operations
+synonym: "Data retrieval (sequences)" EXACT []
+created_in: "beta12orEarlier"
+is_a: EDAM_operation:2422 ! Data retrieval
+is_a: EDAM_operation:2446 ! Sequence processing
+relationship: has_output EDAM_data:2044 ! Sequence
+
+[Term]
+id: EDAM_operation:2871
+name: Sequence tagged site (STS) mapping
+namespace: operation
+def: Generate a physical DNA map (sequence map) from analysis of sequence tagged
+ sites (STS).
+comment: An STS is a short subsequence of known sequence and location that occur
+s only once in the chromosome or genome that is being mapped. Sources of STSs in
+clude 1. expressed sequence tags (ESTs), simple sequence length polymorphisms (S
+SLPs), and random genomic sequences from cloned genomic DNA or database sequence
+s.
+subset: bioinformatics
+subset: edam
+subset: operations
+synonym: "Sequence mapping" EXACT []
+created_in: "beta12orEarlier"
+is_a: EDAM_operation:2944 ! Physical mapping
+relationship: has_output EDAM_data:1279 ! Sequence map
+
+[Term]
+id: EDAM_operation:0310
+name: Sequence assembly
+namespace: operation
+def: Combine (align and merge) overlapping fragments of a DNA sequence to recons
+truct the original sequence.
+comment: For example, assemble overlapping reads from paired-end sequencers into
+ contigs (a contiguous sequence corresponding to read overlaps). Or assemble con
+tigs, for example ESTs and genomic DNA fragments, depending on the detected frag
+ment overlaps.
+subset: bioinformatics
+subset: edam
+
+
+  [Part of this file has been deleted for brevity]
+
+subset: edam
+subset: operations
+created_in: "beta12orEarlier"
+is_a: EDAM_operation:0337 ! Plotting and rendering
+is_a: EDAM_operation:2463 ! Sequence alignment processing
+relationship: has_input EDAM_data:0863 ! Sequence alignment
+relationship: has_output EDAM_data:1711 ! Sequence alignment image
+
+[Term]
+id: EDAM_operation:0491
+name: Pairwise sequence alignment construction
+namespace: operation
+def: Align exactly two molecular sequences.
+comment: Methods might perform one-to-one, one-to-many or many-to-many compariso
+ns.
+subset: bioinformatics
+subset: edam
+subset: operations
+synonym: "Pairwise sequence alignment" EXACT []
+created_in: "beta12orEarlier"
+is_a: EDAM_operation:0292 ! Sequence alignment construction
+relationship: has_output EDAM_data:1381 ! Sequence alignment (pair)
+
+[Term]
+id: EDAM_operation:0483
+name: Structured RNA prediction and optimisation
+namespace: operation
+def: Predict or optimise RNA sequences (sequence pools) with likely secondary an
+d tertiary structure for in vitro selection.
+subset: bioinformatics
+subset: edam
+subset: operations
+synonym: "Nucleic acid folding family identification" EXACT []
+synonym: "RNA inverse folding" EXACT []
+created_in: "beta12orEarlier"
+is_a: EDAM_operation:2425 ! Optimisation and refinement
+is_a: EDAM_operation:3095 ! Nucleic acid design
+relationship: has_output EDAM_data:1234 ! Sequence set (nucleic acid)
+relationship: has_topic EDAM_topic:2953 ! Nucleic acid design
+
+[Term]
+id: EDAM_operation:0449
+name: Sequence alignment analysis (site correlation)
+namespace: operation
+def: Analyse correlations between sites in a molecular sequence alignment.
+comment: This is typically done to identify possible covarying positions and pre
+dict contacts or structural constraints in protein structures.
+subset: bioinformatics
+subset: edam
+subset: operations
+created_in: "beta12orEarlier"
+is_a: EDAM_operation:0258 ! Sequence alignment analysis
+relationship: has_output EDAM_data:1416 ! Sequence alignment report (site correl
+ation)
+
+
+Data files
+
+   The EDAM Ontology is included in EMBOSS as local database edam.
+
+Notes
+
+   None.
+
+References
+
+   None.
+
+Warnings
+
+   None.
+
+Diagnostic Error Messages
+
+   None.
+
+Exit status
+
+   It always exits with status 0.
+
+Known bugs
+
+   None.
+
+See also
+
+                     Program name                        Description
+                    drfinddata      Find public databases by data type
+                    drfindformat    Find public databases by format
+                    drfindid        Find public databases by identifier
+                    drfindresource  Find public databases by resource
+                    edamdef         Find EDAM ontology terms by definition
+                    edamhasinput    Find EDAM ontology terms by has_input relation
+                    edamisformat    Find EDAM ontology terms by is_format_of relation
+                    edamisid        Find EDAM ontology terms by is_identifier_of relation
+                    edamname        Find EDAM ontology terms by name
+                    godef           Find GO ontology terms by definition
+                    goname          Find GO ontology terms by name
+                    ontoget         Get ontology term(s)
+                    ontogetcommon   Get common ancestor for terms
+                    ontogetdown     Get ontology term(s) by parent id
+   ontogetobsolete  Get ontology ontology terms
+                    ontogetroot     Get ontology root terms by child identifier
+                    ontogetsibs     Get ontology term(s) by id with common parent
+                    ontogetup       Get ontology term(s) by id of child
+                    ontoisobsolete  Report whether an ontology term id is obsolete
+                    ontotext        Get ontology term(s) original full text
+                    wossdata        Find programs by EDAM data
+                    wossinput       Find programs by EDAM input data
+                    wossoperation   Find programs by EDAM operation
+                    wossoutput      Find programs by EDAM output data
+                    wossparam       Find programs by EDAM parameter
+                    wosstopic       Find programs by EDAM topic
+
+Author(s)
+
+   Peter            Rice
+   European         Bioinformatics Institute, Wellcome Trust Genome Campus,
+   Hinxton,         Cambridge CB10 1SD, UK
+
+                    Please report all bugs to the EMBOSS bug team
+                    (emboss-bug (c) emboss.open-bio.org) not to the original author.
+
+History
+
+Target users
+
+                    This program is intended to be used by everyone and everything, from
+                    naive users to embedded scripts.
+
+Comments
+
+                    None

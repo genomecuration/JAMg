@@ -1,0 +1,35 @@
+application: entrails [
+  documentation: "Report the internal data from the EMBOSS
+                  code"
+  groups: "Utils:Misc"
+    relations: "EDAM_topic:0220 File handling"
+    relations: "EDAM_operation:0336 File debugging"
+]
+
+section: additional [
+  information: "Additional section"
+  type: "page"
+]
+
+  boolean: fullreport [
+    additional: "Y"
+    default: "N"
+    information: "Full report"
+    help: "By default, only the essential details are reported"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+endsection: additional
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  outfile: outfile [
+    parameter: "Y"
+    knowntype: "entrails output"
+    relations: "EDAM_data:0969 Text"
+  ]
+
+endsection: output

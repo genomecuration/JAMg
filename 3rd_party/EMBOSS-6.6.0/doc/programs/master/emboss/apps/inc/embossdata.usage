@@ -1,0 +1,637 @@
+Here is a sample session with <b>embossdata</b>
+<p>
+Display the directories searched for EMBOSS data files: 
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>embossdata </b>
+Find and retrieve EMBOSS data files
+Data file name: <b></b>
+
+# The following directories can contain EMBOSS data files.
+# They are searched in the following order until the file is found.
+# If the directory does not exist, then this is noted below.
+# '.' is the UNIX name for your current working directory.
+
+.                                                            Exists
+.embossdata                                                  Does not exist
+/homes/user                                                    Exists
+/homes/user/.embossdata                                        Exists
+/homes/user/local/share/EMBOSS/data/                           Exists
+
+</pre></td></tr></table><p>
+<p>
+<p>
+<p>
+<b>Example 2</b>
+<p>
+Display the names of data files in all of the possible data directories: This is run on a small test system and so the results will probably be different when you run this. 
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>embossdata -showall </b>
+Find and retrieve EMBOSS data files
+Data file name: <b></b>
+
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/
+
+  DRCAT.dat
+  EBLOSUM30
+  EBLOSUM35
+  EBLOSUM40
+  EBLOSUM45
+  EBLOSUM50
+  EBLOSUM55
+  EBLOSUM60
+  EBLOSUM62
+  EBLOSUM62-12
+  EBLOSUM65
+  EBLOSUM70
+  EBLOSUM75
+  EBLOSUM80
+  EBLOSUM85
+  EBLOSUM90
+  EBLOSUMN
+  EDAM.obo
+  EDNAFULL
+  EDNAMAT
+  EDNASIMPLE
+  EGC.0
+  EGC.1
+  EGC.10
+  EGC.11
+  EGC.12
+  EGC.13
+  EGC.14
+  EGC.15
+  EGC.16
+  EGC.2
+  EGC.21
+  EGC.22
+  EGC.23
+  EGC.3
+  EGC.4
+  EGC.5
+  EGC.6
+  EGC.9
+  EGC.index
+  EGC.txt
+  ENUC.4.2
+  ENUC.4.4
+  EPAM10
+  EPAM100
+  EPAM110
+  EPAM120
+  EPAM130
+  EPAM140
+  EPAM150
+  EPAM160
+  EPAM170
+  EPAM180
+  EPAM190
+  EPAM20
+  EPAM200
+  EPAM210
+  EPAM220
+  EPAM230
+  EPAM240
+  EPAM250
+  EPAM260
+  EPAM270
+  EPAM280
+  EPAM290
+  EPAM30
+  EPAM300
+  EPAM310
+  EPAM320
+  EPAM330
+  EPAM340
+  EPAM350
+  EPAM360
+  EPAM370
+  EPAM380
+  EPAM390
+  EPAM40
+  EPAM400
+  EPAM410
+  EPAM420
+  EPAM430
+  EPAM440
+  EPAM450
+  EPAM460
+  EPAM470
+  EPAM480
+  EPAM490
+  EPAM50
+  EPAM500
+  EPAM60
+  EPAM70
+  EPAM80
+  EPAM90
+  Eaa_acc_surface.dat
+  Eaa_hydropathy.dat
+  Eaa_properties.dat
+  Eamino.dat
+  Eangles.dat
+  Eangles_tri.dat
+  Eantigenic.dat
+  Ebases.iub
+  Edayhoff.freq
+  Edna.melt
+  Eembl.ior
+  Eenergy.dat
+  Efeatures.embl
+  Efeatures.emboss
+  Efeatures.gff2
+  Efeatures.gff2protein
+  Efeatures.gff3
+  Efeatures.gff3protein
+  Efeatures.pir
+  Efeatures.protein
+  Efeatures.refseqp
+  Efeatures.swiss
+  Efreqs.dat
+  Ehet.dat
+  Ehth.dat
+  Ehth87.dat
+  Emass.dat
+  Emassmod.dat
+  Ememe.dat
+  Emethylsites.dat
+  Emolwt.dat
+  Emwfilter.dat
+  Enakai.dat
+  EnsemblAliases.dat
+  EnsemblIdentifiers.dat
+  Epepcoil.dat
+  Epk.dat
+  Epkexpasy.dat
+  Epprofile
+  Eprior1.plib
+  Eprior30.plib
+  Eresidues.iub
+  Erna.melt
+  Esig.euk
+  Esig.pro
+  Etags.embl
+  Etags.emboss
+  Etags.gff2
+  Etags.gff2protein
+  Etags.gff3
+  Etags.gff3protein
+  Etags.pir
+  Etags.protein
+  Etags.refseqp
+  Etags.swiss
+  Etcode.dat
+  Evdw.dat
+  Ewhite-wimley.dat
+  Matrices.nucleotide
+  Matrices.protein
+  Matrices.proteinstructure
+  SSSUB
+  edialignmat
+  software.obo
+  tffungi
+  tfinsect
+  tfother
+  tfplant
+  tfvertebrate
+  tp400_dna
+  tp400_prot
+  tp400_trans
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/JASPAR_SPLICE
+
+  dummyfile
+  matrix_list.txt
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/JASPAR_FAM
+
+  dummyfile
+  matrix_list.txt
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/OBO
+
+  chebi.obo
+  eco.obo
+  evidence_code.obo
+  gene_ontology.1_2.obo
+  go.obo
+  pathway.obo
+  ro.obo
+  so.obo
+  software.obo
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/REBASE
+
+  embossre.enz
+  embossre.equ
+  embossre.ref
+  embossre.sup
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/JASPAR_PBM_HLH
+
+  dummyfile
+  matrix_list.txt
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/JASPAR_PHYLOFACTS
+
+  dummyfile
+  matrix_list.txt
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/JASPAR_CORE
+
+  MA0070.1.pfm
+  MA0071.1.pfm
+  MA0072.1.pfm
+  MA0073.1.pfm
+  MA0074.1.pfm
+  MA0075.1.pfm
+  MA0076.1.pfm
+  MA0077.1.pfm
+  MA0078.1.pfm
+  MA0079.1.pfm
+  MA0079.2.pfm
+  dummyfile
+  matrix_list.txt
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/CODONS
+
+  Cut.index
+  EAcanthocheilonema_viteae.cut
+  EAedes.cut
+  EAedes_aegypti.cut
+  EAedes_albopictus.cut
+  EAedes_atropalpus.cut
+  EAmblyomma_americanum.cut
+  EAnadara_trapezia.cut
+  EAphrodite_aculeata.cut
+  EAstacus_astacus.cut
+  EDictyostelium_discoideum.cut
+  Eacc.cut
+  Eacica.cut
+  Eadenovirus5.cut
+  Eadenovirus7.cut
+  Eagrtu.cut
+  Eaidlav.cut
+  Eanasp.cut
+  Eani.cut
+  Eani_h.cut
+  Eanidmit.cut
+  Earath.cut
+  Easn.cut
+  Eath.cut
+  Eatu.cut
+  Eavi.cut
+  Eazovi.cut
+  Ebacme.cut
+  Ebacst.cut
+  Ebacsu.cut
+  Ebacsu_high.cut
+  Ebja.cut
+  Ebly.cut
+  Ebme.cut
+  Ebmo.cut
+  Ebna.cut
+  Ebommo.cut
+  Ebov.cut
+  Ebovin.cut
+  Ebovsp.cut
+  Ebpphx.cut
+  Ebraja.cut
+  Ebrana.cut
+  Ebrare.cut
+  Ebst.cut
+  Ebsu.cut
+  Ebsu_h.cut
+  Ecac.cut
+  Ecaeel.cut
+  Ecal.cut
+  Ecanal.cut
+  Ecanfa.cut
+  Ecaucr.cut
+  Eccr.cut
+  Ecel.cut
+  Echi.cut
+  Echick.cut
+  Echicken.cut
+  Echisp.cut
+  Echk.cut
+  Echlre.cut
+  Echltr.cut
+  Echmp.cut
+  Echnt.cut
+  Echos.cut
+  Echzm.cut
+  Echzmrubp.cut
+  Ecloab.cut
+  Ecpx.cut
+  Ecre.cut
+  Ecrigr.cut
+  Ecrisp.cut
+  Ectr.cut
+  Ecyapa.cut
+  Edayhoff.cut
+  Eddi.cut
+  Eddi_h.cut
+  Edicdi.cut
+  Edicdi_high.cut
+  Edog.cut
+  Edro.cut
+  Edro_h.cut
+  Edrome.cut
+  Edrome_high.cut
+  Edrosophila.cut
+  Eeca.cut
+  Eeco.cut
+  Eeco_h.cut
+  Eecoli.cut
+  Eecoli_high.cut
+  Eemeni.cut
+  Eemeni_high.cut
+  Eemeni_mit.cut
+  Eerwct.cut
+  Ef1.cut
+  Efish.cut
+  Efmdvpolyp.cut
+  Ehaein.cut
+  Ehalma.cut
+  Ehalsa.cut
+  Eham.cut
+  Ehha.cut
+  Ehin.cut
+  Ehma.cut
+  Ehorvu.cut
+  Ehum.cut
+  Ehuman.cut
+  Ekla.cut
+  Eklepn.cut
+  Eklula.cut
+  Ekpn.cut
+  Elacdl.cut
+  Ella.cut
+  Elyces.cut
+  Emac.cut
+  Emacfa.cut
+  Emaize.cut
+  Emaize_chl.cut
+  Emam_h.cut
+  Emammal_high.cut
+  Emanse.cut
+  Emarpo_chl.cut
+  Emedsa.cut
+  Emetth.cut
+  Emixlg.cut
+  Emouse.cut
+  Emsa.cut
+  Emse.cut
+  Emta.cut
+  Emtu.cut
+  Emus.cut
+  Emussp.cut
+  Emva.cut
+  Emyctu.cut
+  Emze.cut
+  Emzecp.cut
+  Encr.cut
+  Eneigo.cut
+  Eneu.cut
+  Eneucr.cut
+  Engo.cut
+  Eoncmy.cut
+  Eoncsp.cut
+  Eorysa.cut
+  Eorysa_chl.cut
+  Epae.cut
+  Epea.cut
+  Epet.cut
+  Epethy.cut
+  Epfa.cut
+  Ephavu.cut
+  Ephix174.cut
+  Ephv.cut
+  Ephy.cut
+  Epig.cut
+  Eplafa.cut
+  Epolyomaa2.cut
+  Epombe.cut
+  Epombecai.cut
+  Epot.cut
+  Eppu.cut
+  Eprovu.cut
+  Epse.cut
+  Epseae.cut
+  Epsepu.cut
+  Epsesm.cut
+  Epsy.cut
+  Epvu.cut
+  Erab.cut
+  Erabbit.cut
+  Erabit.cut
+  Erabsp.cut
+  Erat.cut
+  Eratsp.cut
+  Erca.cut
+  Erhile.cut
+  Erhime.cut
+  Erhm.cut
+  Erhoca.cut
+  Erhosh.cut
+  Eric.cut
+  Erle.cut
+  Erme.cut
+  Ersp.cut
+  Esalsa.cut
+  Esalsp.cut
+  Esalty.cut
+  Esau.cut
+  Eschma.cut
+  Eschpo.cut
+  Eschpo_cai.cut
+  Eschpo_high.cut
+  Esco.cut
+  Eserma.cut
+  Esgi.cut
+  Esheep.cut
+  Eshp.cut
+  Eshpsp.cut
+  Esli.cut
+  Eslm.cut
+  Esma.cut
+  Esmi.cut
+  Esmu.cut
+  Esoltu.cut
+  Esoy.cut
+  Esoybn.cut
+  Espi.cut
+  Espiol.cut
+  Espn.cut
+  Espo.cut
+  Espo_h.cut
+  Espu.cut
+  Esta.cut
+  Estaau.cut
+  Estrco.cut
+  Estrmu.cut
+  Estrpn.cut
+  Estrpu.cut
+  Esty.cut
+  Esus.cut
+  Esv40.cut
+  Esyhsp.cut
+  Esynco.cut
+  Esyncy.cut
+  Esynsp.cut
+  Etbr.cut
+  Etcr.cut
+  Eter.cut
+  Etetsp.cut
+  Etetth.cut
+  Etheth.cut
+  Etob.cut
+  Etobac.cut
+  Etobac_chl.cut
+  Etobcp.cut
+  Etom.cut
+  Etrb.cut
+  Etrybr.cut
+  Etrycr.cut
+  Evco.cut
+  Evibch.cut
+  Ewheat.cut
+  Ewht.cut
+  Exel.cut
+  Exenla.cut
+  Exenopus.cut
+  Eyeast.cut
+  Eyeast_cai.cut
+  Eyeast_high.cut
+  Eyeast_mit.cut
+  Eyeastcai.cut
+  Eyen.cut
+  Eyeren.cut
+  Eyerpe.cut
+  Eysc.cut
+  Eysc_h.cut
+  Eyscmt.cut
+  Eysp.cut
+  Ezebrafish.cut
+  Ezma.cut
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/TAXONOMY
+
+  division.dmp
+  gencode.dmp
+  merged.dmp
+  names.dmp
+  nodes.dmp
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/JASPAR_PBM
+
+  dummyfile
+  matrix_list.txt
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/AAINDEX
+
+  chop780101
+  chop780201
+  chop780202
+  chop780203
+  chop780204
+  chop780205
+  chop780206
+  chop780207
+  chop780208
+  chop780209
+  chop780210
+  chop780211
+  chop780212
+  chop780213
+  chop780214
+  chop780215
+  chop780216
+  dummyfile
+  kytj820101
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/JASPAR_POLII
+
+  dummyfile
+  matrix_list.txt
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/JASPAR_PBM_HOMEO
+
+  dummyfile
+  matrix_list.txt
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/JASPAR_CNE
+
+  dummyfile
+  matrix_list.txt
+
+</pre></td></tr></table><p>
+<p>
+<p>
+<p>
+<b>Example 3</b>
+<p>
+Make a copy of an EMBOSS data file in the current directory: 
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>embossdata -fetch Epepcoil.dat </b>
+Find and retrieve EMBOSS data files
+
+File '/homes/user/local/share/EMBOSS/data/Epepcoil.dat' has been copied successfully.
+
+</pre></td></tr></table><p>
+<p>
+<a href="#output.3">Go to the output files for this example</a><p><p>
+<p>
+<b>Example 4</b>
+<p>
+Display the directories which contain a particular EMBOSS data file: 
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>embossdata EPAM60 </b>
+Find and retrieve EMBOSS data files
+
+# The following directories can contain EMBOSS data files.
+# They are searched in the following order until the file is found.
+# If the directory does not exist, then this is noted below.
+# '.' is the UNIX name for your current working directory.
+
+File ./EPAM60                                                     Does not exist
+File .embossdata/EPAM60                                           Does not exist
+File /homes/user/EPAM60                                             Does not exist
+File /homes/user/.embossdata/EPAM60                                 Does not exist
+File /homes/user/local/share/EMBOSS/data/EPAM60                     Exists
+
+</pre></td></tr></table><p>
+<p>
+<p>

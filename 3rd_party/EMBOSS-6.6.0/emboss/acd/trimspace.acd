@@ -1,0 +1,83 @@
+application: trimspace
+[
+  documentation: "Remove extra whitespace from an ASCII text file"
+  groups: "Edit"
+  gui: "yes"
+  batch: "yes"
+  cpu: "low"
+    relations: "EDAM_topic:0091 Data handling"
+    relations: "EDAM_operation:0335 File reformatting"
+]
+
+
+
+
+
+section: input 
+[
+  information: "Input section"
+  type: "page"
+]
+
+infile: infile 
+[
+    parameter: "Y"
+    knowntype: "ascii text"
+    information: "ASCII text file"
+    relations: "EDAM_data:2048 Report"
+]
+
+endsection: input
+
+
+
+
+
+section: required 
+[
+  information: "Required section"
+  type: "page"
+]
+endsection: required
+
+
+
+
+
+section: additional
+[
+  information: "Additional section"
+  type: "page"
+]
+endsection: additional
+
+
+
+
+
+section: advanced
+[
+  information: "Advanced section"
+  type: "page"
+]
+endsection: advanced
+
+
+
+
+
+section: output 
+[
+  information: "Output section"
+  type: "page"
+]
+
+outfile: outfile 
+[
+    parameter: "Y"
+    knowntype: "ascii text"
+    information: "ASCII text output file"
+    relations: "EDAM_data:2048 Report"
+]
+
+endsection: output

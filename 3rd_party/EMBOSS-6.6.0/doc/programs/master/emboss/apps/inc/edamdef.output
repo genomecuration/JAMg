@@ -1,0 +1,226 @@
+
+<a name="output.1"></a>
+<h3>Output files for usage example </h3>
+<p><h3>File: edamdef.obo</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+[Term]
+id: EDAM_format:1391
+name: HMMER-aln
+namespace: format
+def: FASTA-style format for multiple sequences aligned by HMMER package to an HMM.
+subset: bioinformatics
+subset: edam
+subset: formats
+created_in: "beta12orEarlier"
+is_a: EDAM_format:2200 ! FASTA-like (text)
+is_a: EDAM_format:2330 ! Textual format
+is_a: EDAM_format:2554 ! Alignment format (text)
+
+[Term]
+id: EDAM_data:1383
+name: Sequence alignment (nucleic acid)
+namespace: data
+def: Alignment of multiple nucleotide sequences.
+subset: bioinformatics
+subset: data
+subset: edam
+created_in: "beta12orEarlier"
+is_a: EDAM_data:0863 ! Sequence alignment
+is_a: EDAM_data:2084 ! Nucleic acid report
+
+[Term]
+id: EDAM_topic:0797
+name: Comparative genomics
+namespace: topic
+def: Topic concerning the study (typically comparison) of the sequence, structure or function of multiple genomes.
+subset: bioinformatics
+subset: edam
+subset: topics
+xref: BioCatalogue:Comparative Genomics
+created_in: "beta12orEarlier"
+is_a: EDAM_topic:0622 ! Genomics
+
+[Term]
+id: EDAM_format:2001
+name: EMBOSS simple format
+namespace: format
+def: EMBOSS simple multiple alignment format.
+subset: bioinformatics
+subset: edam
+subset: formats
+created_in: "beta12orEarlier"
+is_a: EDAM_format:2330 ! Textual format
+is_a: EDAM_format:2554 ! Alignment format (text)
+
+[Term]
+
+
+<font color=red>  [Part of this file has been deleted for brevity]</font>
+
+subset: operations
+synonym: "Multiple sequence alignment (phylogenetic tree-based)" EXACT []
+synonym: "Phylogenetic tree-based multiple sequence alignment construction" EXACT []
+created_in: "beta12orEarlier"
+is_a: EDAM_operation:0492 ! Multiple sequence alignment construction
+relationship: has_topic EDAM_topic:0084 ! Phylogenetics
+
+[Term]
+id: EDAM_operation:0498
+name: Multiple sequence alignment construction (consensus)
+namespace: operation
+def: Align two or more molecular sequences using multiple methods to achieve higher quality.
+subset: bioinformatics
+subset: edam
+subset: operations
+synonym: "Consensus multiple sequence alignment construction" EXACT []
+synonym: "Multiple sequence alignment (consensus)" EXACT []
+created_in: "beta12orEarlier"
+is_a: EDAM_operation:0492 ! Multiple sequence alignment construction
+
+[Term]
+id: EDAM_operation:0434
+name: Integrated gene prediction
+namespace: operation
+def: Predict whole gene structure using a combination of multiple methods to achieve better predictions.
+subset: bioinformatics
+subset: edam
+subset: operations
+created_in: "beta12orEarlier"
+is_a: EDAM_operation:0425 ! Whole gene prediction
+
+[Term]
+id: EDAM_data:0842
+name: Identifier
+namespace: identifier
+def: A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).
+subset: bioinformatics
+subset: data
+subset: edam
+subset: identifiers
+synonym: "WSIO_data:005" EXACT []
+synonym: "http://purl.org/dc/elements/1.1/identifier" NARROW []
+synonym: "ID" EXACT []
+synonym: "SIO:000115" EXACT []
+created_in: "beta12orEarlier"
+is_a: EDAM_data:0006 ! Data
+disjoint_from: EDAM_data:2048 ! Report
+disjoint_from: EDAM_data:2527 ! Parameter
+disjoint_from: EDAM_data:3031 ! Core data
+relationship: is_identifier_of EDAM_data:0006 ! Data
+
+</pre>
+</td></tr></table><p>
+
+<a name="output.2"></a>
+<h3>Output files for usage example 2</h3>
+<p><h3>File: edamdef.obo</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+[Term]
+id: EDAM_format:1391
+name: HMMER-aln
+namespace: format
+def: FASTA-style format for multiple sequences aligned by HMMER package to an HMM.
+subset: bioinformatics
+subset: edam
+subset: formats
+created_in: "beta12orEarlier"
+is_a: EDAM_format:2200 ! FASTA-like (text)
+is_a: EDAM_format:2330 ! Textual format
+is_a: EDAM_format:2554 ! Alignment format (text)
+
+[Term]
+id: EDAM_data:1383
+name: Sequence alignment (nucleic acid)
+namespace: data
+def: Alignment of multiple nucleotide sequences.
+subset: bioinformatics
+subset: data
+subset: edam
+created_in: "beta12orEarlier"
+is_a: EDAM_data:0863 ! Sequence alignment
+is_a: EDAM_data:2084 ! Nucleic acid report
+
+[Term]
+id: EDAM_data:1386
+name: Sequence alignment (nucleic acid pair)
+namespace: data
+def: Alignment of exactly two nucleotide sequences.
+subset: bioinformatics
+subset: data
+subset: edam
+created_in: "beta12orEarlier"
+is_a: EDAM_data:1381 ! Sequence alignment (pair)
+is_a: EDAM_data:1383 ! Sequence alignment (nucleic acid)
+
+[Term]
+id: EDAM_topic:0797
+name: Comparative genomics
+namespace: topic
+def: Topic concerning the study (typically comparison) of the sequence, structure or function of multiple genomes.
+subset: bioinformatics
+subset: edam
+subset: topics
+xref: BioCatalogue:Comparative Genomics
+created_in: "beta12orEarlier"
+is_a: EDAM_topic:0622 ! Genomics
+
+[Term]
+
+
+<font color=red>  [Part of this file has been deleted for brevity]</font>
+
+regex: "[0-9]+"
+is_a: EDAM_data:2091 ! Accession
+
+[Term]
+id: EDAM_data:1047
+name: URI
+namespace: data
+def: A string of characters that name or otherwise identify a resource on the Internet.
+subset: bioinformatics
+subset: data
+subset: edam
+created_in: "beta12orEarlier"
+is_a: EDAM_data:0842 ! Identifier
+
+[Term]
+id: EDAM_data:1052
+name: URL
+namespace: data
+def: A Uniform Resource Locator (URL).
+subset: bioinformatics
+subset: data
+subset: edam
+xref: Moby:Link
+xref: Moby:URL
+created_in: "beta12orEarlier"
+is_a: EDAM_data:1047 ! URI
+
+[Term]
+id: EDAM_data:1053
+name: URN
+namespace: data
+def: A Uniform Resource Name (URN).
+subset: bioinformatics
+subset: data
+subset: edam
+created_in: "beta12orEarlier"
+is_a: EDAM_data:1047 ! URI
+
+[Term]
+id: EDAM_data:1055
+name: LSID
+namespace: data
+def: A Life Science Identifier (LSID) - a unique identifier of some data.
+comment: LSIDs provide a standard way to locate and describe data. An LSID is represented as a Uniform Resource Name (URN) with the following EDAM_format: URN:LSID:&lt;Authority&gt;:&lt;Namespace&gt;:&lt;ObjectID&gt;[:&lt;Version&gt;]
+subset: bioinformatics
+subset: data
+subset: edam
+synonym: "Life Science Identifier" EXACT []
+created_in: "beta12orEarlier"
+is_a: EDAM_data:1053 ! URN
+
+</pre>
+</td></tr></table><p>

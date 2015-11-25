@@ -1,0 +1,231 @@
+                                ontogetcommon
+
+
+
+Wiki
+
+   The master copies of EMBOSS documentation are available at
+   http://emboss.open-bio.org/wiki/Appdocs on the EMBOSS Wiki.
+
+   Please help by correcting and extending the Wiki pages.
+
+Function
+
+   Get common ancestor for terms
+
+Description
+
+   ontogetcommon reads two or more terms from an ontology and traces their
+   closest common ancestor.
+
+Algorithm
+
+   ontogetcommon traces up through the hierarchy of terms for the first
+   term it reads. Successive terms are similarly traced, saving any
+   ancestral terms that are already in the saved list.
+
+   The search fails if any term has no common ancestor with all previous
+   terms.
+
+   The match reported is the first match found when tracing back.
+
+   There is no test for common ancestors in multiple paths.
+
+Usage
+
+   Here is a sample session with ontogetcommon
+
+
+% ontogetcommon "edam:{0097,0640}"
+Get common ancestor for terms
+Obo output file [ontogetcommon.obo]:
+
+
+   Go to the input files for this example
+   Go to the output files for this example
+
+Command line arguments
+
+Get common ancestor for terms
+Version: EMBOSS:6.6.0.0
+
+   Standard (Mandatory) qualifiers:
+  [-oboterms]          obo        Obo term filename and optional format, or
+                                  reference (input query)
+  [-outfile]           outobo     [*.ontogetcommon] Output ontology term file
+                                  name
+
+   Additional (Optional) qualifiers:
+   -obsolete           boolean    [N] The default behaviour is to not use or
+                                  return obsolete terms. This option if set
+                                  will include all terms.
+
+   Advanced (Unprompted) qualifiers: (none)
+   Associated qualifiers:
+
+   "-oboterms" associated qualifiers
+   -iformat1           string     Input obo format
+   -iquery1            string     Input query fields or ID list
+   -ioffset1           integer    Input start position offset
+   -idbname1           string     User-provided database name
+
+   "-outfile" associated qualifiers
+   -odirectory2        string     Output directory
+   -oformat2           string     Ontology term output format
+
+   General qualifiers:
+   -auto               boolean    Turn off prompts
+   -stdout             boolean    Write first file to standard output
+   -filter             boolean    Read first file from standard input, write
+                                  first file to standard output
+   -options            boolean    Prompt for standard and additional values
+   -debug              boolean    Write debug output to program.dbg
+   -verbose            boolean    Report some/full command line options
+   -help               boolean    Report command line options and exit. More
+                                  information on associated and general
+                                  qualifiers can be found with -help -verbose
+   -warning            boolean    Report warnings
+   -error              boolean    Report errors
+   -fatal              boolean    Report fatal errors
+   -die                boolean    Report dying program messages
+   -version            boolean    Report version number and exit
+
+
+Input file format
+
+   ontogetcommon reads terms from an ontology database.
+
+  Input files for usage example
+
+  Database entry: "edam:{0097,0640}"
+
+[Term]
+id: EDAM_topic:0640
+name: Nucleic acid sequence analysis
+namespace: topic
+def: Processing and analysis of nucleotide sequences and sequence-based entities
+ such as alignments, motifs and profiles.
+subset: bioinformatics
+subset: edam
+subset: topics
+xref: BioCatalogue:Nucleotide Sequence Analysis
+created_in: "beta12orEarlier"
+is_a: EDAM_topic:0077 ! Nucleic acid analysis
+is_a: EDAM_topic:0080 ! Sequence analysis
+
+[Term]
+id: EDAM_topic:0097
+name: Nucleic acid structure analysis
+namespace: topic
+def: The processing and analysis of nucleic acid (secondary or tertiary) structu
+ral data.
+subset: bioinformatics
+subset: edam
+subset: topics
+created_in: "beta12orEarlier"
+is_a: EDAM_topic:0077 ! Nucleic acid analysis
+is_a: EDAM_topic:0081 ! Structure analysis
+
+
+Output file format
+
+   The output is a standard EMBOSS ontology term file.
+
+   The results can be output in one of several styles by using the
+   command-line qualifier -oformat xxx, where 'xxx' is replaced by the
+   name of the required format. The available format names are: obo,
+   brief, list, html, xml, json, excel.
+
+   See: http://emboss.sf.net/docs/themes/OntologyFormats.html for further
+   information on ontology formats.
+
+  Output files for usage example
+
+  File: ontogetcommon.obo
+
+[Term]
+id: EDAM_topic:0077
+name: Nucleic acid analysis
+namespace: topic
+def: Processing and analysis of nucleic acid data, typically (but not exclusivel
+y) nucleic acid sequence analysis.
+subset: bioinformatics
+subset: edam
+subset: topics
+synonym: "http://purl.bioontology.org/ontology/MSH/D017422" NARROW []
+synonym: "http://purl.bioontology.org/ontology/MSH/D017423" NARROW []
+synonym: "Nucleic acid bioinformatics" EXACT []
+synonym: "Nucleic acid informatics" EXACT []
+synonym: "Nucleic acids" EXACT []
+created_in: "beta12orEarlier"
+is_a: EDAM_topic:0003 ! Topic
+
+
+Data files
+
+   None.
+
+Notes
+
+   None.
+
+References
+
+   None.
+
+Warnings
+
+   None.
+
+Diagnostic Error Messages
+
+   None.
+
+Exit status
+
+   It always exits with status 0.
+
+Known bugs
+
+   None.
+
+See also
+
+                     Program name                        Description
+                    edamdef         Find EDAM ontology terms by definition
+                    edamhasinput    Find EDAM ontology terms by has_input relation
+                    edamhasoutput   Find EDAM ontology terms by has_output relation
+                    edamisformat    Find EDAM ontology terms by is_format_of relation
+                    edamisid        Find EDAM ontology terms by is_identifier_of relation
+                    edamname        Find EDAM ontology terms by name
+                    godef           Find GO ontology terms by definition
+                    goname          Find GO ontology terms by name
+                    ontocount       Count ontology term(s)
+                    ontoget         Get ontology term(s)
+                    ontogetdown     Get ontology term(s) by parent id
+   ontogetobsolete  Get ontology ontology terms
+                    ontogetroot     Get ontology root terms by child identifier
+                    ontogetsibs     Get ontology term(s) by id with common parent
+                    ontogetup       Get ontology term(s) by id of child
+                    ontoisobsolete  Report whether an ontology term id is obsolete
+                    ontotext        Get ontology term(s) original full text
+
+Author(s)
+
+   Peter            Rice
+   European         Bioinformatics Institute, Wellcome Trust Genome Campus,
+   Hinxton,         Cambridge CB10 1SD, UK
+
+                    Please report all bugs to the EMBOSS bug team
+                    (emboss-bug (c) emboss.open-bio.org) not to the original author.
+
+History
+
+Target users
+
+                    This program is intended to be used by everyone and everything, from
+                    naive users to embedded scripts.
+
+Comments
+
+                    None

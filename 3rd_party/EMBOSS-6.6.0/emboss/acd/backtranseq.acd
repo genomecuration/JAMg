@@ -1,0 +1,39 @@
+application: backtranseq [
+  documentation: "Back-translate a protein sequence to a nucleotide sequence"
+  groups: "Nucleic:Translation, Protein:Composition"
+    relations: "EDAM_topic:0108 Translation"
+    relations: "EDAM_topic:0157 Sequence composition analysis"
+    relations: "EDAM_operation:0371 DNA translation"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  seqall: sequence [
+    parameter: "Y"
+    type: "gapstopprotein"
+    relations: "EDAM_data:2886 Sequence record (protein)"
+  ]
+
+  codon: cfile [
+    additional: "Y"
+    default: "Ehuman.cut"
+    relations: "EDAM_data:1597 Codon usage table"
+  ]
+
+endsection: input
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  seqoutall: outfile [
+    parameter: "Y"
+    type: "gapnucleotide"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+endsection: output

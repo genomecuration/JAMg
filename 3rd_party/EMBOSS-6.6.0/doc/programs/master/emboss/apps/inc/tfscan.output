@@ -1,0 +1,42 @@
+
+<a name="output.1"></a>
+<h3>Output files for usage example </h3>
+<p><h3>File: k00650.tfscan</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+########################################
+# Program: tfscan
+# Rundate: Mon 15 Jul 2013 12:00:00
+# Commandline: tfscan
+#    -sequence tembl:k00650
+#    -menu v
+# Report_format: seqtable
+# Report_file: k00650.tfscan
+########################################
+
+#=======================================
+#
+# Sequence: K00650     from: 1   to: 6210
+# HitCount: 9
+#=======================================
+
+  Start     End  Strand Accession Factor                                                      Sequence
+   3287    3292       + R04413    T00702; PU.1;Quality: 3; Species: mouse, Mus musculus.      ttcctc
+   5940    5944       + R00079    T00599; NF-1/L;Quality: 6; Species: rat, Rattus norvegicus. tggca
+   3757    3761       + R00079    T00599; NF-1/L;Quality: 6; Species: rat, Rattus norvegicus. tggca
+   2776    2780       + R00079    T00599; NF-1/L;Quality: 6; Species: rat, Rattus norvegicus. tggca
+   2418    2422       + R00079    T00599; NF-1/L;Quality: 6; Species: rat, Rattus norvegicus. tggca
+   2010    2014       + R00079    T00599; NF-1/L;Quality: 6; Species: rat, Rattus norvegicus. tggca
+   1676    1680       + R00079    T00599; NF-1/L;Quality: 6; Species: rat, Rattus norvegicus. tggca
+   1356    1360       + R00079    T00599; NF-1/L;Quality: 6; Species: rat, Rattus norvegicus. tggca
+   2009    2014       + R00078    T00599; NF-1/L;Quality: 6; Species: rat, Rattus norvegicus. ttggca
+
+#---------------------------------------
+#---------------------------------------
+
+#---------------------------------------
+# Reported_sequences: 1
+# Reported_hitcount: 9
+#---------------------------------------
+</pre>
+</td></tr></table><p>
