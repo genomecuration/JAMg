@@ -1,0 +1,87 @@
+application: tfscan [
+  documentation: "Identify transcription factor binding sites in DNA sequences"
+  groups: "Nucleic:Transcription"
+    relations: "EDAM_topic:0110 Transcription"
+    relations: "EDAM_operation:0445 Transcription factor binding site prediction"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  seqall: sequence [
+    parameter: "Y"
+    type: "DNA"
+    relations: "EDAM_data:2887 Sequence record (nucleic acid)"
+  ]
+
+  list: menu [
+    standard: "Y"
+    default: "V"
+    minimum: "1"
+    maximum: "1"
+    values: "F:fungi,I:insect,P:plant,V:vertebrate,O:other,C:Custom"
+    delimiter: ","
+    codedelimiter: ":"
+    header: "Transcription Factor Class"
+    information: "Select class"
+    button: "Y"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  datafile: custom [
+    standard: "@($(menu)==C)"
+    information: "Transfac database data file (optional)"
+    nullok: "@($(menu)!=C)"
+    knowntype: "transfac data"
+    default: ""
+    relations: "EDAM_data:0896 Protein report"
+  ]
+
+endsection: input
+
+section: required [
+  information: "Required section"
+  type: "page"
+]
+
+  integer: mismatch [
+    standard: "Y"
+    default: "0"
+    minimum: "0"
+    information: "Number of mismatches"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+endsection: required
+
+section: additional [
+  information: "Additional section"
+  type: "page"
+]
+
+  integer: minlength [
+    additional: "Y"
+    default: "1"
+    minimum: "1"
+    information: "Display matches equal to or above this
+                  length"
+    relations: "EDAM_data:1249 Sequence length"
+  ]
+
+endsection: additional
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  report: outfile [
+    parameter: "Y"
+    rformat: "seqtable"
+    taglist: "str:acc=Accession str:factor=Factor"
+    relations: "EDAM_data:1315 Gene features (TFBS)"
+  ]
+
+endsection: output

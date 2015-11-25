@@ -1,0 +1,63 @@
+application: ontoisobsolete [
+  documentation: "Report whether an ontology term id is obsolete"
+  groups: "Ontology, Data retrieval:Ontology data"
+    relations: "EDAM_topic:0089 Ontology"
+    relations: "EDAM_topic:0090 Data search and retrieval"
+    relations: "EDAM_operation:2422 Data retrieval"
+]
+
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+  obo: oboterms [
+     default: ""
+     parameter: "Y"
+     maxreads: "1"
+     relations: "EDAM_identifier:1087 Ontology concept ID"
+  ]
+
+
+endsection: input
+
+
+
+
+
+section: additional [
+  information: "Additional section"
+  type: "page"
+]
+
+endsection: additional
+
+
+
+
+
+section: advanced [
+  information: "Advanced section"
+  type: "page"
+]
+
+endsection: advanced
+
+
+
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  outfile: outfile [
+    parameter: "Y"
+    default: "stdout"
+    knowntype: "ontoisobsolete output"
+    relations: "EDAM_data:2223 Ontology metadata"
+  ]
+
+endsection: output
+
+

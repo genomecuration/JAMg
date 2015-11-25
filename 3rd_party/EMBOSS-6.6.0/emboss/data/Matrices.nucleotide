@@ -1,0 +1,8 @@
+# EMBOSS Nucleotide comparison matrix files
+#
+#Name      Description
+#=======   ===========
+
+EDNAFULL   ambiguous nucleotide codes, probabilities rounded to nearest integer
+EDNAMAT    nucleotide codes with exact match only
+EDNASIMPLE match/mismatch scores are 1 and -1

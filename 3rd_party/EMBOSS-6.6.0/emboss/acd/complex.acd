@@ -1,0 +1,130 @@
+application: complex [
+  documentation: "Find the linguistic complexity in
+                  nucleotide sequences"
+  groups: "Nucleic:Composition"
+    relations: "EDAM_topic:0157 Sequence composition"
+    relations: "EDAM_operation:0374 Nucleotide sequence complexity calculation"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  seqall: sequence [
+    parameter: "Y"
+    type: "dna"
+    relations: "EDAM_data:2887 Sequence record (nucleic acid)"
+  ]
+
+  integer: lwin [
+    standard: "Y"
+    default: "100"
+    minimum: "1"
+    maximum: "$(sequence.length)"
+    failrange: "N"
+    trueminimum: "Y"
+    information: "Window length"
+    relations: "EDAM_data:1251 Window size"
+  ]
+
+  integer: step [
+    standard: "Y"
+    default: "5"
+    minimum: "1"
+    maximum: "$(lwin)"
+    failrange: "N"
+    trueminimum: "Y"
+    information: "Step size"
+    help: "Displacement of the window over the sequence"
+    relations: "EDAM_data:2141 Window step size"
+  ]
+
+  integer: jmin [
+    standard: "Y"
+    default: "4"
+    minimum: "2"
+    maximum: "20"
+    information: "Minimum word length"
+    help: ""
+    relations: "EDAM_data:1250 Word size"
+  ]
+
+  integer: jmax [
+    standard: "Y"
+    default: "6"
+    minimum: "2"
+    maximum: "50"
+    information: "Maximum word length"
+    help: ""
+    relations: "EDAM_data:1250 Word size"
+  ]
+
+endsection: input
+
+section: advanced [
+  information: "Advanced section"
+  type: "page"
+]
+
+  toggle: omnia [
+    default: "N"
+    information: "All sequences"
+    help: "Calculate over a set of sequences"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  integer: sim [
+    default: "0"
+    information: "Simulations"
+    help: "Calculate the linguistic complexity by comparison with a
+           number of simulations having a uniform distribution of bases"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  boolean: freq [
+    default: "N"
+    information: "Calculate frequency"
+    help: "Execute the simulation of a sequence based on the base
+           frequency of the original sequence"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+endsection: advanced
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  boolean: print [
+    default: "N"
+    information: "Print to file"
+    help: "Generate a file named UjTable containing the values of Uj
+           for each word j in the real sequence(s) and in any simulated
+           sequences"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  outfile: outfile [
+    parameter: "Y"
+    knowntype: "complex output"
+    information: "Program complex output file"
+    relations: "EDAM_data:1259 Sequence complexity"
+  ]
+
+  outfile: ujtablefile [
+    default: "complex.ujtable"
+    information: "Program complex temporary output file"
+    knowntype: "complex temporary output"
+    help: ""
+    nullok: "Y"
+  ]
+
+  seqoutall: outseq [
+    standard: "$(omnia)"
+    nullok: "Y"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+endsection: output

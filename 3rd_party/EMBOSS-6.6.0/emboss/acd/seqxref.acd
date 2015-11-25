@@ -1,0 +1,82 @@
+application: seqxref
+[
+  documentation: "Retrieve all database cross-references for a sequence entry"
+  groups: "Data retrieval:Sequence data"
+  gui: "yes"
+  batch: "yes"
+  cpu: "low"
+  relations: "EDAM_topic:0090 Data search and retrieval"
+  relations: "EDAM_operation:2422 Data retrieval"
+]
+
+
+
+
+
+section: input 
+[
+  information: "Input section"
+  type: "page"
+]
+
+  seqall: sequence
+  [
+    parameter: "Y"
+    type: "any"
+    features: "Y"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+endsection: input
+
+
+
+
+
+section: required 
+[
+  information: "Required section"
+  type: "page"
+]
+endsection: required
+
+
+
+
+
+section: additional
+[
+  information: "Additional section"
+  type: "page"
+]
+endsection: additional
+
+
+
+
+
+section: advanced
+[
+  information: "Advanced section"
+  type: "page"
+]
+endsection: advanced
+
+
+
+
+
+section: output 
+[
+  information: "Output section"
+  type: "page"
+]
+
+  outfile: outfile 
+  [
+    parameter: "Y"
+    knowntype: "seqxref output"
+    relations: "EDAM_data:2093 Data reference"
+  ]
+
+endsection: output

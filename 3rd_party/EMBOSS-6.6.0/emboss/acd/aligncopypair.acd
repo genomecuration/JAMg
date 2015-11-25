@@ -1,0 +1,113 @@
+application: aligncopypair
+[
+  documentation: "Read and write pairs from alignments"
+  groups: "Edit"
+  gui: "yes"
+  batch: "yes"
+  cpu: "low"
+    relations: "EDAM_topic:0091 Data handling"
+    relations: "EDAM_operation:2122 Sequence alignment file processing"
+]
+
+
+
+
+
+section: input 
+[
+  information: "Input section"
+  type: "page"
+]
+
+seqset: sequences
+[
+    parameter: "Y"
+    type: "gapany"
+    aligned: "Y"
+    help: "File containing a sequence alignment."
+    relations: "EDAM_data:0863 Sequence alignment"
+]
+
+endsection: input
+
+
+
+
+
+section: required 
+[
+  information: "Required section"
+  type: "page"
+]
+endsection: required
+
+
+
+
+
+section: additional
+[
+  information: "Additional section"
+  type: "page"
+]
+  string: name 
+  [
+    additional: "Y"
+    default: ""
+    information: "Name of the alignment"
+    knowntype: "sequence id output"
+    relations: "EDAM_identifier:1063 Sequence identifier"
+  ]
+
+  string: comment 
+  [
+    additional: "Y"
+    default: ""
+    information: "Comment on the alignment"
+    knowntype: "string"
+    relations: "EDAM_data:2048 Report"
+  ]
+
+  boolean: append
+  [
+    additional: "Y"
+    default: "N"
+    information: "Append to the existing alignment header"
+    help: "This allows you to append the name and comments you have given 
+           on to the end of the existing alignment header."
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+endsection: additional
+
+
+
+
+
+section: advanced
+[
+  information: "Advanced section"
+  type: "page"
+]
+endsection: advanced
+
+
+
+
+
+section: output 
+[
+  information: "Output section"
+  type: "page"
+]
+
+align: outfile 
+[
+    parameter: "Y"
+    minseqs: "2"
+    maxseqs: "2"
+    aformat: "simple"
+    relations: "EDAM_data:1381 Sequence alignment (pair)"
+]
+
+endsection: output

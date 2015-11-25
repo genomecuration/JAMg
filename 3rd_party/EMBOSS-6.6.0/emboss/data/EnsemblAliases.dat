@@ -1,0 +1,17 @@
+# Configuration file to specify additional alias names for scientific species
+# names for the Ensembl Registry. The first line of a block indicates the
+# species name, subsequent lines list alias names. Currently, registry lookups
+# are case insentitive.
+#
+# The ensRegistryLoadDatabaseconnection function automatically registers
+# the scientific species name, included in the Ensembl database name.
+
+# "pan_troglodytes"
+# "chimp"
+# "PanTro1"
+# "pan"
+# "p_troglodytes"
+
+# "multi"
+# "compara"
+# "go"

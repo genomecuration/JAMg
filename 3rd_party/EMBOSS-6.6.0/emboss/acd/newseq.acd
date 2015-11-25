@@ -1,0 +1,71 @@
+application: newseq [
+  documentation: "Create a sequence file from a typed-in sequence"
+  groups: "Edit"
+    relations: "EDAM_topic:0091 Data handling"
+    relations: "EDAM_operation:0230 Sequence generation"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  string: name [
+    parameter: "Y"
+    information: "Name of the sequence"
+    help: "The name of of the sequence should be a single word that
+           you will use to identify the sequence. It should have no (or few)
+           punctuation characters in it."
+    knowntype: "name"
+    relations: "EDAM_identifier:2154 Sequence name"
+  ]
+
+  string: description [
+    parameter: "Y"
+    information: "Description of the sequence"
+    help: "Enter any description of the sequence that you require."
+    knowntype: "string"
+    relations: "EDAM_data:2048 Report"
+  ]
+
+  list: type [
+    parameter: "Y"
+    minimum: "1"
+    maximum: "1"
+    default: "N"
+    header: "Type of sequence"
+    values: "N:Nucleic, P:Protein"
+    delimiter: ","
+    codedelimiter: ":"
+    information: "Type of sequence"
+    relations: "EDAM_data:1094 Sequence type"
+  ]
+
+  string: sequence [
+    parameter: "Y"
+    information: "Enter the sequence"
+    help: "The sequence itself. \
+           Because of the limitation of the operating system, you will only
+           be able to type in a short sequence of (typically) 250 characters,
+           or so. \
+           The keyboard will beep at you when you have reached this limit and
+           you will not be able to press the RETURN/ENTER key until you have
+           deleted a few characters."
+    knowntype: "sequence"
+    relations: "EDAM_data:0848 Raw sequence"
+  ]
+
+endsection: input
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  seqout: outseq [
+    parameter: "Y"
+    type: "@(@($(type) == P) ? gapprotein : gapnucleotide)"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+endsection: output

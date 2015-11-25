@@ -1,0 +1,38 @@
+application: codcmp [
+  documentation: "Codon usage table comparison"
+  groups: "Nucleic:Codon usage"
+    relations: "EDAM_topic:0107 Codon usage analysis"
+    relations: "EDAM_operation:0285 Codon usage table comparison"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  codon: first [
+    parameter: "Y"
+    help: "First codon usage file"
+    relations: "EDAM_data:1597 Codon usage table"
+  ]
+
+  codon: second [
+    parameter: "Y"
+    help: "Second codon usage file for comparison"
+    relations: "EDAM_data:1597 Codon usage table"
+  ]
+
+endsection: input
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  outfile: outfile [
+    parameter: "Y"
+    knowntype: "codcmp output"
+    relations: "EDAM_data:1602 Codon usage fraction difference"
+  ]
+
+endsection: output

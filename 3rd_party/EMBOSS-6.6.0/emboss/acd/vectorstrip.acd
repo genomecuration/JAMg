@@ -1,0 +1,105 @@
+application: vectorstrip [
+  documentation: "Remove vectors from the ends of nucleotide sequence(s)"
+  groups: "Edit"
+    relations: "EDAM_topic:0091 Data handling"
+    relations: "EDAM_operation:0369 Sequence cutting"
+    relations: "EDAM_operation:0266 Vector sequence detection"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  seqall: sequence [
+    parameter: "Y"
+    type: "dna"
+    relations: "EDAM_data:2887 Sequence record (nucleic acid)"
+  ]
+
+  section: vectorfilesection [
+    information: "Vector input options"
+    type: "frame"
+  ]
+
+    toggle: readfile [
+      parameter: "Y"
+      default: "Y"
+      information: "Are your vector sequences in a file?"
+    relations: "EDAM_data:2527 Parameter"
+    ]
+
+    infile: vectorsfile [
+      standard: "$(readfile)"
+      nullok: "Y"
+      default: ""
+      information: "Cloning vector definition file (optional)"
+      knowntype: "vector"
+    relations: "EDAM_data:0850 Sequence set"
+    ]
+
+  endsection: vectorfilesection
+
+endsection: input
+
+section: required [
+  information: "Required section"
+  type: "page"
+]
+
+  integer: mismatch [
+    standard: "Y"
+    default: "10"
+    information: "Max allowed % mismatch"
+    relations: "EDAM_data:2146 Threshold"
+  ]
+
+  boolean: besthits [
+    standard: "Y"
+    default: "Y"
+    information: "Show only the best hits (minimise
+                  mismatches)?"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  string: alinker [
+    standard: "@(!$(readfile))"
+    information: "The 5' sequence"
+    knowntype: "nucleotide sequence"
+    relations: "EDAM_format:1210 pure nucleotide"
+  ]
+
+  string: blinker [
+    standard: "@(!$(readfile))"
+    information: "The 3' sequence"
+    knowntype: "nucleotide sequence"
+    relations: "EDAM_format:1210 pure nucleotide"
+  ]
+
+endsection: required
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  boolean: allsequences [
+    additional: "Y"
+    information: "Show all sequences in output"
+    default: "N"
+    outputmodifier: "Y"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  outfile: outfile [
+    parameter: "Y"
+    knowntype: "vectorstrip output"
+    relations: "EDAM_data:1678 Tool log"
+  ]
+
+  seqoutall: outseq [
+    parameter: "Y"
+    relations: "EDAM_data:2887 Sequence record (nucleic acid)"
+  ]
+
+endsection: output

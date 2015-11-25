@@ -1,0 +1,120 @@
+application: emowse [
+  documentation: "Search protein sequences by digest fragment molecular weight"
+  groups: "Protein:Composition"
+  relations: "EDAM_topic:0157 Sequence composition analysis"
+  relations: "EDAM_topic:0767 Protein and peptide identification"
+  relations: "EDAM_operation:0355 Sequence database search
+              (by molecular weight)"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  seqall: sequence [
+    parameter: "Y"
+    type: "protein"
+    relations: "EDAM_data:2886 Sequence record (protein)"
+  ]
+
+  infile: infile [
+    parameter: "Y"
+    information: "Peptide molecular weight values file"
+    knowntype: "peptide molweights"
+    relations: "EDAM_data:1519 Peptide molecular weights"
+  ]
+
+  datafile: mwdata [
+    information: "Molecular weights data file"
+    default: "Emolwt.dat"
+    knowntype: "molecular weights"
+    relations: "EDAM_data:1505 Amino acid index (molecular weight)"
+  ]
+
+  datafile: frequencies [
+    default: "Efreqs.dat"
+    information: "Amino acid frequencies data file"
+    knowntype: "amino acid frequencies"
+    relations: "EDAM_data:1519 Peptide molecular weights"
+  ]
+
+endsection: input
+
+section: required [
+  information: "Required section"
+  type: "page"
+]
+
+  integer: weight [
+    standard: "Y"
+    default: "0"
+    information: "Whole sequence molwt"
+    relations: "EDAM_data:0844 Molecular mass"
+  ]
+
+  boolean: mono [
+    standard: "Y"
+    default: "N"
+    information: "Use monoisotopic weights"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+endsection: required
+
+section: advanced [
+  information: "Advanced section"
+  type: "page"
+]
+
+  list: enzyme [
+    default: "1"
+    minimum: "1"
+    maximum: "1"
+    header: "Enzymes and reagents"
+    values: "1:Trypsin, 2:Lys-C, 3:Arg-C, 4:Asp-N, 5:V8-bicarb,
+             6:V8-phosph, 7:Chymotrypsin, 8:CNBr"
+    delimiter: ","
+    codedelimiter: ":"
+    information: "Enzyme or reagent"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  integer: pcrange [
+    default: "25"
+    minimum: "0"
+    maximum: "75"
+    information: "Allowed whole sequence weight variability"
+    relations: "EDAM_data:0844 Molecular mass"
+  ]
+
+  float: tolerance [
+    default: "0.1"
+    minimum: "0.1"
+    maximum: "1.0"
+    information: "Tolerance"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  float: partials [
+    default: "0.4"
+    minimum: "0.1"
+    maximum: "1.0"
+    information: "Partials factor"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+endsection: advanced
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  outfile: outfile [
+    parameter: "Y"
+    knowntype: "emowse output"
+    relations: "EDAM_data:1262 Peptide molecular weight hits"
+  ]
+
+endsection: output

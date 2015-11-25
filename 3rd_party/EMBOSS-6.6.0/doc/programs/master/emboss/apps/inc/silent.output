@@ -1,0 +1,48 @@
+
+<a name="output.1"></a>
+<h3>Output files for usage example </h3>
+<p><h3>File: x65923.silent</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+########################################
+# Program: silent
+# Rundate: Mon 15 Jul 2013 12:00:00
+# Commandline: silent
+#    -sequence tembl:x65923
+#    -enzymes kpni
+# Report_format: table
+# Report_file: x65923.silent
+########################################
+
+#=======================================
+#
+# Sequence: X65923     from: 1   to: 518
+# HitCount: 2
+#
+# KEY:
+# EnzymeName: Enzyme name
+# RS-Pattern: Restriction enzyme recognition site pattern
+# Base-Posn: Position of base to be mutated
+# AAs: Amino acid. Original sequence(.)After mutation
+# Silent: Yes for unchanged amino acid
+# Mutation: The base mutation to perform
+# 
+# Creating silent and non-silent mutations
+#
+#=======================================
+
+  Start     End  Strand EnzymeName RS-Pattern Base-Posn    AAs Silent Mutation
+     34      39       + KpnI       GGTACC            36    G.G    Yes     G-&gt;T
+    288     293       + KpnI       GGTACC           291    V.V    Yes     T-&gt;A
+
+#---------------------------------------
+#---------------------------------------
+
+#---------------------------------------
+# Total_sequences: 1
+# Total_length: 518
+# Reported_sequences: 1
+# Reported_hitcount: 2
+#---------------------------------------
+</pre>
+</td></tr></table><p>

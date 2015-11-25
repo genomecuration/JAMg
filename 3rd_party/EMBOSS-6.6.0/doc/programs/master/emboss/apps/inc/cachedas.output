@@ -1,0 +1,113 @@
+
+<a name="output.1"></a>
+<h3>Output files for usage example </h3>
+<p><h3>File: qatests.server.dasregistry</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+# qatests.server.dasregistry 2013-07-15 12:00:00
+
+DBNAME DS_114_signalp [
+  method: "das"
+  type: "Protfeatures"
+  format: "dasgff"
+  url: "http://das.cbs.dtu.dk:9000/das/signalp"
+  example: "P15498"
+  comment: "SignalP (http://www.cbs.dtu.dk/services/SignalP) predictions for UniProt."
+  hasaccession: "N"
+  identifier: "segment"
+  fields: "segment,type,category,categorize,feature_id"
+]
+
+DBNAME netphos [
+  method: "das"
+  type: "Protfeatures"
+  format: "dasgff"
+  url: "http://das.cbs.dtu.dk:9000/das/netphos"
+  example: "P15498"
+  comment: "NetPhos (http://www.cbs.dtu.dk/services/NetPhos) predictions for UniProt."
+  hasaccession: "N"
+  identifier: "segment"
+  fields: "segment,type,category,categorize,feature_id"
+]
+
+DBNAME prop [
+  method: "das"
+  type: "Protfeatures"
+  format: "dasgff"
+  url: "http://das.cbs.dtu.dk:9000/das/prop"
+  example: "P15498"
+  comment: "ProP (http://www.cbs.dtu.dk/services/ProP) predictions for UniProt."
+  hasaccession: "N"
+  identifier: "segment"
+  fields: "segment,type,category,categorize,feature_id"
+]
+
+DBNAME transmem_pred [
+  method: "das"
+  type: "Protfeatures"
+  format: "dasgff"
+  url: "http://pongo.biocomp.unibo.it/das/dasdb"
+  example: "P15498"
+  comment: "Membrane protein annotation. Presenty This DAS server contains UNIPROT and IPI human proteins. The annotation si done using 4 different predictors: TMHMM2.0, MEMSAT, ENSEMBLE_1.0 and PRODIV_TMHMM_0.91"
+  hasaccession: "N"
+  identifier: "segment"
+  fields: "segment,type,category,categorize,feature_id"
+]
+
+
+
+<font color=red>  [Part of this file has been deleted for brevity]</font>
+
+  method: "das"
+  type: "Nucfeatures"
+  taxon: "9606"
+  format: "dasgff"
+  url: "http://genomernai.de/DASGenomeRNAi/das/GenomeRNAiHumanPhenotypeDatasource"
+  example: "2[100000:500000]"
+  comment: "RNAi knockdown phenotypes from the GenomeRNAi database for Homo Sapiens"
+  hasaccession: "N"
+  identifier: "segment"
+  fields: "segment,type,category,categorize,feature_id"
+]
+
+DBNAME DS_6755_GenomeRNAi_Reagents [
+  method: "das"
+  type: "Nucfeatures"
+  taxon: "9606"
+  format: "dasgff"
+  url: "http://genomernai.de/DASGenomeRNAi/das/GenomeRNAiHumanReagentDatasource"
+  example: "2[100000:500000]"
+  comment: "RNAi reagents from the GenomeRNAi database for Homo Sapiens"
+  hasaccession: "N"
+  identifier: "segment"
+  fields: "segment,type,category,categorize,feature_id"
+]
+
+DBNAME DS_6756_GenomeRNAi_Reagents [
+  method: "das"
+  type: "Nucfeatures"
+  taxon: "7227"
+  format: "dasgff"
+  url: "http://genomernai.de/DASGenomeRNAi/das/GenomeRNAiDrosoReagentDatasource"
+  example: "2L[100000:101999]"
+  comment: "RNAi reagents from the GenomeRNAi database for Drosophila Melanogaster"
+  hasaccession: "N"
+  identifier: "segment"
+  fields: "segment,type,category,categorize,feature_id"
+]
+
+DBNAME DS_6757_GenomeRNAi_Phenotypes [
+  method: "das"
+  type: "Nucfeatures"
+  taxon: "7227"
+  format: "dasgff"
+  url: "http://genomernai.de/DASGenomeRNAi/das/GenomeRNAiDrosoPhenotypeDatasource"
+  example: "2L[100000:101999]"
+  comment: "RNAi knockdown phenotypes from the GenomeRNAi database for Drosophila Melanogaster"
+  hasaccession: "N"
+  identifier: "segment"
+  fields: "segment,type,category,categorize,feature_id"
+]
+
+</pre>
+</td></tr></table><p>

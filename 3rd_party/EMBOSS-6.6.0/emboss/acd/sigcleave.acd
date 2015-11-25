@@ -1,0 +1,70 @@
+application: sigcleave [
+  documentation: "Report on signal cleavage sites in a protein sequence"
+  groups: "Protein:Functional sites, Protein:Motifs"
+  relations: "EDAM_topic:0748 Protein sites and features"
+  relations: "EDAM_topic:0158 Sequence motifs"
+  relations: "EDAM_topic:0140 Protein targeting and localization"
+  relations: "EDAM_operation:0418 Protein signal peptide detection"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  seqall: sequence [
+    parameter: "Y"
+    type: "PureProtein"
+    relations: "EDAM_data:2886 Sequence record (protein)"
+  ]
+
+endsection: input
+
+section: required [
+  information: "Required section"
+  type: "page"
+]
+
+  float: minweight [
+    standard: "Y"
+    minimum: "0."
+    maximum: "100."
+    default: "3.5"
+    information: "Minimum weight"
+    help: "Minimum scoring weight value for the predicted cleavage
+           site"
+    relations: "EDAM_data:2146 Threshold"
+  ]
+
+endsection: required
+
+section: additional [
+  information: "Additional section"
+  type: "page"
+]
+
+  boolean: prokaryote [
+    additional: "Y"
+    help: "Specifies the sequence is prokaryotic and changes the
+           default scoring data file name"
+    information: "Use prokaryotic cleavage data"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+endsection: additional
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  report: outfile [
+    parameter: "Y"
+    rextension: "sig"
+    rformat: "motif"
+    multiple: "Y"
+    taglist: "str:mature_peptide"
+    relations: "EDAM_data:1322 Protein features (signal peptides)"
+  ]
+
+endsection: output

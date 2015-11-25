@@ -1,0 +1,65 @@
+application: equicktandem [
+  documentation: "Find tandem repeats in nucleotide sequences"
+  groups: "Nucleic:Repeats"
+    relations: "EDAM_topic:0157 Sequence composition analysis"
+    relations: "EDAM_operation:0379 Repeat sequence detection"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  sequence: sequence [
+    parameter: "Y"
+    type: "dna"
+    relations: "EDAM_data:2887 Sequence record (nucleic acid)"
+  ]
+
+endsection: input
+
+section: required [
+  information: "Required section"
+  type: "page"
+]
+
+  integer: maxrepeat [
+    standard: "Y"
+    default: "600"
+    information: "Maximum repeat size"
+    relations: "EDAM_data:1249 Sequence length"
+  ]
+
+  integer: threshold [
+    standard: "Y"
+    default: "20"
+    information: "Threshold score"
+    relations: "EDAM_data:2146 Threshold"
+  ]
+
+endsection: required
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  report: outfile [
+    parameter: "Y"
+    rformat: "table"
+    taglist: "int:rpt_size=Size int:rpt_count=Count"
+    rextension: "qtan"
+    precision: "0"
+    relations: "EDAM_data:1299 Sequence features (repeats)"
+  ]
+
+  outfile: origfile [
+    extension: "oldqtan"
+    nullok: "Y"
+    knowntype: "quicktandem output"
+    information: "Sanger Centre program quicktandem output file
+                  (optional)"
+    relations: "EDAM_data:1299 Sequence features (repeats)"
+  ]
+
+endsection: output

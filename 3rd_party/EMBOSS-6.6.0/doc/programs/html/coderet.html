@@ -1,0 +1,1494 @@
+<HTML>
+<HEAD>
+  <TITLE>
+  EMBOSS: coderet
+  </TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF" text="#000000">
+
+<table align=center border=0 cellspacing=0 cellpadding=0>
+<tr><td valign=top>
+<A HREF="/" ONMOUSEOVER="self.status='Go to the EMBOSS home page';return true"><img border=0 src="/images/emboss_icon.jpg" alt="" width=150 height=48></a>
+</td>
+<td align=left valign=middle>
+<b><font size="+6">
+coderet
+</font></b>
+</td></tr>
+</table>
+<br>&nbsp;
+<p>
+
+
+<H2>
+Wiki
+</H2>
+
+The master copies of EMBOSS documentation are available
+at <a href="http://emboss.open-bio.org/wiki/Appdocs">
+http://emboss.open-bio.org/wiki/Appdocs</a>
+on the EMBOSS Wiki.
+
+<p>
+Please help by correcting and extending the Wiki pages.
+
+<H2>
+    Function
+</H2>
+Extract CDS, mRNA and translations from feature tables
+<H2>
+    Description
+</H2>
+<p><b>coderet</b> extracts the coding nucleotide sequence (CDS), messenger RNA nucleotide sequence (mRNA) and translations specified by the feature tables of the input sequence(s).  If the sequences to be extracted are in other entries of that database, they are automatically fetched and incorporated correctly into the output.</p>
+<p>For each input sequence, an output sequence file is written containing any CDS, mRNA and protein translation sequences from the input feature table. Optionally, the CDS, mRNA, translated protein sequence and non-coding nucleotide sequence regions may be written to separate files.</p>
+
+
+
+
+
+
+<H2>
+    Usage
+</H2>
+
+Here is a sample session with <b>coderet</b>
+<p>
+To extract all of the CDS, mRNA, non-coding and the protein translations: 
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>coderet </b>
+Extract CDS, mRNA and translations from feature tables
+Input nucleotide sequence(s): <b>tembl:x03487</b>
+Output file [x03487.coderet]: <b></b>
+Coding nucleotide output sequence(s) (optional) [x03487.cds]: <b></b>
+Messenger RNA nucleotide output sequence(s) (optional) [x03487.mrna]: <b></b>
+Translated coding protein output sequence(s) (optional) [x03487.prot]: <b></b>
+Non-coding nucleotide output sequence(s) (optional) [x03487.noncoding]: <b></b>
+
+</pre></td></tr></table><p>
+<p>
+<a href="#input.1">Go to the input files for this example</a><br><a href="#output.1">Go to the output files for this example</a><p><p>
+<p>
+<b>Example 2</b>
+<p>
+To only extract the mRNA sequence: 
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>coderet -nocds -notranslation -norest </b>
+Extract CDS, mRNA and translations from feature tables
+Input nucleotide sequence(s): <b>tembl:X03487</b>
+Output file [x03487.coderet]: <b></b>
+Messenger RNA nucleotide output sequence(s) (optional) [x03487.mrna]: <b></b>
+
+</pre></td></tr></table><p>
+<p>
+<a href="#input.2">Go to the input files for this example</a><br><a href="#output.2">Go to the output files for this example</a><p><p>
+
+<H2>
+    Command line arguments
+</H2>
+
+<table CELLSPACING=0 CELLPADDING=3 BGCOLOR="#f5f5ff" ><tr><td>
+<pre>
+Extract CDS, mRNA and translations from feature tables
+Version: EMBOSS:6.6.0.0
+
+   Standard (Mandatory) qualifiers:
+  [-seqall]            seqall     Nucleotide sequence(s) filename and optional
+                                  format, or reference (input USA)
+  [-outfile]           outfile    [*.coderet] Output file name
+  [-cdsoutseq]         seqoutall  [<sequence>.<format>] Coding nucleotide
+                                  output sequence(s) (optional)
+  [-mrnaoutseq]        seqoutall  [<sequence>.<format>] Messenger RNA
+                                  nucleotide output sequence(s) (optional)
+  [-translationoutseq] seqoutall  [<sequence>.<format>] Translated coding
+                                  protein output sequence(s) (optional)
+  [-restoutseq]        seqoutall  [<sequence>.<format>] Non-coding nucleotide
+                                  output sequence(s) (optional)
+
+   Additional (Optional) qualifiers: (none)
+   Advanced (Unprompted) qualifiers: (none)
+   Associated qualifiers:
+
+   "-seqall" associated qualifiers
+   -sbegin1            integer    Start of each sequence to be used
+   -send1              integer    End of each sequence to be used
+   -sreverse1          boolean    Reverse (if DNA)
+   -sask1              boolean    Ask for begin/end/reverse
+   -snucleotide1       boolean    Sequence is nucleotide
+   -sprotein1          boolean    Sequence is protein
+   -slower1            boolean    Make lower case
+   -supper1            boolean    Make upper case
+   -scircular1         boolean    Sequence is circular
+   -squick1            boolean    Read id and sequence only
+   -sformat1           string     Input sequence format
+   -iquery1            string     Input query fields or ID list
+   -ioffset1           integer    Input start position offset
+   -sdbname1           string     Database name
+   -sid1               string     Entryname
+   -ufo1               string     UFO features
+   -fformat1           string     Features format
+   -fopenfile1         string     Features file name
+
+   "-outfile" associated qualifiers
+   -odirectory2        string     Output directory
+
+   "-cdsoutseq" associated qualifiers
+   -osformat3          string     Output seq format
+   -osextension3       string     File name extension
+   -osname3            string     Base file name
+   -osdirectory3       string     Output directory
+   -osdbname3          string     Database name to add
+   -ossingle3          boolean    Separate file for each entry
+   -oufo3              string     UFO features
+   -offormat3          string     Features format
+   -ofname3            string     Features file name
+   -ofdirectory3       string     Output directory
+
+   "-mrnaoutseq" associated qualifiers
+   -osformat4          string     Output seq format
+   -osextension4       string     File name extension
+   -osname4            string     Base file name
+   -osdirectory4       string     Output directory
+   -osdbname4          string     Database name to add
+   -ossingle4          boolean    Separate file for each entry
+   -oufo4              string     UFO features
+   -offormat4          string     Features format
+   -ofname4            string     Features file name
+   -ofdirectory4       string     Output directory
+
+   "-translationoutseq" associated qualifiers
+   -osformat5          string     Output seq format
+   -osextension5       string     File name extension
+   -osname5            string     Base file name
+   -osdirectory5       string     Output directory
+   -osdbname5          string     Database name to add
+   -ossingle5          boolean    Separate file for each entry
+   -oufo5              string     UFO features
+   -offormat5          string     Features format
+   -ofname5            string     Features file name
+   -ofdirectory5       string     Output directory
+
+   "-restoutseq" associated qualifiers
+   -osformat6          string     Output seq format
+   -osextension6       string     File name extension
+   -osname6            string     Base file name
+   -osdirectory6       string     Output directory
+   -osdbname6          string     Database name to add
+   -ossingle6          boolean    Separate file for each entry
+   -oufo6              string     UFO features
+   -offormat6          string     Features format
+   -ofname6            string     Features file name
+   -ofdirectory6       string     Output directory
+
+   General qualifiers:
+   -auto               boolean    Turn off prompts
+   -stdout             boolean    Write first file to standard output
+   -filter             boolean    Read first file from standard input, write
+                                  first file to standard output
+   -options            boolean    Prompt for standard and additional values
+   -debug              boolean    Write debug output to program.dbg
+   -verbose            boolean    Report some/full command line options
+   -help               boolean    Report command line options and exit. More
+                                  information on associated and general
+                                  qualifiers can be found with -help -verbose
+   -warning            boolean    Report warnings
+   -error              boolean    Report errors
+   -fatal              boolean    Report fatal errors
+   -die                boolean    Report dying program messages
+   -version            boolean    Report version number and exit
+
+</pre>
+</td></tr></table>
+<P>
+<table border cellspacing=0 cellpadding=3 bgcolor="#ccccff">
+<tr bgcolor="#FFFFCC">
+<th align="left">Qualifier</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+<th align="left">Allowed values</th>
+<th align="left">Default</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>Standard (Mandatory) qualifiers</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>[-seqall]<br>(Parameter 1)</td>
+<td>seqall</td>
+<td>Nucleotide sequence(s) filename and optional format, or reference (input USA)</td>
+<td>Readable sequence(s)</td>
+<td><b>Required</b></td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>[-outfile]<br>(Parameter 2)</td>
+<td>outfile</td>
+<td>Output file name</td>
+<td>Output file</td>
+<td><i>&lt;*&gt;</i>.coderet</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>[-cdsoutseq]<br>(Parameter 3)</td>
+<td>seqoutall</td>
+<td>Coding nucleotide output sequence(s) (optional)</td>
+<td>Writeable sequence(s)</td>
+<td><i>&lt;*&gt;</i>.<i>format</i></td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>[-mrnaoutseq]<br>(Parameter 4)</td>
+<td>seqoutall</td>
+<td>Messenger RNA nucleotide output sequence(s) (optional)</td>
+<td>Writeable sequence(s)</td>
+<td><i>&lt;*&gt;</i>.<i>format</i></td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>[-translationoutseq]<br>(Parameter 5)</td>
+<td>seqoutall</td>
+<td>Translated coding protein output sequence(s) (optional)</td>
+<td>Writeable sequence(s)</td>
+<td><i>&lt;*&gt;</i>.<i>format</i></td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>[-restoutseq]<br>(Parameter 6)</td>
+<td>seqoutall</td>
+<td>Non-coding nucleotide output sequence(s) (optional)</td>
+<td>Writeable sequence(s)</td>
+<td><i>&lt;*&gt;</i>.<i>format</i></td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>Additional (Optional) qualifiers</th>
+</tr>
+
+<tr>
+<td colspan=5>(none)</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>Advanced (Unprompted) qualifiers</th>
+</tr>
+
+<tr>
+<td colspan=5>(none)</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>Associated qualifiers</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td align="left" colspan=5>"-seqall" associated seqall qualifiers
+</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -sbegin1<br>-sbegin_seqall</td>
+<td>integer</td>
+<td>Start of each sequence to be used</td>
+<td>Any integer value</td>
+<td>0</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -send1<br>-send_seqall</td>
+<td>integer</td>
+<td>End of each sequence to be used</td>
+<td>Any integer value</td>
+<td>0</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -sreverse1<br>-sreverse_seqall</td>
+<td>boolean</td>
+<td>Reverse (if DNA)</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -sask1<br>-sask_seqall</td>
+<td>boolean</td>
+<td>Ask for begin/end/reverse</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -snucleotide1<br>-snucleotide_seqall</td>
+<td>boolean</td>
+<td>Sequence is nucleotide</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -sprotein1<br>-sprotein_seqall</td>
+<td>boolean</td>
+<td>Sequence is protein</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -slower1<br>-slower_seqall</td>
+<td>boolean</td>
+<td>Make lower case</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -supper1<br>-supper_seqall</td>
+<td>boolean</td>
+<td>Make upper case</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -scircular1<br>-scircular_seqall</td>
+<td>boolean</td>
+<td>Sequence is circular</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -squick1<br>-squick_seqall</td>
+<td>boolean</td>
+<td>Read id and sequence only</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -sformat1<br>-sformat_seqall</td>
+<td>string</td>
+<td>Input sequence format</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -iquery1<br>-iquery_seqall</td>
+<td>string</td>
+<td>Input query fields or ID list</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -ioffset1<br>-ioffset_seqall</td>
+<td>integer</td>
+<td>Input start position offset</td>
+<td>Any integer value</td>
+<td>0</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -sdbname1<br>-sdbname_seqall</td>
+<td>string</td>
+<td>Database name</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -sid1<br>-sid_seqall</td>
+<td>string</td>
+<td>Entryname</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -ufo1<br>-ufo_seqall</td>
+<td>string</td>
+<td>UFO features</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -fformat1<br>-fformat_seqall</td>
+<td>string</td>
+<td>Features format</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -fopenfile1<br>-fopenfile_seqall</td>
+<td>string</td>
+<td>Features file name</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td align="left" colspan=5>"-outfile" associated outfile qualifiers
+</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -odirectory2<br>-odirectory_outfile</td>
+<td>string</td>
+<td>Output directory</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td align="left" colspan=5>"-cdsoutseq" associated seqoutall qualifiers
+</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -osformat3<br>-osformat_cdsoutseq</td>
+<td>string</td>
+<td>Output seq format</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -osextension3<br>-osextension_cdsoutseq</td>
+<td>string</td>
+<td>File name extension</td>
+<td>Any string</td>
+<td>cds</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -osname3<br>-osname_cdsoutseq</td>
+<td>string</td>
+<td>Base file name</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -osdirectory3<br>-osdirectory_cdsoutseq</td>
+<td>string</td>
+<td>Output directory</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -osdbname3<br>-osdbname_cdsoutseq</td>
+<td>string</td>
+<td>Database name to add</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -ossingle3<br>-ossingle_cdsoutseq</td>
+<td>boolean</td>
+<td>Separate file for each entry</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -oufo3<br>-oufo_cdsoutseq</td>
+<td>string</td>
+<td>UFO features</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -offormat3<br>-offormat_cdsoutseq</td>
+<td>string</td>
+<td>Features format</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -ofname3<br>-ofname_cdsoutseq</td>
+<td>string</td>
+<td>Features file name</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -ofdirectory3<br>-ofdirectory_cdsoutseq</td>
+<td>string</td>
+<td>Output directory</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td align="left" colspan=5>"-mrnaoutseq" associated seqoutall qualifiers
+</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -osformat4<br>-osformat_mrnaoutseq</td>
+<td>string</td>
+<td>Output seq format</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -osextension4<br>-osextension_mrnaoutseq</td>
+<td>string</td>
+<td>File name extension</td>
+<td>Any string</td>
+<td>mrna</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -osname4<br>-osname_mrnaoutseq</td>
+<td>string</td>
+<td>Base file name</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -osdirectory4<br>-osdirectory_mrnaoutseq</td>
+<td>string</td>
+<td>Output directory</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -osdbname4<br>-osdbname_mrnaoutseq</td>
+<td>string</td>
+<td>Database name to add</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -ossingle4<br>-ossingle_mrnaoutseq</td>
+<td>boolean</td>
+<td>Separate file for each entry</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -oufo4<br>-oufo_mrnaoutseq</td>
+<td>string</td>
+<td>UFO features</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -offormat4<br>-offormat_mrnaoutseq</td>
+<td>string</td>
+<td>Features format</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -ofname4<br>-ofname_mrnaoutseq</td>
+<td>string</td>
+<td>Features file name</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -ofdirectory4<br>-ofdirectory_mrnaoutseq</td>
+<td>string</td>
+<td>Output directory</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td align="left" colspan=5>"-translationoutseq" associated seqoutall qualifiers
+</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -osformat5<br>-osformat_translationoutseq</td>
+<td>string</td>
+<td>Output seq format</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -osextension5<br>-osextension_translationoutseq</td>
+<td>string</td>
+<td>File name extension</td>
+<td>Any string</td>
+<td>prot</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -osname5<br>-osname_translationoutseq</td>
+<td>string</td>
+<td>Base file name</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -osdirectory5<br>-osdirectory_translationoutseq</td>
+<td>string</td>
+<td>Output directory</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -osdbname5<br>-osdbname_translationoutseq</td>
+<td>string</td>
+<td>Database name to add</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -ossingle5<br>-ossingle_translationoutseq</td>
+<td>boolean</td>
+<td>Separate file for each entry</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -oufo5<br>-oufo_translationoutseq</td>
+<td>string</td>
+<td>UFO features</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -offormat5<br>-offormat_translationoutseq</td>
+<td>string</td>
+<td>Features format</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -ofname5<br>-ofname_translationoutseq</td>
+<td>string</td>
+<td>Features file name</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -ofdirectory5<br>-ofdirectory_translationoutseq</td>
+<td>string</td>
+<td>Output directory</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td align="left" colspan=5>"-restoutseq" associated seqoutall qualifiers
+</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -osformat6<br>-osformat_restoutseq</td>
+<td>string</td>
+<td>Output seq format</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -osextension6<br>-osextension_restoutseq</td>
+<td>string</td>
+<td>File name extension</td>
+<td>Any string</td>
+<td>noncoding</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -osname6<br>-osname_restoutseq</td>
+<td>string</td>
+<td>Base file name</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -osdirectory6<br>-osdirectory_restoutseq</td>
+<td>string</td>
+<td>Output directory</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -osdbname6<br>-osdbname_restoutseq</td>
+<td>string</td>
+<td>Database name to add</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -ossingle6<br>-ossingle_restoutseq</td>
+<td>boolean</td>
+<td>Separate file for each entry</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -oufo6<br>-oufo_restoutseq</td>
+<td>string</td>
+<td>UFO features</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -offormat6<br>-offormat_restoutseq</td>
+<td>string</td>
+<td>Features format</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -ofname6<br>-ofname_restoutseq</td>
+<td>string</td>
+<td>Features file name</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -ofdirectory6<br>-ofdirectory_restoutseq</td>
+<td>string</td>
+<td>Output directory</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>General qualifiers</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -auto</td>
+<td>boolean</td>
+<td>Turn off prompts</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -stdout</td>
+<td>boolean</td>
+<td>Write first file to standard output</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -filter</td>
+<td>boolean</td>
+<td>Read first file from standard input, write first file to standard output</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -options</td>
+<td>boolean</td>
+<td>Prompt for standard and additional values</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -debug</td>
+<td>boolean</td>
+<td>Write debug output to program.dbg</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -verbose</td>
+<td>boolean</td>
+<td>Report some/full command line options</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -help</td>
+<td>boolean</td>
+<td>Report command line options and exit. More information on associated and general qualifiers can be found with -help -verbose</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -warning</td>
+<td>boolean</td>
+<td>Report warnings</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -error</td>
+<td>boolean</td>
+<td>Report errors</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -fatal</td>
+<td>boolean</td>
+<td>Report fatal errors</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -die</td>
+<td>boolean</td>
+<td>Report dying program messages</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -version</td>
+<td>boolean</td>
+<td>Report version number and exit</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+</table>
+
+
+<H2>
+    Input file format
+</H2>
+
+<b>coderet</b> reads one or more nucleic sequences having CDS, mRNA
+or translation headings in their feature tables. 
+
+<p>
+<p>
+
+The input is a standard EMBOSS sequence query (also known as a 'USA')
+with associated feature information.
+
+<p>
+Major sequence database sources defined as standard in EMBOSS
+installations include srs:embl, srs:uniprot and ensembl
+
+<p>
+
+Data can also be read from sequence output in any supported format
+written by an EMBOSS or third-party application.
+
+<p>
+The input format can be specified by using the command-line qualifier
+<tt>-sformat xxx</tt>, where 'xxx' is replaced by the name of the
+required format.  The available format names are: text, html, xml (uniprotxml),
+obo, embl (swissprot)
+
+<p> Where the sequence format has no feature information, a second
+file can be read to load the feature data. The file is specified with
+the qualifier <tt>-ufo xxx</tt> and the feature format is specified with
+the qualifier <tt>-fformat xxx</tt>
+
+<p>
+See:
+<A href="http://emboss.sf.net/docs/themes/SequenceFormats.html">
+http://emboss.sf.net/docs/themes/SequenceFormats.html</A>
+for further information on sequence formats.
+
+<p>
+See:
+<A href="http://emboss.sf.net/docs/themes/FeatureFormats.html">
+http://emboss.sf.net/docs/themes/FeatureFormats.html</A>
+for further information on feature formats.
+
+<p>
+
+<a name="input.1"></a>
+<h3>Input files for usage example </h3>
+
+'tembl:x03487' is a sequence entry in the example nucleic acid database 'tembl'
+<p>
+<p><h3>Database entry: tembl:x03487</h3>
+<table width="90%"><tr><td bgcolor="#FFCCFF">
+<pre>
+ID   X03487; SV 1; linear; genomic DNA; STD; HUM; 512 BP.
+XX
+AC   X03487;
+XX
+DT   02-JUL-1986 (Rel. 09, Created)
+DT   24-AUG-2005 (Rel. 84, Last updated, Version 3)
+XX
+DE   Human apoferritin H gene exon 1
+XX
+KW   ferritin.
+XX
+OS   Homo sapiens (human)
+OC   Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia;
+OC   Eutheria; Euarchontoglires; Primates; Haplorrhini; Catarrhini; Hominidae;
+OC   Homo.
+XX
+RN   [1]
+RP   1-512
+RX   DOI; 10.1093/nar/14.2.721.
+RX   PUBMED; 3003694.
+RA   Costanzo F., Colombo M., Staempfli S., Santoro C., Marone M., Frank R.,
+RA   Delius H., Cortese R.;
+RT   "Structure of gene and pseudogenes of human apoferritin H";
+RL   Nucleic Acids Res. 14(2):721-736(1986).
+XX
+DR   Ensembl-Gn; ENSG00000167996; Homo_sapiens.
+DR   Ensembl-Tr; ENST00000273550; Homo_sapiens.
+DR   Ensembl-Tr; ENST00000406545; Homo_sapiens.
+DR   RFAM; RF00037; IRE.
+XX
+FH   Key             Location/Qualifiers
+FH
+FT   source          1..512
+FT                   /organism="Homo sapiens"
+FT                   /mol_type="genomic DNA"
+FT                   /db_xref="taxon:9606"
+FT   misc_feature    65..70
+FT                   /note="GGGCGG box"
+FT   misc_feature    103..108
+FT                   /note="GGGCGG box"
+FT   misc_feature    126..131
+FT                   /note="GGGCGG box"
+FT   promoter        150..154
+FT                   /note="put. TATA box"
+FT   mRNA            179..500
+FT                   /note="exon 1"
+FT   CDS             join(387..500,X03488.1:50..196,X03488.1:453..578,
+FT                   X03488.1:674..838)
+FT                   /product="apoferritin H subunit"
+FT                   /db_xref="GDB:120617"
+FT                   /db_xref="GOA:P02794"
+FT                   /db_xref="HGNC:3976"
+FT                   /db_xref="InterPro:IPR001519"
+FT                   /db_xref="InterPro:IPR008331"
+FT                   /db_xref="InterPro:IPR009040"
+FT                   /db_xref="InterPro:IPR009078"
+FT                   /db_xref="InterPro:IPR012347"
+FT                   /db_xref="InterPro:IPR014034"
+FT                   /db_xref="PDB:1FHA"
+FT                   /db_xref="PDB:2CEI"
+FT                   /db_xref="PDB:2CHI"
+FT                   /db_xref="PDB:2CIH"
+FT                   /db_xref="PDB:2CLU"
+FT                   /db_xref="PDB:2CN6"
+FT                   /db_xref="PDB:2CN7"
+FT                   /db_xref="PDB:2FHA"
+FT                   /db_xref="PDB:2IU2"
+FT                   /db_xref="PDB:2Z6M"
+FT                   /db_xref="PDB:3AJO"
+FT                   /db_xref="PDB:3AJP"
+FT                   /db_xref="PDB:3AJQ"
+FT                   /db_xref="PDB:3ERZ"
+FT                   /db_xref="PDB:3ES3"
+FT                   /db_xref="UniProtKB/Swiss-Prot:P02794"
+FT                   /protein_id="CAA27205.1"
+FT                   /translation="MTTASTSQVRQNYHQDSEAAINRQINLELYASYVYLSMSYYFDRD
+FT                   DVALKNFAKYFLHQSHEEREHAEKLMKLQNQRGGRIFLQDIKKPDCDDWESGLNAMECA
+FT                   LHLEKNVNQSLLELHKLATDKNDPHLCDFIETHYLNEQVKAIKELGDHVTNLRKMGAPE
+FT                   SGLAEYLFDKHTLGDSDNES"
+FT   intron          501..&gt;512
+FT                   /note="intron I"
+XX
+SQ   Sequence 512 BP; 80 A; 212 C; 152 G; 64 T; 4 other;
+     agnncaaacc tnagctccgc cagagcgcgc gaggcctcca gcggccgccc ctcccccaca        60
+     gcaggggcgg ggntcccgcg cccaccggaa ggagcgggct cggggcgggc ggcgctgatt       120
+     ggccggggcg ggcctgacgc cgacgcggct ataagagacc acaagcgacc cgcagggcca       180
+     gacgttcttc gccgagagtc gtcggggttt cctgcttcaa cagtgcttgg acggaacccg       240
+     gcgctcgttc cccaccccgg ccggccgccc atagccagcc ctccgtcgac ctcttcaccg       300
+     caccctcgga ctgccccaag gcccccgccg ccgctccagc gccgcgcagc caccgccgcc       360
+     gccgccgcct ctccttagtc gccgccatga cgaccgcgtc cacctcgcag gtgcgccaga       420
+     actaccacca ggactcagag gccgccatca accgccagat caacctggag ctctacgcct       480
+     cctacgttta cctgtccatg gtgagcgcgg gc                                     512
+//
+</pre>
+</td></tr></table><p>
+
+<a name="input.2"></a>
+<h3>Input files for usage example 2</h3>
+<p><h3>Database entry: tembl:X03487</h3>
+<table width="90%"><tr><td bgcolor="#FFCCFF">
+<pre>
+ID   X03487; SV 1; linear; genomic DNA; STD; HUM; 512 BP.
+XX
+AC   X03487;
+XX
+DT   02-JUL-1986 (Rel. 09, Created)
+DT   24-AUG-2005 (Rel. 84, Last updated, Version 3)
+XX
+DE   Human apoferritin H gene exon 1
+XX
+KW   ferritin.
+XX
+OS   Homo sapiens (human)
+OC   Eukaryota; Metazoa; Chordata; Craniata; Vertebrata; Euteleostomi; Mammalia;
+OC   Eutheria; Euarchontoglires; Primates; Haplorrhini; Catarrhini; Hominidae;
+OC   Homo.
+XX
+RN   [1]
+RP   1-512
+RX   DOI; 10.1093/nar/14.2.721.
+RX   PUBMED; 3003694.
+RA   Costanzo F., Colombo M., Staempfli S., Santoro C., Marone M., Frank R.,
+RA   Delius H., Cortese R.;
+RT   "Structure of gene and pseudogenes of human apoferritin H";
+RL   Nucleic Acids Res. 14(2):721-736(1986).
+XX
+DR   Ensembl-Gn; ENSG00000167996; Homo_sapiens.
+DR   Ensembl-Tr; ENST00000273550; Homo_sapiens.
+DR   Ensembl-Tr; ENST00000406545; Homo_sapiens.
+DR   RFAM; RF00037; IRE.
+XX
+FH   Key             Location/Qualifiers
+FH
+FT   source          1..512
+FT                   /organism="Homo sapiens"
+FT                   /mol_type="genomic DNA"
+FT                   /db_xref="taxon:9606"
+FT   misc_feature    65..70
+FT                   /note="GGGCGG box"
+FT   misc_feature    103..108
+FT                   /note="GGGCGG box"
+FT   misc_feature    126..131
+FT                   /note="GGGCGG box"
+FT   promoter        150..154
+FT                   /note="put. TATA box"
+FT   mRNA            179..500
+FT                   /note="exon 1"
+FT   CDS             join(387..500,X03488.1:50..196,X03488.1:453..578,
+FT                   X03488.1:674..838)
+FT                   /product="apoferritin H subunit"
+FT                   /db_xref="GDB:120617"
+FT                   /db_xref="GOA:P02794"
+FT                   /db_xref="HGNC:3976"
+FT                   /db_xref="InterPro:IPR001519"
+FT                   /db_xref="InterPro:IPR008331"
+FT                   /db_xref="InterPro:IPR009040"
+FT                   /db_xref="InterPro:IPR009078"
+FT                   /db_xref="InterPro:IPR012347"
+FT                   /db_xref="InterPro:IPR014034"
+FT                   /db_xref="PDB:1FHA"
+FT                   /db_xref="PDB:2CEI"
+FT                   /db_xref="PDB:2CHI"
+FT                   /db_xref="PDB:2CIH"
+FT                   /db_xref="PDB:2CLU"
+FT                   /db_xref="PDB:2CN6"
+FT                   /db_xref="PDB:2CN7"
+FT                   /db_xref="PDB:2FHA"
+FT                   /db_xref="PDB:2IU2"
+FT                   /db_xref="PDB:2Z6M"
+FT                   /db_xref="PDB:3AJO"
+FT                   /db_xref="PDB:3AJP"
+FT                   /db_xref="PDB:3AJQ"
+FT                   /db_xref="PDB:3ERZ"
+FT                   /db_xref="PDB:3ES3"
+FT                   /db_xref="UniProtKB/Swiss-Prot:P02794"
+FT                   /protein_id="CAA27205.1"
+FT                   /translation="MTTASTSQVRQNYHQDSEAAINRQINLELYASYVYLSMSYYFDRD
+FT                   DVALKNFAKYFLHQSHEEREHAEKLMKLQNQRGGRIFLQDIKKPDCDDWESGLNAMECA
+FT                   LHLEKNVNQSLLELHKLATDKNDPHLCDFIETHYLNEQVKAIKELGDHVTNLRKMGAPE
+FT                   SGLAEYLFDKHTLGDSDNES"
+FT   intron          501..&gt;512
+FT                   /note="intron I"
+XX
+SQ   Sequence 512 BP; 80 A; 212 C; 152 G; 64 T; 4 other;
+     agnncaaacc tnagctccgc cagagcgcgc gaggcctcca gcggccgccc ctcccccaca        60
+     gcaggggcgg ggntcccgcg cccaccggaa ggagcgggct cggggcgggc ggcgctgatt       120
+     ggccggggcg ggcctgacgc cgacgcggct ataagagacc acaagcgacc cgcagggcca       180
+     gacgttcttc gccgagagtc gtcggggttt cctgcttcaa cagtgcttgg acggaacccg       240
+     gcgctcgttc cccaccccgg ccggccgccc atagccagcc ctccgtcgac ctcttcaccg       300
+     caccctcgga ctgccccaag gcccccgccg ccgctccagc gccgcgcagc caccgccgcc       360
+     gccgccgcct ctccttagtc gccgccatga cgaccgcgtc cacctcgcag gtgcgccaga       420
+     actaccacca ggactcagag gccgccatca accgccagat caacctggag ctctacgcct       480
+     cctacgttta cctgtccatg gtgagcgcgg gc                                     512
+//
+</pre>
+</td></tr></table><p>
+
+<H2>
+    Output file format
+</H2>
+
+<p>
+
+The output is a standard EMBOSS sequence file. 
+
+<p>
+
+The results can be output in one of several styles by using the
+command-line qualifier <tt>-osformat xxx</tt>, where 'xxx' is replaced by
+the name of the required format.  The available format names are: embl,
+genbank, gff, pir, swiss, dasgff, debug, listfile, dbmotif, diffseq, excel,
+feattable, motif, nametable, regions, seqtable, simple, srs, table, tagseq.
+
+<p>
+
+See:
+<A href="http://emboss.sf.net/docs/themes/SequenceFormats.html">
+http://emboss.sf.net/docs/themes/SequenceFormats.html</A>
+for further information on sequence formats.
+
+<p>
+
+<p>
+The output is a sequence file containing any CDS, mRNA and protein
+translation sequences as specified by the feature table of the sequence(s).
+
+<p>
+
+One or more of CDS, mRNA, translation can be excluded from the output by
+using the appropriate qualifiers to the program (i.e.  <tt>-nocds</tt>,
+etc.)
+
+<p>
+
+The ID names of the output sequences are constructed from the name of
+the input sequence, the type of feature being output (i.e.  <b>cds</b>,
+<b>mrna</b>, <b>pro</b>) and a unique ordinal number for this type to
+distinguish it from others in this sequence.  The name, type and number
+of separated by underscore characters.  Thus the second CDS feature in
+the sequence 'A12345' would be named 'A12345_cds_2'. 
+
+<p>
+
+The translations are not made from the coding sequence, they are extracted
+directly from the translation sequence held in the feature table. 
+
+<p>
+
+<a name="output.1"></a>
+<h3>Output files for usage example </h3>
+<p><h3>File: x03487.cds</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+&gt;x03487_cds_1
+atgacgaccgcgtccacctcgcaggtgcgccagaactaccaccaggactcagaggccgcc
+atcaaccgccagatcaacctggagctctacgcctcctacgtttacctgtccatgtcttac
+tactttgaccgcgatgatgtggctttgaagaactttgccaaatactttcttcaccaatct
+catgaggagagggaacatgctgagaaactgatgaagctgcagaaccaacgaggtggccga
+atcttccttcaggatatcaagaaaccagactgtgatgactgggagagcgggctgaatgca
+atggagtgtgcattacatttggaaaaaaatgtgaatcagtcactactggaactgcacaaa
+ctggccactgacaaaaatgacccccatttgtgtgacttcattgagacacattacctgaat
+gagcaggtgaaagccatcaaagaattgggtgaccacgtgaccaacttgcgcaagatggga
+gcgcccgaatctggcttggcggaatatctctttgacaagcacaccctgggagacagtgat
+aatgaaagctaa
+</pre>
+</td></tr></table><p>
+<p><h3>File: x03487.mrna</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+&gt;x03487_mrna_1
+cagacgttcttcgccgagagtcgtcggggtttcctgcttcaacagtgcttggacggaacc
+cggcgctcgttccccaccccggccggccgcccatagccagccctccgtcgacctcttcac
+cgcaccctcggactgccccaaggcccccgccgccgctccagcgccgcgcagccaccgccg
+ccgccgccgcctctccttagtcgccgccatgacgaccgcgtccacctcgcaggtgcgcca
+gaactaccaccaggactcagaggccgccatcaaccgccagatcaacctggagctctacgc
+ctcctacgtttacctgtccatg
+</pre>
+</td></tr></table><p>
+<p><h3>File: x03487.prot</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+&gt;x03487_pro_1
+MTTASTSQVRQNYHQDSEAAINRQINLELYASYVYLSMSYYFDRDDVALKNFAKYFLHQS
+HEEREHAEKLMKLQNQRGGRIFLQDIKKPDCDDWESGLNAMECALHLEKNVNQSLLELHK
+LATDKNDPHLCDFIETHYLNEQVKAIKELGDHVTNLRKMGAPESGLAEYLFDKHTLGDSD
+NES
+</pre>
+</td></tr></table><p>
+<p><h3>File: x03487.noncoding</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+&gt;x03487_noncoding_1
+agnncaaacctnagctccgccagagcgcgcgaggcctccagcggccgcccctcccccaca
+gcaggggcggggntcccgcgcccaccggaaggagcgggctcggggcgggcggcgctgatt
+ggccggggcgggcctgacgccgacgcggctataagagaccacaagcgacccgcagggc
+&gt;x03487_noncoding_501
+gtgagcgcgggc
+</pre>
+</td></tr></table><p>
+<p><h3>File: x03487.coderet</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+   CDS  mRNA non-c Trans Total Sequence
+ ===== ===== ===== ===== ===== ========
+     1     1     6     1     8 X03487
+</pre>
+</td></tr></table><p>
+
+<a name="output.2"></a>
+<h3>Output files for usage example 2</h3>
+<p><h3>File: x03487.coderet</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+  mRNA Total Sequence
+ ===== ===== ========
+     1     1 X03487
+</pre>
+</td></tr></table><p>
+
+<H2>
+    Data files
+</H2>
+
+None.
+
+<H2>
+    Notes
+</H2>
+
+<p>One or more of CDS, mRNA, translation or non-coding regions can be excluded from output with the appropriate qualifiers; "no" is prepended to the qualifier name, for example <tt>-nocds</tt> would exclude the coding sequence.</p>
+
+<p>The translations are not made from the coding sequence, they are extracted directly from the translation sequence held in the feature table.</p>
+
+
+<p>The regions of the feature table that concern us are shown below.</p>
+
+<p>This specifies that the coding sequence for the gene is constructed by joining several sections of code, many of which are in other entries in this database:</p>
+<pre>
+FT   CDS             join(U21925.1:818..987,U21926.1:258..420,
+FT                   U21927.1:428..520,U21928.1:196..336,U21929.1:279..415,
+FT                   U21930.1:895..1014,516..708)
+</pre>
+<p>This specifies that the messenger RNA sequence for the gene is constructed by joining several sections of code, many of which are in other entries in this database.</p>
+<pre>
+FT   mRNA            join(M88628.1:1006..1318,M88629.1:221..342,
+FT                   M88630.1:101..223,M88631.1:46..258,M88632.1:104..172,
+FT                   M88633.1:387..503,M88634.1:51..272,M88635.1:303..564,
+FT                   M88635.1:849..1020,M88636.1:282..375,M88637.1:39..253,
+FT                   M88638.1:91..241,M88639.1:168..377,M88640.1:627..3732,
+FT                   M88641.1:158..311,M88642.1:1051..1263,M88642.1:1550..1778,
+FT                   M88642.1:1986..2168,M88642.1:3904..4020,
+FT                   M88642.1:4627..4698,M88643.1:39..124,M88644.1:42..197,
+FT                   M88645.1:542..686,M88646.1:75..223,M88647.1:109..285,
+FT                   253..2211)
+</pre>
+<p>This specifies that the translation of the coding region is as follows:</p>
+<pre>
+FT                   /translation="MAQDSVDLSCDYQFWMQKLSVWDQASTLETQQDTCLHVAQFQEFL
+FT                   RKMYEALKEMDSNTVIERFPTIGQLLAKACWNPFILAYDESQKILIWCLCCLINKEPQN
+FT                   SGQSKLNSWIQGVLSHILSALRFDKEVALFTQGLGYAPIDYYPGLLKNMVLSLASELRE
+FT                   NHLNGFNTQRRMAPERVASLSRVCVPLITLTDVDPLVEALLICHGREPQEILQPEFFEA
+FT                   VNEAILLKKISLPMSAVVCLWLRHLPSLEKAMLHLFEKLISSERNCLRRIECFIKDSSL
+FT                   PQAACHPAIFRVDEMFRCALLETDGALEIIATIQVFTQCFVEALEKASKQLRFALKTYF
+FT                   PYTSPSLAMVLLQDPQDIPRGHWLQTLKHISELLREAVEDQTHGSCGGPFESWFLFIHF
+FT                   GGWAEMVAEQLLMSAAEPPTALLWLLAFYYGPRDGRQQRAQTMVQVKAVLGHLLAMSRS
+FT                   SSLSAQDLQTVAGQGTDTDLRAPAQQLIRHLLLNFLLWAPGGHTIAWDVITLMAHTAEI
+FT                   THEIIGFLDQTLYRWNRLGIESPRSEKLARELLKELRTQV"
+</pre>
+
+
+
+
+<H2>
+    References
+</H2>
+
+None.
+
+<H2>
+    Warnings
+</H2>
+
+None.
+
+<H2>
+    Diagnostic Error Messages
+</H2>
+
+None.
+
+
+<H2>
+    Exit status
+</H2>
+
+It always exits with status 0.
+
+<H2>
+    Known bugs
+</H2>
+
+None.
+
+<h2><a name="See also">See also</a></h2>
+<table border cellpadding=4 bgcolor="#FFFFF0">
+<tr><th>Program name</th>
+<th>Description</th></tr>
+<tr>
+<td><a href="abiview.html">abiview</a></td>
+<td>Display the trace in an ABI sequencer file</td>
+</tr>
+
+<tr>
+<td><a href="backtranambig.html">backtranambig</a></td>
+<td>Back-translate a protein sequence to ambiguous nucleotide sequence</td>
+</tr>
+
+<tr>
+<td><a href="backtranseq.html">backtranseq</a></td>
+<td>Back-translate a protein sequence to a nucleotide sequence</td>
+</tr>
+
+<tr>
+<td><a href="checktrans.html">checktrans</a></td>
+<td>Report STOP codons and ORF statistics of a protein</td>
+</tr>
+
+<tr>
+<td><a href="entret.html">entret</a></td>
+<td>Retrieve sequence entries from flatfile databases and files</td>
+</tr>
+
+<tr>
+<td><a href="extractalign.html">extractalign</a></td>
+<td>Extract regions from a sequence alignment</td>
+</tr>
+
+<tr>
+<td><a href="infoalign.html">infoalign</a></td>
+<td>Display basic information about a multiple sequence alignment</td>
+</tr>
+
+<tr>
+<td><a href="infoseq.html">infoseq</a></td>
+<td>Display basic information about sequences</td>
+</tr>
+
+<tr>
+<td><a href="plotorf.html">plotorf</a></td>
+<td>Plot potential open reading frames in a nucleotide sequence</td>
+</tr>
+
+<tr>
+<td><a href="prettyseq.html">prettyseq</a></td>
+<td>Write a nucleotide sequence and its translation to file</td>
+</tr>
+
+<tr>
+<td><a href="refseqget.html">refseqget</a></td>
+<td>Get reference sequence</td>
+</tr>
+
+<tr>
+<td><a href="remap.html">remap</a></td>
+<td>Display restriction enzyme binding sites in a nucleotide sequence</td>
+</tr>
+
+<tr>
+<td><a href="seqxref.html">seqxref</a></td>
+<td>Retrieve all database cross-references for a sequence entry</td>
+</tr>
+
+<tr>
+<td><a href="seqxrefget.html">seqxrefget</a></td>
+<td>Retrieve all cross-referenced data for a sequence entry</td>
+</tr>
+
+<tr>
+<td><a href="showalign.html">showalign</a></td>
+<td>Display a multiple sequence alignment in pretty format</td>
+</tr>
+
+<tr>
+<td><a href="showorf.html">showorf</a></td>
+<td>Display a nucleotide sequence and translation in pretty format</td>
+</tr>
+
+<tr>
+<td><a href="showseq.html">showseq</a></td>
+<td>Display sequences with features in pretty format</td>
+</tr>
+
+<tr>
+<td><a href="sixpack.html">sixpack</a></td>
+<td>Display a DNA sequence with 6-frame translation and ORFs</td>
+</tr>
+
+<tr>
+<td><a href="transeq.html">transeq</a></td>
+<td>Translate nucleic acid sequences</td>
+</tr>
+
+<tr>
+<td><a href="variationget.html">variationget</a></td>
+<td>Get sequence variations</td>
+</tr>
+
+<tr>
+<td><a href="whichdb.html">whichdb</a></td>
+<td>Search all sequence databases for an entry and retrieve it</td>
+</tr>
+
+</table>
+
+<H2>
+    Author(s)
+</H2>
+Alan Bleasby 
+<br>
+European Bioinformatics Institute, Wellcome Trust Genome Campus, Hinxton, Cambridge CB10 1SD, UK
+
+<p>
+Please report all bugs to the EMBOSS bug team (emboss-bug&nbsp;&copy;&nbsp;emboss.open-bio.org) not to the original author.
+
+
+<H2>
+    History
+</H2>
+
+Written (Nov 2000) - Alan Bleasby.
+
+<H2>
+    Target users
+</H2>
+This program is intended to be used by everyone and everything, from naive users to embedded scripts.
+
+<H2>
+    Comments
+</H2>
+None
+
+</BODY>
+</HTML>
+

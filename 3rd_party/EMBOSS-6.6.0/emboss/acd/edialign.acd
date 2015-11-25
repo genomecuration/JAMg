@@ -1,0 +1,148 @@
+application: edialign [
+  documentation: "Local multiple alignment of sequences"
+  groups: "Alignment:Multiple"
+    relations: "EDAM_topic:0182 Sequence alignment"
+    relations: "EDAM_operation:0495 Multiple sequence alignment construction
+    	       (local)"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  seqset: sequences [
+    parameter: "Y"
+    type: "any"
+    aligned: "N"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+endsection: input
+
+section: additional [
+  information: "Additional section"
+  type: "page"
+]
+
+  list: nucmode [
+    additional: "$(sequences.nucleic)"
+    information: "Nucleic acid sequence alignment mode"
+    help: "Nucleic acid sequence alignment mode (simple, translated or
+           mixed)"
+    values: "n: simple; nt: translation; ma: mixed alignments"
+    default: "n"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  boolean: revcomp [
+    additional: "@($(sequences.nucleic) & @($(nucmode) != n))"
+    information: "Also consider the reverse complement"
+    default: "N"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  selection: overlapw [
+    additional: "Y"
+    information: "Use overlap weights"
+    help: "By default overlap weights are used when Nseq =<35 but you
+           can set this to 'yes' or 'no'"
+    values: "default (when Nseq =< 35);yes;no"
+    default: "default (when Nseq =< 35)"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  list: linkage [
+    additional: "Y"
+    information: "Clustering method to construct sequence tree"
+    help: "Clustering method to construct sequence tree (UPGMA,
+           minimum linkage or maximum linkage)"
+    values: "UPGMA: UPGMA; max: maximum linkage; min: minimum
+             linkage"
+    default: "UPGMA"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  integer: maxfragl [
+    additional: "Y"
+    information: "Maximum fragment length"
+    minimum: "0"
+    default: "40"
+    relations: "EDAM_data:1249 Sequence length"
+  ]
+
+  boolean: fragmat [
+    additional: "@($(sequences.nucleic) & @($(nucmode) != nt))"
+    information: "Consider only N-fragment pairs that start
+                  with two matches"
+    default: "N"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  integer: fragsim [
+    additional: "@($(sequences.protein) | @($(nucmode) != n))"
+    information: "Consider only P-fragment pairs if first amino
+                  acid or codon pair has similarity score of at least n"
+    minimum: "0"
+    default: "4"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  boolean: itscore [
+    additional: "Y"
+    information: "Use iterative score"
+    default: "N"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  float: threshold [
+    additional: "Y"
+    information: "Threshold for considering diagonal for
+                  alignment"
+    minimum: "0.0"
+    default: "0.0"
+    relations: "EDAM_data:2146 Threshold"
+  ]
+
+endsection: additional
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  boolean: mask [
+    information: "Replace unaligned characters by stars '*'
+                  rather then putting them in lowercase"
+    default: "N"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  boolean: dostars [
+    information: "Activate writing of stars instead of numbers"
+    default: "N"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  integer: starnum [
+    information: "Put up to n stars '*' instead of digits 0-9
+                  to indicate level of conservation"
+    minimum: "0"
+    default: "4"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  outfile: outfile [
+    parameter: "Y"
+    knowntype: "edialign output"
+    relations: "EDAM_data:0863 Sequence alignment"
+  ]
+
+  seqoutall: outseq [
+    parameter: "Y"
+    type: "gapany"
+    aligned: "Y"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+endsection: output

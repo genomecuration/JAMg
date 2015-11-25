@@ -1,0 +1,53 @@
+application: splitsource [
+  documentation: "Split sequence(s) into original source sequences"
+  groups: "Edit"
+    relations: "EDAM_topic:0091 Data handling"
+    relations: "EDAM_operation:0369 Sequence cutting"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  boolean: feature [
+    default: "N"
+    information: "Retain feature information"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  seqall: sequence [
+    parameter: "Y"
+    type: "any"
+    features: "Y"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+endsection: input
+
+section: additional [
+  information: "Additional section"
+  type: "page"
+]
+
+endsection: additional
+
+section: advanced [
+  information: "Advanced section"
+  type: "page"
+]
+
+endsection: advanced
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  seqoutall: outseq [
+    parameter: "Y"
+    features: "$(feature)"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+endsection: output

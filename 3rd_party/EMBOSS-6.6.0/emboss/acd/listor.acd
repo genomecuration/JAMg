@@ -1,0 +1,76 @@
+application: listor [
+  documentation: "Write a list file of the logical OR of two
+                  sets of sequences"
+  groups: "Edit"
+    relations: "EDAM_topic:0091 Data handling"
+    relations: "EDAM_operation:2120 Listfile processing"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  seqset: firstsequences [
+    parameter: "Y"
+    type: "gapany"
+    aligned: "N"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+  seqset: secondsequences [
+    parameter: "Y"
+    type: "gapany"
+    aligned: "N"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+endsection: input
+
+section: additional [
+  information: "Additional section"
+  type: "page"
+]
+
+  list: operator [
+    additional: "Y"
+    default: "OR"
+    minimum: "1"
+    maximum: "1"
+    header: "Logical operator to combine sequence lists"
+    values: "OR:OR - merger of both sets, AND:AND - only those in both sets,
+             XOR:XOR - only those not in both sets,
+             NOT:NOT - those of the first set that are not in the second"
+    delimiter: ","
+    codedelimiter: ":"
+    information: "Enter the logical operator to combine the
+                  sequences"
+    help: "The following logical operators combine the sequences in
+           the following ways: \
+           OR - gives all that occur in one set or the other \
+           AND - gives only those which occur in both sets \
+           XOR - gives those which only occur in one set or the other, but
+           not in both \
+           NOT - gives those which occur in the first set except for those
+           that also occur in the second"
+    relations: "EDAM_identifier:2133 Logical operator"
+  ]
+
+endsection: additional
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  outfile: outfile [
+    parameter: "Y"
+    extension: "list"
+    knowntype: "USA list"
+    help: "The list of sequence names will be written to this list
+           file"
+    information: "List of USAs output file"
+    relations: "EDAM_data:1111 EMBOSS listfile"
+  ]
+
+endsection: output

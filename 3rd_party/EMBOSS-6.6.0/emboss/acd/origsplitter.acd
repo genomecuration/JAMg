@@ -1,0 +1,69 @@
+application: origsplitter [
+  documentation: "Split a sequence into (overlapping) smaller
+                  sequences"
+  groups: "Edit"
+    relations: "EDAM_topic:0156 Sequence editing"
+    relations: "EDAM_operation:0369 Sequence cutting"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  seqall: sequence [
+    parameter: "Y"
+    type: "any"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+endsection: input
+
+section: additional [
+  information: "Additional section"
+  type: "page"
+]
+
+  integer: size [
+    additional: "Y"
+    minimum: "1"
+    default: "10000"
+    information: "Size to split at"
+    relations: "EDAM_data:1249 Sequence length"
+  ]
+
+  integer: overlap [
+    additional: "Y"
+    minimum: "0"
+    maximum: "@($(size)-1)"
+    default: "0"
+    information: "Overlap between split sequences"
+    relations: "EDAM_data:1249 Sequence length"
+  ]
+
+endsection: additional
+
+section: advanced [
+  information: "Advanced section"
+  type: "page"
+]
+
+  boolean: addoverlap [
+    default: "N"
+    information: "Add overlap to size"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+endsection: advanced
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  seqoutall: outseq [
+    parameter: "Y"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+endsection: output

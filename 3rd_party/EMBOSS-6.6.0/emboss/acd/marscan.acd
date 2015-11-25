@@ -1,0 +1,42 @@
+application: marscan [
+  documentation: "Find matrix/scaffold recognition (MRS) signatures
+                  in DNA sequences"
+  groups: "Nucleic:Gene finding, Nucleic:Functional sites, Nucleic:Transcription"
+   relations: "EDAM_topic:0109 Gene finding"
+   relations: "EDAM_topic:0747 Nucleic acid sites and features"
+   relations: "EDAM_topic:0110 Transcription"
+   relations: "EDAM_operation:0444 Matrix/scaffold attachment site prediction"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  seqall: sequence [
+    parameter: "Y"
+    type: "dna"
+    relations: "EDAM_data:2887 Sequence record (nucleic acid)"
+  ]
+
+endsection: input
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  report: outfile [
+    parameter: "Y"
+    taglist: "str:type int:start8bp int:end8bp int:start16bp
+              int:end16bp"
+    rformat: "gff"
+    help: "File for output of MAR/SAR recognition signature (MRS)
+           regions. This contains details of the MRS in normal GFF format.
+           The MRS consists of two recognition sites, one of 8 bp and one of
+           16 bp on either sense strand of the genomic DNA, within 200 bp of
+           each other."
+    relations: "EDAM_data:1276 Nucleic acid features"
+  ]
+
+endsection: output

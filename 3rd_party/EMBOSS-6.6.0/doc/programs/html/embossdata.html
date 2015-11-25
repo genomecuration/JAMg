@@ -1,0 +1,1099 @@
+<HTML>
+
+<HEAD>
+  <TITLE>
+  EMBOSS: embossdata
+  </TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF" text="#000000">
+
+<table align=center border=0 cellspacing=0 cellpadding=0>
+<tr><td valign=top>
+<A HREF="/" ONMOUSEOVER="self.status='Go to the EMBOSS home page';return true"><img border=0 src="/images/emboss_icon.jpg" alt="" width=150 height=48></a>
+</td>
+<td align=left valign=middle>
+<b><font size="+6">
+embossdata
+</font></b>
+</td></tr>
+</table>
+<br>&nbsp;
+<p>
+
+
+
+<H2>
+Wiki
+</H2>
+
+The master copies of EMBOSS documentation are available
+at <a href="http://emboss.open-bio.org/wiki/Appdocs">
+http://emboss.open-bio.org/wiki/Appdocs</a>
+on the EMBOSS Wiki.
+
+<p>
+Please help by correcting and extending the Wiki pages.
+
+<H2>
+    Function
+</H2>
+Find and retrieve EMBOSS data files
+<H2>
+    Description
+</H2>
+
+<p><b>embossdata</b> searches for a specified data file in all the directories which can hold them and writes the results of the search to screen or (optionally) to file.  Optionally, all the files in the searched directories can be displayed. Optionally, it will also copy the file from the EMBOSS standard data directory to the current directory so that you can safely edit and use it.</p>
+
+<H2>
+    Usage
+</H2>
+Here is a sample session with <b>embossdata</b>
+<p>
+Display the directories searched for EMBOSS data files: 
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>embossdata </b>
+Find and retrieve EMBOSS data files
+Data file name: <b></b>
+
+# The following directories can contain EMBOSS data files.
+# They are searched in the following order until the file is found.
+# If the directory does not exist, then this is noted below.
+# '.' is the UNIX name for your current working directory.
+
+.                                                            Exists
+.embossdata                                                  Does not exist
+/homes/user                                                    Exists
+/homes/user/.embossdata                                        Exists
+/homes/user/local/share/EMBOSS/data/                           Exists
+
+</pre></td></tr></table><p>
+<p>
+<p>
+<p>
+<b>Example 2</b>
+<p>
+Display the names of data files in all of the possible data directories: This is run on a small test system and so the results will probably be different when you run this. 
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>embossdata -showall </b>
+Find and retrieve EMBOSS data files
+Data file name: <b></b>
+
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/
+
+  DRCAT.dat
+  EBLOSUM30
+  EBLOSUM35
+  EBLOSUM40
+  EBLOSUM45
+  EBLOSUM50
+  EBLOSUM55
+  EBLOSUM60
+  EBLOSUM62
+  EBLOSUM62-12
+  EBLOSUM65
+  EBLOSUM70
+  EBLOSUM75
+  EBLOSUM80
+  EBLOSUM85
+  EBLOSUM90
+  EBLOSUMN
+  EDAM.obo
+  EDNAFULL
+  EDNAMAT
+  EDNASIMPLE
+  EGC.0
+  EGC.1
+  EGC.10
+  EGC.11
+  EGC.12
+  EGC.13
+  EGC.14
+  EGC.15
+  EGC.16
+  EGC.2
+  EGC.21
+  EGC.22
+  EGC.23
+  EGC.3
+  EGC.4
+  EGC.5
+  EGC.6
+  EGC.9
+  EGC.index
+  EGC.txt
+  ENUC.4.2
+  ENUC.4.4
+  EPAM10
+  EPAM100
+  EPAM110
+  EPAM120
+  EPAM130
+  EPAM140
+  EPAM150
+  EPAM160
+  EPAM170
+  EPAM180
+  EPAM190
+  EPAM20
+  EPAM200
+  EPAM210
+  EPAM220
+  EPAM230
+  EPAM240
+  EPAM250
+  EPAM260
+  EPAM270
+  EPAM280
+  EPAM290
+  EPAM30
+  EPAM300
+  EPAM310
+  EPAM320
+  EPAM330
+  EPAM340
+  EPAM350
+  EPAM360
+  EPAM370
+  EPAM380
+  EPAM390
+  EPAM40
+  EPAM400
+  EPAM410
+  EPAM420
+  EPAM430
+  EPAM440
+  EPAM450
+  EPAM460
+  EPAM470
+  EPAM480
+  EPAM490
+  EPAM50
+  EPAM500
+  EPAM60
+  EPAM70
+  EPAM80
+  EPAM90
+  Eaa_acc_surface.dat
+  Eaa_hydropathy.dat
+  Eaa_properties.dat
+  Eamino.dat
+  Eangles.dat
+  Eangles_tri.dat
+  Eantigenic.dat
+  Ebases.iub
+  Edayhoff.freq
+  Edna.melt
+  Eembl.ior
+  Eenergy.dat
+  Efeatures.embl
+  Efeatures.emboss
+  Efeatures.gff2
+  Efeatures.gff2protein
+  Efeatures.gff3
+  Efeatures.gff3protein
+  Efeatures.pir
+  Efeatures.protein
+  Efeatures.refseqp
+  Efeatures.swiss
+  Efreqs.dat
+  Ehet.dat
+  Ehth.dat
+  Ehth87.dat
+  Emass.dat
+  Emassmod.dat
+  Ememe.dat
+  Emethylsites.dat
+  Emolwt.dat
+  Emwfilter.dat
+  Enakai.dat
+  EnsemblAliases.dat
+  EnsemblIdentifiers.dat
+  Epepcoil.dat
+  Epk.dat
+  Epkexpasy.dat
+  Epprofile
+  Eprior1.plib
+  Eprior30.plib
+  Eresidues.iub
+  Erna.melt
+  Esig.euk
+  Esig.pro
+  Etags.embl
+  Etags.emboss
+  Etags.gff2
+  Etags.gff2protein
+  Etags.gff3
+  Etags.gff3protein
+  Etags.pir
+  Etags.protein
+  Etags.refseqp
+  Etags.swiss
+  Etcode.dat
+  Evdw.dat
+  Ewhite-wimley.dat
+  Matrices.nucleotide
+  Matrices.protein
+  Matrices.proteinstructure
+  SSSUB
+  edialignmat
+  software.obo
+  tffungi
+  tfinsect
+  tfother
+  tfplant
+  tfvertebrate
+  tp400_dna
+  tp400_prot
+  tp400_trans
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/JASPAR_SPLICE
+
+  dummyfile
+  matrix_list.txt
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/JASPAR_FAM
+
+  dummyfile
+  matrix_list.txt
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/OBO
+
+  chebi.obo
+  eco.obo
+  evidence_code.obo
+  gene_ontology.1_2.obo
+  go.obo
+  pathway.obo
+  ro.obo
+  so.obo
+  software.obo
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/REBASE
+
+  embossre.enz
+  embossre.equ
+  embossre.ref
+  embossre.sup
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/JASPAR_PBM_HLH
+
+  dummyfile
+  matrix_list.txt
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/JASPAR_PHYLOFACTS
+
+  dummyfile
+  matrix_list.txt
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/JASPAR_CORE
+
+  MA0070.1.pfm
+  MA0071.1.pfm
+  MA0072.1.pfm
+  MA0073.1.pfm
+  MA0074.1.pfm
+  MA0075.1.pfm
+  MA0076.1.pfm
+  MA0077.1.pfm
+  MA0078.1.pfm
+  MA0079.1.pfm
+  MA0079.2.pfm
+  dummyfile
+  matrix_list.txt
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/CODONS
+
+  Cut.index
+  EAcanthocheilonema_viteae.cut
+  EAedes.cut
+  EAedes_aegypti.cut
+  EAedes_albopictus.cut
+  EAedes_atropalpus.cut
+  EAmblyomma_americanum.cut
+  EAnadara_trapezia.cut
+  EAphrodite_aculeata.cut
+  EAstacus_astacus.cut
+  EDictyostelium_discoideum.cut
+  Eacc.cut
+  Eacica.cut
+  Eadenovirus5.cut
+  Eadenovirus7.cut
+  Eagrtu.cut
+  Eaidlav.cut
+  Eanasp.cut
+  Eani.cut
+  Eani_h.cut
+  Eanidmit.cut
+  Earath.cut
+  Easn.cut
+  Eath.cut
+  Eatu.cut
+  Eavi.cut
+  Eazovi.cut
+  Ebacme.cut
+  Ebacst.cut
+  Ebacsu.cut
+  Ebacsu_high.cut
+  Ebja.cut
+  Ebly.cut
+  Ebme.cut
+  Ebmo.cut
+  Ebna.cut
+  Ebommo.cut
+  Ebov.cut
+  Ebovin.cut
+  Ebovsp.cut
+  Ebpphx.cut
+  Ebraja.cut
+  Ebrana.cut
+  Ebrare.cut
+  Ebst.cut
+  Ebsu.cut
+  Ebsu_h.cut
+  Ecac.cut
+  Ecaeel.cut
+  Ecal.cut
+  Ecanal.cut
+  Ecanfa.cut
+  Ecaucr.cut
+  Eccr.cut
+  Ecel.cut
+  Echi.cut
+  Echick.cut
+  Echicken.cut
+  Echisp.cut
+  Echk.cut
+  Echlre.cut
+  Echltr.cut
+  Echmp.cut
+  Echnt.cut
+  Echos.cut
+  Echzm.cut
+  Echzmrubp.cut
+  Ecloab.cut
+  Ecpx.cut
+  Ecre.cut
+  Ecrigr.cut
+  Ecrisp.cut
+  Ectr.cut
+  Ecyapa.cut
+  Edayhoff.cut
+  Eddi.cut
+  Eddi_h.cut
+  Edicdi.cut
+  Edicdi_high.cut
+  Edog.cut
+  Edro.cut
+  Edro_h.cut
+  Edrome.cut
+  Edrome_high.cut
+  Edrosophila.cut
+  Eeca.cut
+  Eeco.cut
+  Eeco_h.cut
+  Eecoli.cut
+  Eecoli_high.cut
+  Eemeni.cut
+  Eemeni_high.cut
+  Eemeni_mit.cut
+  Eerwct.cut
+  Ef1.cut
+  Efish.cut
+  Efmdvpolyp.cut
+  Ehaein.cut
+  Ehalma.cut
+  Ehalsa.cut
+  Eham.cut
+  Ehha.cut
+  Ehin.cut
+  Ehma.cut
+  Ehorvu.cut
+  Ehum.cut
+  Ehuman.cut
+  Ekla.cut
+  Eklepn.cut
+  Eklula.cut
+  Ekpn.cut
+  Elacdl.cut
+  Ella.cut
+  Elyces.cut
+  Emac.cut
+  Emacfa.cut
+  Emaize.cut
+  Emaize_chl.cut
+  Emam_h.cut
+  Emammal_high.cut
+  Emanse.cut
+  Emarpo_chl.cut
+  Emedsa.cut
+  Emetth.cut
+  Emixlg.cut
+  Emouse.cut
+  Emsa.cut
+  Emse.cut
+  Emta.cut
+  Emtu.cut
+  Emus.cut
+  Emussp.cut
+  Emva.cut
+  Emyctu.cut
+  Emze.cut
+  Emzecp.cut
+  Encr.cut
+  Eneigo.cut
+  Eneu.cut
+  Eneucr.cut
+  Engo.cut
+  Eoncmy.cut
+  Eoncsp.cut
+  Eorysa.cut
+  Eorysa_chl.cut
+  Epae.cut
+  Epea.cut
+  Epet.cut
+  Epethy.cut
+  Epfa.cut
+  Ephavu.cut
+  Ephix174.cut
+  Ephv.cut
+  Ephy.cut
+  Epig.cut
+  Eplafa.cut
+  Epolyomaa2.cut
+  Epombe.cut
+  Epombecai.cut
+  Epot.cut
+  Eppu.cut
+  Eprovu.cut
+  Epse.cut
+  Epseae.cut
+  Epsepu.cut
+  Epsesm.cut
+  Epsy.cut
+  Epvu.cut
+  Erab.cut
+  Erabbit.cut
+  Erabit.cut
+  Erabsp.cut
+  Erat.cut
+  Eratsp.cut
+  Erca.cut
+  Erhile.cut
+  Erhime.cut
+  Erhm.cut
+  Erhoca.cut
+  Erhosh.cut
+  Eric.cut
+  Erle.cut
+  Erme.cut
+  Ersp.cut
+  Esalsa.cut
+  Esalsp.cut
+  Esalty.cut
+  Esau.cut
+  Eschma.cut
+  Eschpo.cut
+  Eschpo_cai.cut
+  Eschpo_high.cut
+  Esco.cut
+  Eserma.cut
+  Esgi.cut
+  Esheep.cut
+  Eshp.cut
+  Eshpsp.cut
+  Esli.cut
+  Eslm.cut
+  Esma.cut
+  Esmi.cut
+  Esmu.cut
+  Esoltu.cut
+  Esoy.cut
+  Esoybn.cut
+  Espi.cut
+  Espiol.cut
+  Espn.cut
+  Espo.cut
+  Espo_h.cut
+  Espu.cut
+  Esta.cut
+  Estaau.cut
+  Estrco.cut
+  Estrmu.cut
+  Estrpn.cut
+  Estrpu.cut
+  Esty.cut
+  Esus.cut
+  Esv40.cut
+  Esyhsp.cut
+  Esynco.cut
+  Esyncy.cut
+  Esynsp.cut
+  Etbr.cut
+  Etcr.cut
+  Eter.cut
+  Etetsp.cut
+  Etetth.cut
+  Etheth.cut
+  Etob.cut
+  Etobac.cut
+  Etobac_chl.cut
+  Etobcp.cut
+  Etom.cut
+  Etrb.cut
+  Etrybr.cut
+  Etrycr.cut
+  Evco.cut
+  Evibch.cut
+  Ewheat.cut
+  Ewht.cut
+  Exel.cut
+  Exenla.cut
+  Exenopus.cut
+  Eyeast.cut
+  Eyeast_cai.cut
+  Eyeast_high.cut
+  Eyeast_mit.cut
+  Eyeastcai.cut
+  Eyen.cut
+  Eyeren.cut
+  Eyerpe.cut
+  Eysc.cut
+  Eysc_h.cut
+  Eyscmt.cut
+  Eysp.cut
+  Ezebrafish.cut
+  Ezma.cut
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/TAXONOMY
+
+  division.dmp
+  gencode.dmp
+  merged.dmp
+  names.dmp
+  nodes.dmp
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/JASPAR_PBM
+
+  dummyfile
+  matrix_list.txt
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/AAINDEX
+
+  chop780101
+  chop780201
+  chop780202
+  chop780203
+  chop780204
+  chop780205
+  chop780206
+  chop780207
+  chop780208
+  chop780209
+  chop780210
+  chop780211
+  chop780212
+  chop780213
+  chop780214
+  chop780215
+  chop780216
+  dummyfile
+  kytj820101
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/JASPAR_POLII
+
+  dummyfile
+  matrix_list.txt
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/JASPAR_PBM_HOMEO
+
+  dummyfile
+  matrix_list.txt
+
+
+DIRECTORY: /homes/user/local/share/EMBOSS/data/JASPAR_CNE
+
+  dummyfile
+  matrix_list.txt
+
+</pre></td></tr></table><p>
+<p>
+<p>
+<p>
+<b>Example 3</b>
+<p>
+Make a copy of an EMBOSS data file in the current directory: 
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>embossdata -fetch Epepcoil.dat </b>
+Find and retrieve EMBOSS data files
+
+File '/homes/user/local/share/EMBOSS/data/Epepcoil.dat' has been copied successfully.
+
+</pre></td></tr></table><p>
+<p>
+<a href="#output.3">Go to the output files for this example</a><p><p>
+<p>
+<b>Example 4</b>
+<p>
+Display the directories which contain a particular EMBOSS data file: 
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>embossdata EPAM60 </b>
+Find and retrieve EMBOSS data files
+
+# The following directories can contain EMBOSS data files.
+# They are searched in the following order until the file is found.
+# If the directory does not exist, then this is noted below.
+# '.' is the UNIX name for your current working directory.
+
+File ./EPAM60                                                     Does not exist
+File .embossdata/EPAM60                                           Does not exist
+File /homes/user/EPAM60                                             Does not exist
+File /homes/user/.embossdata/EPAM60                                 Does not exist
+File /homes/user/local/share/EMBOSS/data/EPAM60                     Exists
+
+</pre></td></tr></table><p>
+<p>
+<p>
+
+
+<H2>
+    Command line arguments
+</H2>
+<table CELLSPACING=0 CELLPADDING=3 BGCOLOR="#f5f5ff" ><tr><td>
+<pre>
+Find and retrieve EMBOSS data files
+Version: EMBOSS:6.6.0.0
+
+   Standard (Mandatory) qualifiers:
+  [-filename]          string     This specifies the name of the file that
+                                  should be fetched into the current directory
+                                  or searched for in all of the directories
+                                  that EMBOSS programs search when looking for
+                                  a data file. The name of the file is not
+                                  altered when it is fetched. (Any string)
+
+   Additional (Optional) qualifiers (* if not always prompted):
+   -showall            toggle     Show all potential EMBOSS data files
+*  -fetch              boolean    Fetch a data file
+   -outfile            outfile    [stdout] This specifies the name of the file
+                                  that the results of a search for a file in
+                                  the various data directories is written to.
+                                  By default these results are written to the
+                                  screen (stdout).
+
+   Advanced (Unprompted) qualifiers:
+   -reject             selection  [3, 5, 6] This specifies the names of the
+                                  sub-directories of the EMBOSS data directory
+                                  that should be ignored when displaying data
+                                  directories.
+
+   Associated qualifiers:
+
+   "-outfile" associated qualifiers
+   -odirectory         string     Output directory
+
+   General qualifiers:
+   -auto               boolean    Turn off prompts
+   -stdout             boolean    Write first file to standard output
+   -filter             boolean    Read first file from standard input, write
+                                  first file to standard output
+   -options            boolean    Prompt for standard and additional values
+   -debug              boolean    Write debug output to program.dbg
+   -verbose            boolean    Report some/full command line options
+   -help               boolean    Report command line options and exit. More
+                                  information on associated and general
+                                  qualifiers can be found with -help -verbose
+   -warning            boolean    Report warnings
+   -error              boolean    Report errors
+   -fatal              boolean    Report fatal errors
+   -die                boolean    Report dying program messages
+   -version            boolean    Report version number and exit
+
+</pre>
+</td></tr></table>
+<P>
+<table border cellspacing=0 cellpadding=3 bgcolor="#ccccff">
+<tr bgcolor="#FFFFCC">
+<th align="left">Qualifier</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+<th align="left">Allowed values</th>
+<th align="left">Default</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>Standard (Mandatory) qualifiers</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>[-filename]<br>(Parameter 1)</td>
+<td>string</td>
+<td>This specifies the name of the file that should be fetched into the current directory or searched for in all of the directories that EMBOSS programs search when looking for a data file. The name of the file is not altered when it is fetched.</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>Additional (Optional) qualifiers</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-showall</td>
+<td>toggle</td>
+<td>Show all potential EMBOSS data files</td>
+<td>Toggle value Yes/No</td>
+<td>No</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-fetch</td>
+<td>boolean</td>
+<td>Fetch a data file</td>
+<td>Boolean value Yes/No</td>
+<td>No</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-outfile</td>
+<td>outfile</td>
+<td>This specifies the name of the file that the results of a search for a file in the various data directories is written to. By default these results are written to the screen (stdout).</td>
+<td>Output file</td>
+<td>stdout</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>Advanced (Unprompted) qualifiers</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-reject</td>
+<td>selection</td>
+<td>This specifies the names of the sub-directories of the EMBOSS data directory that should be ignored when displaying data directories.</td>
+<td>Choose from selection list of values</td>
+<td>3, 5, 6</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>Associated qualifiers</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td align="left" colspan=5>"-outfile" associated outfile qualifiers
+</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -odirectory</td>
+<td>string</td>
+<td>Output directory</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>General qualifiers</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -auto</td>
+<td>boolean</td>
+<td>Turn off prompts</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -stdout</td>
+<td>boolean</td>
+<td>Write first file to standard output</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -filter</td>
+<td>boolean</td>
+<td>Read first file from standard input, write first file to standard output</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -options</td>
+<td>boolean</td>
+<td>Prompt for standard and additional values</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -debug</td>
+<td>boolean</td>
+<td>Write debug output to program.dbg</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -verbose</td>
+<td>boolean</td>
+<td>Report some/full command line options</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -help</td>
+<td>boolean</td>
+<td>Report command line options and exit. More information on associated and general qualifiers can be found with -help -verbose</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -warning</td>
+<td>boolean</td>
+<td>Report warnings</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -error</td>
+<td>boolean</td>
+<td>Report errors</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -fatal</td>
+<td>boolean</td>
+<td>Report fatal errors</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -die</td>
+<td>boolean</td>
+<td>Report dying program messages</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -version</td>
+<td>boolean</td>
+<td>Report version number and exit</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+</table>
+
+<H2>
+    Input file format
+</H2>
+
+
+None.
+
+<p>
+
+<H2>
+    Output file format
+</H2>
+
+
+All output is to stdout by default.
+
+<p>
+
+<a name="output.3"></a>
+<h3>Output files for usage example 3</h3>
+<p><h3>File: Epepcoil.dat</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+# Input data for PEPCOIL 
+# from Lupas A, van Dyke M &amp; Stock J; Science 252:1162-4 (1991)
+#
+#   Freq in       Relative occurrence at heptad position
+# R GenBank     a      b      c      d      e      f      g
+  L  9.33     3.167  0.297  0.398  3.902  0.585  0.501  0.483
+  I  5.35     2.597  0.098  0.345  0.894  0.514  0.471  0.431
+  V  6.42     1.665  0.403  0.386  0.949  0.211  0.342  0.360
+  M  2.34     2.240  0.370  0.480  1.409  0.541  0.772  0.663
+  F  3.88     0.531  0.076  0.403  0.662  0.189  0.106  0.013
+  Y  3.16     1.417  0.090  0.122  1.659  0.190  0.130  0.155
+  G  7.10     0.045  0.275  0.578  0.216  0.211  0.426  0.156
+  A  7.59     1.297  1.551  1.084  2.612  0.377  1.248  0.877
+  K  5.72     1.375  2.639  1.763  0.191  1.815  1.961  2.795
+  R  5.39     0.659  1.163  1.210  0.031  1.358  1.937  1.798
+  H  2.25     0.347  0.275  0.679  0.395  0.294  0.579  0.213
+  E  6.10     0.262  3.496  3.108  0.998  5.685  2.494  3.048
+  D  5.03     0.030  2.352  2.268  0.237  0.663  1.620  1.448
+  Q  4.27     0.179  2.114  1.778  0.631  2.550  1.578  2.526
+  N  4.25     0.835  1.475  1.534  0.039  1.722  2.456  2.280
+  S  7.28     0.382  0.583  1.052  0.419  0.525  0.916  0.628
+  T  5.97     0.169  0.702  0.955  0.654  0.791  0.843  0.647
+  C  1.86     0.824  0.022  0.308  0.152  0.180  0.156  0.044
+  W  1.41     0.240  0.0    0.0    0.456  0.019  0.0    0.0
+  P  5.28     0.0    0.008  0.0    0.013  0.0    0.0    0.0
+</pre>
+</td></tr></table><p>
+
+<H2>
+    Data files
+</H2>
+
+
+No data files are read by this program.
+	
+<H2>
+    Notes
+</H2>
+
+<p>Many EMBOSS programs use a data file.  The data files are typically kept in a standard directory in the EMBOSS installation (<tt>.../emboss/emboss/data/</tt>).  When an EMBOSS programs require a data file, it search for it in the following order of directories:</p>
+<ul>
+    <li> The current directory
+    <li> <tt>.embossdata</tt> subdirectory in the current directory
+    <li> Your home directory
+    <li> <tt>.embossdata</tt> subdirectory in your home directory
+    <li> The EMBOSS standard data directory 
+</ul>
+
+
+<p>EMBOSS will use the data file it finds first from the above directories.  For example, a data file in the current directory is used in preference to a file of the same name in the EMBOSS standard data directory.</p>
+
+<p>It is sometimes necessary to modify a data file to change the behaviour of an EMBOSS program.  To do this safely, you should copy the data file from the EMBOSS standard data directory to one of the other directories, such as the current directory or your home directory, before editing it.  <b>embossdata</b> helps here by displaying the names of data files in all the directories which could hold them, and copying a data file from the EMBOSS standard data directory to the current directory.</p>
+
+<p>By convention, all EMBOSS data file names start with the character 'E', to distinguish them from other files on your system. For example genetic codes to translate codons to amino acids are held in data files called "EGC.0", "EGC.1", "EGC.2", etc. </p>
+
+<h3> -filename option </h3>
+Name of data file to search for or copy into the current directory from the EMBOSS standard data directory. The name of the file is not altered when it is fetched. (Any string is accepted).
+
+<h3> -outfile option</h3>
+Name of file containing the results of searching the data directories.    By default this is written to the screen (<tt>stdout</tt>).
+
+<h3> -reject option </h3>
+The names of sub-directories of the EMBOSS data directory that should be ignored when displaying data directories.
+
+
+
+<H2>
+    References
+</H2>
+
+
+None.
+
+<H2>
+    Warnings
+</H2>
+
+
+None.
+
+<H2>
+    Diagnostic Error Messages
+</H2>
+
+
+When copying a file, this program will report if the file has
+been copied successfully, e.g.:
+
+<pre>
+"'Epepcoil.dat' has been copied successfully."
+</pre>
+
+<H2>
+    Exit status
+</H2>
+
+
+It always exits with status 0
+
+<H2>
+    Known bugs
+</H2>
+
+
+None noted.
+
+<h2><a name="See also">See also</a></h2>
+<table border cellpadding=4 bgcolor="#FFFFF0">
+<tr><th>Program name</th>
+<th>Description</th></tr>
+<tr>
+<td><a href="embossupdate.html">embossupdate</a></td>
+<td>Check for more recent updates to EMBOSS</td>
+</tr>
+
+<tr>
+<td><a href="embossversion.html">embossversion</a></td>
+<td>Report the current EMBOSS version number</td>
+</tr>
+
+</table>
+
+<H2>
+    Author(s)
+</H2>
+
+Gary Williams formerly at:
+<br>
+MRC Rosalind Franklin Centre for Genomics Research
+Wellcome Trust Genome Campus, Hinxton, Cambridge, CB10 1SB, UK
+
+<p>
+Please report all bugs to the EMBOSS bug team (emboss-bug&nbsp;&copy;&nbsp;emboss.open-bio.org) not to the original author.
+
+<H2>
+    History
+</H2>
+
+
+<H2>
+    Target users
+</H2>
+This program is intended to be used by everyone and everything, from naive users to embedded scripts.
+
+<H2>
+    Comments
+</H2>
+It should be possible to format the output for html.
+
+</BODY>
+</HTML>
+

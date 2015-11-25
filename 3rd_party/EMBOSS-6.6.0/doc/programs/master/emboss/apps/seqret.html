@@ -1,0 +1,547 @@
+<HTML>
+
+<HEAD>
+  <TITLE>
+  EMBOSS: seqret
+  </TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF" text="#000000">
+
+<!--#include file="header1.inc" -->
+seqret
+<!--#include file="header2.inc" -->
+
+
+<H2>
+    Function
+</H2>
+<!--#include file="inc/seqret.ione" -->
+
+
+<H2>
+    Description
+</H2>
+
+
+<p><b>seqret</b> reads in one or more sequences and writes them out again. The sequence input may be a literal sequence or read from a database, file, file of sequence names, or even the command-line or the output of another programs. The sequence output can be written to screen, to file, or passed to another program. A wide range of standard sequence formats may be specified for input and output.  If you don't specify the input format, <b>seqret</b> will try a set of possible formats until it reads it in successfully. The sequence input and output, as for all EMBOSS programs, is described by a Uniform Sequence Address.  This is is a very flexible way of specifying one or more sequences from a variety of sources and includes sequence files, database queries and external applications.</p>
+
+<p>There are many options built-in into EMBOSS for detailed specification of the input and output sequences, for example the sequence type, file format. specification of sequence regions by begin and end positions, or generation of the reverse complement of a nucleic acid sequence.  On output <b>seqret</b> can change the case of the sequence to upper or to lower case. </p>
+
+<p><b>seqret</b> is useful for a variety of tasks, including extracting sequences from databases, displaying sequences, reformatting sequences, producing the reverse complement of a sequence, extracting fragments of a sequence, sequence case conversion or any combination of the above functions.</p>
+
+
+
+
+<H2>
+    Usage
+</H2>
+<!--#include file="inc/seqret.usage" -->
+
+
+<H2>
+    Command line arguments
+</H2>
+<table CELLSPACING=0 CELLPADDING=3 BGCOLOR="#f5f5ff" ><tr><td>
+<pre>
+<!--#include file="inc/seqret.ihelp" -->
+</pre>
+</td></tr></table>
+<P>
+
+<!--#include file="inc/seqret.itable" -->
+
+
+<H2>
+    Input file format
+</H2>
+
+
+<b>seqret</b> reads one or more nucleotide or protein sequences.
+
+<p>
+<!--#include file="inc/seqinformats.ihtml" -->
+
+<p>
+
+<!--#include file="inc/seqret.input" -->
+
+<H2>
+    Output file format
+</H2>
+
+<!--#include file="inc/seqformats.ihtml" -->
+
+<p>
+
+The output from <b>seqret</b> is one or more sequences, and by default will be
+written in FASTA format. 
+
+<p>
+
+If the '-firstonly' qualifier is used then only the first sequence of the
+input USA specification will be written out. 
+
+<p>
+
+In some cases the output filename will be the same as the input
+filename, but as <b>seqret</b> reads only the first sequence before opening
+the output file it may try to overwrite the input.  Note that this is
+not true of <b>seqretset</b> which reads all sequences into memory at
+startup, but which can need a large amount of memory for many sequences.
+
+<p>
+
+<!--#include file="inc/seqret.output" -->
+
+<H2>
+    Data files
+</H2>
+
+
+None.
+
+<H2>
+    Notes
+</H2>
+
+This description of what you can do when reading or writing files is not
+specific to the program <b>seqret</b>.  All EMBOSS programs that read or write
+sequences can do the same. 
+
+<p>
+
+<b>seqret</b> is often one of the first programs taught in EMBOSS training
+courses.  This is because it is versatile, it is extremely powerful for
+its size (17 lines of code) it illustrates many aspects of EMBOSS
+programs and it was one of the first EMBOSS programs to be written, so
+it has a special place in the hearts of EMBOSS developers. 
+
+<p>
+
+The name '<b>seqret</b>' derives both from its function ("sequence return") and
+from the fact that immense amounts of functionality can come from so few
+lines of source code - most of the work is done by the EMBOSS libraries
+which the program calls and whose complexity is hidden, or "secret". 
+
+<p>
+The simplicity of the above description of this program greatly
+understates the rich functionality of this program. 
+
+<p>
+
+Because EMBOSS programs can take a wide range of qualifiers that
+slightly change the behaviour of the program when reading or writing a
+sequence, this program can do many more things than simply "read and
+write a sequence". 
+
+<p>
+
+<b>seqret</b> can read a sequence or many sequences from databases, files,
+files of sequence names, the command-line or the output of other
+programs and then can write them to files, the screen or pass them to
+other programs.  Because it can read in a sequence from a database and
+write it to a file, <b>seqret</b> is a program for extracting sequences from
+databases.  Because it can write the sequence to the screen, <b>seqret</b> is a
+program for displaying sequences. 
+
+<p>
+
+<b>seqret</b> can read sequences in any of a wide range of standard sequence
+formats.  You can specify the input and output formats being used.  If
+you don't specify the input format, <b>seqret</b> will try a set of possible
+formats until it reads it in successfully.  Because you can specify the
+output sequence format, <b>seqret</b> is a program to reformat a sequence. 
+
+<p>
+
+<b>seqret</b> can read in the reverse complement of a nucleic acid sequence. 
+It therefore is a program for producing the reverse complement of a
+sequence. 
+
+<p>
+
+<b>seqret</b> can read in a sequence whose begin and end positions you have
+specified and write out that fragment.  It is therefore a utility for
+doing simple extraction of a region of a sequence. 
+
+<p>
+
+<b>seqret</b> can change the case of the sequence being read in to upper or to
+lower case.  It is therefore a simple sequence beautification utility. 
+
+<p>
+
+<b>seqret</b> can do any combination of the above functions.
+
+<p>
+
+The sequence input and output specification of this (and many other
+EMBOSS programs) is described as being a Uniform Sequence Address. 
+
+<p>
+
+The Uniform Sequence Address, or USA, is a somewhat tongue-in-cheek
+reference to a URL-style sequence naming used by all EMBOSS
+applications. 
+
+<p>
+
+The USA is a very flexible way of specifying one or more sequences from
+a variety of sources and includes sequence files, database queries and
+external applications. 
+
+<p>
+
+See the full specification of USA syntax at:
+<br>
+<a href="http://emboss.sourceforge.net/docs/themes/UniformSequenceAddress.html">
+http://emboss.sourceforge.net/docs/themes/UniformSequenceAddress.html
+</a>
+
+<p>
+
+The basic USA syntax is one of: 
+
+<ul>
+<li>"file" 
+<li>"file:entry" 
+<li>"format::file" 
+<li>"format::file:entry" 
+<li>"database:entry" 
+<li>"database"
+<li>"@file" 
+</ul>
+
+<p>
+
+Note that ':' separates the name of a file containing many possible
+entries from the specific name of a sequence entry in that file.  It
+also separates the name of a database from an entry in that database
+
+<p>
+
+Note also that '::' separates the specified format of a file from the
+name of the file.  Normally the format can be omitted, in which case the
+program will attempt to identify the correct format when reading the
+sequence in and will default to using FASTA format when writing the
+sequence out. 
+
+<p>
+
+Valid names of the databases set up in your local implementation of
+EMBOSS can be seen by using the program '<a href="showdb.html">showdb</a>'.
+
+<p>
+
+Database queries, and individual entries in files that have more than
+one sequence entry, use wildcards of "?" for any character and "*" for
+any string of characters.  There are some problems with the Unix shell
+catching these characters so they do need to be hidden in quotes or
+preceded by a backslash on the Unix command line, (for example
+"embl:hs\*")
+
+<p>
+
+The output USA name 'stdout' is special.  It makes the output go to the
+device 'standard output'.  This is the screen, by default. 
+
+<p>
+
+<h3>Example USAs</h3>
+
+The following are valid USAs for sequences:
+
+<p>
+
+<TABLE border=3>
+<TR>
+<TH>USA</TH>
+<TH>Description</TH>
+</TR>
+
+<TR>
+<TD>xxx.seq</TD>
+<TD>A sequence file "xxx.seq" in any format</TD>
+</TR>
+
+<TR>
+<TD>fasta::xxx.seq</TD>
+<TD>A sequence file "xxx.seq" in fasta format</TD>
+</TR>
+
+<TR>
+<TD>gcg::egmsmg.gcg</TD>
+<TD>A sequence file "egmsmg.gcg" in GCG 9 format</TD>
+</TR>
+
+<TR>
+<TD>egmsmg.gcg -sformat=gcg</TD>
+<TD>A sequence file "egmsmg.gcg" in GCG 9 format</TD>
+</TR>
+
+<TR>
+<TD>embl::x13776.em</TD>
+<TD>A sequence file "x13776.em" in EMBL format</TD>
+</TR>
+
+<TR>
+<TD>embl:x13776</TD>
+<TD>EMBL entry X13776, using whatever access method is defined locally
+for the EMBL database</TD>
+</TR>
+
+<TR>
+<TD>embl:K01793</TD>
+<TD>EMBL entry K01793, using whatever access method is defined locally
+for the EMBL database and searching by accession number and entry name
+(K01793 is a secondary accession number in this case for entry J01636)</TD>
+</TR>
+
+<TR>
+<TD>embl-acc:K01793</TD>
+<TD>EMBL entry X13776, using whatever access method is defined locally
+for the EMBL database and searching by accession number only
+</TD>
+</TR>
+
+<TR>
+<TD>embl-id:x13776</TD>
+<TD>EMBL entry x13776, using whatever access method is defined locally
+for the EMBL database, and searching by ID only</TD>
+</TR>
+
+<TR>
+<TD>embl:v0029*</TD>
+<TD>EMBL entries V00290, V00291, and so on, usually in alphabetical order,
+using whatever access method is defined locally for the EMBL database</TD>
+</TR>
+
+<TR>
+<TD>embl or EMBL:*</TD>
+<TD>All sequences in the EMBL database</TD>
+</TR>
+
+<TR>
+<TD>@mylist</TD>
+<TD>Reads file <i>mylist</i> and uses each line as a separate USA.  This
+is standard VMS list file syntax, also used in SRS 4.0 but missing in
+SRS 5.0 onwards.  The list file is a list of USAs (one per line).  List files
+can contain references to other lists files or any other standard
+USA.</TD>
+</TR>
+
+<TR>
+<TD>list::mylist</TD>
+<TD>Same as "@mylist" above</TD>
+</TR>
+
+<TR>
+<TD>'getz -e [embl-id:x13776] |'</TD>
+<TD>The pipe character "|" causes EMBOSS to fire up getz (SRS)
+to extract entry x13776 from EMBL in EMBL format. Any application or
+script which writes one or more sequences to stdout can be used in
+this way.
+</TR>
+
+<TR>
+<TD>asis::atacgcagttatctgaccat</TD>
+<TD>So far the shortest USA we
+could invent. In 'asis' format the name is the sequence so no file
+needs to be opened. This is a special case.  It was intended as a
+joke, but has proved quite useful for generating command lines when testing.</TD>
+</TR>
+
+</TABLE>
+
+<h3>Input sequence formats</h3>
+
+<!--#include file="inc/seqinformats.ihtml" -->
+
+
+<h3>Output sequence formats</h3>
+
+<!--#include file="inc/seqformats.ihtml" -->
+
+
+<h3>Future directions</h3>
+
+More formats, both for input and for output, can be easily added, so
+suggestions are always welcome. 
+
+
+
+<h3>Associated qualifiers</h3>
+
+<p>
+
+As noted previously there are many 'associated' qualifiers that alter
+the behaviour of <b>seqret</b> when it reads in or writes out a sequence.  As
+these are used in all EMBOSS programs that read in or write out
+sequences, they are not reported by the '-help' qualifier.  They are
+however reported by the pair of qualifiers: '-help -verbose':
+
+
+<p>
+
+Some of the more useful associated qualifiers are:
+
+<table border=3>
+<tr><th>Qualifier</th>		<th>Description</th></tr>
+
+<tr><td>-sbegin</td><td>The first position to be used in the sequence</td></tr>
+<tr><td>-send</td><td>The last position to be used in the sequence</td></tr>
+<tr><td>-sreverse</td><td>Use the reverse complement of a nucleic acid sequence</td></tr>
+<tr><td>-sask</td><td>Ask the user for begin/end/reverse information</td></tr>
+<tr><td>-slower</td><td>Convert the sequence to lower case</td></tr>
+<tr><td>-supper</td><td>Convert the sequence to upper case</td></tr>
+<tr><td>-sformat</td><td>Specify the input sequence format</td></tr>
+<tr><td>-osformat</td><td>Specify the output sequence format</td></tr>
+<tr><td>-ossingle</td><td>Write each entry into a separate file</td></tr>
+</table>
+
+<p>
+
+The set of associated qualifiers for sequences behave in different ways
+depending on where they appear. 
+
+<p>
+
+If these qualifiers immediately follow a parameter they apply only to
+that parameter and not to all cases.  If they occur before any
+parameters, they apply to all following sequence parameters. 
+
+<p>
+
+If there are no two parameters of equal type, the order of parameters
+and their qualifiers is irrelevant. 
+
+<p>
+
+Where a qualifier is defined more than once, for example "-sformat" for
+2 input sequences to be aligned, the qualifier name can have a number to
+indicate which sequence is meant.  "-sbegin2=25" will apply only to the
+second sequence, no matter where it appears on the command line. 
+
+<p>
+
+The -sbegin and -send qualifiers take an integer number specifying the
+position to begin or end reading a sequence.  If the number is positive,
+the number is the position counting from the first base or residue of
+the sequence.  If the number is negative the position is counted from
+the end of the sequence, so position -1 is the last base or residue of
+the sequence.  (If -sbegin 0 is used, it is assumed to be the same as
+-sbegin 1 and -send 0 is the same as -send -1.)
+
+<p>
+
+The filter qualifier makes the program behave like a filter, reading its
+(first) input 'file' from the standard input, and writing its (first)
+output 'file' to the standard output.  The -filter qualifier will also
+invoke the -auto qualifier, so the user is never prompted for any
+missing values. 
+
+<p>
+
+Example:
+
+<pre>
+
+% cat sequence.seq | seqret -filter | lpr
+
+</pre>
+
+<p>
+
+The example shows the application <b>seqret</b> being run with the -filter
+qualifier.  The input file is 'piped' into the program using the unix
+command cat and the output is 'piped' directly to the unix program lpr,
+which will print it on the printer. 
+
+<p>
+
+When the -options qualifier is used and not all the parameters are given
+on the command line, it will query the user for those parameters.  It
+will not only query the user for the required parameters as it would do
+without the -options qualifier, but it will also query the user for the
+optional parameters.
+
+<p>
+
+When the -stdout qualifier is used, the user will still be prompted for
+all the info that is required, but will write to standard output by
+default.  The user will also still be prompted for an output filename,
+in case the user wants to save the output to a file. 
+
+
+
+
+
+
+
+<H2>
+    References
+</H2>
+
+None.
+
+<H2>
+    Warnings
+</H2>
+
+
+None.
+
+<H2>
+    Diagnostic Error Messages
+</H2>
+
+None.
+
+
+<H2>
+    Exit status
+</H2>
+
+It always exits with a status of 0.
+
+<H2>
+    Known bugs
+</H2>
+
+None.
+
+
+<!--#include file="inc/seqret.isee" -->
+<p>
+
+Valid names of the databases set up in your local implementation of
+EMBOSS can be seen by using the program 'showdb'. 
+
+
+<H2>
+    Author(s)
+</H2>
+<!--#include file="inc/price.address" -->
+
+
+<H2>
+    History
+</H2>
+<!--#include file="inc/seqret.history" -->
+
+<H2>
+    Target users
+</H2>
+<!--#include file="inc/target.itxt" -->
+
+
+<H2>
+    Comments
+</H2>
+
+<!--#include file="inc/seqret.comment" -->
+
+
+</BODY>
+</HTML>
+

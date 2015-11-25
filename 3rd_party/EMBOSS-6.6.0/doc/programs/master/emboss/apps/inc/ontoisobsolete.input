@@ -1,0 +1,44 @@
+
+<a name="input.1"></a>
+<h3>Input files for usage example </h3>
+<p><h3>Database entry: edam:0195</h3>
+<table width="90%"><tr><td bgcolor="#FFCCFF">
+<pre>
+[Term]
+id: EDAM_topic:0195
+name: Virtual PCR
+namespace: topic
+def: Topic concerning simulated polymerase chain reaction (PCR).
+subset: bioinformatics
+subset: edam
+subset: topics
+synonym: "PCR" EXACT []
+synonym: "Polymerase chain reaction" EXACT []
+created_in: "beta12orEarlier"
+obsolete_since: "beta13"
+is_obsolete: true
+consider: EDAM_topic:0077 ! Nucleic acid analysis
+
+</pre>
+</td></tr></table><p>
+
+<a name="input.2"></a>
+<h3>Input files for usage example 2</h3>
+<p><h3>Database entry: edam:0575</h3>
+<table width="90%"><tr><td bgcolor="#FFCCFF">
+<pre>
+[Term]
+id: EDAM_operation:0575
+name: Restriction map rendering
+namespace: operation
+def: Visualise restriction maps in DNA sequences.
+subset: bioinformatics
+subset: edam
+subset: operations
+created_in: "beta12orEarlier"
+is_a: EDAM_operation:0431 ! Restriction site recognition
+is_a: EDAM_operation:0573 ! Map rendering
+relationship: has_output EDAM_data:1289 ! Restriction map
+
+</pre>
+</td></tr></table><p>
