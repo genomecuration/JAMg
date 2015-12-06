@@ -1,0 +1,8 @@
+SHELL := /bin/bash
+
+extended:
+	cd 3rd_party && tar xzf gt-1.5.7-Linux_x86_64-64bit-barebone.tar.gz && cd gt-1.5.7-Linux_x86_64-64bit-barebone && \
+ rsync -pur bin/ ../bin/ && rsync -pur lib/ ../lib/ && rsync -pur include/ ../include/
+	cd 3rd_party && tar xzf AEGeAn.tar.gz && cd AEGeAn && make cairo=no prefix=`pwd`/../ 64bit=yes install
+
+
