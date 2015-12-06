@@ -8,8 +8,8 @@ Prepare data for Trinity Genome Guided. Run it on the base directory where align
 
 Mandatory Options:
 
-	   -bam |files  :s  => BAM files, co-ordinate sorted
-	OR -sam         :s  => SAM files, co-ordinate sorted
+	   -bam |files  :s  => BAM files, co-ordinate sorted. They will be processed as one big file
+	OR -sam         :s  => SAM files, co-ordinate sorted. They will be processed separately
 
 Optional:
 
@@ -56,7 +56,7 @@ my $intron_max_size = 70000;
 my $minimum_reads = 50;
 my $small_cut     = 1024 * 1024 * 1024;
 my ($medium_cut,@sam_files,@bam_files,$delete_sam,@read_files,$is_single_stranded,$single_end,$help,$do_split_scaffolds);
-my $debug = 1;
+my $debug;
 my $cpus = 4;
 my $memory = '20G';
 my $threads                = 3;
@@ -95,19 +95,16 @@ if (!$read_files[0]){
 		print "Converting BAMs:\n".join(" ",@bam_files)."\n";
 		$delete_sam = 1;
 		my $sam_file = 'RNASeq_TGG_input.sam';
-		if ($do_split_scaffolds){
-			foreach my $bam_file (@bam_files){
-				push(@sam_files,&split_scaffold_sam($bam_file));
-			}
+		if (scalar(@bam_files > 1 )){
+			&process_cmd("$samtools_exec merge - ".join(" ",@bam_files)." |$samtools_exec view -@ $cpus -F4 - > $sam_file " ) unless -s $sam_file;
 		}else{
-			if (scalar(@bam_files > 1 )){
-				&process_cmd("$samtools_exec merge - ".join(" ",@bam_files)." |$samtools_exec view -@ $cpus -F4 - > $sam_file " ) unless -s $sam_file;
-			}else{
-				&process_cmd("$samtools_exec view -@ $cpus -F4 ".$bam_files[0]." > $sam_file") unless -s $sam_file;
-			}
+			&process_cmd("$samtools_exec view -@ $cpus -F4 ".$bam_files[0]." > $sam_file") unless -s $sam_file;
+		}
+		pod2usage ("Can't produce SAM file from input... Are they sorted by co-ordinate?\n") unless @sam_files && -s $sam_files[0];
+		if ($do_split_scaffolds){
+			push(@sam_files,&split_scaffold_sam($sam_file));
+		}else{
 			push(@sam_files,$sam_file);
-			pod2usage ("Can't produce SAM file from input... Are they sorted by co-ordinate?\n") unless @sam_files && -s $sam_files[0];
-
 		}
 	}
 
