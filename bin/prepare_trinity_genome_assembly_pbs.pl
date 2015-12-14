@@ -15,6 +15,8 @@ Optional:
 
 	-help
 	-intron_max      :i => Maximum intron size
+	-boundary        :i => Number of reads to define a boundary (def. 2). For deep RNA-Seq in very large scaffolds, you need to increase this (e.g 10 or 25; see distribution of wig file) 
+but you may lose lowly expressed transcripts.
         -minimum_reads   :i => Minimum number of reads required to process (defaults to 50)
         -small_cutoff    :i => Maximum file size of *.reads file to assign it as a 'small' and quick run (defaults to 1024^3, i.e. 1 megabyte)
         -medium_cutoff   :i => As above but for assigning it as 'medium', defaults to 10 x small_cutoff (higher than this is going to be assigned as 'long')
@@ -23,7 +25,7 @@ Optional:
 	-cpu             :i => Number of CPUs (def 4)
 	-memory          :s => Sorting memory to use, give as e.g. 20G (def 20G).
 	-split_scaffolds    => Split alignments to one per reference sequence
-	-size_scaffold   :i => Minimum size of scaffolds for -split_scaffolds (def. 3000)
+	-size_scaffold   :i => Minimum size of scaffolds for -split_scaffolds (def. 3000). Only one SAM allowed.
         -scaffold_thread :i => Number of parallel processes to use with -split_scaffolds (def 3)
 	-skip_sam	    => Jump into the processing regardless existing .reads regardless of the -bam / -sam option
 
@@ -51,6 +53,7 @@ use Thread_helper;    # threads -1
 
 my $cwd   = `pwd`;
 chomp($cwd);
+my $boundary = 2;
 my $scaffold_size_cutoff = 3000;
 my $intron_max_size = 70000;
 my $minimum_reads = 50;
@@ -63,6 +66,7 @@ my $threads                = 3;
 my $skip_sam;
 pod2usage $! unless &GetOptions(
 	'memory:s'     => \$memory,
+	'boundary:i'   => \$boundary,
 	'cpu|thread:i' => \$cpus,
 	'help'         => \$help,
         'debug'         => \$debug,
@@ -102,10 +106,16 @@ if (!$read_files[0]){
 		}
 		pod2usage ("Can't produce SAM file from input... Are they sorted by co-ordinate?\n") unless @sam_files && -s $sam_files[0];
 		if ($do_split_scaffolds){
-			push(@sam_files,&split_scaffold_sam($sam_file));
+			push(@sam_files,&split_scaffold_sam($sam_file,1));
 		}else{
 			push(@sam_files,$sam_file);
 		}
+	}
+
+	if ($do_split_scaffolds){
+		my $orig_sam = $sam_files[0];
+		@sam_files = ();
+		push(@sam_files,&split_scaffold_sam($orig_sam));
 	}
 
 	pod2usage ("Can't find SAM files\n") unless @sam_files && -s $sam_files[0];
@@ -287,6 +297,7 @@ sub mytime() {
 
 sub split_scaffold_sam(){
 	my $bam_file = shift;
+	my $delete = shift;
 	return unless $bam_file && -s $bam_file;
 	my @scaff_sams;
 	my @scaff_id_lines;
@@ -308,13 +319,14 @@ sub split_scaffold_sam(){
 		push(@scaff_sams,$sam_file) if -s $sam_file;
 	}
 	die "No SAM files produced from genome\n" unless @scaff_sams && -s $scaff_sams[0];
+	unlink($bam_file) if $delete;
 	return @scaff_sams;
 }
 
 sub process_sam_file(){
 	my $sam_file = shift;
 	return unless -s $sam_file;
-	my $TGG_prep_cmd = "$TGG_prep_exec --coord_sorted_SAM  $sam_file -I $intron_max_size --sort_buffer $memory ";
+	my $TGG_prep_cmd = "$TGG_prep_exec --coord_sorted_SAM  $sam_file -I $intron_max_size --sort_buffer $memory -C $boundary ";
 	$TGG_prep_cmd .= " --SS_lib_type $is_single_stranded " if $is_single_stranded;
 	$TGG_prep_cmd .= " --min_reads_per_partition $minimum_reads ";
 	my $res = &process_cmd($TGG_prep_cmd);
