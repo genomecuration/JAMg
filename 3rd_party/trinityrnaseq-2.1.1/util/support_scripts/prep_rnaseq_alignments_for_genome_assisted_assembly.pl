@@ -155,7 +155,7 @@ sub prep_read_partitions {
     ## define coverage
     $cmd = "$UTIL_DIR/fragment_coverage_writer.pl $sam.frag_coords > $sam.frag_coverage.wig";
 
-    unless (-f "$sam.frag_coverage.wig.ok") {
+    unless (-e "$sam.frag_coverage.wig.ok") {
         &process_cmd($cmd);
         &process_cmd("touch $sam.frag_coverage.wig.ok");
     }
@@ -164,7 +164,7 @@ sub prep_read_partitions {
 
     ## define partitions
     $cmd = "$UTIL_DIR/define_coverage_partitions.pl $sam.frag_coverage.wig $min_coverage $strand > $partitions_file";
-    unless (-f "$partitions_file.ok") {
+    unless (-e "$partitions_file.ok") {
         &process_cmd($cmd);
         &process_cmd("touch $partitions_file.ok");
     }
