@@ -8,13 +8,15 @@ Prepare data for Trinity Genome Guided. Run it on the base directory where align
 
 Mandatory Options:
 
-	   -bam |files  :s  => BAM files, co-ordinate sorted
-	OR -sam         :s  => SAM files, co-ordinate sorted
+	   -bam |files  :s  => BAM files, co-ordinate sorted. They will be processed as one big file
+	OR -sam         :s  => SAM files, co-ordinate sorted. They will be processed separately
 
 Optional:
 
 	-help
 	-intron_max      :i => Maximum intron size
+	-boundary        :i => Number of reads to define a boundary (def. 2 but x10 adjusted for large SAM files). For deep RNA-Seq in very large scaffolds, you need to increase this (e.g 10 or 25; see distribution of wig file) 
+but you may lose lowly expressed transcripts.
         -minimum_reads   :i => Minimum number of reads required to process (defaults to 50)
         -small_cutoff    :i => Maximum file size of *.reads file to assign it as a 'small' and quick run (defaults to 1024^3, i.e. 1 megabyte)
         -medium_cutoff   :i => As above but for assigning it as 'medium', defaults to 10 x small_cutoff (higher than this is going to be assigned as 'long')
@@ -23,7 +25,6 @@ Optional:
 	-cpu             :i => Number of CPUs (def 4)
 	-memory          :s => Sorting memory to use, give as e.g. 20G (def 20G).
 	-split_scaffolds    => Split alignments to one per reference sequence
-	-size_scaffold   :i => Minimum size of scaffolds for -split_scaffolds (def. 3000)
         -scaffold_thread :i => Number of parallel processes to use with -split_scaffolds (def 3)
 	-skip_sam	    => Jump into the processing regardless existing .reads regardless of the -bam / -sam option
 
@@ -51,18 +52,20 @@ use Thread_helper;    # threads -1
 
 my $cwd   = `pwd`;
 chomp($cwd);
+my $boundary = 2;
 my $scaffold_size_cutoff = 3000;
 my $intron_max_size = 70000;
 my $minimum_reads = 50;
 my $small_cut     = 1024 * 1024 * 1024;
-my ($medium_cut,@sam_files,@bam_files,$delete_sam,@read_files,$is_single_stranded,$single_end,$help,$do_split_scaffolds);
-my $debug = 1;
+my ($medium_cut,@sam_files,@bam_files,$delete_sam,@read_files,$is_single_stranded,$single_end,$help,$do_split_scaffolds,@scaff_id_lines);
+my $debug;
 my $cpus = 4;
 my $memory = '20G';
 my $threads                = 3;
 my $skip_sam;
 pod2usage $! unless &GetOptions(
 	'memory:s'     => \$memory,
+	'boundary:i'   => \$boundary,
 	'cpu|thread:i' => \$cpus,
 	'help'         => \$help,
         'debug'         => \$debug,
@@ -95,22 +98,24 @@ if (!$read_files[0]){
 		print "Converting BAMs:\n".join(" ",@bam_files)."\n";
 		$delete_sam = 1;
 		my $sam_file = 'RNASeq_TGG_input.sam';
-		if ($do_split_scaffolds){
-			foreach my $bam_file (@bam_files){
-				push(@sam_files,&split_scaffold_sam($bam_file));
-			}
+		if (scalar(@bam_files > 1 )){
+			&process_cmd("$samtools_exec merge - ".join(" ",@bam_files)." |$samtools_exec view -@ $cpus -F4 - > $sam_file " ) unless -s $sam_file;
 		}else{
-			if (scalar(@bam_files > 1 )){
-				&process_cmd("$samtools_exec merge - ".join(" ",@bam_files)." |$samtools_exec view -@ $cpus -F4 - > $sam_file " ) unless -s $sam_file;
-			}else{
-				&process_cmd("$samtools_exec view -@ $cpus -F4 ".$bam_files[0]." > $sam_file") unless -s $sam_file;
-			}
+			&process_cmd("$samtools_exec view -@ $cpus -F4 ".$bam_files[0]." > $sam_file") unless -s $sam_file;
+		}
+		pod2usage ("Can't produce SAM file from input... Are they sorted by co-ordinate?\n") unless -s $sam_file;
+		if ($do_split_scaffolds){
+			push(@sam_files,&split_scaffold_sam($sam_file,1));
+		}else{
 			push(@sam_files,$sam_file);
-			pod2usage ("Can't produce SAM file from input... Are they sorted by co-ordinate?\n") unless @sam_files && -s $sam_files[0];
-
+		}
+	}else{
+		if ($do_split_scaffolds){
+			my $orig_sam = $sam_files[0];
+			@sam_files = ();
+			push(@sam_files,&split_scaffold_sam($orig_sam));
 		}
 	}
-
 	pod2usage ("Can't find SAM files\n") unless @sam_files && -s $sam_files[0];
         print "Will use SAM as input:\n".join(" ",@sam_files)."\n";
 
@@ -288,20 +293,12 @@ sub mytime() {
 }
 
 
-sub split_scaffold_sam(){
+sub split_scaffold_bam(){
 	my $bam_file = shift;
-	return unless $bam_file && -s $bam_file;
+	my $delete = shift;
+	die "No file $bam_file\n" unless $bam_file && -s $bam_file;
 	my @scaff_sams;
-	my @scaff_id_lines;
 	&process_cmd($samtools_exec." index $bam_file" ) unless -s "$bam_file.bai";	
-	my @bam_scaff_ids = `$samtools_exec view -H $bam_file |grep '^\@SQ' `;
-	foreach my $ln (@bam_scaff_ids){
-		if ($ln=~/\bSN:(\S+)\b\tLN:(\d+)/){
-			my $id = $1; my $size = $2;
-			next if !$size || $size < $scaffold_size_cutoff;
-			push(@scaff_id_lines,$id);
-		}
-	}
 	my $total_scaffolds = scalar(@scaff_id_lines);
 	print "Splitting alignments per genome sequence above $scaffold_size_cutoff b.p. ($total_scaffolds)\n";
 	foreach my $scaff_id (@scaff_id_lines){
@@ -311,15 +308,68 @@ sub split_scaffold_sam(){
 		push(@scaff_sams,$sam_file) if -s $sam_file;
 	}
 	die "No SAM files produced from genome\n" unless @scaff_sams && -s $scaff_sams[0];
+	unlink($bam_file) if $delete;
+	return @scaff_sams;
+}
+
+sub get_ids_bam(){
+	my @bam_scaff_ids = `$samtools_exec view -H $bam_files[0] |grep '^\@SQ' `;
+	foreach my $ln (@bam_scaff_ids){
+		if ($ln=~/\bSN:(\S+)\b\tLN:(\d+)/){
+			my $id = $1; my $size = $2;
+			next if !$size || $size < $scaffold_size_cutoff;
+			push(@scaff_id_lines,$id);
+		}
+	}
+}
+
+sub split_scaffold_sam(){
+	my $sam_file = shift;
+	my $delete = shift;
+	die "No file $sam_file\n" unless $sam_file && -s $sam_file;
+	my %fh_hash;
+	open (SAM,$sam_file);
+	while (my $ln=<SAM>){
+		my @data = split("\t",$ln);
+		next unless $data[8];
+		my $scaff_id = $data[2];
+		my $sam_file = "$sam_file.$scaff_id.sam";
+		my $fh;
+		if (!$fh_hash{$scaff_id}){
+			open (my $fh1,">$sam_file") || die $!;
+			$fh_hash{$scaff_id} = $fh1;
+			$fh = $fh1;
+			push(@scaff_id_lines,$scaff_id);
+		}else{
+			$fh = $fh_hash{$scaff_id};
+		}
+		print $fh $ln;
+	}
+
+	my @scaff_sams;
+	foreach my $scaff_id (keys %fh_hash){
+		my $fh = $fh_hash{$scaff_id};
+		close $fh;
+		my $sam_file = "$sam_file.$scaff_id.sam";
+		unlink($sam_file) if -e $sam_file && !-s $sam_file;
+		push(@scaff_sams,$sam_file) if -s $sam_file;
+	}
+
+	my $total_scaffolds = scalar(@scaff_id_lines);
+	print "Splitted alignments per genome sequence above $scaffold_size_cutoff b.p. ($total_scaffolds scaffolds)\n";
+	die "No SAM files produced from genome\n" unless @scaff_sams && -s $scaff_sams[0];
+	unlink($sam_file) if $delete;
 	return @scaff_sams;
 }
 
 sub process_sam_file(){
-	my $sam_file = shift;
-	return unless -s $sam_file;
-	my $TGG_prep_cmd = "$TGG_prep_exec --coord_sorted_SAM  $sam_file -I $intron_max_size --sort_buffer $memory ";
+	my $local_sam_file = shift;
+	return unless -s $local_sam_file;
+	my $local_boundary = $boundary;
+	$local_boundary *= 10 if ($local_boundary == 2 && -s $local_sam_file > 1e9);
+	my $TGG_prep_cmd = "$TGG_prep_exec --coord_sorted_SAM  $local_sam_file -I $intron_max_size --sort_buffer $memory -C $local_boundary ";
 	$TGG_prep_cmd .= " --SS_lib_type $is_single_stranded " if $is_single_stranded;
 	$TGG_prep_cmd .= " --min_reads_per_partition $minimum_reads ";
 	my $res = &process_cmd($TGG_prep_cmd);
-	unlink($sam_file) if $delete_sam && (!$res || $res == 256);
+	unlink($local_sam_file) if $delete_sam && (!$res || $res == 256);
 }
