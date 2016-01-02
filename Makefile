@@ -38,7 +38,7 @@ all:
 	cd 3rd_party/aragorn && gcc -O3 -o aragorn aragorn1.2.36.c && cp aragorn ../bin/
 	cd 3rd_party/RECON/src && $(MAKE) && $(MAKE) install && cp ../bin/* ../../bin/
 	cd 3rd_party/RepeatScout && $(MAKE)
-	cd 3rd_party/RepeatMasker && 
+	cd 3rd_party/RepeatMasker && \
   if [[ ! -e Libraries/Dfam.hmm ]]; \
   then wget -c -O Libraries/Dfam.hmm.gz http://dfam.org/web_download/Current_Release/Dfam.hmm.gz && gunzip Libraries/Dfam.hmm.gz; fi && \
   if [[ -e Libraries/taxonomy.dat.bz2 && ! -e Libraries/taxonomy.dat ]]; then bunzip2 -kd Libraries/taxonomy.dat.bz2 ; fi && \
