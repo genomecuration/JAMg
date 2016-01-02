@@ -2913,10 +2913,10 @@ sub run_aat() {
   my @commands;
   if ( $type eq 'protein' ) {
    my $aat_score = $same_species ? 400 : 80;
-   my $aat_word =
+   my $aat_word_options =
      $same_species
-     ? 5
-     : 4;    # five is much faster than default and 3 is much slower.
+     ? '5 -d 20'
+     : '4 -d 100';    # five is much faster than default and 3 is much slower.
    print "Preparing/running AAT...\n";
    my $matrix_file = "$aat_dir/matrices/BS";
    die "Cannot find AAT's matrices/BS as $matrix_file\n"
@@ -2924,7 +2924,7 @@ sub run_aat() {
    foreach my $genome_file (@$uppercase_genome_files) {
     next if $genome_file =~ /\.aat\./ || -d $genome_file;
     push( @commands,
-"$aat_dir/dps $genome_file $input_fasta $matrix_file -c 300000 -f $aat_score -w $aat_word -i 30 -a $intron_size > $genome_file.aat.d ;"
+"$aat_dir/dps $genome_file $input_fasta $matrix_file -c 3000000 -f $aat_score -w $aat_word_options -i 30 -a $intron_size > $genome_file.aat.d ;"
        . "$aat_dir/ext $genome_file.aat.d -f $aat_score > $genome_file.aat.ext ;"
        . "$aat_dir/extCollapse.pl $genome_file.aat.ext > $genome_file.aat.extCol ;"
        . "$aat_dir/filter $genome_file.aat.extCol -c 1 > $genome_file.aat.filter ; rm -f $genome_file.aat.d $genome_file.aat.ext $genome_file.aat.extCol \n"
