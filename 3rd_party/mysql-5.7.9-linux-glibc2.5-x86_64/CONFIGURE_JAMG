@@ -13,6 +13,11 @@ grep 'temporary password is generated for root' error.log
 # that will be your ROOT password. use it to connect and create accounts:
 mysql -u root -p -e "CREATE USER 'pasa'@'localhost' IDENTIFIED BY 'pass13';GRANT ALL ON *.* TO 'pasa'@'localhost';FLUSH PRIVILEGES;"
 
+# first time; install perl libraries
+export PATH=$PATH:$JAMG_PATH/3rd_party/mysql/bin
+cpan DBD::mysql DBI # you can do that as user
+
+
 # Be nice and safe: remember to only have for as long as you need it...
 killall mysqld # to end it
 
