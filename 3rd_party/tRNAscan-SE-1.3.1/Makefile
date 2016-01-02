@@ -20,9 +20,9 @@ PERLDIR = /usr/bin
 PERLBIN = perl
 
 ## where you want things installed
-BINDIR  = $(HOME)/bin
-LIBDIR  = $(HOME)/lib/tRNAscan-SE
-MANDIR  = $(HOME)/man
+BINDIR  = $(PWD)
+LIBDIR  = $(PWD)
+MANDIR  = $(PWD)
 
 ## NOTE !!  If you later manually move the location of 
 ## binaries or data files in the BINDIR or LIBDIR directories,
