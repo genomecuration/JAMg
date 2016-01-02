@@ -1,0 +1,122 @@
+application: iep [
+  documentation: "Calculate the isoelectric point of proteins"
+  groups: "Protein:Properties, Display"
+  relations: "EDAM_topic:0137 Protein hydropathy"
+  relations: "EDAM_operation:0403 Protein isoelectric point calculation"
+  relations: "EDAM_topic:0092 Data visualisation"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  seqall: sequence [
+    parameter: "Y"
+    type: "protein"
+    relations: "EDAM_data:2886 Sequence record (protein)"
+  ]
+
+  datafile: pkdata [
+    information: "Amino acid pKa data file"
+    help: "Values of pKa for amino acids"
+    default: "Epk.dat"
+    knowntype: "amino acid pka"
+    relations: "EDAM_data:1529 Protein pKa value"
+  ]
+
+endsection: input
+
+section: additional [
+  information: "Additional section"
+  type: "page"
+]
+
+  integer: amino [
+    additional: "Y"
+    information: "Number of N-termini"
+    default: "1"
+    minimum: "0"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  integer: carboxyl [
+    additional: "Y"
+    information: "Number of C-termini"
+    default: "1"
+    minimum: "0"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  boolean: termini [
+    additional: "Y"
+    information: "Include charge at N and C terminus"
+    default: "Y"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  integer: lysinemodified [
+    additional: "Y"
+    information: "Number of modified lysines"
+    default: "0"
+    minimum: "0"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  integer: disulphides [
+    additional: "Y"
+    information: "Number of disulphide bridges"
+    default: "0"
+    minimum: "0"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+endsection: additional
+
+section: advanced [
+  information: "Advanced section"
+  type: "page"
+]
+
+  float: step [
+    information: "Step value for pH"
+    minimum: ".01"
+    maximum: "1."
+    default: ".5"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+endsection: advanced
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  toggle: plot [
+    default: "N"
+    information: "Plot charge vs pH"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  toggle: report [
+    default: "Y"
+    information: "Write results to a file"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  xygraph: graph [
+    standard: "$(plot)"
+    relations: "EDAM_data:2165 Protein ionization curve"
+    sequence: "N"
+  ]
+
+  outfile: outfile [
+    standard: "$(report)"
+    knowntype: "iep output"
+    nullok: "@(!$(report))"
+    nulldefault: "@(!$(report))"
+    relations: "EDAM_data:1528 Protein isoelectric point"
+  ]
+
+endsection: output

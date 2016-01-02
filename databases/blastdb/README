@@ -1,0 +1,4 @@
+Here you should a Uniref100 database
+wget -O uniref100.fasta.gz "ftp://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref100/uniref100.fasta.gz"
+gunzip uniref100.fasta.gz
+makeblastdb -parse_seqids -hash_index -in uniref100.fasta -title UniRef100 -out uniref100

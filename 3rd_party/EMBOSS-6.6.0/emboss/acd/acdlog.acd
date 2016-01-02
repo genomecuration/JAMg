@@ -1,0 +1,8 @@
+application: acdlog [
+  documentation: "Test application ACD file processing and trace data
+                  structures"
+  gui: "no"
+  groups: "Acd, Data retrieval:Tool data"
+    relations: "EDAM_topic:0220 File handling"
+    relations: "EDAM_operation:0336 File debugging"
+]

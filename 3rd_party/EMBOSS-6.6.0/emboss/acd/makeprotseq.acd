@@ -1,0 +1,84 @@
+application: makeprotseq [
+  documentation: "Create random protein sequences"
+  groups: "Edit"
+    relations: "EDAM_topic:0091 Data handling"
+    relations: "EDAM_operation:0364 Random sequence generation"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  infile: pepstatsfile [
+    standard: "Y"
+    information: "Pepstats program output file (optional)"
+    help: "This file should be a pepstats output file. Protein
+           sequences will be created with the composition in the pepstats
+           output file."
+    nullok: "Y"
+    knowntype: "pepstats output"
+    relations: "EDAM_data:0897 Protein property"
+  ]
+
+endsection: input
+
+section: required [
+  information: "Required section"
+  type: "page"
+]
+
+  integer: amount [
+    standard: "Y"
+    default: "100"
+    minimum: "1"
+    information: "Number of sequences created"
+    relations: "EDAM_data:1694 Number of output entities"
+  ]
+
+  integer: length [
+    standard: "Y"
+    default: "100"
+    minimum: "1"
+    information: "Length of each sequence"
+    relations: "EDAM_data:1249 Sequence length"
+  ]
+
+  toggle: useinsert [
+    additional: "Y"
+    information: "Do you want to make an insert"
+    default: "N"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  string: insert [
+    standard: "$(useinsert)"
+    information: "Inserted string"
+    help: "String that is inserted into sequence"
+    knowntype: "sequence"
+    relations: "EDAM_data:0848 Raw sequence"
+  ]
+
+  integer: start [
+    standard: "$(useinsert)"
+    information: "Start point of inserted sequence"
+    minimum: "1"
+    default: "1"
+    relations: "EDAM_data:1016 Sequence position"
+  ]
+
+endsection: required
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  seqoutall: outseq [
+    parameter: "Y"
+    type: "protein"
+    name: "makeseq"
+    relations: "EDAM_data:2886 Sequence record (protein)"
+  ]
+
+endsection: output

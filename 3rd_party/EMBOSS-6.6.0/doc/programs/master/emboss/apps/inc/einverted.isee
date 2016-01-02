@@ -1,0 +1,35 @@
+<h2><a name="See also">See also</a></h2>
+<table border cellpadding=4 bgcolor="#FFFFF0">
+<tr><th>Program name</th>
+<th>Description</th></tr>
+<tr>
+<td><a href="banana.html">banana</a></td>
+<td>Plot bending and curvature data for B-DNA</td>
+</tr>
+
+<tr>
+<td><a href="btwisted.html">btwisted</a></td>
+<td>Calculate the twisting in a B-DNA sequence</td>
+</tr>
+
+<tr>
+<td><a href="equicktandem.html">equicktandem</a></td>
+<td>Find tandem repeats in nucleotide sequences</td>
+</tr>
+
+<tr>
+<td><a href="etandem.html">etandem</a></td>
+<td>Find tandem repeats in a nucleotide sequence</td>
+</tr>
+
+<tr>
+<td><a href="palindrome.html">palindrome</a></td>
+<td>Find inverted repeats in nucleotide sequence(s)</td>
+</tr>
+
+<tr>
+<td><a href="sirna.html">sirna</a></td>
+<td>Find siRNA duplexes in mRNA</td>
+</tr>
+
+</table>

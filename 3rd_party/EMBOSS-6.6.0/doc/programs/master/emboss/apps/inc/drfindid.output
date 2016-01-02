@@ -1,0 +1,113 @@
+
+<a name="output.1"></a>
+<h3>Output files for usage example </h3>
+<p><h3>File: drfindid.drcat</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+ID      PRIDE
+Acc     DB-0130
+Name    PRIDE proteomics identifications database
+Desc    Standards compliant, public data repository for proteomics data, protein and peptide identifications together with the evidence supporting these identifications.
+URL     http://www.ebi.ac.uk/pride
+URLrest http://www.ebi.ac.uk/pride/prideMartWebService.do
+Cat     Proteomic databases
+Taxon   1 | all
+EDAMtpc 0767 | Protein and peptide identification
+EDAMtpc 0121 | Proteomics
+EDAMdat 2536 | Mass spectrometry data
+EDAMid  3021 | UniProt accession
+EDAMfmt 2331 | HTML
+Xref    SP_explicit | UniProt accession
+Query    Mass spectrometry data {PRIDE entry} | HTML | UniProt accession | http://www.ebi.ac.uk/pride/searchSummary.do?queryTypeSelected=identification%20accession%20number&amp;identificationAccessionNumber=%s
+Example UniProt accession | P29375
+
+ID      PhosSite
+Acc     DB-0076
+Name    Phosphorylation site database for Archaea and Bacteria
+Desc    Phosphorylation site database for Archaea and Bacteria
+URL     http://www.phosphorylation.biochem.vt.edu/
+Cat     PTM databases
+Taxon   2 | Bacteria
+Taxon   2157 | Archaea
+EDAMtpc 0751 | Phosphorylation sites
+EDAMdat 2071 | Sequence motif (protein)
+EDAMid  3021 | UniProt accession
+EDAMfmt 2331 | HTML
+Xref    SP_explicit | UniProt accession
+Query    Sequence motif (protein) {PhosSite entry} | HTML | UniProt accession | http://www.phosphorylation.biochem.vt.edu/xpd2.cfm?extf=uniprot&amp;extref=%s
+Example UniProt accession | P36683
+
+ID      UniProtKB_Swiss-Prot
+IDalt   SwissProt
+Name    Universal protein resource knowledge base / Swiss-Prot
+Desc    Section of the UniProt knowledgebase, containing annotated records, which include curator-evaluated computational analysis, as well as, information extracted from the literature
+URL     http://www.uniprot.org
+Taxon   1 | all
+EDAMtpc 0639 | Protein sequence analysis
+EDAMdat 2201 | Sequence record full
+EDAMid  3021 | UniProt accession
+EDAMfmt 1929 | FASTA format
+EDAMfmt 2376 | RDF
+EDAMfmt 2331 | HTML
+EDAMfmt 2332 | XML
+Xref    EMBL_explicit | UniProt accession
+Query    Sequence record full | HTML | UniProt accession | http://www.uniprot.org/uniprot/%s
+Query    Sequence record full | Text | UniProt accession | http://www.uniprot.org/uniprot/%s.txt
+Query    Sequence record full | XML | UniProt accession | http://www.uniprot.org/uniprot/%s.xml
+
+
+<font color=red>  [Part of this file has been deleted for brevity]</font>
+
+EDAMfmt 2331 | HTML
+Xref    SP_explicit | UniProt accession
+Query    2D PAGE spot annotation | HTML | UniProt accession | http://www.mpiib-berlin.mpg.de/mpiib-cgi/RAT-HEART/get-2d-entry?%s
+Example UniProt accession | P62738
+
+ID      PHCI-2DPAGE
+Acc     DB-0075
+Name    Parasite host cell interaction 2D-PAGE database (PHCI-2DPAGE)
+Desc    Two-dimensional polyacrylamide gel electrophoresis database.
+URL     http://www.gram.au.dk/2d/2d.html
+Cat     2D gel databases
+Taxon   1 | all
+EDAMtpc 0767 | Protein and peptide identification
+EDAMdat 2364 | Experiment annotation (2D PAGE)
+EDAMid  3021 | UniProt accession
+EDAMfmt 2331 | HTML
+Xref    SP_explicit | UniProt accession
+Query    Experiment annotation (2D PAGE) | HTML | UniProt accession | http://www.gram.au.dk/cgi-bin/get-2d-entry?%s
+Example UniProt accession | P17821
+
+ID      Bgee
+Acc     DB-0133
+Name    Bgee database for gene expression evolution
+Desc    Bgee is a database to retrieve and compare gene expression patterns between animal species.  Bgee first maps heterogeneous expression data (currently EST, Affymetrix, and in situ hybridization data) on anatomical and developmental ontologies.  Then, in order to perform automated cross species comparisons, homology relationships across anatomical ontologies, and comparison criteria between developmental ontologies, are designed.
+URL     http://bgee.unil.ch
+Cat     Gene expression databases
+Taxon   1 | all
+EDAMtpc 0623 | Genes, gene family or system
+EDAMtpc 0197 | Gene expression resources
+EDAMtpc 0203 | Transcriptomics
+EDAMdat 0929 | Gene annotation (expression)
+EDAMdat 0928 | Gene expression profile
+EDAMdat 0916 | Gene annotation
+EDAMdat 2579 | Gene annotation (expressed gene list)
+EDAMid  3021 | UniProt accession
+EDAMid  1033 | Gene ID (Ensembl)
+EDAMfmt 2331 | HTML
+Xref    SP_explicit | UniProt accession
+Query    Gene annotation | HTML | UniProt accession | http://bgee.unil.ch/bgee/bgee?uniprot_id=%s
+Query    Gene annotation | HTML | Gene ID (Ensembl) | http://bgee.unil.ch/bgee/bgee?page=gene&amp;action=expression&amp;gene_id=%s
+Query    Gene expression profile | HTML | Gene ID (Ensembl) | http://bgee.unil.ch/bgee/bgee?page=gene&amp;action=expression&amp;gene_id=%s
+Query    Gene annotation (expression) | HTML | Gene ID (Ensembl) | http://bgee.unil.ch/bgee/bgee?page=expression&amp;action=data&amp;gene_id=%s
+Query    Gene annotation (expressed gene list) {Bgee ID file} | Text | Gene ID (Ensembl) | http://bgee.unil.ch/bgee/bgee?page=expression&amp;action=genes&amp;search_by=1&amp;organ_children=on&amp;gene_organ_stage_information=on&amp;attribut_list=species_name&amp;attribut_list=gene_name&amp;attribut_list=gene_id&amp;gene_id=%s&amp;display_type=tsv
+Query    Gene annotation (expressed gene list) {Bgee ID file with expression data} | Text | Gene ID (Ensembl) | http://bgee.unil.ch/bgee/bgee?page=expression&amp;action=genes&amp;search_by=1&amp;organ_children=on&amp;gene_organ_stage_information=on&amp;attribut_list=species_name&amp;attribut_list=gene_name&amp;attribut_list=gene_id&amp;gene_id=%s&amp;display_type=tsv&amp;gene_information=2
+Query    Gene annotation (expressed gene list) {Bgee ID file with expression data count} | Text | Gene ID (Ensembl) | http://bgee.unil.ch/bgee/bgee?page=expression&amp;action=genes&amp;search_by=1&amp;organ_children=on&amp;gene_organ_stage_information=on&amp;attribut_list=species_name&amp;attribut_list=gene_name&amp;attribut_list=gene_id&amp;gene_id=%s&amp;display_type=tsv&amp;gene_information=1
+Query    Gene annotation (expressed gene list) {Bgee ID file} | HTML | Gene ID (Ensembl) | http://bgee.unil.ch/bgee/bgee?page=expression&amp;action=genes&amp;search_by=1&amp;organ_children=on&amp;gene_organ_stage_information=on&amp;attribut_list=species_name&amp;attribut_list=gene_name&amp;attribut_list=gene_id&amp;gene_id=%s
+Query    Gene annotation (expressed gene list) {Bgee ID file with expression data} | HTML | Gene ID (Ensembl) | http://bgee.unil.ch/bgee/bgee?page=expression&amp;action=genes&amp;search_by=1&amp;organ_children=on&amp;gene_organ_stage_information=on&amp;attribut_list=species_name&amp;attribut_list=gene_name&amp;attribut_list=gene_id&amp;gene_id=%s&amp;gene_information=2
+Query    Gene annotation (expressed gene list) {Bgee ID file with expression data count} | HTML | Gene ID (Ensembl) | http://bgee.unil.ch/bgee/bgee?page=expression&amp;action=genes&amp;search_by=1&amp;organ_children=on&amp;gene_organ_stage_information=on&amp;attribut_list=species_name&amp;attribut_list=gene_name&amp;attribut_list=gene_id&amp;gene_id=%s&amp;gene_information=1
+Example Gene ID (Ensembl) | ENSG00000091831
+Example UniProt accession | P32234
+
+</pre>
+</td></tr></table><p>

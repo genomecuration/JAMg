@@ -1,0 +1,11 @@
+# This output was generated with AUGUSTUS (version 3.2.1).
+# AUGUSTUS is a gene prediction tool written by M. Stanke (mario.stanke@uni-greifswald.de),
+# O. Keller, S. König, L. Gerischer and L. Romoth.
+# Please cite: Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008),
+# Using native and syntenically mapped cDNA alignments to improve de novo gene finding
+# Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013
+# No extrinsic information on sequences given.
+# Initialising the parameters using config directory /home/aap599/software/augustus-3.2.1/config/ ...
+# Using protein profile unknown
+# --[3..101]--> unknown_A (56) <--[0..1]--> unknown_B (61) <--[9..12]--> unknown_C (25) <--[0..22]--
+# generic version. Using default transition matrix.

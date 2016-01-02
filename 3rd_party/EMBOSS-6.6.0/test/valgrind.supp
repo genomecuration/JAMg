@@ -1,0 +1,123 @@
+{
+   pmr__strlen
+   Memcheck:Cond
+   fun:strlen
+   fun:_dl_init_paths
+   fun:dl_main
+   fun:_dl_sysdep_start
+   fun:_dl_start
+   obj:/lib64/ld-2.13.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   pmr__dl_relocate_object
+   Memcheck:Cond
+   fun:_dl_relocate_object
+   fun:dl_main
+   fun:_dl_sysdep_start
+   fun:_dl_start
+   obj:/lib64/ld-2.13.so
+}
+{
+   pmr__dl_map_object
+   Memcheck:Cond
+   fun:index
+   fun:expand_dynamic_string_token
+   fun:_dl_map_object
+   fun:map_doit
+   fun:_dl_catch_error
+   fun:do_preload
+   fun:dl_main
+   fun:_dl_sysdep_start
+   fun:_dl_start
+   obj:/lib64/ld-2.13.so
+   obj:*
+   obj:*
+}
+{
+   pmr__getpwuid
+   Memcheck:Cond
+   fun:_dl_relocate_object
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:do_dlopen
+   fun:_dl_catch_error
+   fun:__libc_dlopen_mode
+   fun:__nss_lookup_function
+   fun:__nss_lookup
+   fun:__nss_passwd_lookup
+   fun:getpwuid_r@@GLIBC_2.1.2
+   fun:getpwuid
+}
+{
+   pmr__gethostbyname
+   Memcheck:Cond
+   fun:_dl_relocate_object
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:do_dlopen
+   fun:_dl_catch_error
+   fun:__libc_dlopen_mode
+   fun:__nss_lookup_function
+   fun:__nss_lookup
+   fun:__nss_hosts_lookup
+   fun:gethostbyname_r@@GLIBC_2.1.2
+}
+{
+   pmr__axis2_svc_client_create2
+   Memcheck:Leak
+   fun:calloc
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   fun:axutil_class_loader_load_lib
+   fun:axutil_class_loader_create_dll
+   fun:axis2_conf_builder_process_transport_senders
+   fun:axis2_conf_builder_populate_conf
+   fun:axis2_dep_engine_load_client
+   fun:axis2_build_client_conf_ctx
+   fun:axis2_svc_client_create_with_conf_ctx_and_svc
+   fun:ajSoapAxis2GetClient
+}
+{
+   pmr__axis2_svc_client_create
+   Memcheck:Leak
+   fun:calloc
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   fun:axutil_class_loader_load_lib
+   fun:axutil_class_loader_create_dll
+   fun:axis2_conf_builder_populate_conf
+   fun:axis2_dep_engine_load_client
+   fun:axis2_build_client_conf_ctx
+   fun:axis2_svc_client_create_with_conf_ctx_and_svc
+   fun:ajSoapAxis2GetClient
+}
+{
+   pmr__dlerror_run_general
+   Memcheck:Leak
+   fun:calloc
+   fun:_dlerror_run
+}
+{
+   pmr__strspn
+   Memcheck:Addr8
+   fun:__strspn_sse42
+   fun:ajSysFuncStrtokR
+   fun:ajVarbcfSync
+   fun:varoutWriteBcf
+   fun:main
+}
+{
+   pmr__strspn2
+   Memcheck:Addr8
+   fun:__strspn_sse42
+   fun:ajSysFuncStrtokR
+   fun:ajVarbcfSync
+   fun:varoutWriteNextBcf
+   fun:main
+}

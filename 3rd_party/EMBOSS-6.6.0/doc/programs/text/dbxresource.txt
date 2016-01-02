@@ -1,0 +1,629 @@
+                                 dbxresource
+
+
+
+Wiki
+
+   The master copies of EMBOSS documentation are available at
+   http://emboss.open-bio.org/wiki/Appdocs on the EMBOSS Wiki.
+
+   Please help by correcting and extending the Wiki pages.
+
+Function
+
+   Index a data resource catalogue using b+tree indices
+
+Description
+
+   dbxresource indexes the Data Resource Catalogue, and builds EMBOSS
+   B+tree format index files. These indexes allow access of flat files
+   larger than 2Gb.
+
+   These indexes allow access of flat files larger than 2Gb.
+
+Usage
+
+   Here is a sample session with dbxresource
+
+
+% dbxresource drcat
+Index a data resource catalogue using b+tree indices
+Standard database name [drcat]: drcat
+Resource name [drcatresource]: drcatresource
+Database directory [.]:
+Wildcard database filename [DRCAT.dat]: DRCAT.dat
+        id : ID
+       acc : IDother
+       nam : Name
+       des : Description
+       url : Server URL
+       cat : Category name
+     taxid : Taxon id
+      edat : EDAM data term
+      efmt : EDAM format term
+       eid : EDAM data id term
+      etpc : EDAM topic term
+      xref : Link
+      qout : Query output
+      qfmt : Query output format
+       qin : Query input parameters
+      qurl : Query URL
+      rest : Rest URL
+      soap : SOAP URL
+Index fields [*]:
+Compressed index files [Y]:
+General log output file [outfile.dbxresource]:
+
+
+   Go to the output files for this example
+
+Command line arguments
+
+Index a data resource catalogue using b+tree indices
+Version: EMBOSS:6.6.0.0
+
+   Standard (Mandatory) qualifiers:
+  [-dbname]            string     [drcat] Basename for index files (Any string
+                                  from 2 to 19 characters, matching regular
+                                  expression /[A-z][A-z0-9_]+/)
+  [-standardname]      string     [$(dbname)] Standard database name (Any
+                                  string from 2 to 19 characters, matching
+                                  regular expression /[A-z][A-z0-9_]+/)
+  [-dbresource]        string     [drcatresource] Resource name (Any string
+                                  from 2 to 19 characters, matching regular
+                                  expression /[A-z][A-z0-9_]+/)
+   -directory          directory  [.] Database directory
+   -filenames          string     [DRCAT.dat] Wildcard database filename (Any
+                                  string)
+   -fields             menu       [*] Index fields (Values: id (ID); acc
+                                  (IDother); nam (Name); des (Description);
+                                  url (Server URL); cat (Category name); taxid
+                                  (Taxon id); edat (EDAM data term); efmt
+                                  (EDAM format term); eid (EDAM data id term);
+                                  etpc (EDAM topic term); xref (Link); qout
+                                  (Query output); qfmt (Query output format);
+                                  qin (Query input parameters); qurl (Query
+                                  URL); rest (Rest URL); soap (SOAP URL))
+   -[no]compressed     boolean    [Y] Compressed index files
+   -outfile            outfile    [*.dbxresource] General log output file
+
+   Additional (Optional) qualifiers: (none)
+   Advanced (Unprompted) qualifiers:
+   -release            string     [0.0] Release number (Any string up to 9
+                                  characters)
+   -date               string     [00/00/00] Index date (Date string dd/mm/yy)
+   -exclude            string     Wildcard filename(s) to exclude (Any string)
+   -indexoutdir        outdir     [.] Index file output directory
+
+   Associated qualifiers:
+
+   "-directory" associated qualifiers
+   -extension          string     Default file extension
+
+   "-indexoutdir" associated qualifiers
+   -extension          string     Default file extension
+
+   "-outfile" associated qualifiers
+   -odirectory         string     Output directory
+
+   General qualifiers:
+   -auto               boolean    Turn off prompts
+   -stdout             boolean    Write first file to standard output
+   -filter             boolean    Read first file from standard input, write
+                                  first file to standard output
+   -options            boolean    Prompt for standard and additional values
+   -debug              boolean    Write debug output to program.dbg
+   -verbose            boolean    Report some/full command line options
+   -help               boolean    Report command line options and exit. More
+                                  information on associated and general
+                                  qualifiers can be found with -help -verbose
+   -warning            boolean    Report warnings
+   -error              boolean    Report errors
+   -fatal              boolean    Report fatal errors
+   -die                boolean    Report dying program messages
+   -version            boolean    Report version number and exit
+
+
+Input file format
+
+   dbxresource reads and indexes the Data Resource Catalogue DRCAT.dat
+   file.
+
+Output file format
+
+   dbxresource creates one summary file for the database and two files for
+   each field indexed.
+
+     * dbalias.ent is the master file containing the names of the files
+       that have been indexed. It is an ASCII file. This file also
+       contains the database release and date information.
+     * dbalias.xid is the B+tree index file for the ID names. It is a
+       binary file.
+     * dbalias.pxid is an ASCII file containing information regarding the
+       structure of the ID name index.
+       Output files for usage example
+       File: drcat.ent
+
+# Number of files: 1
+# Release: 0.0
+# Date:    00/00/00
+Single filename database
+DRCAT.dat
+
+       File: drcat.pxac
+
+Type         Identifier
+Compress     Yes
+Pages        3
+Secpages     0
+Order        64
+Fill         52
+Level        0
+Pagesize     2048
+Cachesize    20000
+Order2       22
+Fill2        41
+Secpagesize  512
+Seccachesize 20000
+Count        22
+Fullcount    22
+Kwlimit      18
+Reffiles     0
+
+       File: drcat.pxcat
+
+Type         Secondary
+Compress     Yes
+Pages        3
+Secpages     21
+Order        27
+Fill         25
+Level        0
+Pagesize     2048
+Cachesize    20000
+Order2       10
+Fill2        13
+Secpagesize  512
+Seccachesize 20000
+Count        21
+Fullcount    74
+Kwlimit      60
+Idlimit      32
+
+       File: drcat.pxde
+
+Type         Secondary
+Compress     Yes
+Pages        32
+Secpages     905
+Order        60
+Fill         49
+Level        0
+Pagesize     2048
+Cachesize    20000
+Order2       10
+Fill2        13
+Secpagesize  512
+Seccachesize 20000
+Count        829
+Fullcount    2006
+Kwlimit      20
+Idlimit      32
+
+       File: drcat.pxedat
+
+Type         Secondary
+Compress     Yes
+Pages        3
+Secpages     69
+Order        71
+Fill         56
+Level        0
+Pagesize     2048
+Cachesize    20000
+Order2       10
+Fill2        13
+Secpagesize  512
+Seccachesize 20000
+Count        61
+Fullcount    152
+Kwlimit      15
+Idlimit      32
+
+       File: drcat.pxefmt
+
+Type         Secondary
+Compress     Yes
+Pages        3
+Secpages     32
+Order        71
+Fill         56
+Level        0
+Pagesize     2048
+Cachesize    20000
+Order2       10
+Fill2        13
+Secpagesize  512
+Seccachesize 20000
+Count        11
+Fullcount    135
+Kwlimit      15
+Idlimit      32
+
+       File: drcat.pxeid
+
+Type         Secondary
+Compress     Yes
+Pages        4
+Secpages     110
+Order        71
+Fill         56
+Level        0
+Pagesize     2048
+Cachesize    20000
+Order2       10
+Fill2        13
+Secpagesize  512
+Seccachesize 20000
+Count        106
+Fullcount    201
+Kwlimit      15
+Idlimit      32
+
+       File: drcat.pxetpc
+
+Type         Secondary
+Compress     Yes
+Pages        3
+Secpages     71
+Order        71
+Fill         56
+Level        0
+Pagesize     2048
+Cachesize    20000
+Order2       10
+Fill2        13
+Secpagesize  512
+Seccachesize 20000
+Count        67
+Fullcount    192
+Kwlimit      15
+Idlimit      32
+
+       File: drcat.pxid
+
+Type         Identifier
+Compress     Yes
+Pages        6
+Secpages     0
+Order        44
+Fill         38
+Level        0
+Pagesize     2048
+Cachesize    20000
+Order2       22
+Fill2        41
+Secpagesize  512
+Seccachesize 20000
+Count        110
+Fullcount    110
+Kwlimit      32
+Reffiles     0
+
+       File: drcat.pxnm
+
+Type         Secondary
+Compress     Yes
+Pages        12
+Secpages     361
+Order        60
+Fill         49
+Level        0
+Pagesize     2048
+Cachesize    20000
+Order2       10
+Fill2        13
+Secpagesize  512
+Seccachesize 20000
+Count        335
+Fullcount    659
+Kwlimit      20
+Idlimit      32
+
+       File: drcat.pxqfmt
+
+Type         Secondary
+Compress     Yes
+Pages        3
+Secpages     37
+Order        46
+Fill         39
+Level        0
+Pagesize     2048
+Cachesize    20000
+Order2       10
+Fill2        13
+Secpagesize  512
+Seccachesize 20000
+Count        16
+Fullcount    148
+Kwlimit      30
+Idlimit      32
+
+       File: drcat.pxqin
+
+Type         Secondary
+Compress     Yes
+Pages        12
+Secpages     130
+Order        25
+Fill         23
+Level        0
+Pagesize     2048
+Cachesize    20000
+Order2       10
+Fill2        13
+Secpagesize  512
+Seccachesize 20000
+Count        126
+Fullcount    206
+Kwlimit      65
+Idlimit      32
+
+       File: drcat.pxqout
+
+Type         Secondary
+Compress     Yes
+Pages        11
+Secpages     124
+Order        19
+Fill         18
+Level        0
+Pagesize     2048
+Cachesize    20000
+Order2       10
+Fill2        13
+Secpagesize  512
+Seccachesize 20000
+Count        120
+Fullcount    169
+Kwlimit      90
+Idlimit      32
+
+       File: drcat.pxqurl
+
+Type         Secondary
+Compress     Yes
+Pages        33
+Secpages     900
+Order        46
+Fill         39
+Level        0
+Pagesize     2048
+Cachesize    20000
+Order2       10
+Fill2        13
+Secpagesize  512
+Seccachesize 20000
+Count        729
+Fullcount    2147
+Kwlimit      30
+Idlimit      32
+
+       File: drcat.pxrest
+
+Type         Secondary
+Compress     Yes
+Pages        3
+Secpages     12
+Order        60
+Fill         49
+Level        0
+Pagesize     2048
+Cachesize    20000
+Order2       10
+Fill2        13
+Secpagesize  512
+Seccachesize 20000
+Count        12
+Fullcount    43
+Kwlimit      20
+Idlimit      32
+
+       File: drcat.pxrf
+
+Type         Secondary
+Compress     Yes
+Pages        3
+Secpages     17
+Order        71
+Fill         56
+Level        0
+Pagesize     2048
+Cachesize    20000
+Order2       10
+Fill2        13
+Secpagesize  512
+Seccachesize 20000
+Count        5
+Fullcount    83
+Kwlimit      15
+Idlimit      32
+
+       File: drcat.pxsoap
+
+Type         Secondary
+Compress     Yes
+Pages        3
+Secpages     18
+Order        71
+Fill         56
+Level        0
+Pagesize     2048
+Cachesize    20000
+Order2       10
+Fill2        13
+Secpagesize  512
+Seccachesize 20000
+Count        18
+Fullcount    23
+Kwlimit      15
+Idlimit      32
+
+       File: drcat.pxtaxid
+
+Type         Secondary
+Compress     Yes
+Pages        3
+Secpages     40
+Order        104
+Fill         75
+Level        0
+Pagesize     2048
+Cachesize    20000
+Order2       10
+Fill2        13
+Secpagesize  512
+Seccachesize 20000
+Count        26
+Fullcount    114
+Kwlimit      6
+Idlimit      32
+
+       File: drcat.pxurl
+
+Type         Secondary
+Compress     Yes
+Pages        11
+Secpages     268
+Order        52
+Fill         44
+Level        0
+Pagesize     2048
+Cachesize    20000
+Order2       10
+Fill2        13
+Secpagesize  512
+Seccachesize 20000
+Count        227
+Fullcount    585
+Kwlimit      25
+Idlimit      32
+
+       File: drcat.xac
+       This file contains non-printing characters and so cannot be
+       displayed here.
+       File: drcat.xcat
+       This file contains non-printing characters and so cannot be
+       displayed here.
+       File: drcat.xde
+       This file contains non-printing characters and so cannot be
+       displayed here.
+       File: drcat.xedat
+       This file contains non-printing characters and so cannot be
+       displayed here.
+       File: drcat.xefmt
+       This file contains non-printing characters and so cannot be
+       displayed here.
+       File: drcat.xeid
+       This file contains non-printing characters and so cannot be
+       displayed here.
+       File: drcat.xetpc
+       This file contains non-printing characters and so cannot be
+       displayed here.
+       File: drcat.xid
+       This file contains non-printing characters and so cannot be
+       displayed here.
+       File: drcat.xnm
+       This file contains non-printing characters and so cannot be
+       displayed here.
+       File: drcat.xqfmt
+       This file contains non-printing characters and so cannot be
+       displayed here.
+       File: drcat.xqin
+       This file contains non-printing characters and so cannot be
+       displayed here.
+       File: drcat.xqout
+       This file contains non-printing characters and so cannot be
+       displayed here.
+       File: drcat.xqurl
+       This file contains non-printing characters and so cannot be
+       displayed here.
+       File: drcat.xrest
+       This file contains non-printing characters and so cannot be
+       displayed here.
+       File: drcat.xrf
+       This file contains non-printing characters and so cannot be
+       displayed here.
+       File: drcat.xsoap
+       This file contains non-printing characters and so cannot be
+       displayed here.
+       File: drcat.xtaxid
+       This file contains non-printing characters and so cannot be
+       displayed here.
+       File: drcat.xurl
+       This file contains non-printing characters and so cannot be
+       displayed here.
+       File: outfile.dbxresource
+
+Processing directory: /homes/user/test/data/
+Processing file: DRCAT.dat
+entries: 110 (110) time: 0.0s (0.0s)
+Total time: 0.0s
+Entry idlen 32 OK. Maximum ID length was 28 for 'WORLD_2DPAGE_CGL14067_2DPAGE'.
+Field acc acclen 18 OK. Maximum acc term length was 18 for 'REPRODUCTION2DPAGE'.
+Field nam namlen 20 OK. Maximum nam term length was 16 for 'characterization'.
+Field des deslen 20 OK. Maximum des term length was 17 for 'transcriptionally'.
+Field url urllen 25 OK. Maximum url term length was 17 for 'compluyeast2dpage'.
+Field cat catlen 60 OK. Maximum cat term length was 40 for 'Protein sequence cla
+ssification database'.
+Field taxid taxidlen 6 OK. Maximum taxid term length was 5 for '40674'.
+Field edat edatlen 15 OK. Maximum edat term length was 4 for '2378'.
+Field etpc etpclen 15 OK. Maximum etpc term length was 4 for '0166'.
+Field eid eidlen 15 OK. Maximum eid term length was 4 for '1116'.
+Field efmt efmtlen 15 OK. Maximum efmt term length was 4 for '2331'.
+Field qout qoutlen 90 OK. Maximum qout term length was 85 for 'Protein report (t
+ranscription factor) {Documented regulators of a given set of genes}'.
+Field qfmt qfmtlen 30 OK. Maximum qfmt term length was 14 for 'HTML {graphic}'.
+Field qin qinlen 65 OK. Maximum qin term length was 43 for 'Sequence accession (
+protein) {World-2DPAGE}'.
+Field qurl qurllen 30 OK. Maximum qurl term length was 29 for 'identificationAcc
+essionNumber'.
+Field xref xreflen 15 OK. Maximum xref term length was 13 for 'EMBL_explicit'.
+Field rest restlen 20 OK. Maximum rest term length was 19 for 'prideMartWebServi
+ce'.
+Field soap soaplen 15 OK. Maximum soap term length was 12 for 'dataservices'.
+
+       Data files None.
+    Notes None.
+    References None.
+    Warnings None.
+    Diagnostic Error Messages None.
+    Exit status It always exits with status 0.
+    Known bugs None.
+    See also
+
+       Program name                       Description
+       dbiblast      Index a BLAST database
+       dbifasta      Index a fasta file database
+       dbiflat       Index a flat file database
+       dbigcg        Index a GCG formatted database
+       dbxcompress   Compress an uncompressed dbx index
+       dbxedam       Index the EDAM ontology using b+tree indices
+       dbxfasta      Index a fasta file database using b+tree indices
+       dbxflat       Index a flat file database using b+tree indices
+       dbxgcg        Index a GCG formatted database using b+tree indices
+       dbxobo        Index an obo ontology using b+tree indices
+       dbxreport     Validate index and report internals for dbx databases
+       dbxstat       Dump statistics for dbx databases
+       dbxtax        Index NCBI taxonomy using b+tree indices
+       dbxuncompress Uncompress a compressed dbx index
+    Author(s) Peter Rice
+       European Bioinformatics Institute, Wellcome Trust Genome Campus,
+       Hinxton, Cambridge CB10 1SD, UK
+       Please report all bugs to the EMBOSS bug team
+       (emboss-bug (c) emboss.open-bio.org) not to the original author.
+       History
+    Target users This program is intended to be used by administrators
+       responsible for software and database installation and maintenance.
+    Comments None

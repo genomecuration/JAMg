@@ -1,0 +1,9 @@
+# === Based on the GFF standard 3.0 and EMBL ===
+# Note: GFF includes EMBL/Genbank/DDBJ feature keys and tags
+
+# Tags from GFF3 standard ... includes embl tags
+
+#include Etags.gff3
+
+
+# === end of GFF tags

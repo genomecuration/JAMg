@@ -1,0 +1,81 @@
+application: dottup [
+  documentation: "Display a wordmatch dotplot of two
+                  sequences"
+  groups: "Alignment:Dot plots"
+    relations: "EDAM_topic:0159 Sequence comparison"
+    relations: "EDAM_operation:0288 Sequence word comparison"
+    relations: "EDAM_operation:0490 Dotplot plotting"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  sequence: asequence [
+    parameter: "y"
+    type: "any"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+  sequence: bsequence [
+    parameter: "y"
+    type: "@($(acdprotein) ? stopprotein : nucleotide)"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+endsection: input
+
+section: required [
+  information: "Required section"
+  type: "page"
+]
+
+  integer: wordsize [
+    standard: "Y"
+    default: "10"
+    minimum: "2"
+    information: "Word size"
+    relations: "EDAM_data:1250 Word size"
+  ]
+
+endsection: required
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  toggle: stretch [
+    default: "N"
+    information: "Stretch axes"
+    help: "Use non-proportional axes"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  graph: graph [
+    standard: "@(!$(stretch))"
+    gtitle: "Dottup: $(asequence.usa) vs $(bsequence.usa)"
+    gxtitle: "$(asequence.name)"
+    gytitle: "$(bsequence.name)"
+    relations: "EDAM_data:0862 Dotplot"
+    sequence: "Y"
+  ]
+
+  xygraph: xygraph [
+    gtitle: "Dottup (stretched): $(asequence.usa) vs $(bsequence.usa)"
+    standard: "$(stretch)"
+    gxtitle: "$(asequence.name)"
+    gytitle: "$(bsequence.name)"
+    relations: "EDAM_data:0862 Dotplot"
+    sequence: "Y"
+  ]
+
+  boolean: boxit [
+    default: "Y"
+    additional: "@(!$(stretch))"
+    information: "Draw a box around dotplot"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+endsection: output

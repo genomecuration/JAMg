@@ -1,0 +1,52 @@
+application: noreturn [
+  documentation: "Remove carriage return from ASCII files"
+  groups: "Edit"
+    relations: "EDAM_topic:0091 Data handling"
+    relations: "EDAM_operation:0335 File reformatting"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  infile: infile [
+    parameter: "Y"
+    knowntype: "ascii text"
+    information: "ASCII text file"
+    relations: "EDAM_data:2048 Report"
+  ]
+
+endsection: input
+
+section: advanced [
+  information: "Advanced section"
+  type: "page"
+]
+
+  list: system [
+    information: "Target operating system for end-of-line
+                  format"
+    values: "unix:Unix/Linux systems;pc:Windows/DOS;mac:Apple
+             Macintosh"
+    default: "unix"
+    minimum: "1"
+    maximum: "1"
+    relations: "EDAM_identifier:2131 Operating system name"
+  ]
+
+endsection: advanced
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  outfile: outfile [
+    parameter: "Y"
+    knowntype: "ascii text"
+    information: "ASCII text output file"
+    relations: "EDAM_data:2048 Report"
+  ]
+
+endsection: output

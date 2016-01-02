@@ -1,0 +1,81 @@
+application: polydot [
+  documentation: "Draw dotplots for all-against-all comparison of a
+                  sequence set"
+  groups: "Alignment:Dot plots"
+    relations: "EDAM_topic:0159 Sequence comparison"
+    relations: "EDAM_operation:0490 Dotplot plotting"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  seqset: sequences [
+    parameter: "Y"
+    type: "any"
+    help: "File containing a sequence alignment"
+    aligned: "N"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+endsection: input
+
+section: required [
+  information: "Required section"
+  type: "page"
+]
+
+  integer: wordsize [
+    standard: "Y"
+    default: "6"
+    minimum: "2"
+    information: "Word size"
+    relations: "EDAM_data:1250 Word size"
+  ]
+
+endsection: required
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  integer: gap [
+    default: "10"
+    minimum: "0"
+    information: "Gap (in residues) between dotplots"
+    help: "This specifies the size of the gap that is used to separate
+           the individual dotplots in the display. The size is measured in
+           residues, as displayed in the output."
+    relations: "EDAM_data:1249 Sequence length"
+  ]
+
+  boolean: boxit [
+    default: "Y"
+    additional: "Y"
+    information: "Draw a box around each dotplot"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  toggle: dumpfeat [
+    default: "N"
+    additional: "Y"
+    information: "Dump all matches as feature files"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  featout: outfeat [
+    standard: "$(dumpfeat)"
+    nullok: "@(!$(dumpfeat))"
+    nulldefault: "@(!$(dumpfeat))"
+    relations: "EDAM_data:1255 Feature record"
+  ]
+
+  graph: graph [
+    standard: "Y"
+    gdesc: "Poly dotplot"
+    relations: "EDAM_data:0862 Dotplot"
+  ]
+
+endsection: output

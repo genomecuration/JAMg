@@ -1,0 +1,72 @@
+
+<a name="output.1"></a>
+<h3>Output files for usage example </h3>
+<p><h3>File: outfile.dbxfasta</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+Processing directory: /homes/user/test/data/
+Processing file: emrod
+entries: 6 (6) time: 0.0/0.0s (-0.0/0.0)
+Total time: 0:00.0
+Entry idlen 15 OK. Maximum ID length was 6 for 'L48662'.
+Field acc acclen 15 OK. Maximum acc term length was 6 for 'L48662'.
+</pre>
+</td></tr></table><p>
+<p><h3>File: emrod.ent</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+# Number of files: 1
+# Release: 0.0
+# Date:    00/00/00
+Single filename database
+emrod
+</pre>
+</td></tr></table><p>
+<p><h3>File: emrod.pxac</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+Type         Identifier
+Compress     Yes
+Pages        3
+Secpages     0
+Order        71
+Fill         56
+Level        0
+Pagesize     2048
+Cachesize    20000
+Order2       22
+Fill2        41
+Secpagesize  512
+Seccachesize 20000
+Count        6
+Fullcount    6
+Kwlimit      15
+Reffiles     0
+</pre>
+</td></tr></table><p>
+<p><h3>File: emrod.pxid</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+Type         Identifier
+Compress     Yes
+Pages        3
+Secpages     0
+Order        71
+Fill         56
+Level        0
+Pagesize     2048
+Cachesize    20000
+Order2       22
+Fill2        41
+Secpagesize  512
+Seccachesize 20000
+Count        6
+Fullcount    6
+Kwlimit      15
+Reffiles     0
+</pre>
+</td></tr></table><p>
+<p><h3>File: emrod.xac</h3>
+<p>This file contains non-printing characters and so cannot be displayed here.
+<p><h3>File: emrod.xid</h3>
+<p>This file contains non-printing characters and so cannot be displayed here.

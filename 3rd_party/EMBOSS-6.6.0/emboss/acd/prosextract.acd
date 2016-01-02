@@ -1,0 +1,24 @@
+application: prosextract [
+  documentation: "Process the PROSITE motif database for use by patmatmotifs"
+  groups: "Utils:Database creation"
+  gui: "no"
+  batch: "no"
+  cpu: "low"
+    relations: "EDAM_topic:0158 Sequence motifs"
+    relations: "EDAM_topic:0091 Data handling"
+    relations: "EDAM_operation:1812 Data loading"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  directory: prositedir [
+    parameter: "Y"
+    information: "PROSITE database directory"
+    knowntype: "prosite database"
+    relations: "EDAM_data:1353 Sequence motif"
+  ]
+
+endsection: input

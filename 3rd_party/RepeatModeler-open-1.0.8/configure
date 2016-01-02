@@ -276,7 +276,7 @@ $reconLocation =~ s/(.*)\/$/$1/;
 ##
 ## RepeatScout location
 ##
-my $rscoutLocation = "$FindBin::Bin/../RepeatScout-1";
+my $rscoutLocation = "$FindBin::Bin/../RepeatScout";
 do
 {
   $goodParam = 1;

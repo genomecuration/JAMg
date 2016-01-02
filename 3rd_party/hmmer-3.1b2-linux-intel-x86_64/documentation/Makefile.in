@@ -1,0 +1,53 @@
+top_srcdir     = @top_srcdir@
+srcdir         = @srcdir@
+VPATH          = @srcdir@
+
+QUIET_SUBDIR0 = +${MAKE} -C #space separator after -c
+QUIET_SUBDIR1 = 
+ifndef V
+	QUIET_SUBDIR0 = +@subdir=
+	QUIET_SUBDIR1 = ; echo '    ' SUBDIR $$subdir; \
+		        ${MAKE} -C $$subdir
+endif
+
+
+.PHONY: pdf install uninstall clean distclean
+
+pdf:
+	${QUIET_SUBDIR0}userguide ${QUIET_SUBDIR1} pdf
+
+install: 
+	${QUIET_SUBDIR0}man       ${QUIET_SUBDIR1} install
+
+uninstall:
+	${QUIET_SUBDIR0}man       ${QUIET_SUBDIR1} uninstall
+
+clean:
+#Use 'ifneq' instead of 'test -e' because the '+@' in QUIET_SUBDIR0 can't
+#be passed to the shell. Note that ifneq breaks if indented.
+ifneq (,$(wildcard userguide/.))
+	${QUIET_SUBDIR0}userguide ${QUIET_SUBDIR1} clean
+endif
+	${QUIET_SUBDIR0}man       ${QUIET_SUBDIR1} clean;
+	-rm -f *~
+
+distclean:
+#See above for explanation of 'ifneq' usage
+ifneq (,$(wildcard userguide/.))
+	${QUIET_SUBDIR0}userguide ${QUIET_SUBDIR1} distclean
+endif
+	${QUIET_SUBDIR0}man       ${QUIET_SUBDIR1} distclean
+	-rm -f Makefile
+
+################################################################
+# HMMER - Biological sequence analysis with profile HMMs
+# Version 3.1b2; February 2015
+# Copyright (C) 2015 Howard Hughes Medical Institute.
+# Other copyrights also apply. See the COPYRIGHT file for a full list.
+# 
+# HMMER is distributed under the terms of the GNU General Public License
+# (GPLv3). See the LICENSE file for details.
+# 
+# SVN $URL: https://svn.janelia.org/eddylab/eddys/src/hmmer/branches/3.1/documentation/Makefile.in $
+# SVN $Id: Makefile.in 4489 2013-06-19 02:46:43Z wheelert $
+################################################################

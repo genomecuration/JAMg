@@ -1,0 +1,74 @@
+application: pepnet [
+  documentation: "Draw a helical net for a protein sequence"
+  groups: "Display, Protein:2D Structure"
+    relations: "EDAM_topic:0137 Protein hydropathy"
+    relations: "EDAM_topic:0092 Data visualisation"
+    relations: "EDAM_topic:0694 Protein secondary structure"
+    relations: "EDAM_operation:0569 Protein secondary structure rendering"
+    relations: "EDAM_operation:0401 Protein hydropathy calculation
+                (from sequence)"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  sequence: sequence [
+    parameter: "Y"
+    type: "Protein"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+endsection: input
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  toggle: amphipathic [
+    information: "Prompt for amphipathic residue marking"
+    help: "If this is true then the residues ACFGILMVWY are marked as
+           squares and all other residues are unmarked. This overrides any
+           other markup that you may have specified using the qualifiers
+           '-squares', '-diamonds' and '-octags'."
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  string: squares [
+    additional: "@(!$(amphipathic))"
+    default: "ILVM"
+    information: "Mark as squares"
+    help: "By default the aliphatic residues ILVM are marked with
+           squares."
+    knowntype: "protein codes"
+    relations: "EDAM_identifier:0994 Amino acid identifier"
+  ]
+
+  string: diamonds [
+    additional: "@(!$(amphipathic))"
+    default: "DENQST"
+    information: "Mark as diamonds"
+    help: "By default the residues DENQST are marked with diamonds."
+    knowntype: "protein codes"
+    relations: "EDAM_identifier:0994 Amino acid identifier"
+  ]
+
+  string: octags [
+    additional: "@(!$(amphipathic))"
+    default: "HKR"
+    information: "Mark as octagons"
+    help: "By default the positively charged residues HKR are marked
+           with octagons."
+    knowntype: "protein codes"
+    relations: "EDAM_identifier:0994 Amino acid identifier"
+  ]
+
+  graph: graph [
+    standard: "Y"
+    gdesc: "Helical net"
+    relations: "EDAM_data:2163 Helical net"
+  ]
+
+endsection: output

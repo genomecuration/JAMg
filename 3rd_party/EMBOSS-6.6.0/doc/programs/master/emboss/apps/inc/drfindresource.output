@@ -1,0 +1,113 @@
+
+<a name="output.1"></a>
+<h3>Output files for usage example </h3>
+<p><h3>File: drfindresource.drcat</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+ID      ApiDB_TrichDB
+IDalt   TrichDB
+Name    Trichomonas genome resources (TrichDB)
+Desc    Genomic-scale datasets associated with the eukaryotic Trichomonas.
+URL     http://trichdb.org/trichdb/
+URLrest http://eupathdb.org/eupathdb/serviceList.jsp
+Cat     Not available
+Taxon   5721 | Trichomonas
+EDAMtpc 2821 | Unicellular eukaryotes
+EDAMtpc 0783 | Pathogens
+EDAMdat 0916 | Gene annotation
+EDAMid  2295 | Gene ID
+EDAMfmt 2331 | HTML
+Xref    SP_FT | None
+Query    Gene annotation | HTML | Gene ID | http://trichdb.org/gene/%s
+Example Gene ID | TVAG_386080
+
+ID      ApiDB_GiardiaDB
+IDalt   GiardiaDB
+Name    Giardia genome resources (GiardiaDB)
+Desc    Genomic-scale datasets for the eukaryotic pathogen Giardia.
+URL     http://giardiadb.org/giardiadb/
+URLrest http://eupathdb.org/eupathdb/serviceList.jsp
+Cat     Not available
+Taxon   5740 | Giardia
+EDAMtpc 2821 | Unicellular eukaryotes
+EDAMtpc 0783 | Pathogens
+EDAMdat 0916 | Gene annotation
+EDAMid  2295 | Gene ID
+EDAMfmt 2331 | HTML
+Xref    SP_FT | None
+Query    Gene annotation | HTML | Gene ID | http://giardiadb.org/gene/%s
+Example Gene ID | GL50803_102438
+
+ID      GeneDB
+Name    GeneDB database from Sanger Institute Pathogen Sequencing Units
+Desc    Sequence data and annotation/curation for the whole range of organisms sequenced by the PSU (Sanger Institute Pathogen Sequencing Units).
+URL     http://www.genedb.org/
+Taxon   1 | all
+EDAMtpc 0783 | Pathogens
+EDAMdat 0916 | Gene annotation
+EDAMid  1026 | Gene symbol
+EDAMfmt 2331 | HTML
+Xref    SP_FT | None
+Query    Gene annotation | HTML | Gene symbol | http://www.genedb.org/gene/%s
+Example Gene symbol | ECA4014
+
+ID      EuPathDB
+IDalt   ApiDB
+Acc     DB-0153
+
+
+<font color=red>  [Part of this file has been deleted for brevity]</font>
+
+Taxon   1 | all
+EDAMtpc 0783 | Pathogens
+EDAMdat 2399 | Gene annotation (transcript)
+EDAMdat 0895 | Peptide annotation
+EDAMdat 0916 | Gene annotation
+EDAMid  2759 | Gene ID (VectorBase)
+EDAMfmt 2331 | HTML
+Xref    SP_explicit | Gene ID (VectorBase)
+Query    Gene annotation {VectorBase entry} | HTML | Gene ID (VectorBase) | http://www.vectorbase.org/Genome/BRCGene/?feature=%s
+Query    Peptide annotation {VectorBase peptide page} | HTML | Gene ID (VectorBase) | http://www.vectorbase.org/Genome/BRCGene/?feature=%s-PA
+Query    Gene annotation (transcript) | HTML | Gene ID (VectorBase) | http://www.vectorbase.org/Genome/BRCGene/?feature=%s-RA
+Example Gene ID (VectorBase) | AGAP005025
+
+ID      ApiDB_TriTryPDB
+IDalt   TritryPDB
+Name    Kinetoplastid genome resources (TritryPDB)
+Desc    Kinetoplastid genome resources.
+URL     http://tritryPDB.org/tritryPDB/
+URLrest http://eupathdb.org/eupathdb/serviceList.jsp
+Cat     Not available
+Taxon   5653 | Kinetoplastida
+EDAMtpc 2821 | Unicellular eukaryotes
+EDAMtpc 0783 | Pathogens
+EDAMdat 0916 | Gene annotation
+EDAMid  2295 | Gene ID
+EDAMfmt 2331 | HTML
+Xref    SP_FT | None
+Query    Gene annotation | HTML | Gene ID | http://tritryPDB.org/gene/%s
+Example Gene ID | Tb927.8.620
+
+ID      NMPDR
+Acc     DB-0125
+Name    National microbial pathogen
+Desc    Curated annotations in an environment for comparative analysis of genomes and biological subsystems, with an emphasis on the food-borne pathogens Campylobacter, Listeria, Staphylococcus, Streptococcus, and Vibrio as well as the STD pathogens Chlamydiaceae, Haemophilus, Mycoplasma, Neisseria, Treponema, and Ureaplasma.
+URL     http://www.nmpdr.org
+URLlink http://www.nmpdr.org/FIG/wiki/view.cgi/FIG/LinkingToTheGenomeViewer
+Cat     Genome annotation databases
+Taxon   2 | Bacteria
+EDAMtpc 0783 | Pathogens
+EDAMtpc 0797 | Comparative genomics
+EDAMdat 0916 | Gene annotation
+EDAMid  1179 | NCBI taxonomy ID
+EDAMid  2737 | FIG ID
+EDAMfmt 2331 | HTML
+Xref    SP_explicit | FIG ID
+Query    Gene annotation | HTML | NCBI taxonomy ID | http://www.nmpdr.org/linkin.cgi?genome=%s
+Query    Gene annotation {Protein encoding gene or other feature} | HTML | FIG ID | http://www.nmpdr.org/linkin.cgi?id=%s
+Example NCBI taxonomy ID | 83333.1
+Example FIG ID | 83333.1.peg.123
+Example FIG ID | 83333.1.rna.1
+
+</pre>
+</td></tr></table><p>

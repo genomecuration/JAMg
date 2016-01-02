@@ -1,0 +1,77 @@
+application: ajtest [
+  documentation: "Test file for ACD parsing"
+  groups: "Test"
+    relations: "EDAM_topic:0220 File handling"
+    relations: "EDAM_operation:0336 File debugging"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  seqall: sequence [
+    parameter: "Y"
+    type: "any"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+  seqset: bsequence [
+    parameter: "Y"
+    type: "any"
+    aligned: "N"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+  string: idresource [
+    information: "Resource name"
+    knowntype: "emboss database name"
+  ]
+
+  directory: taxdir [
+    nulldefault: "Y"
+    nullok: "Y"
+    information: "NCBI taxonomy directory (optional)"
+    knowntype: "ncbi taxonomy"
+  ]
+  
+endsection: input
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  outfile: outfile [
+    standard: "Y"
+    nullok: "Y"
+    nulldefault: "Y"
+    extension: "nulloutfile"
+    knowntype: "ajtest output"
+    relations: "EDAM_data:0969 Text"
+  ]
+
+  seqout: outseq [
+    standard: "Y"
+    nullok: "Y"
+    nulldefault: "Y"
+    type: "any"
+    relations: "EDAM_data:0849 Sequence record"
+  ]
+
+  featout: outfeat [
+    standard: "Y"
+    nullok: "Y"
+    nulldefault: "Y"
+    type: "any"
+
+  ]
+
+  outdir: outdir [
+    information: "Temporary working file output directory"
+    default: "/tmp"
+    knowntype: "temporary"
+    relations: "EDAM_identifier:1049 Directory name"
+  ]
+
+endsection: output

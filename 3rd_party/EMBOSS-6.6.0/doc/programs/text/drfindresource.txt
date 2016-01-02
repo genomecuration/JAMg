@@ -1,0 +1,295 @@
+                               drfindresource
+
+
+
+Wiki
+
+   The master copies of EMBOSS documentation are available at
+   http://emboss.open-bio.org/wiki/Appdocs on the EMBOSS Wiki.
+
+   Please help by correcting and extending the Wiki pages.
+
+Function
+
+   Find public databases by resource
+
+Description
+
+   drfindresource searches the Data Resource Catalogue to find entries
+   with EDAM resource terms matching a query string.
+
+Algorithm
+
+   The first search is of the EDAM ontology topic namespace, using the
+   term names and their synonynms. All child terms are automatically
+   included in the set of matches inless the -nosubclasses qualifier is
+   used.
+
+   The -sensitive qualifier also searches the definition strings.
+
+   The set of EDAM terms are then compared to entries in the Data Resource
+   Catalogue, searching the 'etpc' EDAM topic index.
+
+Usage
+
+   Here is a sample session with drfindresource
+
+
+% drfindresource pathogens
+Find public databases by resource
+Data resource output file [drfindresource.drcat]:
+
+
+   Go to the output files for this example
+
+Command line arguments
+
+Find public databases by resource
+Version: EMBOSS:6.6.0.0
+
+   Standard (Mandatory) qualifiers:
+  [-query]             string     List of EDAM data keywords (Any string)
+  [-outfile]           outresource [*.drfindresource] Output data resource file
+                                  name
+
+   Additional (Optional) qualifiers: (none)
+   Advanced (Unprompted) qualifiers:
+   -sensitive          boolean    [N] By default, the query keywords are
+                                  matched against the EDAM term names (and
+                                  synonyms) only. This option also matches the
+                                  keywords against the EDAM term definitions
+                                  and will therefore (typically) report more
+                                  matches.
+   -[no]subclasses     boolean    [Y] Extend the query matches to include all
+                                  terms which are specialisations (EDAM
+                                  sub-classes) of the matched type.
+
+   Associated qualifiers:
+
+   "-outfile" associated qualifiers
+   -odirectory2        string     Output directory
+   -oformat2           string     Data resource output format
+
+   General qualifiers:
+   -auto               boolean    Turn off prompts
+   -stdout             boolean    Write first file to standard output
+   -filter             boolean    Read first file from standard input, write
+                                  first file to standard output
+   -options            boolean    Prompt for standard and additional values
+   -debug              boolean    Write debug output to program.dbg
+   -verbose            boolean    Report some/full command line options
+   -help               boolean    Report command line options and exit. More
+                                  information on associated and general
+                                  qualifiers can be found with -help -verbose
+   -warning            boolean    Report warnings
+   -error              boolean    Report errors
+   -fatal              boolean    Report fatal errors
+   -die                boolean    Report dying program messages
+   -version            boolean    Report version number and exit
+
+
+Input file format
+
+   None.
+
+Output file format
+
+   The output is a standard EMBOSS resource file.
+
+   The results can be output in one of several styles by using the
+   command-line qualifier -oformat xxx, where 'xxx' is replaced by the
+   name of the required format. The available format names are: drcat,
+   basic, wsbasic, list.
+
+   See: http://emboss.sf.net/docs/themes/ResourceFormats.html for further
+   information on resource formats.
+
+  Output files for usage example
+
+  File: drfindresource.drcat
+
+ID      ApiDB_TrichDB
+IDalt   TrichDB
+Name    Trichomonas genome resources (TrichDB)
+Desc    Genomic-scale datasets associated with the eukaryotic Trichomonas.
+URL     http://trichdb.org/trichdb/
+URLrest http://eupathdb.org/eupathdb/serviceList.jsp
+Cat     Not available
+Taxon   5721 | Trichomonas
+EDAMtpc 2821 | Unicellular eukaryotes
+EDAMtpc 0783 | Pathogens
+EDAMdat 0916 | Gene annotation
+EDAMid  2295 | Gene ID
+EDAMfmt 2331 | HTML
+Xref    SP_FT | None
+Query    Gene annotation | HTML | Gene ID | http://trichdb.org/gene/%s
+Example Gene ID | TVAG_386080
+
+ID      ApiDB_GiardiaDB
+IDalt   GiardiaDB
+Name    Giardia genome resources (GiardiaDB)
+Desc    Genomic-scale datasets for the eukaryotic pathogen Giardia.
+URL     http://giardiadb.org/giardiadb/
+URLrest http://eupathdb.org/eupathdb/serviceList.jsp
+Cat     Not available
+Taxon   5740 | Giardia
+EDAMtpc 2821 | Unicellular eukaryotes
+EDAMtpc 0783 | Pathogens
+EDAMdat 0916 | Gene annotation
+EDAMid  2295 | Gene ID
+EDAMfmt 2331 | HTML
+Xref    SP_FT | None
+Query    Gene annotation | HTML | Gene ID | http://giardiadb.org/gene/%s
+Example Gene ID | GL50803_102438
+
+ID      GeneDB
+Name    GeneDB database from Sanger Institute Pathogen Sequencing Units
+Desc    Sequence data and annotation/curation for the whole range of organisms s
+equenced by the PSU (Sanger Institute Pathogen Sequencing Units).
+URL     http://www.genedb.org/
+Taxon   1 | all
+EDAMtpc 0783 | Pathogens
+EDAMdat 0916 | Gene annotation
+EDAMid  1026 | Gene symbol
+EDAMfmt 2331 | HTML
+Xref    SP_FT | None
+Query    Gene annotation | HTML | Gene symbol | http://www.genedb.org/gene/%s
+Example Gene symbol | ECA4014
+
+ID      EuPathDB
+IDalt   ApiDB
+Acc     DB-0153
+
+
+  [Part of this file has been deleted for brevity]
+
+Taxon   1 | all
+EDAMtpc 0783 | Pathogens
+EDAMdat 2399 | Gene annotation (transcript)
+EDAMdat 0895 | Peptide annotation
+EDAMdat 0916 | Gene annotation
+EDAMid  2759 | Gene ID (VectorBase)
+EDAMfmt 2331 | HTML
+Xref    SP_explicit | Gene ID (VectorBase)
+Query    Gene annotation {VectorBase entry} | HTML | Gene ID (VectorBase) | http
+://www.vectorbase.org/Genome/BRCGene/?feature=%s
+Query    Peptide annotation {VectorBase peptide page} | HTML | Gene ID (VectorBa
+se) | http://www.vectorbase.org/Genome/BRCGene/?feature=%s-PA
+Query    Gene annotation (transcript) | HTML | Gene ID (VectorBase) | http://www
+.vectorbase.org/Genome/BRCGene/?feature=%s-RA
+Example Gene ID (VectorBase) | AGAP005025
+
+ID      ApiDB_TriTryPDB
+IDalt   TritryPDB
+Name    Kinetoplastid genome resources (TritryPDB)
+Desc    Kinetoplastid genome resources.
+URL     http://tritryPDB.org/tritryPDB/
+URLrest http://eupathdb.org/eupathdb/serviceList.jsp
+Cat     Not available
+Taxon   5653 | Kinetoplastida
+EDAMtpc 2821 | Unicellular eukaryotes
+EDAMtpc 0783 | Pathogens
+EDAMdat 0916 | Gene annotation
+EDAMid  2295 | Gene ID
+EDAMfmt 2331 | HTML
+Xref    SP_FT | None
+Query    Gene annotation | HTML | Gene ID | http://tritryPDB.org/gene/%s
+Example Gene ID | Tb927.8.620
+
+ID      NMPDR
+Acc     DB-0125
+Name    National microbial pathogen
+Desc    Curated annotations in an environment for comparative analysis of genome
+s and biological subsystems, with an emphasis on the food-borne pathogens Campyl
+obacter, Listeria, Staphylococcus, Streptococcus, and Vibrio as well as the STD
+pathogens Chlamydiaceae, Haemophilus, Mycoplasma, Neisseria, Treponema, and Urea
+plasma.
+URL     http://www.nmpdr.org
+URLlink http://www.nmpdr.org/FIG/wiki/view.cgi/FIG/LinkingToTheGenomeViewer
+Cat     Genome annotation databases
+Taxon   2 | Bacteria
+EDAMtpc 0783 | Pathogens
+EDAMtpc 0797 | Comparative genomics
+EDAMdat 0916 | Gene annotation
+EDAMid  1179 | NCBI taxonomy ID
+EDAMid  2737 | FIG ID
+EDAMfmt 2331 | HTML
+Xref    SP_explicit | FIG ID
+Query    Gene annotation | HTML | NCBI taxonomy ID | http://www.nmpdr.org/linkin
+.cgi?genome=%s
+Query    Gene annotation {Protein encoding gene or other feature} | HTML | FIG I
+D | http://www.nmpdr.org/linkin.cgi?id=%s
+Example NCBI taxonomy ID | 83333.1
+Example FIG ID | 83333.1.peg.123
+Example FIG ID | 83333.1.rna.1
+
+
+Data files
+
+   The Data Resource Catalogue is included in EMBOSS as local database
+   drcat. The EDAM Ontology is included in EMBOSS as local database edam.
+
+Notes
+
+   None.
+
+References
+
+   None.
+
+Warnings
+
+   None.
+
+Diagnostic Error Messages
+
+   None.
+
+Exit status
+
+   It always exits with status 0.
+
+Known bugs
+
+   None.
+
+See also
+
+                    Program name                       Description
+                    drfinddata    Find public databases by data type
+                    drfindformat  Find public databases by format
+                    drfindid      Find public databases by identifier
+                    drget         Get data resource entries
+                    drtext        Get data resource entries complete text
+                    edamdef       Find EDAM ontology terms by definition
+                    edamhasinput  Find EDAM ontology terms by has_input relation
+   edamhasoutput    Find EDAM ontology terms by has_output relation
+                    edamisformat  Find EDAM ontology terms by is_format_of relation
+                    edamisid      Find EDAM ontology terms by is_identifier_of relation
+                    edamname      Find EDAM ontology terms by name
+                    wossdata      Find programs by EDAM data
+                    wossinput     Find programs by EDAM input data
+   wossoperation    Find programs by EDAM operation
+                    wossoutput    Find programs by EDAM output data
+                    wossparam     Find programs by EDAM parameter
+                    wosstopic     Find programs by EDAM topic
+
+Author(s)
+
+   Peter            Rice
+   European         Bioinformatics Institute, Wellcome Trust Genome Campus,
+   Hinxton,         Cambridge CB10 1SD, UK
+
+                    Please report all bugs to the EMBOSS bug team
+                    (emboss-bug (c) emboss.open-bio.org) not to the original author.
+
+History
+
+Target users
+
+                    This program is intended to be used by everyone and everything, from
+                    naive users to embedded scripts.
+
+Comments
+
+                    None

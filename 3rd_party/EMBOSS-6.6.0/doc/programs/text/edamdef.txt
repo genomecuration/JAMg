@@ -1,0 +1,424 @@
+                                   edamdef
+
+
+
+Wiki
+
+   The master copies of EMBOSS documentation are available at
+   http://emboss.open-bio.org/wiki/Appdocs on the EMBOSS Wiki.
+
+   Please help by correcting and extending the Wiki pages.
+
+Function
+
+   Find EDAM ontology terms by definition
+
+Description
+
+   edamdef searches the definition of EDAM terms and returns matching
+   terms. The input is read from the installed EDAM database. The ontology
+   term output can be written to screen, to file, or passed to another
+   program. A wide range of standard ontology term formats may be
+   specified for input and output.
+
+   Optionally the search can be restricted to specified EDAM namespaces.
+
+Usage
+
+   Here is a sample session with edamdef
+
+
+% edamdef multiple
+Find EDAM ontology terms by definition
+Obo output file [edamdef.obo]:
+
+
+   Go to the output files for this example
+
+   Example 2
+
+
+% edamdef multiple -subclasses
+Find EDAM ontology terms by definition
+Obo output file [edamdef.obo]:
+
+
+   Go to the output files for this example
+
+Command line arguments
+
+Find EDAM ontology terms by definition
+Version: EMBOSS:6.6.0.0
+
+   Standard (Mandatory) qualifiers:
+  [-query]             string     Definition word(s) to search for in ontology
+                                  (Any string)
+  [-outfile]           outobo     [*.edamdef] Output ontology term file name
+
+   Additional (Optional) qualifiers:
+   -namespace          menu       [*] By default all terms are returned.
+                                  Searches can be limited to one or a few
+                                  namespaces. (Values: data (Data entity);
+                                  entity (Biological entity); format (Data
+                                  format); identifier (Identifier); operation
+                                  (Bioinformatics operation); resource (Data
+                                  resource); topic (Field of bioinformatics
+                                  study))
+
+   Advanced (Unprompted) qualifiers:
+   -subclasses         boolean    [N] Extend the query matches to include all
+                                  terms which are specialisations (EDAM
+                                  sub-classes) of the matched type.
+   -obsolete           boolean    [N] The default behaviour is to not use or
+                                  return obsolete terms. This option if set
+                                  will include all terms.
+
+   Associated qualifiers:
+
+   "-outfile" associated qualifiers
+   -odirectory2        string     Output directory
+   -oformat2           string     Ontology term output format
+
+   General qualifiers:
+   -auto               boolean    Turn off prompts
+   -stdout             boolean    Write first file to standard output
+   -filter             boolean    Read first file from standard input, write
+                                  first file to standard output
+   -options            boolean    Prompt for standard and additional values
+   -debug              boolean    Write debug output to program.dbg
+   -verbose            boolean    Report some/full command line options
+   -help               boolean    Report command line options and exit. More
+                                  information on associated and general
+                                  qualifiers can be found with -help -verbose
+   -warning            boolean    Report warnings
+   -error              boolean    Report errors
+   -fatal              boolean    Report fatal errors
+   -die                boolean    Report dying program messages
+   -version            boolean    Report version number and exit
+
+
+Input file format
+
+   edamdef queries the EDAM ontology.
+
+Output file format
+
+   The output is a standard EMBOSS ontology term file.
+
+   The results can be output in one of several styles by using the
+   command-line qualifier -oformat xxx, where 'xxx' is replaced by the
+   name of the required format. The available format names are: obo,
+   brief, list, html, xml, json, excel.
+
+   See: http://emboss.sf.net/docs/themes/OntologyFormats.html for further
+   information on ontology formats.
+
+  Output files for usage example
+
+  File: edamdef.obo
+
+[Term]
+id: EDAM_format:1391
+name: HMMER-aln
+namespace: format
+def: FASTA-style format for multiple sequences aligned by HMMER package to an HM
+M.
+subset: bioinformatics
+subset: edam
+subset: formats
+created_in: "beta12orEarlier"
+is_a: EDAM_format:2200 ! FASTA-like (text)
+is_a: EDAM_format:2330 ! Textual format
+is_a: EDAM_format:2554 ! Alignment format (text)
+
+[Term]
+id: EDAM_data:1383
+name: Sequence alignment (nucleic acid)
+namespace: data
+def: Alignment of multiple nucleotide sequences.
+subset: bioinformatics
+subset: data
+subset: edam
+created_in: "beta12orEarlier"
+is_a: EDAM_data:0863 ! Sequence alignment
+is_a: EDAM_data:2084 ! Nucleic acid report
+
+[Term]
+id: EDAM_topic:0797
+name: Comparative genomics
+namespace: topic
+def: Topic concerning the study (typically comparison) of the sequence, structur
+e or function of multiple genomes.
+subset: bioinformatics
+subset: edam
+subset: topics
+xref: BioCatalogue:Comparative Genomics
+created_in: "beta12orEarlier"
+is_a: EDAM_topic:0622 ! Genomics
+
+[Term]
+id: EDAM_format:2001
+name: EMBOSS simple format
+namespace: format
+def: EMBOSS simple multiple alignment format.
+subset: bioinformatics
+subset: edam
+subset: formats
+created_in: "beta12orEarlier"
+is_a: EDAM_format:2330 ! Textual format
+is_a: EDAM_format:2554 ! Alignment format (text)
+
+[Term]
+
+
+  [Part of this file has been deleted for brevity]
+
+subset: operations
+synonym: "Multiple sequence alignment (phylogenetic tree-based)" EXACT []
+synonym: "Phylogenetic tree-based multiple sequence alignment construction" EXAC
+T []
+created_in: "beta12orEarlier"
+is_a: EDAM_operation:0492 ! Multiple sequence alignment construction
+relationship: has_topic EDAM_topic:0084 ! Phylogenetics
+
+[Term]
+id: EDAM_operation:0498
+name: Multiple sequence alignment construction (consensus)
+namespace: operation
+def: Align two or more molecular sequences using multiple methods to achieve hig
+her quality.
+subset: bioinformatics
+subset: edam
+subset: operations
+synonym: "Consensus multiple sequence alignment construction" EXACT []
+synonym: "Multiple sequence alignment (consensus)" EXACT []
+created_in: "beta12orEarlier"
+is_a: EDAM_operation:0492 ! Multiple sequence alignment construction
+
+[Term]
+id: EDAM_operation:0434
+name: Integrated gene prediction
+namespace: operation
+def: Predict whole gene structure using a combination of multiple methods to ach
+ieve better predictions.
+subset: bioinformatics
+subset: edam
+subset: operations
+created_in: "beta12orEarlier"
+is_a: EDAM_operation:0425 ! Whole gene prediction
+
+[Term]
+id: EDAM_data:0842
+name: Identifier
+namespace: identifier
+def: A text token, number or something else which identifies an entity, but whic
+h may not be persistent (stable) or unique (the same identifier may identify mul
+tiple things).
+subset: bioinformatics
+subset: data
+subset: edam
+subset: identifiers
+synonym: "WSIO_data:005" EXACT []
+synonym: "http://purl.org/dc/elements/1.1/identifier" NARROW []
+synonym: "ID" EXACT []
+synonym: "SIO:000115" EXACT []
+created_in: "beta12orEarlier"
+is_a: EDAM_data:0006 ! Data
+disjoint_from: EDAM_data:2048 ! Report
+disjoint_from: EDAM_data:2527 ! Parameter
+disjoint_from: EDAM_data:3031 ! Core data
+relationship: is_identifier_of EDAM_data:0006 ! Data
+
+
+  Output files for usage example 2
+
+  File: edamdef.obo
+
+[Term]
+id: EDAM_format:1391
+name: HMMER-aln
+namespace: format
+def: FASTA-style format for multiple sequences aligned by HMMER package to an HM
+M.
+subset: bioinformatics
+subset: edam
+subset: formats
+created_in: "beta12orEarlier"
+is_a: EDAM_format:2200 ! FASTA-like (text)
+is_a: EDAM_format:2330 ! Textual format
+is_a: EDAM_format:2554 ! Alignment format (text)
+
+[Term]
+id: EDAM_data:1383
+name: Sequence alignment (nucleic acid)
+namespace: data
+def: Alignment of multiple nucleotide sequences.
+subset: bioinformatics
+subset: data
+subset: edam
+created_in: "beta12orEarlier"
+is_a: EDAM_data:0863 ! Sequence alignment
+is_a: EDAM_data:2084 ! Nucleic acid report
+
+[Term]
+id: EDAM_data:1386
+name: Sequence alignment (nucleic acid pair)
+namespace: data
+def: Alignment of exactly two nucleotide sequences.
+subset: bioinformatics
+subset: data
+subset: edam
+created_in: "beta12orEarlier"
+is_a: EDAM_data:1381 ! Sequence alignment (pair)
+is_a: EDAM_data:1383 ! Sequence alignment (nucleic acid)
+
+[Term]
+id: EDAM_topic:0797
+name: Comparative genomics
+namespace: topic
+def: Topic concerning the study (typically comparison) of the sequence, structur
+e or function of multiple genomes.
+subset: bioinformatics
+subset: edam
+subset: topics
+xref: BioCatalogue:Comparative Genomics
+created_in: "beta12orEarlier"
+is_a: EDAM_topic:0622 ! Genomics
+
+[Term]
+
+
+  [Part of this file has been deleted for brevity]
+
+regex: "[0-9]+"
+is_a: EDAM_data:2091 ! Accession
+
+[Term]
+id: EDAM_data:1047
+name: URI
+namespace: data
+def: A string of characters that name or otherwise identify a resource on the In
+ternet.
+subset: bioinformatics
+subset: data
+subset: edam
+created_in: "beta12orEarlier"
+is_a: EDAM_data:0842 ! Identifier
+
+[Term]
+id: EDAM_data:1052
+name: URL
+namespace: data
+def: A Uniform Resource Locator (URL).
+subset: bioinformatics
+subset: data
+subset: edam
+xref: Moby:Link
+xref: Moby:URL
+created_in: "beta12orEarlier"
+is_a: EDAM_data:1047 ! URI
+
+[Term]
+id: EDAM_data:1053
+name: URN
+namespace: data
+def: A Uniform Resource Name (URN).
+subset: bioinformatics
+subset: data
+subset: edam
+created_in: "beta12orEarlier"
+is_a: EDAM_data:1047 ! URI
+
+[Term]
+id: EDAM_data:1055
+name: LSID
+namespace: data
+def: A Life Science Identifier (LSID) - a unique identifier of some data.
+comment: LSIDs provide a standard way to locate and describe data. An LSID is re
+presented as a Uniform Resource Name (URN) with the following EDAM_format: URN:L
+SID:<Authority>:<Namespace>:<ObjectID>[:<Version>]
+subset: bioinformatics
+subset: data
+subset: edam
+synonym: "Life Science Identifier" EXACT []
+created_in: "beta12orEarlier"
+is_a: EDAM_data:1053 ! URN
+
+
+Data files
+
+   The EDAM Ontology is included in EMBOSS as local database edam.
+
+Notes
+
+   None.
+
+References
+
+   None.
+
+Warnings
+
+   None.
+
+Diagnostic Error Messages
+
+   None.
+
+Exit status
+
+   It always exits with status 0.
+
+Known bugs
+
+   None.
+
+See also
+
+                     Program name                        Description
+                    drfinddata      Find public databases by data type
+                    drfindformat    Find public databases by format
+                    drfindid        Find public databases by identifier
+                    drfindresource  Find public databases by resource
+                    edamhasinput    Find EDAM ontology terms by has_input relation
+                    edamhasoutput   Find EDAM ontology terms by has_output relation
+                    edamisformat    Find EDAM ontology terms by is_format_of relation
+                    edamisid        Find EDAM ontology terms by is_identifier_of relation
+                    edamname        Find EDAM ontology terms by name
+                    godef           Find GO ontology terms by definition
+                    goname          Find GO ontology terms by name
+                    ontoget         Get ontology term(s)
+                    ontogetcommon   Get common ancestor for terms
+                    ontogetdown     Get ontology term(s) by parent id
+   ontogetobsolete  Get ontology ontology terms
+                    ontogetroot     Get ontology root terms by child identifier
+                    ontogetsibs     Get ontology term(s) by id with common parent
+                    ontogetup       Get ontology term(s) by id of child
+                    ontoisobsolete  Report whether an ontology term id is obsolete
+                    ontotext        Get ontology term(s) original full text
+                    wossdata        Find programs by EDAM data
+                    wossinput       Find programs by EDAM input data
+                    wossoperation   Find programs by EDAM operation
+                    wossoutput      Find programs by EDAM output data
+                    wossparam       Find programs by EDAM parameter
+                    wosstopic       Find programs by EDAM topic
+
+Author(s)
+
+   Peter            Rice
+   European         Bioinformatics Institute, Wellcome Trust Genome Campus,
+   Hinxton,         Cambridge CB10 1SD, UK
+
+                    Please report all bugs to the EMBOSS bug team
+                    (emboss-bug (c) emboss.open-bio.org) not to the original author.
+
+History
+
+Target users
+
+                    This program is intended to be used by everyone and everything, from
+                    naive users to embedded scripts.
+
+Comments
+
+                    None

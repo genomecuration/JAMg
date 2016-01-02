@@ -1,0 +1,21 @@
+application: acdtrace [
+  documentation: "Trace processing of an application ACD file (for testing)"
+  gui: "no"
+  groups: "Acd, Data retrieval:Tool data"
+    relations: "EDAM_topic:0091 Data handling"
+    relations: "EDAM_operation:0336 File validation"
+]
+
+section: required [
+  information: "Required section"
+  type: "page"
+]
+
+  string: program [
+    parameter: "Y"
+    information: "Program name, followed by command line"
+    knowntype: "Program name"
+    relations: "EDAM_identifier:1190 Tool name"
+  ]
+
+endsection: required

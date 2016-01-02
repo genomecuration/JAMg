@@ -57,6 +57,7 @@ export GENOME_NAME=dmel-all-r5.53 # just a base name for our genome
 export LOCAL_CPUS=5 
 export MAX_MEMORY_G=100 # maximum amount of memory to use in Gb
 export PATH=$JAMG_PATH/bin:$JAMG_PATH/3rd_party/bin:$PATH
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$JAMG_PATH/3rd_party/lib:$JAMG_PATH/3rd_party/lib64/
 
 These ought to be project specific so if you store the above in a file you can use this command to import them in your environment. That way you don't have to type them every time and you will also remember what you used.
 

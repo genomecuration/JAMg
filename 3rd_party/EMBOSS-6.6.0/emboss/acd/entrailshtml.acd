@@ -1,0 +1,44 @@
+application: entrailshtml [
+  documentation: "Report the internal structures in HTML"
+  groups: "Utils:Misc"
+    relations: "EDAM_topic:0220 File handling"
+    relations: "EDAM_operation:0335 File reformatting"
+]
+
+section: required [
+  information: "required section"
+  type: "page"
+]
+
+  list: tables [
+    standard: "Y"
+    default: "all"
+    minimum: "1"
+    values: "all: All tables;
+            inseq: Input sequence formats;
+            outseq: Output sequence formats;
+            infeat: Input feature formats;
+            outfeat: Output feature formats;
+            report: Output report formats;
+            align: Output alignment formats;
+            assembly: Assembly formats;
+            resource: Data resource formats;
+            taxonomy: Taxonomy formats"
+    information: "Tables to be written"
+    relations: "EDAM_data:2152 Rendering parameter"
+  ]
+
+endsection: required
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  outfile: outfile [
+    parameter: "Y"
+    knowntype: "html"
+    relations: "EDAM_data:0969 Text"
+  ]
+
+endsection: output

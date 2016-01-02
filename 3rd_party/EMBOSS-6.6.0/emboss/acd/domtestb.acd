@@ -1,0 +1,18 @@
+application: domtestb [
+  documentation: "Create, manipulate and write out XML"
+  groups: "Edit"
+    relations: "EDAM_topic:0220 File handling"
+    relations: "EDAM_operation:0336 File debugging"
+]
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  outfile: outfile [
+    parameter: "Y"
+    information: "XML output file"
+  ]
+
+endsection: output

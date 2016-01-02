@@ -1,0 +1,26 @@
+Here is a sample session with <b>cachedbfetch</b>
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>cachedbfetch -servername tdbfetch -auto -cachefile ~/.embossdata/qatests.server.tdbfetch </b>
+Warning: EMBL-Bank : No dbtype found supporting format emblxml-1.0
+Warning: EMBL-Bank : No dbtype found supporting format emblxml-1.1
+Warning: EMBLCDS : No dbtype found supporting format emblxml-1.1
+Warning: EMBLCON : No dbtype found supporting format emblxml-1.0
+Warning: EMBLCON : No dbtype found supporting format emblxml-1.1
+Warning: EMBLCONEXP : No dbtype found supporting format emblxml-1.0
+Warning: EMBLCONEXP : No dbtype found supporting format emblxml-1.1
+Warning: Gene Ontology : No dbtype found supporting format oboxml
+Warning: Gene Ontology : No dbtype found supporting format gordfxml
+Warning: MEDLINE : No dbtype found supporting format pubmedxml
+Warning: Patent Equivalents : No dbtype found supporting format patent_equivalents
+Warning: No dbtype found for db Patent Equivalents
+Warning: Taxonomy : No dbtype found supporting format emboss_tax
+Warning: Taxonomy : No dbtype found supporting format ncbi_taxon
+Warning: UniParc : No dbtype found supporting format uniparcflat
+
+</pre></td></tr></table><p>
+<p>
+<a href="#output.1">Go to the output files for this example</a><p><p>

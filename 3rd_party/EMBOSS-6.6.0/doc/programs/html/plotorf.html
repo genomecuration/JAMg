@@ -1,0 +1,1017 @@
+<HTML>
+
+<HEAD>
+  <TITLE>
+  EMBOSS: plotorf
+  </TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF" text="#000000">
+
+<table align=center border=0 cellspacing=0 cellpadding=0>
+<tr><td valign=top>
+<A HREF="/" ONMOUSEOVER="self.status='Go to the EMBOSS home page';return true"><img border=0 src="/images/emboss_icon.jpg" alt="" width=150 height=48></a>
+</td>
+<td align=left valign=middle>
+<b><font size="+6">
+plotorf
+</font></b>
+</td></tr>
+</table>
+<br>&nbsp;
+<p>
+
+
+<H2>
+Wiki
+</H2>
+
+The master copies of EMBOSS documentation are available
+at <a href="http://emboss.open-bio.org/wiki/Appdocs">
+http://emboss.open-bio.org/wiki/Appdocs</a>
+on the EMBOSS Wiki.
+
+<p>
+Please help by correcting and extending the Wiki pages.
+
+<H2>
+    Function
+</H2>
+Plot potential open reading frames in a nucleotide sequence
+
+<H2>
+    Description
+</H2>
+
+
+<p><b>plotorf</b> plots potential open reading frames (ORFs) for an input nucleotide sequence.  ORFs in this program are defined as being regions between the specified START and STOP codons.  A graphical representation of where the open reading frames are in all 6 reading frames is shown. The ORFs are displayed as blue boxes.</p>
+
+<H2>
+ Algorithm
+</H2>
+
+<p>ORFs in this program are defined as being regions between START and STOP codons. The default START codon is: <tt>ATG</tt>. The default STOP codons are: <tt>TAA</tt>,<tt>TAG</tt>,<tt>TGA</tt>. You can specify your own set of start and stop codons using the <tt>-start</tt> and <tt>-stop</tt> qualifiers.</p>
+
+
+<H2>
+    Usage
+</H2>
+
+
+Here is a sample session with <b>plotorf</b>
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>plotorf </b>
+Plot potential open reading frames in a nucleotide sequence
+Input nucleotide sequence: <b>tembl:x13776</b>
+Graph type [x11]: <b>cps</b>
+
+Created plotorf.ps
+
+</pre></td></tr></table><p>
+<p>
+<a href="#input.1">Go to the input files for this example</a><br><a href="#output.1">Go to the output files for this example</a><p><p>
+<p>
+<b>Example 2</b>
+<p>
+An example of specifying your own START and STOP codons with a mitochondrial sequence would be: 
+<p>
+
+<p>
+<table width="90%"><tr><td bgcolor="#CCFFFF"><pre>
+
+% <b>plotorf -start ATT,ATC,ATA,ATG,GTG -stop TAA,TAG,AGA,AGG </b>
+Plot potential open reading frames in a nucleotide sequence
+Input nucleotide sequence: <b>mito.seq</b>
+Graph type [x11]: <b>cps</b>
+
+Created plotorf.ps
+
+</pre></td></tr></table><p>
+<p>
+<a href="#input.2">Go to the input files for this example</a><br><a href="#output.2">Go to the output files for this example</a><p><p>
+
+<H2>
+    Command line arguments
+</H2>
+<table CELLSPACING=0 CELLPADDING=3 BGCOLOR="#f5f5ff" ><tr><td>
+<pre>
+Plot potential open reading frames in a nucleotide sequence
+Version: EMBOSS:6.6.0.0
+
+   Standard (Mandatory) qualifiers:
+  [-sequence]          sequence   Nucleotide sequence filename and optional
+                                  format, or reference (input USA)
+   -graph              xygraph    [$EMBOSS_GRAPHICS value, or x11] Graph type
+                                  (ps, hpgl, hp7470, hp7580, meta, cps, x11,
+                                  tek, tekt, none, data, xterm, png, gif, pdf,
+                                  svg)
+
+   Additional (Optional) qualifiers: (none)
+   Advanced (Unprompted) qualifiers:
+   -start              string     [ATG] Start codons (Any string)
+   -stop               string     [TAA,TAG,TGA] Stop codons (Any string)
+
+   Associated qualifiers:
+
+   "-sequence" associated qualifiers
+   -sbegin1            integer    Start of the sequence to be used
+   -send1              integer    End of the sequence to be used
+   -sreverse1          boolean    Reverse (if DNA)
+   -sask1              boolean    Ask for begin/end/reverse
+   -snucleotide1       boolean    Sequence is nucleotide
+   -sprotein1          boolean    Sequence is protein
+   -slower1            boolean    Make lower case
+   -supper1            boolean    Make upper case
+   -scircular1         boolean    Sequence is circular
+   -squick1            boolean    Read id and sequence only
+   -sformat1           string     Input sequence format
+   -iquery1            string     Input query fields or ID list
+   -ioffset1           integer    Input start position offset
+   -sdbname1           string     Database name
+   -sid1               string     Entryname
+   -ufo1               string     UFO features
+   -fformat1           string     Features format
+   -fopenfile1         string     Features file name
+
+   "-graph" associated qualifiers
+   -gprompt            boolean    Graph prompting
+   -gdesc              string     Graph description
+   -gtitle             string     Graph title
+   -gsubtitle          string     Graph subtitle
+   -gxtitle            string     Graph x axis title
+   -gytitle            string     Graph y axis title
+   -goutfile           string     Output file for non interactive displays
+   -gdirectory         string     Output directory
+
+   General qualifiers:
+   -auto               boolean    Turn off prompts
+   -stdout             boolean    Write first file to standard output
+   -filter             boolean    Read first file from standard input, write
+                                  first file to standard output
+   -options            boolean    Prompt for standard and additional values
+   -debug              boolean    Write debug output to program.dbg
+   -verbose            boolean    Report some/full command line options
+   -help               boolean    Report command line options and exit. More
+                                  information on associated and general
+                                  qualifiers can be found with -help -verbose
+   -warning            boolean    Report warnings
+   -error              boolean    Report errors
+   -fatal              boolean    Report fatal errors
+   -die                boolean    Report dying program messages
+   -version            boolean    Report version number and exit
+
+</pre>
+</td></tr></table>
+<P>
+
+<table border cellspacing=0 cellpadding=3 bgcolor="#ccccff">
+<tr bgcolor="#FFFFCC">
+<th align="left">Qualifier</th>
+<th align="left">Type</th>
+<th align="left">Description</th>
+<th align="left">Allowed values</th>
+<th align="left">Default</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>Standard (Mandatory) qualifiers</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>[-sequence]<br>(Parameter 1)</td>
+<td>sequence</td>
+<td>Nucleotide sequence filename and optional format, or reference (input USA)</td>
+<td>Readable sequence</td>
+<td><b>Required</b></td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-graph</td>
+<td>xygraph</td>
+<td>Graph type</td>
+<td>EMBOSS has a list of known devices, including ps, hpgl, hp7470, hp7580, meta, cps, x11, tek, tekt, none, data, xterm, png, gif, pdf, svg</td>
+<td><i>EMBOSS_GRAPHICS</i> value, or x11</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>Additional (Optional) qualifiers</th>
+</tr>
+
+<tr>
+<td colspan=5>(none)</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>Advanced (Unprompted) qualifiers</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-start</td>
+<td>string</td>
+<td>Start codons</td>
+<td>Any string</td>
+<td>ATG</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td>-stop</td>
+<td>string</td>
+<td>Stop codons</td>
+<td>Any string</td>
+<td>TAA,TAG,TGA</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>Associated qualifiers</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td align="left" colspan=5>"-sequence" associated sequence qualifiers
+</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -sbegin1<br>-sbegin_sequence</td>
+<td>integer</td>
+<td>Start of the sequence to be used</td>
+<td>Any integer value</td>
+<td>0</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -send1<br>-send_sequence</td>
+<td>integer</td>
+<td>End of the sequence to be used</td>
+<td>Any integer value</td>
+<td>0</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -sreverse1<br>-sreverse_sequence</td>
+<td>boolean</td>
+<td>Reverse (if DNA)</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -sask1<br>-sask_sequence</td>
+<td>boolean</td>
+<td>Ask for begin/end/reverse</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -snucleotide1<br>-snucleotide_sequence</td>
+<td>boolean</td>
+<td>Sequence is nucleotide</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -sprotein1<br>-sprotein_sequence</td>
+<td>boolean</td>
+<td>Sequence is protein</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -slower1<br>-slower_sequence</td>
+<td>boolean</td>
+<td>Make lower case</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -supper1<br>-supper_sequence</td>
+<td>boolean</td>
+<td>Make upper case</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -scircular1<br>-scircular_sequence</td>
+<td>boolean</td>
+<td>Sequence is circular</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -squick1<br>-squick_sequence</td>
+<td>boolean</td>
+<td>Read id and sequence only</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -sformat1<br>-sformat_sequence</td>
+<td>string</td>
+<td>Input sequence format</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -iquery1<br>-iquery_sequence</td>
+<td>string</td>
+<td>Input query fields or ID list</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -ioffset1<br>-ioffset_sequence</td>
+<td>integer</td>
+<td>Input start position offset</td>
+<td>Any integer value</td>
+<td>0</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -sdbname1<br>-sdbname_sequence</td>
+<td>string</td>
+<td>Database name</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -sid1<br>-sid_sequence</td>
+<td>string</td>
+<td>Entryname</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -ufo1<br>-ufo_sequence</td>
+<td>string</td>
+<td>UFO features</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -fformat1<br>-fformat_sequence</td>
+<td>string</td>
+<td>Features format</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -fopenfile1<br>-fopenfile_sequence</td>
+<td>string</td>
+<td>Features file name</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td align="left" colspan=5>"-graph" associated xygraph qualifiers
+</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -gprompt</td>
+<td>boolean</td>
+<td>Graph prompting</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -gdesc</td>
+<td>string</td>
+<td>Graph description</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -gtitle</td>
+<td>string</td>
+<td>Graph title</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -gsubtitle</td>
+<td>string</td>
+<td>Graph subtitle</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -gxtitle</td>
+<td>string</td>
+<td>Graph x axis title</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -gytitle</td>
+<td>string</td>
+<td>Graph y axis title</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -goutfile</td>
+<td>string</td>
+<td>Output file for non interactive displays</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -gdirectory</td>
+<td>string</td>
+<td>Output directory</td>
+<td>Any string</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<th align="left" colspan=5>General qualifiers</th>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -auto</td>
+<td>boolean</td>
+<td>Turn off prompts</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -stdout</td>
+<td>boolean</td>
+<td>Write first file to standard output</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -filter</td>
+<td>boolean</td>
+<td>Read first file from standard input, write first file to standard output</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -options</td>
+<td>boolean</td>
+<td>Prompt for standard and additional values</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -debug</td>
+<td>boolean</td>
+<td>Write debug output to program.dbg</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -verbose</td>
+<td>boolean</td>
+<td>Report some/full command line options</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -help</td>
+<td>boolean</td>
+<td>Report command line options and exit. More information on associated and general qualifiers can be found with -help -verbose</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -warning</td>
+<td>boolean</td>
+<td>Report warnings</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -error</td>
+<td>boolean</td>
+<td>Report errors</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -fatal</td>
+<td>boolean</td>
+<td>Report fatal errors</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -die</td>
+<td>boolean</td>
+<td>Report dying program messages</td>
+<td>Boolean value Yes/No</td>
+<td>Y</td>
+</tr>
+
+<tr bgcolor="#FFFFCC">
+<td> -version</td>
+<td>boolean</td>
+<td>Report version number and exit</td>
+<td>Boolean value Yes/No</td>
+<td>N</td>
+</tr>
+
+</table>
+
+
+<H2>
+    Input file format
+</H2>
+
+Any nucleic acid sequence.
+
+
+<a name="input.1"></a>
+<h3>Input files for usage example </h3>
+
+'tembl:x13776' is a sequence entry in the example nucleic acid database 'tembl'
+<p>
+<p><h3>Database entry: tembl:x13776</h3>
+<table width="90%"><tr><td bgcolor="#FFCCFF">
+<pre>
+ID   X13776; SV 1; linear; genomic DNA; STD; PRO; 2167 BP.
+XX
+AC   X13776; M43175;
+XX
+DT   19-APR-1989 (Rel. 19, Created)
+DT   14-NOV-2006 (Rel. 89, Last updated, Version 24)
+XX
+DE   Pseudomonas aeruginosa amiC and amiR gene for aliphatic amidase regulation
+XX
+KW   aliphatic amidase regulator; amiC gene; amiR gene.
+XX
+OS   Pseudomonas aeruginosa
+OC   Bacteria; Proteobacteria; Gammaproteobacteria; Pseudomonadales;
+OC   Pseudomonadaceae; Pseudomonas.
+XX
+RN   [1]
+RP   1167-2167
+RA   Rice P.M.;
+RT   ;
+RL   Submitted (16-DEC-1988) to the INSDC.
+RL   Rice P.M., EMBL, Postfach 10-2209, Meyerhofstrasse 1, 6900 Heidelberg, FRG.
+XX
+RN   [2]
+RP   1167-2167
+RX   DOI; 10.1016/0014-5793(89)80249-2.
+RX   PUBMED; 2495988.
+RA   Lowe N., Rice P.M., Drew R.E.;
+RT   "Nucleotide sequence of the aliphatic amidase regulator gene (amiR) of
+RT   Pseudomonas aeruginosa";
+RL   FEBS Lett. 246(1-2):39-43(1989).
+XX
+RN   [3]
+RP   1-1292
+RX   PUBMED; 1907262.
+RA   Wilson S., Drew R.;
+RT   "Cloning and DNA sequence of amiC, a new gene regulating expression of the
+RT   Pseudomonas aeruginosa aliphatic amidase, and purification of the amiC
+RT   product";
+RL   J. Bacteriol. 173(16):4914-4921(1991).
+XX
+RN   [4]
+RP   1-2167
+RA   Rice P.M.;
+RT   ;
+RL   Submitted (04-SEP-1991) to the INSDC.
+RL   Rice P.M., EMBL, Postfach 10-2209, Meyerhofstrasse 1, 6900 Heidelberg, FRG.
+XX
+DR   GOA; Q51417.
+DR   InterPro; IPR003211; AmiSUreI_transpt.
+DR   UniProtKB/Swiss-Prot; Q51417; AMIS_PSEAE.
+
+
+<font color=red>  [Part of this file has been deleted for brevity]</font>
+
+FT                   /note="ClaI fragment deleted in pSW36,  constitutive
+FT                   phenotype"
+FT   misc_feature    1
+FT                   /note="last base of an XhoI site"
+FT   misc_feature    648..653
+FT                   /note="end of 658bp XhoI fragment, deletion in  pSW3 causes
+FT                   constitutive expression of amiE"
+FT   misc_difference 1281
+FT                   /replace="g"
+FT                   /note="conflict"
+FT                   /citation=[3]
+XX
+SQ   Sequence 2167 BP; 363 A; 712 C; 730 G; 362 T; 0 other;
+     ggtaccgctg gccgagcatc tgctcgatca ccaccagccg ggcgacggga actgcacgat        60
+     ctacctggcg agcctggagc acgagcgggt tcgcttcgta cggcgctgag cgacagtcac       120
+     aggagaggaa acggatggga tcgcaccagg agcggccgct gatcggcctg ctgttctccg       180
+     aaaccggcgt caccgccgat atcgagcgct cgcacgcgta tggcgcattg ctcgcggtcg       240
+     agcaactgaa ccgcgagggc ggcgtcggcg gtcgcccgat cgaaacgctg tcccaggacc       300
+     ccggcggcga cccggaccgc tatcggctgt gcgccgagga cttcattcgc aaccgggggg       360
+     tacggttcct cgtgggctgc tacatgtcgc acacgcgcaa ggcggtgatg ccggtggtcg       420
+     agcgcgccga cgcgctgctc tgctacccga ccccctacga gggcttcgag tattcgccga       480
+     acatcgtcta cggcggtccg gcgccgaacc agaacagtgc gccgctggcg gcgtacctga       540
+     ttcgccacta cggcgagcgg gtggtgttca tcggctcgga ctacatctat ccgcgggaaa       600
+     gcaaccatgt gatgcgccac ctgtatcgcc agcacggcgg cacggtgctc gaggaaatct       660
+     acattccgct gtatccctcc gacgacgact tgcagcgcgc cgtcgagcgc atctaccagg       720
+     cgcgcgccga cgtggtcttc tccaccgtgg tgggcaccgg caccgccgag ctgtatcgcg       780
+     ccatcgcccg tcgctacggc gacggcaggc ggccgccgat cgccagcctg accaccagcg       840
+     aggcggaggt ggcgaagatg gagagtgacg tggcagaggg gcaggtggtg gtcgcgcctt       900
+     acttctccag catcgatacg cccgccagcc gggccttcgt ccaggcctgc catggtttct       960
+     tcccggagaa cgcgaccatc accgcctggg ccgaggcggc ctactggcag accttgttgc      1020
+     tcggccgcgc cgcgcaggcc gcaggcaact ggcgggtgga agacgtgcag cggcacctgt      1080
+     acgacatcga catcgacgcg ccacaggggc cggtccgggt ggagcgccag aacaaccaca      1140
+     gccgcctgtc ttcgcgcatc gcggaaatcg atgcgcgcgg cgtgttccag gtccgctggc      1200
+     agtcgcccga accgattcgc cccgaccctt atgtcgtcgt gcataacctc gacgactggt      1260
+     ccgccagcat gggcggggga ccgctcccat gagcgccaac tcgctgctcg gcagcctgcg      1320
+     cgagttgcag gtgctggtcc tcaacccgcc gggggaggtc agcgacgccc tggtcttgca      1380
+     gctgatccgc atcggttgtt cggtgcgcca gtgctggccg ccgccggaag ccttcgacgt      1440
+     gccggtggac gtggtcttca ccagcatttt ccagaatggc caccacgacg agatcgctgc      1500
+     gctgctcgcc gccgggactc cgcgcactac cctggtggcg ctggtggagt acgaaagccc      1560
+     cgcggtgctc tcgcagatca tcgagctgga gtgccacggc gtgatcaccc agccgctcga      1620
+     tgcccaccgg gtgctgcctg tgctggtatc ggcgcggcgc atcagcgagg aaatggcgaa      1680
+     gctgaagcag aagaccgagc agctccagga ccgcatcgcc ggccaggccc ggatcaacca      1740
+     ggccaaggtg ttgctgatgc agcgccatgg ctgggacgag cgcgaggcgc accagcacct      1800
+     gtcgcgggaa gcgatgaagc ggcgcgagcc gatcctgaag atcgctcagg agttgctggg      1860
+     aaacgagccg tccgcctgag cgatccgggc cgaccagaac aataacaaga ggggtatcgt      1920
+     catcatgctg ggactggttc tgctgtacgt tggcgcggtg ctgtttctca atgccgtctg      1980
+     gttgctgggc aagatcagcg gtcgggaggt ggcggtgatc aacttcctgg tcggcgtgct      2040
+     gagcgcctgc gtcgcgttct acctgatctt ttccgcagca gccgggcagg gctcgctgaa      2100
+     ggccggagcg ctgaccctgc tattcgcttt tacctatctg tgggtggccg ccaaccagtt      2160
+     cctcgag                                                                2167
+//
+</pre>
+</td></tr></table><p>
+
+<a name="input.2"></a>
+<h3>Input files for usage example 2</h3>
+<p><h3>File: mito.seq</h3>
+<table width="90%"><tr><td bgcolor="#FFCCFF">
+<pre>
+&gt;gi|5819095|ref|NC_001321.1| Balaenoptera physalus mitochondrion, complete genome
+GTTAATTACTAATCAGCCCATGATCATAACATAACTGAGGTTTCATACATTTGGTATTTTTTTATTTTTTTTGGGGGGCT
+TGCACGGACTCCCCTATGACCCTAAAGGGTCTCGTCGCAGTCAGATAAATTGTAGCTGGGCCTGGATGTATTTGTTATTT
+GACTAGCACAACCAACATGTGCAGTTAAATTAATGGTTACAGGACATAGTACTCCACTATTCCCCCCGGGCTCAAAAAAC
+TGTATGTCTTAGAGGACCAAACCCCCCTCCTTCCATACAATACTAACCCTCTGCTTAGATATTCACCACCCCCCTAGACA
+GGCTCGTCCCTAGATTTAAAAGCCATTTTATTTATAAATCAATACTAAATCTGACACAAGCCCAATAATGAAAATACATG
+AACGCCATCCCTATCCAATACGTTGATGTAGCTTAAACACTTACAAAGCAAGACACTGAAAATGTCTAGATGGGTCTAGC
+CAACCCCATTGACATTAAAGGTTTGGTCCCAGCCTTTCTATTAGTTCTTAACAGACTTACACATGCAAGTATCCACATCC
+CAGTGAGAACGCCCTCTAAATCATAAAGATTAAAAGGAGCGGGTATCAAGCACGCTAGCACTAGCAGCTCACAACGCCTC
+GCTTAGCCACGCCCCCACGGGACACAGCAGTGATAAAAATTAAGCTATAAACGAAAGTTCGACTAAGTCATGTTAATTTA
+AGGGTTGGTAAACTTCGTGCCAGCCACCGCGGTCATACGATCGACCCAAATTAATAGAAGCACGGCGTAAAGAGTGTTAA
+GGAGCCACATGAAATAAAGTCAAACCTTAATTAAGCTGTAAAAAGCCCTAATTAAAATTAAGCCAAACTACGAAAGTGAC
+TTTAATATAATCTGATCACACGACAGCTAAGATCCAAACTGGGATTAGATACCCCACTATGCTTAGTCGTAAACCCCAAT
+AGTCACAAAACAAGACTATTCGCCAGAGTACTACTAGCAACAGCCTAAAACTCAAAGGACTTGGCGGTGCCTCATACCCA
+TCTAGAGGAGCCTGTTCTGTAACCGATAAACCCCGATCAACCTCACCAACCCTTGCTACTTCAGTCTATATACCGCCATC
+TTCAGCAAACCCTAAAGGGAGAAAAGTAAGCATAACCATCCTACATAAAAACGTTAGGTCAAGGTGTAACCCATGGGTTG
+GGAAGTAATGGGCTACATTTTCTAAGCTAAGAACATCCCCTATACTCACACGAAAGTTTTTATGAAACTTAAAAACTAAA
+GGAGGATTTAGTAGTAAATCAAGAGCAGAGTGCTTGATTGAATAAGGCCATGAGGGCACGCACACACCGCCCGTCACCCT
+CCTCAAGTACCCCAGCTATAAACCCCAGTTCGTTAACTCAGGCCAAGCAATTATACGAGAGGAGACAAGTCGTAACAAGG
+TAAGCATACCGGAAGGTGTGCTTGGACAAAACAAGATATAGCTTAAACAAAGCATGTAGTTTACACCTAGAAGATTCCAC
+AGCCCGTGTATATCTTGAACTAGCCCTAGCCCACACCCTCCCCACCTCTACTACCACAAATCAATCAAATAAAACATTTA
+CCATCCCTTCAAAGTATAGGAGATAGAAATTTAAATATCAGTGGCGCTATAGAGATAGTACCGTAAGGAAAGATGAAAGA
+AAAACCTAAAAGTAATAAAAAGCAAAGCTTACCACTTGTACCTTTTGCATAATGACTTAACTAGTAATAAATTAGCAAAG
+AGACCTTAAGTTAAATTACCCGAAACCAGACGAGCTACTTATGAGCAGCACCTAGAACGAACTCATCTATGTGGCAAAAT
+AGTGAGAAGACTTATAAGTAGAGGTGAAAAGCCTAACGAGCCTGGTGATAGCTGGTTGTCCCTGAAAAGAATCTCAGTTC
+AACATTAAATAATACTAAAAGCCCATGCCAAGCCTTAACGTATATTTAACTGTTAATCTAAAAAGGTACAGCTTTTTAGA
+AATGGGTACAACCTTGACTAGAGAGTAAAATCAAACATAAACATAGTTGGCCTAAAAGCAGCCATCAATTAAGAAAGCGT
+TCAAGCTCGACAACAAAATAATGTTTTAATTCCAACATTAAGTAAATCAACTCCTAGCCTGACTATTGGACTAATCTATA
+CAAATATAGAAGCAATACTGTTAATATGAGTAACAAGAAATTTTTCTCCTAGCACAAGCTTACACCAGTAACTGATAATA
+TACTGATAATTAACAGCAAATAAATAAAACCCAACACTAAATTATTTATTAAAATACTGTTAACCCAACACAGGCGTGCA
+TTAAGGAAAGATTAAAAAAAGTAAAAGGAACTCGGCAAACACAAACCCCGCCTGTTTACCAAAAACATCACCTCTAGCAT
+AACCAGTATTAGAGCACTGCCTGCCCGGTGACTAATCGTTAAACGGCCGCGGTATCCTGACCGTGCAAAGGTAGCATAAT
+CACTTGTTCTCTAATTAGGGACTTGTATGAATGGCCACACGAGGGTTTTACTGTCTCTTACTTTTAATCAGTGAAATTGA
+CCTCTCCGTGAAGAGGCGGAGATAACAAAATAAGACGAGAAGACCCTATGGAGCTTCAATTAATCAACCCAAAAACCATA
+ACCTTAAACCACCAAGGGATAACAAAACCTTATATGGGCTGACAATTTCGGTTGGGGTGACCTCGGAGTACAAAAAACCC
+TCCGAGTGATTAAAACTTAGGCCCACTAGCCAAAGTACAATATCACTTATTGATCCAATCCTTTGATCAACGGAACAAGT
+TACCCTAGGGATAACAGCGCAATCCTATTCTAGAGTCCATATCGACAATAGGGTTTACGACCTCGATGTTGGATCAGGAC
+ATCCTAATGGTGCAGCTGCTATTAAGGGTTCGTTTGTTCAACGATTAAAGTCCTACGTGATCTGAGTTCAGACCGGAGTA
+ATCCAGGTCGGTTTCTATCTATTACGCATTTCTCCCAGTACGAAAGGACAAGAGAAATAAGGCCAACTTCAAACAAGCGC
+CTTCAAACAATTAATGACCTAGTCTCAACTTAATAATTAAGCGCAAACAAACCTGCCCAAGACCAGGGCCTTGTTGAGGT
+GGCAGAGTTCGGTAATTGCATAAAACTTAAACTTTTACACCCAGAGGTTCAAATCCTCTCCCCAACAAAATGTTTATAAT
+TAACATTCTAACACTCATTCTCCCCATCCTCCTAGCCGTAGCATTCCTAACGCTAGTAGAACGCAAAATTCTAGGCTATA
+TGCAGTTCCGAAAGGGGCCAAACATCGTAGGCCCACATGGCTTACTCCAACCCTTTGCCGATGCAATTAAATTATTCACT
+AAAGAACCCCTACGGCCAGCTACATCCTCAACTACTATGTTTATCATTGCACCAGTACTAGCCCTAACCCTGGCCCTCAC
+TATATGAAGCCCCCTACCCATACCATACCCCCTCATTAACATAAACCTAGGAGTATTATTCATATTAGCAATATCCAGCC
+TAGCCGTCTACTCCATCCTATGATCAGGCTGAGCCTCCAACTCAAAATACGCACTAATTGGAGCCCTACGAGCAGTAGCA
+CAAACAATCTCATATGAGGTAACACTAGCCATTATCCTCCTATCAGTACTCCTAATAAACGGCTCCTACACCTTATCAAC
+ATTAGCCACAACACAAGAACAACTATGATTACTATTCCCATCATGACCCTTAGCCATAATGTGATTCATCTCCACCCTAG
+CAGAAACTAATCGAGCTCCTTTTGATCTAACAGAGGGAGAATCAGAACTCGTATCAGGCTTCAACGTAGAATATGCAGCA
+GGCCCTTTCGCCCTATTCTTCCTGGCAGAATACGCCAACATCATTATAATGAATATACTCACAGCCATTTTATTCCTAGG
+
+
+<font color=red>  [Part of this file has been deleted for brevity]</font>
+
+CATTGTCTTCTGCGCCTTCATCACTAGTCTAGTTCCCGCAATAGTATATCTTCACACAAACCAAGAAACACTCATCTCAA
+ACTGACACTGAATCACAATCCAAACCCTCAAACTAACACTTAGCTTTAAAATAGATTACTTTTCACTTATATTTATACCA
+GTAGCACTATTCATTACATGATCCATCATAGAATTCTCAATATGATATATGCACTCCGACCCCTACATCAACCAATTTTT
+TAAATACTTACTCCTCTTCCTCATCACCATACTAATCCTTGTTACAGCTAACAATCTCTTCCAACTTTTCATCGGATGAG
+AAGGAGTAGGAATTATATCCTTCTTACTAATTGGCTGATGATTCGGACGAACAGATGCAAATACAGCCGCCCTCCAAGCA
+ATCCTATACAATCGTATCGGAGACATTGGACTCCTTGCATCAATAGCATGATTTCTCTCTAATATAAACACATGAGACCT
+AGAACAAATCTTTATACTCAACCAAAACCCCTTAAATTTCCCCCTCATAGGACTCGTACTAGCCGCAGCAGGAAAATCGG
+CTCAATTCGGACTCCACCCTTGACTCCCATCAGCAATAGAAGGTCCTACCCCAGTCTCAGCCCTACTCCACTCAAGCACA
+ATAGTTGTAGCAGGAATCTTCTTGCTTGTCCGCTTCTACCCATTAATAGAAAATAACAAGCTAATCCAAACAGTAACCCT
+CTGCTTAGGCGCTATCACAACTCTATTTACAGCCATCTGTGCCCTCACCCAAAACGACATCAAAAAAATTATTGCTTTCT
+CCACCTCCAGCCAGCTAGGCCTAATAATAGTAACAATCGGCCTTAACCAACCTTACCTAGCATTCCTACACATTTGCACA
+CACGCCTTCTTTAAAGCTATACTATTCCTATGTTCTGGCTCCATCATCCATAACCTAAACAACGAACAAGATATCCGAAA
+AATAGGAGGGCTATTTAAGGCCCTCCCATTCACCACAACCGCCCTTATCATCGGATGTCTTGCACTAACAGGAATGCCAT
+TCCTGACCGGATTCTACTCCAAAGATCCCATTATTGAAGCCGCCACTTCGTCTTATACCAACGCCTGAGCCCTATTACTG
+ACCTTAATCGCCACCTCCCTTACGGCCGTCTATAGCACCCGCATCATTTTCTTTGCACTACTAGGACAACCCCGCTTCCC
+TCCCTCCACAACCATTAACGAAAATAATCCACTGTTAATCAACCCTATCAAACGACTACTCGTCGGAAGTATCTTCGCTG
+GCTTCATCCTATCCAACAGTATTCCCCCAATAACTACACCTTTAATAACCATACCCCTGCACTTAAAATTAACCGCCCTT
+GCAATAACAACCCTAGGCTTCATCATCGCATTCGAAATTAACCTTGACACACAAAATCTAAAGCACAAGCACCCATCAAA
+CTCCTTTAAATTCTCCACCTTACTAGGTTATTTCCCCACAATCATACATCGCCTACCCCCTCACCTTGACCTGTTAATAA
+GCCAAAAACTAGCAACTTCCCTACTAGATCTAACTTGACTAGAAACTATTTTACCAAAAACCACAGCCCTTATCCAACTA
+AAAGCCTCTACACTAACCTCTAACCAACAAGGCCTCATCAAACTCTACTTCTTATCTTTCCTCATCACCATCACCCTCAG
+CATAATCTTATTTAACTACCCCGAGTAATCTCCATAATAATTACAACACTAATAAATAAAGACCAACCCGTAACAATCAC
+CAACCAAACACCATAACTATATAATGCCGCAATCCCTGTAGCCTCCTCACTAAAAACCCCAGAACCCCCAGTATCATAAA
+CAACCCAGTCCCCTAGTCCATCAAACTCAAACATAATCTTCACCTCCCCACTCTTCAAAGCATAAATCACAATTAAAAAC
+TCCACCACCAACCCTAAAACAAATGCTCCTAGTACAACTTTATTAGAAACCCAAACCTCAGGATACTGTTCAGTAGCCAT
+AGCTGTTGTATAACCAAATACTACCAGCATTCCCCCCAAATAAATCAAAAACACCATTAACCCCAAAAACGAACCACCAA
+AACTCAAAATAACTCCACATCCAACACCACCACCCACAATCAACCCTAAACCCCCATAAATAGGTGAAGGCTTTGAAGAA
+ACCCCCACAAAACTAATTACAAAAATAATACTTAAAATGAAAACAATATACATTATCATTATTCTCACATGGACTTCAAC
+CATGACCAATGACATGAAAAATCATCGTTGTTATTCAACTACAAGAACACCAATGACCAACATCCGAAAAACACACCCAC
+TAATAAAAATCGTCAACGACGCATTCGTCGATCTCCCCACCCCATCAAATATCTCTTCATGATGGAACTTCGGCTCCCTA
+CTCGGCCTCTGCTTAATTATACAAATCCTAACAGGCCTATTCCTAGCAATACACTACACACCAGACACAACAACCGCCTT
+CTCATCAGTCACACACATCTGCCGAGACGTGAATTACGGCTGAATTATCCGATACCTACATGCAAATGGGGCTTCTATAT
+TCTTCATCTGCCTCTACGCTCACATAGGACGAGGCCTATACTACGGCTCCTACGCCTTCCGAGAAACATGAAATATTGGA
+GTTATTCTACTATTCACAGTTATAGCCACCGCATTCGTAGGCTACGTCCTGCCCTGAGGACAAATATCATTCTGAGGCGC
+AACTGTAATCACTAACCTCCTATCAGCAATCCCATACATTGGTACCACCCTAGTCGAATGAATCTGAGGCGGTTTCTCTG
+TAGATAAAGCAACACTAACACGCTTTTTTGCCTTTCACTTTATCCTCCCCTTCATCATCCTAGCATTAGCAATTGTCCAC
+CTTATTTTCCTTCACGAAACAGGATCCAACAACCCCACAGGCATCCCATCCGACATAGATAAAATCCCATTCCACCCCTA
+CCACACAATTAAAGACATTCTAGGTGCCCTATTACTAATCCTAATCCTACTAATACTAACCCTATTCGCACCCGACCTAC
+TTGGAGACCCAGACAACTATACCCCAGCAAACCCACTCAGTACCCCAGCACACATTAAACCAGAATGGTATTTTCTATTC
+GCATACGCAATCCTACGATCAATCCCCAACAAACTAGGCGGAGTCTTAGCCCTACTACTCTCAATCCTAATCCTAGCCTT
+CATCCCAATACTCCACACATCCAATCAACGAAGCATAATATTTCGACCCTTTAGCCAGTTCTTGTTCTGAGTCCTAGTCG
+CAGATCTACTAACCCTAACATGGATCGGCGGCCAACCAGTAGAACACCCCTACATAATTGTAGGCCAACTCGCATCCATC
+CTCTATTTCCTCTTAATTCTAGTATTAATACCAGTAACTAGTCTTATCGAGAACAAACTTATAAAATGAAGAGTCTTTGT
+AGTATAATTAAATACCCCGGTTTTGTAAACCGGAAAAGGAGACAAGACACACCTCCCTAAGACTCAAGGAAGAAGTATTA
+CACTCCACCATCAGCACCCAAAGCTGAAGTTCTACATAAACTATTCCCTGAAAAAGTATATTGTACAATAACCACAGGAC
+CACAGTACTATGTCCGTATTGAAAATAACTTGCCTTATTAGATATTATTATGTAACTCGTGCATGCATGTACTTCCACAT
+AATTAATAGCGTCTTTCCATGGGTATGAACAGATATACATGCTATGTATAATTGTGCATTCAATTATTTTCACCACGAGC
+AGTTGAAGCTCGTATTAAATTTTATTAATTTTACATATTACATAATATGTATTAATAGTACAATAGCGCATGTTCTTATG
+CATCCCCAGATCTATTTAAATCAAATGATTCCTATGGCCGCTCCATTAGATCACGAGCTTAGTCAGCATGCCGCGTGAAA
+CCAGCAACCCGCTTGGCAGGGATCCCTCTTCTCGCACCGGGCCCATCACTCGTGGGGGTAGCTATTTAATGATCTTTATA
+AGACATCTGGTTCTTACTTCAGGACCATATTAACTTAAAATCGCCCACTCGTTCCCCTTAAATAAGACATCTCGATGG
+</pre>
+</td></tr></table><p>
+
+
+<H2>
+    Output file format
+</H2>
+
+
+<a name="output.1"></a>
+<h3>Output files for usage example </h3>
+<p><h3>Graphics File: plotorf.ps</h3>
+<p><img src="plotorf.1.plotorf.gif" alt="[plotorf results]">
+
+<a name="output.2"></a>
+<h3>Output files for usage example 2</h3>
+<p><h3>Graphics File: plotorf.ps</h3>
+<p><img src="plotorf.2.plotorf.gif" alt="[plotorf results]">
+
+<H2>
+    Data files
+</H2>
+
+None.
+
+<H2>
+    Notes
+</H2>
+
+
+
+<p>
+
+Note that this definition of an ORF would miss those exons in eukaryotic
+genomic sequences which do not contain a START codon.  <b>plotorf</b> is
+only really useful when dealing with prokaryotic or mRNA eukaryotic
+sequences. 
+
+
+<H2>
+    References
+</H2>
+
+None.
+
+<H2>
+    Warnings
+</H2>
+
+<p>ORFs in this program are defined as being regions between START and STOP codons.  This definition would miss those exons in eukaryotic genomic sequences which do not contain a START codon. <b>plotorf</b> is therefore only really useful when dealing with prokaryotic or mRNA eukaryotic sequences.</p>
+
+<H2>
+    Diagnostic Error Messages
+</H2>
+
+None.
+
+<H2>
+    Exit status
+</H2>
+
+It always exits with a status of 0.
+
+<H2>
+    Known bugs
+</H2>
+
+None.
+
+<h2><a name="See also">See also</a></h2>
+<table border cellpadding=4 bgcolor="#FFFFF0">
+<tr><th>Program name</th>
+<th>Description</th></tr>
+<tr>
+<td><a href="abiview.html">abiview</a></td>
+<td>Display the trace in an ABI sequencer file</td>
+</tr>
+
+<tr>
+<td><a href="backtranambig.html">backtranambig</a></td>
+<td>Back-translate a protein sequence to ambiguous nucleotide sequence</td>
+</tr>
+
+<tr>
+<td><a href="backtranseq.html">backtranseq</a></td>
+<td>Back-translate a protein sequence to a nucleotide sequence</td>
+</tr>
+
+<tr>
+<td><a href="checktrans.html">checktrans</a></td>
+<td>Report STOP codons and ORF statistics of a protein</td>
+</tr>
+
+<tr>
+<td><a href="cirdna.html">cirdna</a></td>
+<td>Draw circular map of DNA constructs</td>
+</tr>
+
+<tr>
+<td><a href="coderet.html">coderet</a></td>
+<td>Extract CDS, mRNA and translations from feature tables</td>
+</tr>
+
+<tr>
+<td><a href="getorf.html">getorf</a></td>
+<td>Find and extract open reading frames (ORFs)</td>
+</tr>
+
+<tr>
+<td><a href="iep.html">iep</a></td>
+<td>Calculate the isoelectric point of proteins</td>
+</tr>
+
+<tr>
+<td><a href="lindna.html">lindna</a></td>
+<td>Draw linear maps of DNA constructs</td>
+</tr>
+
+<tr>
+<td><a href="marscan.html">marscan</a></td>
+<td>Find matrix/scaffold recognition (MRS) signatures in DNA sequences</td>
+</tr>
+
+<tr>
+<td><a href="pepinfo.html">pepinfo</a></td>
+<td>Plot amino acid properties of a protein sequence in parallel</td>
+</tr>
+
+<tr>
+<td><a href="pepnet.html">pepnet</a></td>
+<td>Draw a helical net for a protein sequence</td>
+</tr>
+
+<tr>
+<td><a href="pepwheel.html">pepwheel</a></td>
+<td>Draw a helical wheel diagram for a protein sequence</td>
+</tr>
+
+<tr>
+<td><a href="prettyplot.html">prettyplot</a></td>
+<td>Draw a sequence alignment with pretty formatting</td>
+</tr>
+
+<tr>
+<td><a href="prettyseq.html">prettyseq</a></td>
+<td>Write a nucleotide sequence and its translation to file</td>
+</tr>
+
+<tr>
+<td><a href="remap.html">remap</a></td>
+<td>Display restriction enzyme binding sites in a nucleotide sequence</td>
+</tr>
+
+<tr>
+<td><a href="showfeat.html">showfeat</a></td>
+<td>Display features of a sequence in pretty format</td>
+</tr>
+
+<tr>
+<td><a href="showorf.html">showorf</a></td>
+<td>Display a nucleotide sequence and translation in pretty format</td>
+</tr>
+
+<tr>
+<td><a href="showpep.html">showpep</a></td>
+<td>Display protein sequences with features in pretty format</td>
+</tr>
+
+<tr>
+<td><a href="showseq.html">showseq</a></td>
+<td>Display sequences with features in pretty format</td>
+</tr>
+
+<tr>
+<td><a href="sixpack.html">sixpack</a></td>
+<td>Display a DNA sequence with 6-frame translation and ORFs</td>
+</tr>
+
+<tr>
+<td><a href="syco.html">syco</a></td>
+<td>Draw synonymous codon usage statistic plot for a nucleotide sequence</td>
+</tr>
+
+<tr>
+<td><a href="tcode.html">tcode</a></td>
+<td>Identify protein-coding regions using Fickett TESTCODE statistic</td>
+</tr>
+
+<tr>
+<td><a href="transeq.html">transeq</a></td>
+<td>Translate nucleic acid sequences</td>
+</tr>
+
+<tr>
+<td><a href="wobble.html">wobble</a></td>
+<td>Plot third base position variability in a nucleotide sequence</td>
+</tr>
+
+</table>
+
+
+<H2>
+    Author(s)
+</H2>
+
+
+Alan Bleasby 
+<br>
+European Bioinformatics Institute, Wellcome Trust Genome Campus, Hinxton, Cambridge CB10 1SD, UK
+
+<p>
+Please report all bugs to the EMBOSS bug team (emboss-bug&nbsp;&copy;&nbsp;emboss.open-bio.org) not to the original author.
+
+
+<H2>
+    History
+</H2>
+
+Written (1999) - Alan Bleasby
+
+<H2>
+    Target users
+</H2>
+This program is intended to be used by everyone and everything, from naive users to embedded scripts.
+
+<H2>
+    Comments
+</H2>
+None
+
+</BODY>
+</HTML>
+

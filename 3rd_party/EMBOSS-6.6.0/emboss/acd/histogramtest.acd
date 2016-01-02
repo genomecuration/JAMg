@@ -1,0 +1,72 @@
+application: histogramtest [
+  documentation: "Test of graphics"
+  groups: "Test"
+    relations: "EDAM_topic:0220 File handling"
+    relations: "EDAM_operation:0336 File debugging"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  integer: sets [
+    standard: "y"
+    default: "1"
+    minimum: "1"
+    maximum: "10"
+    information: "Number of sets of data"
+    relations: "EDAM_data:2152 Rendering parameter"
+  ]
+
+  integer: points [
+    standard: "y"
+    default: "10"
+    minimum: "1"
+    maximum: "200"
+    information: "Number of data points per set"
+    relations: "EDAM_data:2152 Rendering parameter"
+  ]
+
+  integer: bins [
+    standard: "y"
+    default: "$(points)"
+    minimum: "1"
+    maximum: "$(points)"
+    failrange: "N"
+    trueminimum: "Y"
+    information: "Number of bars"
+    relations: "EDAM_data:2152 Rendering parameter"
+  ]
+
+  integer: xstart [
+    additional: "y"
+    default: "0"
+    information: "Start value for x axis"
+    relations: "EDAM_data:2152 Rendering parameter"
+  ]
+
+  integer: xend [
+    additional: "y"
+    default: "@($(xstart)+$(points))"
+    minimum: "@($(xstart)+1)"
+    failrange: "N"
+    trueminimum: "Y"
+    information: "End value for x axis"
+    expected: "Start value plus number of data points"
+    relations: "EDAM_data:2152 Rendering parameter"
+  ]
+
+endsection: input
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  xygraph: graph [
+    standard: "Y"
+    relations: "EDAM_data:2142 EMBOSS graph"
+  ]
+
+endsection: output

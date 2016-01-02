@@ -1,0 +1,77 @@
+application: pepstats [
+  documentation: "Calculate statistics of protein properties"
+  groups: "Protein:Composition, Protein:Properties"
+    relations: "EDAM_topic:0123 Protein properties"
+    relations: "EDAM_topic:0157 Sequence composition analysis"
+    relations: "EDAM_operation:0250 Protein property calculation"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  seqall: sequence [
+    parameter: "Y"
+    type: "protein"
+    relations: "EDAM_data:2886 Sequence record (protein)"
+  ]
+
+  datafile: aadata [
+    information: "Amino acids properties and molecular weight data file"
+    help: "Amino acid properties"
+    default: "Eamino.dat"
+    knowntype: "amino acid properties"
+    relations: "EDAM_data:1502 Amino acid index (chemical classes)"
+  ]
+
+  datafile: mwdata [
+    information: "Molecular weights data file"
+    help: "Molecular weight data for amino acids"
+    default: "Emolwt.dat"
+    knowntype: "molecular weights"
+    relations: "EDAM_data:1505 Amino acid index (molecular weight)"
+  ]
+
+  datafile: pkdata [
+    information: "Amino acid pKa data file"
+    help: "Values of pKa for amino acids"
+    default: "Epk.dat"
+    knowntype: "amino acid pka"
+    relations: "EDAM_data:1529 Protein pKa value"
+  ]
+
+endsection: input
+
+section: advanced [
+  information: "Advanced section"
+  type: "page"
+]
+
+  boolean: termini [
+    default: "Y"
+    information: "Include charge at N and C terminus"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  boolean: mono [
+    default: "N"
+    information: "Use monoisotopic weights"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+endsection: advanced
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  outfile: outfile [
+    parameter: "Y"
+    knowntype: "pepstats output"
+    information: "Pepstats program output file"
+    relations: "EDAM_data:0897 Protein property"
+  ]
+
+endsection: output

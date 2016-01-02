@@ -15,7 +15,7 @@ Optional:
 
 	-help
 	-intron_max      :i => Maximum intron size
-	-boundary        :i => Number of reads to define a boundary (def. 2 but x10 adjusted for large SAM files). For deep RNA-Seq in very large scaffolds, you need to increase this (e.g 10 or 25; see distribution of wig file) 
+	-boundary        :i => Number of reads to define a boundary (def. 2). For deep RNA-Seq in very large scaffolds, you need to increase this (e.g 10 or 25; see distribution of wig file) 
 but you may lose lowly expressed transcripts.
         -minimum_reads   :i => Minimum number of reads required to process (defaults to 50)
         -small_cutoff    :i => Maximum file size of *.reads file to assign it as a 'small' and quick run (defaults to 1024^3, i.e. 1 megabyte)
@@ -57,7 +57,7 @@ my $scaffold_size_cutoff = 3000;
 my $intron_max_size = 70000;
 my $minimum_reads = 50;
 my $small_cut     = 1024 * 1024 * 1024;
-my ($medium_cut,@sam_files,@bam_files,$delete_sam,@read_files,$is_single_stranded,$single_end,$help,$do_split_scaffolds,@scaff_id_lines);
+my ($medium_cut,@sam_files,@bam_files,$delete_sam,@read_files,$is_single_stranded,$single_end,$help,$do_split_scaffolds);
 my $debug;
 my $cpus = 4;
 my $memory = '20G';
@@ -103,19 +103,20 @@ if (!$read_files[0]){
 		}else{
 			&process_cmd("$samtools_exec view -@ $cpus -F4 ".$bam_files[0]." > $sam_file") unless -s $sam_file;
 		}
-		pod2usage ("Can't produce SAM file from input... Are they sorted by co-ordinate?\n") unless -s $sam_file;
+		pod2usage ("Can't produce SAM file from input... Are they sorted by co-ordinate?\n") unless @sam_files && -s $sam_files[0];
 		if ($do_split_scaffolds){
 			push(@sam_files,&split_scaffold_sam($sam_file,1));
 		}else{
 			push(@sam_files,$sam_file);
 		}
-	}else{
-		if ($do_split_scaffolds){
-			my $orig_sam = $sam_files[0];
-			@sam_files = ();
-			push(@sam_files,&split_scaffold_sam($orig_sam));
-		}
 	}
+
+	if ($do_split_scaffolds){
+		my $orig_sam = $sam_files[0];
+		@sam_files = ();
+		push(@sam_files,&split_scaffold_sam($orig_sam));
+	}
+
 	pod2usage ("Can't find SAM files\n") unless @sam_files && -s $sam_files[0];
         print "Will use SAM as input:\n".join(" ",@sam_files)."\n";
 

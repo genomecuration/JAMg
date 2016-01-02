@@ -1,0 +1,274 @@
+                                cachedbfetch
+
+
+
+Wiki
+
+   The master copies of EMBOSS documentation are available at
+   http://emboss.open-bio.org/wiki/Appdocs on the EMBOSS Wiki.
+
+   Please help by correcting and extending the Wiki pages.
+
+Function
+
+   Generate server cache file for Dbfetch/WSDbfetch data sources
+
+Description
+
+   Contacts the EBI dbfetch service to find the available databases and
+   saves definitions for them to a server cache file.
+
+Usage
+
+   Here is a sample session with cachedbfetch
+
+
+% cachedbfetch -servername tdbfetch -auto -cachefile ~/.embossdata/qatests.serve
+r.tdbfetch
+Warning: EMBL-Bank : No dbtype found supporting format emblxml-1.0
+Warning: EMBL-Bank : No dbtype found supporting format emblxml-1.1
+Warning: EMBLCDS : No dbtype found supporting format emblxml-1.1
+Warning: EMBLCON : No dbtype found supporting format emblxml-1.0
+Warning: EMBLCON : No dbtype found supporting format emblxml-1.1
+Warning: EMBLCONEXP : No dbtype found supporting format emblxml-1.0
+Warning: EMBLCONEXP : No dbtype found supporting format emblxml-1.1
+Warning: Gene Ontology : No dbtype found supporting format oboxml
+Warning: Gene Ontology : No dbtype found supporting format gordfxml
+Warning: MEDLINE : No dbtype found supporting format pubmedxml
+Warning: Patent Equivalents : No dbtype found supporting format patent_equivalen
+ts
+Warning: No dbtype found for db Patent Equivalents
+Warning: Taxonomy : No dbtype found supporting format emboss_tax
+Warning: Taxonomy : No dbtype found supporting format ncbi_taxon
+Warning: UniParc : No dbtype found supporting format uniparcflat
+
+
+   Go to the output files for this example
+
+Command line arguments
+
+Generate server cache file for Dbfetch/WSDbfetch data sources
+Version: EMBOSS:6.6.0.0
+
+   Standard (Mandatory) qualifiers:
+  [-servername]        string     [dbfetch] Name of the ws/dbfetch server
+                                  defined in EMBOSS resource files (Any
+                                  string)
+  [-cachefile]         outfile    [server.$(servername)] Server cache output
+                                  file
+
+   Additional (Optional) qualifiers:
+   -outfile            outfile    [stdout] Output file name
+
+   Advanced (Unprompted) qualifiers: (none)
+   Associated qualifiers:
+
+   "-outfile" associated qualifiers
+   -odirectory         string     Output directory
+
+   "-cachefile" associated qualifiers
+   -odirectory2        string     Output directory
+
+   General qualifiers:
+   -auto               boolean    Turn off prompts
+   -stdout             boolean    Write first file to standard output
+   -filter             boolean    Read first file from standard input, write
+                                  first file to standard output
+   -options            boolean    Prompt for standard and additional values
+   -debug              boolean    Write debug output to program.dbg
+   -verbose            boolean    Report some/full command line options
+   -help               boolean    Report command line options and exit. More
+                                  information on associated and general
+                                  qualifiers can be found with -help -verbose
+   -warning            boolean    Report warnings
+   -error              boolean    Report errors
+   -fatal              boolean    Report fatal errors
+   -die                boolean    Report dying program messages
+   -version            boolean    Report version number and exit
+
+
+Input file format
+
+   cachedbfetch contacts the EBI dbfetch server for details of available
+   databases.
+
+Output file format
+
+   cachedbfetch writes a server cache file which can be saved in the
+   user's .embossdata directory or, for a system administrator, stored in
+   the site-wide share/EMBOSS/ directory.
+
+  Output files for usage example
+
+  File: qatests.server.tdbfetch
+
+# qatests.server.tdbfetch 2013-07-15 12:00:00
+
+DBNAME edam [
+  method: dbfetch
+  hasacc: N
+  format: "obo"
+  edamfmt: "2549 ! OBO"
+  edamdat: "2858 ! Ontology concept"
+  edamtpc: "0091 ! Data handling"
+  type: "text, obo"
+  comment: "EMBRACE Data and Methods (EDAM) Ontology."
+  example: "0338"
+  example: "1929"
+  example: "EDAM_operation:0338"
+  example: "EDAM_format:1929"
+  example: "0000338"
+  example: "0001929"
+]
+
+ALIAS edam_ontology edam
+ALIAS EDAM_data edam
+ALIAS EDAM_format edam
+ALIAS EDAM_identifier edam
+ALIAS EDAM_operation edam
+ALIAS EDAM_topic edam
+ALIAS MIR:00000189 edam
+
+DBNAME embl [
+  method: dbfetch
+  hasacc: N
+  format: "annot, embl, emblxml-1.2, entrysize, fasta, insdxml, seqxml"
+  edamfmt: "1927 ! EMBL format"
+  edamfmt: "2183 ! EMBLXML"
+  edamfmt: "2330 ! Textual format"
+  edamfmt: "1954 ! Pearson format"
+  edamfmt: "2185 ! insdxml"
+  edamfmt: "2332 ! XML"
+  edamdat: "0855 ! Sequence metadata"
+  edamdat: "2889 ! Sequence record full (nucleic acid)"
+  edamdat: "1255 ! Feature record"
+  edamdat: "2046 ! Sequence record lite (nucleic acid)"
+  edamtpc: "3042 ! Nucleic acid sequences"
+  type: "text, xml, sequence, features"
+  comment: "EMBL Nucleotide Sequence Database, Europe's primary nucleotide seque
+nce resource. The main sources of the DNA and RNA sequences in the database are
+submissions from individual researchers, genome sequencing projects and patent a
+pplications."
+  example: "M10051"
+  example: "K00650"
+  example: "D87894"
+  example: "AJ242600"
+  example: "J00231.1"
+  example: "K00650.1"
+
+
+  [Part of this file has been deleted for brevity]
+
+
+DBNAME unisave [
+  method: dbfetch
+  hasacc: N
+  format: "annot, entrysize, fasta, uniprot"
+  edamfmt: "1963 ! UniProtKB format"
+  edamfmt: "2330 ! Textual format"
+  edamfmt: "1954 ! Pearson format"
+  edamdat: "0855 ! Sequence metadata"
+  edamdat: "1255 ! Feature record"
+  edamdat: "2047 ! Sequence record lite (protein)"
+  edamdat: "2888 ! Sequence record full (protein)"
+  edamtpc: "3043 ! Protein sequences"
+  type: "text, features, sequence"
+  comment: "The UniProtKB Sequence/Annotation Version Archive (UniSave) is a rep
+ository of UniProtKB/Swiss-Prot and UniProtKB/TrEMBL entry versions."
+  example: "P06213"
+  example: "P06213.157"
+  example: "P06213.3"
+  example: "INSR_HUMAN"
+]
+
+ALIAS uniprotkb_sequence_annotation_version_archive unisave
+ALIAS DRCAT:UniSave unisave
+
+DBNAME uspto_prt [
+  method: dbfetch
+  hasacc: N
+  format: "annot, embl, entrysize, fasta, seqxml"
+  edamfmt: "1927 ! EMBL format"
+  edamfmt: "2330 ! Textual format"
+  edamfmt: "1954 ! Pearson format"
+  edamfmt: "2332 ! XML"
+  edamdat: "0855 ! Sequence metadata"
+  edamdat: "2888 ! Sequence record full (protein)"
+  edamdat: "1255 ! Feature record"
+  edamdat: "2047 ! Sequence record lite (protein)"
+  edamtpc: "3043 ! Protein sequences"
+  type: "text, xml, sequence, features"
+  comment: "Protein sequences appearing in patents from the United States Patent
+ and Trademark Office (USPTO)."
+  example: "AAA00053"
+  example: "I02590"
+  example: "AAA00053.1"
+]
+
+ALIAS uspto_patent_proteins uspto_prt
+ALIAS uspto_proteins uspto_prt
+ALIAS usptoprt uspto_prt
+ALIAS uspop uspto_prt
+ALIAS uspo_prt uspto_prt
+ALIAS uspto uspto_prt
+
+
+Data files
+
+   None.
+
+Notes
+
+   None.
+
+References
+
+   None.
+
+Warnings
+
+   None.
+
+Diagnostic Error Messages
+
+   None.
+
+Exit status
+
+   It always exits with status 0.
+
+Known bugs
+
+   None.
+
+See also
+
+   Program name     Description
+   cachedas         Generate server cache file for DAS servers or for the DAS
+                    registry
+   cacheebeyesearch Generate server cache file for EB-eye search domains
+   cacheensembl     Generate server cache file for an Ensembl server
+   dbtell           Display information about a public database
+   servertell       Display information about a public server
+   showdb           Display information on configured databases
+   showserver       Display information on configured servers
+
+Author(s)
+
+   Peter Rice
+   European Bioinformatics Institute, Wellcome Trust Genome Campus,
+   Hinxton, Cambridge CB10 1SD, UK
+
+   Please report all bugs to the EMBOSS bug team
+   (emboss-bug (c) emboss.open-bio.org) not to the original author.
+
+History
+
+Target users
+
+   This program is intended to be used by everyone and everything, from
+   naive users to embedded scripts.
+
+Comments
+
+   None

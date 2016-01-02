@@ -1,0 +1,287 @@
+                              cacheebeyesearch
+
+
+
+Wiki
+
+   The master copies of EMBOSS documentation are available at
+   http://emboss.open-bio.org/wiki/Appdocs on the EMBOSS Wiki.
+
+   Please help by correcting and extending the Wiki pages.
+
+Function
+
+   Generate server cache file for EB-eye search domains
+
+Description
+
+   Contacts the EBI wsebeyesearch service to find the available databases
+   and saves definitions for them to a server cache file.
+
+Usage
+
+   Here is a sample session with cacheebeyesearch
+
+
+% cacheebeyesearch -cachefile ~/.embossdata/qatests.server.ebeye -auto
+
+
+   Go to the output files for this example
+
+Command line arguments
+
+Generate server cache file for EB-eye search domains
+Version: EMBOSS:6.6.0.0
+
+   Standard (Mandatory) qualifiers:
+  [-cachefile]         outfile    [server.$(servername)] Server cache output
+                                  file
+
+   Additional (Optional) qualifiers:
+   -outfile            outfile    [stdout] Output file name
+
+   Advanced (Unprompted) qualifiers: (none)
+   Associated qualifiers:
+
+   "-outfile" associated qualifiers
+   -odirectory         string     Output directory
+
+   "-cachefile" associated qualifiers
+   -odirectory1        string     Output directory
+
+   General qualifiers:
+   -auto               boolean    Turn off prompts
+   -stdout             boolean    Write first file to standard output
+   -filter             boolean    Read first file from standard input, write
+                                  first file to standard output
+   -options            boolean    Prompt for standard and additional values
+   -debug              boolean    Write debug output to program.dbg
+   -verbose            boolean    Report some/full command line options
+   -help               boolean    Report command line options and exit. More
+                                  information on associated and general
+                                  qualifiers can be found with -help -verbose
+   -warning            boolean    Report warnings
+   -error              boolean    Report errors
+   -fatal              boolean    Report fatal errors
+   -die                boolean    Report dying program messages
+   -version            boolean    Report version number and exit
+
+
+Input file format
+
+   cacheebeyesearchcontacts the EBI wsebeyesearch service for details of
+   available databases.
+
+Output file format
+
+   cacheebeyesearch writes a server cache file which can be saved in the
+   user's .embossdata directory or, for a system administrator, stored in
+   the site-wide share/EMBOSS/ directory.
+
+  Output files for usage example
+
+  File: qatests.server.ebeye
+
+# qatests.server.ebeye 2013-07-15 12:00:00
+
+DBNAME arrayexpress_repository [
+  method: "ebeye"
+  dbalias: "arrayexpress-repository"
+  fields: "$facets, acc, author, biomaterial-characteristics, description, domai
+n_source, experimentalfactors-factorvalues, id, keywords, last_update_date, name
+, release_date, submission_date"
+  return: "acc, description, domain_source, id, name"
+  format: "text"
+  hasaccession: "N"
+]
+
+DBNAME atlas_experiments [
+  method: "ebeye"
+  dbalias: "atlas-experiments"
+  fields: "$facets, creation_date, description, domain_source, id, last_modifica
+tion_date, name"
+  return: "description, domain_source, id, name"
+  format: "text"
+  hasaccession: "N"
+]
+
+DBNAME atlas_genes [
+  method: "ebeye"
+  dbalias: "atlas-genes"
+  fields: "$facets, cell_line, cell_type, compound, creation_date, description,
+developmental_stage, disease, disease_state, domain_source, ensfamily_descriptio
+n, entrezgene, flybase_gene_id, flybase_transcript_id, flybasename_gene, flybase
+name_transcript, gene_biotype, goterm, hgnc_symbol, id, id_noversion, infect, in
+terproterm, last_modification_date, mgi_description, mgi_symbol, mirbase_accessi
+on, mirbase_accession_number, mirbase_description, mirbase_gene_database, mirbas
+e_gene_database_id, mirbase_id, mirbase_matured_mirna, mirbase_pubmedid, mirbase
+_sequence, name, number_of_experiments, organism_part, otherconditions, pathwayi
+d, pathwayname, phenotype, rgd, rgd_symbol, synonym"
+  return: "cell_line, cell_type, compound, description, developmental_stage, dis
+ease_state, domain_source, id, infect, name, number_of_experiments, organism_par
+t, otherconditions, phenotype"
+  format: "text"
+  hasaccession: "N"
+]
+
+DBNAME biocatalogue [
+  method: "ebeye"
+  dbalias: "biocatalogue"
+  fields: "$facets, acc, creation_date, description, domain_source, id, keywords
+, last_modification_date, name, provider, service_types"
+  return: "description, domain_source, id, keywords, name, provider, service_typ
+es"
+  format: "text"
+  hasaccession: "N"
+]
+
+DBNAME biomodels [
+  method: "ebeye"
+  dbalias: "biomodels"
+  fields: "$facets, acc, author, creation_date, curated, description, domain_sou
+rce, id, keywords, last_modification_date, name, original_model"
+  return: "description, domain_source, id, name"
+  format: "text"
+  hasaccession: "N"
+]
+
+DBNAME chebi [
+  method: "ebeye"
+  dbalias: "chebi"
+
+
+  [Part of this file has been deleted for brevity]
+
+  fields: "$facets, acc, creation_date, dbRefProp_EMBL_protein_sequence_ID, dbRe
+fProp_EcoGene_gene_designation, dbRefProp_EnsemblBacteria_protein_sequence_ID, d
+bRefProp_EnsemblFungi_protein_sequence_ID, dbRefProp_EnsemblMetazoa_protein_sequ
+ence_ID, dbRefProp_EnsemblPlants_protein_sequence_ID, dbRefProp_EnsemblProtists_
+protein_sequence_ID, dbRefProp_Ensembl_protein_sequence_ID, dbRefProp_FlyBase_ge
+ne_designation, dbRefProp_GeneFarm_family_ID, dbRefProp_HGNC_gene_designation, d
+bRefProp_MGI_gene_designation, dbRefProp_PATRIC_gene_designation, dbRefProp_RGD_
+gene_designation, dbRefProp_SGD_gene_designation, dbRefProp_WormBase_gene_design
+ation, dbRefProp_WormBase_protein_sequence_ID, dbRefProp_ZFIN_gene_designation,
+dbRefProp_dictyBase_gene_designation, descAltName, descRecName, descSubName, des
+cription, domain_source, gene_ORF_name, gene_ordered_locus_name, gene_primary_na
+me, gene_synonym_name, id, keyword_id, keywords, last_modification_date, organel
+le, organism_host_species, organism_lineage, organism_scientific_name, organism_
+species, protein_existence, references, sequence_fragment, sequence_last_modif_d
+ate, sequence_length, status"
+  return: "acc, descAltName, descRecName, descSubName, domain_source, gene_prima
+ry_name, id, organism_scientific_name, sequence_length, status"
+  format: "text"
+  hasaccession: "N"
+]
+
+DBNAME uniref100 [
+  method: "ebeye"
+  dbalias: "uniref100"
+  fields: "$facets, dbref_protein_name, dbref_source_organism, dbref_uniprotkb_i
+d, domain_source, entry_common_taxon, id, last_modification_date, name"
+  return: "domain_source, id, name"
+  format: "text"
+  hasaccession: "N"
+]
+
+DBNAME uniref50 [
+  method: "ebeye"
+  dbalias: "uniref50"
+  fields: "$facets, dbref_protein_name, dbref_source_organism, dbref_uniprotkb_i
+d, domain_source, entry_common_taxon, id, last_modification_date, name"
+  return: "domain_source, id, name"
+  format: "text"
+  hasaccession: "N"
+]
+
+DBNAME uniref90 [
+  method: "ebeye"
+  dbalias: "uniref90"
+  fields: "$facets, dbref_protein_name, dbref_source_organism, dbref_uniprotkb_i
+d, domain_source, entry_common_taxon, id, last_modification_date, name"
+  return: "domain_source, id, name"
+  format: "text"
+  hasaccession: "N"
+]
+
+DBNAME uspto [
+  method: "ebeye"
+  dbalias: "uspto"
+  fields: "$facets, acc, creation_date, data_class, description, doc_file, domai
+n_source, id, length, offset_end, offset_start, organism, organism_species, refe
+rences, sequence_version"
+  return: "acc, description, doc_file, domain_source, id, offset_end, offset_sta
+rt"
+  format: "text"
+  hasaccession: "N"
+]
+
+DBNAME wgs_masters [
+  method: "ebeye"
+  dbalias: "wgs_masters"
+  fields: "$facets, description, domain_source, id, name"
+  return: "description, domain_source, id, name"
+  format: "text"
+  hasaccession: "N"
+]
+
+
+Data files
+
+   None.
+
+Notes
+
+   None.
+
+References
+
+   None.
+
+Warnings
+
+   None.
+
+Diagnostic Error Messages
+
+   None.
+
+Exit status
+
+   It always exits with status 0.
+
+Known bugs
+
+   None.
+
+See also
+
+   Program name     Description
+   cachedas         Generate server cache file for DAS servers or for the DAS
+                    registry
+   cachedbfetch     Generate server cache file for Dbfetch/WSDbfetch data
+                    sources
+   cacheensembl     Generate server cache file for an Ensembl server
+   dbtell           Display information about a public database
+   servertell       Display information about a public server
+   showdb           Display information on configured databases
+   showserver       Display information on configured servers
+
+Author(s)
+
+   Peter Rice
+   European Bioinformatics Institute, Wellcome Trust Genome Campus,
+   Hinxton, Cambridge CB10 1SD, UK
+
+   Please report all bugs to the EMBOSS bug team
+   (emboss-bug (c) emboss.open-bio.org) not to the original author.
+
+History
+
+Target users
+
+   This program is intended to be used by everyone and everything, from
+   naive users to embedded scripts.
+
+Comments
+
+   None

@@ -1,0 +1,61 @@
+application: cpgreport [
+  documentation: "Identify and report CpG-rich regions in
+                  nucleotide sequence(s)"
+  groups: "Nucleic:CpG Islands"
+    relations: "EDAM_topic:0157 Sequence composition analysis"
+    relations: "EDAM_operation:0430 CpG island and isochore detection"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  seqall: sequence [
+    parameter: "Y"
+    type: "DNA"
+    relations: "EDAM_data:2887 Sequence record (nucleic acid)"
+
+  ]
+
+endsection: input
+
+section: required [
+  information: "Required section"
+  type: "page"
+]
+
+  integer: score [
+    standard: "Y"
+    minimum: "1"
+    maximum: "200"
+    default: "17"
+    information: "CpG score"
+    help: "This sets the score for each CG sequence found. A value of
+           17 is more sensitive, but 28 has also been used with some
+           success."
+    relations: "EDAM_data:1772 Score or penalty"
+  ]
+
+endsection: required
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  outfile: outfile [
+    parameter: "Y"
+    knowntype: "cpgreport output"
+    relations: "EDAM_data:1304 Nucleic acid features
+                (CpG island and isochore)"
+  ]
+
+  featout: outfeat [
+    parameter: "Y"
+    help: "File for output features"
+    type: "nucleotide"
+    relations: "EDAM_data:1276 Nucleic acid features"
+  ]
+
+endsection: output

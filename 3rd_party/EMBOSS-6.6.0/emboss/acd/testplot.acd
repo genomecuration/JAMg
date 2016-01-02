@@ -1,0 +1,42 @@
+application: testplot [
+  documentation: "Test plot"
+  groups: "Test"
+    relations: "EDAM_topic:0220 File handling"
+    relations: "EDAM_operation:0336 File debugging"
+]
+
+section: required [
+  information: "Required section"
+  type: "page"
+]
+
+  integer: points [
+    standard: "y"
+    default: "90"
+    minimum: "2"
+    maximum: "360"
+    information: "Number of degrees to plot"
+    relations: "EDAM_data:2152 Rendering parameter"
+  ]
+
+endsection: required
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  boolean: overlap [
+    standard: "y"
+    default: "y"
+    information: "Overlap the graphs"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+  xygraph: graph [
+    standard: "y"
+    multiple: "3"
+    relations: "EDAM_data:2142 EMBOSS graph"
+  ]
+
+endsection: output

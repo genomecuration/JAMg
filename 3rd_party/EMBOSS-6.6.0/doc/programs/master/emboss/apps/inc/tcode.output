@@ -1,0 +1,118 @@
+
+<a name="output.1"></a>
+<h3>Output files for usage example </h3>
+<p><h3>File: x65921.tcode</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+########################################
+# Program: tcode
+# Rundate: Mon 15 Jul 2013 12:00:00
+# Commandline: tcode
+#    -sequence tembl:x65921
+# Report_format: table
+# Report_file: x65921.tcode
+########################################
+
+#=======================================
+#
+# Sequence: X65921     from: 1   to: 2016
+# HitCount: 606
+#
+# Fickett TESTCODE statistic
+#
+#=======================================
+
+  Start     End  Strand   Score Estimation
+      1     200       +   0.617 Non-coding
+      4     203       +   0.586 Non-coding
+      7     206       +   0.617 Non-coding
+     10     209       +   0.729 Non-coding
+     13     212       +   0.696 Non-coding
+     16     215       +   0.734 Non-coding
+     19     218       +   0.779 No opinion
+     22     221       +   0.845 No opinion
+     25     224       +   0.889 No opinion
+     28     227       +   0.919 No opinion
+     31     230       +   0.831 No opinion
+     34     233       +   0.875 No opinion
+     37     236       +   0.970 Coding    
+     40     239       +   1.122 Coding    
+     43     242       +   1.110 Coding    
+     46     245       +   1.002 Coding    
+     49     248       +   0.979 Coding    
+     52     251       +   1.076 Coding    
+     55     254       +   0.966 Coding    
+     58     257       +   0.931 No opinion
+     61     260       +   0.847 No opinion
+     64     263       +   0.847 No opinion
+     67     266       +   0.914 No opinion
+     70     269       +   0.951 Coding    
+     73     272       +   1.031 Coding    
+     76     275       +   0.870 No opinion
+     79     278       +   0.964 Coding    
+     82     281       +   0.865 No opinion
+     85     284       +   1.040 Coding    
+     88     287       +   0.924 No opinion
+     91     290       +   0.812 No opinion
+
+
+<font color=red>  [Part of this file has been deleted for brevity]</font>
+
+   1696    1895       +   1.060 Coding    
+   1699    1898       +   0.984 Coding    
+   1702    1901       +   1.082 Coding    
+   1705    1904       +   1.082 Coding    
+   1708    1907       +   1.082 Coding    
+   1711    1910       +   1.067 Coding    
+   1714    1913       +   1.079 Coding    
+   1717    1916       +   1.005 Coding    
+   1720    1919       +   0.915 No opinion
+   1723    1922       +   0.954 Coding    
+   1726    1925       +   0.872 No opinion
+   1729    1928       +   0.976 Coding    
+   1732    1931       +   0.989 Coding    
+   1735    1934       +   0.906 No opinion
+   1738    1937       +   0.832 No opinion
+   1741    1940       +   0.840 No opinion
+   1744    1943       +   0.840 No opinion
+   1747    1946       +   0.826 No opinion
+   1750    1949       +   0.858 No opinion
+   1753    1952       +   0.865 No opinion
+   1756    1955       +   0.878 No opinion
+   1759    1958       +   0.937 No opinion
+   1762    1961       +   1.012 Coding    
+   1765    1964       +   0.968 Coding    
+   1768    1967       +   0.979 Coding    
+   1771    1970       +   0.979 Coding    
+   1774    1973       +   0.937 No opinion
+   1777    1976       +   0.944 No opinion
+   1780    1979       +   0.944 No opinion
+   1783    1982       +   0.944 No opinion
+   1786    1985       +   0.890 No opinion
+   1789    1988       +   0.902 No opinion
+   1792    1991       +   0.851 No opinion
+   1795    1994       +   0.902 No opinion
+   1798    1997       +   0.902 No opinion
+   1801    2000       +   0.902 No opinion
+   1804    2003       +   0.821 No opinion
+   1807    2006       +   0.757 No opinion
+   1810    2009       +   0.730 Non-coding
+   1813    2012       +   0.708 Non-coding
+   1816    2015       +   0.708 Non-coding
+
+#---------------------------------------
+#---------------------------------------
+
+#---------------------------------------
+# Total_sequences: 1
+# Total_length: 2016
+# Reported_sequences: 1
+# Reported_hitcount: 606
+#---------------------------------------
+</pre>
+</td></tr></table><p>
+
+<a name="output.2"></a>
+<h3>Output files for usage example 2</h3>
+<p><h3>Graphics File: tcode.ps</h3>
+<p><img src="tcode.2.tcode.gif" alt="[tcode results]">

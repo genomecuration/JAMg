@@ -1,0 +1,90 @@
+application: cutgextract [
+  documentation: "Extract codon usage tables from CUTG database"
+  groups: "Utils:Database creation"
+  gui: "no"
+  batch: "no"
+  cpu: "medium"
+    relations: "EDAM_topic:0107 Codon usage analysis"
+    relations: "EDAM_topic:0091 Data handling"
+    relations: "EDAM_operation:1812 Data loading"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+  dirlist: directory [
+    parameter: "Y"
+    information: "Codon usage directories"
+    knowntype: "codon usage"
+    relations: "EDAM_data:1597 Codon usage table"
+  ]
+
+endsection: input
+
+section: required [
+  information: "Required section"
+  type: "page"
+]
+
+endsection: required
+
+section: advanced [
+  information: "Advanced section"
+  type: "page"
+]
+
+  string: release [
+    default: ""
+    information: "CUTG release"
+    knowntype: "database release"
+    relations: "EDAM_data:1670 Database version information"
+  ]
+
+  string: wildspec [
+    default: "*.codon"
+    information: "Type of codon file"
+    knowntype: "filename wildcard"
+    relations: "EDAM_identifier:1050 File name"
+  ]
+
+  string: species [
+    default: "*"
+    information: "Species wildcard"
+    knowntype: "wildcard string"
+    relations: "EDAM_data:0968 Keyword"
+  ]
+
+  boolean: allrecords [
+    default: "N"
+    information: "Include all records, including those with
+                  warnings"
+    relations: "EDAM_data:2527 Parameter"
+  ]
+
+endsection: advanced
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  outfile: outfile [
+    parameter: "Y"
+    knowntype: "log"
+    information: "General log output file"
+    relations: "EDAM_data:1678 Tool log"
+  ]
+
+  string: filename [
+    default: ""
+    information: "Single output filename"
+    help: "Single output filename to override automatic one file for
+           each species. Leave blank to generate the filenames. Specify a
+           filename to combine several species into one file."
+    knowntype: "output filename"
+    relations: "EDAM_identifier:1050 File name"
+  ]
+
+endsection: output

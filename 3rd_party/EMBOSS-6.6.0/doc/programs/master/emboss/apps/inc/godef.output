@@ -1,0 +1,113 @@
+
+<a name="output.1"></a>
+<h3>Output files for usage example </h3>
+<p><h3>File: godef.obo</h3>
+<table width="90%"><tr><td bgcolor="#CCFFCC">
+<pre>
+[Term]
+id: GO:0043256
+name: laminin complex
+namespace: cellular_component
+def: A large, extracellular glycoprotein complex composed of three different polypeptide chains, alpha, beta and gamma. Provides an integral part of the structural scaffolding of basement membranes.
+subset: goslim_pir
+is_a: GO:0043234 ! protein complex
+is_a: GO:0044420 ! extracellular matrix part
+is_a: GO:0044421 ! extracellular region part
+relationship: part_of GO:0005605 ! basal lamina
+
+[Term]
+id: GO:0038026
+name: reelin-mediated signaling pathway
+namespace: biological_process
+def: A series of molecular signals initiated by the binding of reelin (a secreted glycoprotein) to a receptor on the surface of a target cell, and ending with regulation of a downstream cellular process, e.g. transcription.
+synonym: "reeler-mediated signaling pathway" EXACT [GOC:bf, PR:000013879]
+synonym: "reelin-mediated signal transduction pathway" EXACT [GOC:bf]
+synonym: "reelin-mediated signalling pathway" EXACT [GOC:bf]
+is_a: GO:0007166 ! cell surface receptor signaling pathway
+created_by: rfoulger
+creation_date: 2011-08-02T02:06:18Z
+
+[Term]
+id: GO:0016011
+name: dystroglycan complex
+namespace: cellular_component
+def: A protein complex that includes alpha- and beta-dystroglycan, which are alternative products of the same gene; the laminin-binding component of the dystrophin-associated glycoprotein complex, providing a link between the subsarcolemmal cytoskeleton (in muscle cells) and the extracellular matrix. Alpha-dystroglycan is an extracellular protein binding to alpha-laminin and to beta-dystroglycan; beta-dystroglycan is a transmembrane protein which binds alpha-dystroglycan and dystrophin.
+is_a: GO:0043234 ! protein complex
+is_a: GO:0044459 ! plasma membrane part
+relationship: part_of GO:0016010 ! dystrophin-associated glycoprotein complex
+
+[Term]
+id: GO:0010405
+name: arabinogalactan protein metabolic process
+namespace: biological_process
+def: The chemical reactions and pathways involving a cell wall arabinogalactan II glycoprotein, which is composed of a group of core protein of highly varying length and domain complexity. These are O-glycosylated at one or more hydroxyproline residues by arabinogalactan (AG) type II groups, which consist of (1-&gt;3)-beta-galactan and (1-&gt;6)-beta-linked galactan chains connected to each other by (1-&gt;3,1-&gt;6)-linked branch points, O-3 and O-6 positions substituted with terminal arabinosyl residues. Also, rhamnose, fucose, glucuronic and galacturonic acid can be present in the glycan structures.
+synonym: "arabinogalactan protein metabolism" EXACT []
+is_a: GO:0010404 ! cell wall hydroxyproline-rich glycoprotein metabolic process
+
+[Term]
+id: GO:0010404
+name: cell wall hydroxyproline-rich glycoprotein metabolic process
+namespace: biological_process
+def: The chemical reactions and pathways involving a cell wall hydroxyproline-rich glycoprotein that consist of a core-protein backbone O-glycosylated by one or more complex carbohydrates.
+synonym: "cell wall hydroxyproline-rich glycoprotein metabolism" EXACT []
+is_a: GO:0010384 ! cell wall proteoglycan metabolic process
+
+[Term]
+id: GO:0004569
+
+
+<font color=red>  [Part of this file has been deleted for brevity]</font>
+
+def: The chemical reactions and pathways involving chondroitin sulfate proteoglycan, any glycoprotein whose glycosaminoglycan units are chondroitin sulfate. Chondroitin sulfates are a group of 10-60 kDa glycosaminoglycans, widely distributed in cartilage and other mammalian connective tissues; the repeat units consist of beta-(1,4)-linked D-glucuronyl beta-(1,3)-N-acetyl-D-galactosamine sulfate.
+subset: gosubset_prok
+synonym: "chondroitin sulfate proteoglycan metabolism" EXACT []
+synonym: "chondroitin sulphate proteoglycan metabolic process" EXACT []
+synonym: "chondroitin sulphate proteoglycan metabolism" EXACT []
+is_a: GO:0006029 ! proteoglycan metabolic process
+is_a: GO:0006790 ! sulfur compound metabolic process
+is_a: GO:0030203 ! glycosaminoglycan metabolic process
+is_a: GO:0043436 ! oxoacid metabolic process
+
+[Term]
+id: GO:0046884
+name: follicle-stimulating hormone secretion
+namespace: biological_process
+def: The regulated release of follicle-stimulating hormone, a gonadotropic glycoprotein hormone secreted by the anterior pituitary.
+synonym: "follicle stimulating hormone secretion" EXACT []
+synonym: "follitropin secretion" EXACT []
+synonym: "FSH secretion" EXACT []
+is_a: GO:0032274 ! gonadotropin secretion
+
+[Term]
+id: GO:0018405
+name: protein-keratan sulfate linkage via keratan sulfate D-glucuronyl-D-galactosyl-D-galactosyl-D-xylosyl-L-threonine
+namespace: biological_process
+def: Keratan sulfate components are covalently linked to a core glycoprotein via O-glycosidic linkages between xylose and threonine residues.
+subset: gosubset_prok
+synonym: "protein-keratan sulphate linkage via keratan sulphate D-glucuronyl-D-galactosyl-D-galactosyl-D-xylosyl-L-threonine" EXACT []
+xref: RESID:AA0247
+is_a: GO:0018210 ! peptidyl-threonine modification
+
+[Term]
+id: GO:0010408
+name: fasciclin-like arabinogalactan protein metabolic process
+namespace: biological_process
+def: The chemical reactions and pathways involving the cell wall arabinogalactan II glycoprotein variant which contains both an arabinogalactan protein (AGP) motif and a fasciclin domain.
+synonym: "fasciclin-like arabinogalactan protein metabolism" EXACT []
+is_a: GO:0010405 ! arabinogalactan protein metabolic process
+
+[Term]
+id: GO:0006045
+name: N-acetylglucosamine biosynthetic process
+namespace: biological_process
+def: The chemical reactions and pathways resulting in the formation of N-acetylglucosamine. The D isomer is a common structural unit of glycoproteins in plants, bacteria and animals; it is often the terminal sugar of an oligosaccharide group of a glycoprotein.
+subset: gosubset_prok
+synonym: "N-acetylglucosamine anabolism" EXACT []
+synonym: "N-acetylglucosamine biosynthesis" EXACT []
+synonym: "N-acetylglucosamine formation" EXACT []
+synonym: "N-acetylglucosamine synthesis" EXACT []
+is_a: GO:0006044 ! N-acetylglucosamine metabolic process
+is_a: GO:1901073 ! glucosamine-containing compound biosynthetic process
+
+</pre>
+</td></tr></table><p>

@@ -1,0 +1,84 @@
+application: ensembltest [
+  documentation: "Demonstration of the Ensembl API to be."
+  groups: "Test"
+  embassy: "myemboss"
+    relations: "EDAM_topic:0220 File handling"
+    relations: "EDAM_operation:0336 File debugging"
+]
+
+section: input [
+  information: "Input section"
+  type: "page"
+]
+
+endsection: input
+
+section: required [
+  information: "Required section"
+  type: "page"
+]
+
+endsection: required
+
+section: additional [
+  information: "Additional section"
+  type: "page"
+]
+
+  boolean: large [
+    default: "N"
+    help: "Set this to 'Y' to download large test data sets."
+    information: "Process large data sets"
+  ]
+
+endsection: additional
+
+section: output [
+  information: "Output section"
+  type: "page"
+]
+
+  outfile: aoutfile  [
+    standard: "Y"
+    knowntype: "ensembltest output"
+  ]
+
+  seqoutall: aoutseqall [
+    information: "Output file for multiple Ensembl Slice sequences"
+    name: "slices"
+    features: "Y"
+    standard: "Y"
+    type: "dna"
+  ]
+
+  integer: maxnum [
+    information: "Maximum number of genes to process or -1 for all."
+    default: "25"
+    standard: "$(large)"
+  ]
+
+  seqoutall: boutseqall [
+    information: "Output file for multiple Ensembl Exon sequences"
+    name: "exons"
+    features: "N"
+    standard: "$(large)"
+    type: "dna"
+  ]
+
+  seqoutall: coutseqall [
+    information: "Output file for multiple Ensembl Transcript sequences"
+    name: "transcripts"
+    features: "N"
+    standard: "$(large)"
+    type: "dna"
+  ]
+
+  seqoutall: doutseqall [
+    information: "Output file for multiple Ensembl Translation sequences"
+    name: "translations"
+    features: "N"
+    standard: "$(large)"
+    type: "stopprotein"
+  ]
+
+endsection: output
