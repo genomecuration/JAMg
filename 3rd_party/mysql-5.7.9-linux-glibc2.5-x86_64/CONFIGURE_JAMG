@@ -1,0 +1,18 @@
+cd $JAMG_PATH/3rd_party/mysql
+# make sure you have JAMG_PATH defined
+mkdir -p $HOME/var/run/mysqld
+edit my.cnf.bak ## see for the CHANGE THIS
+cp to ~/.my.cnf # note dot
+chmod og-w ~/.my.cnf
+bin/mysqld --initialize
+bin/mysql_ssl_rsa_setup
+#after that you can do that
+bin/mysqld_safe & # only have it on for as long as you need to 
+# see file that is "Logging to" to get the error.log file path
+grep 'temporary password is generated for root' error.log
+# that will be your ROOT password. use it to connect and create accounts:
+mysql -u root -p -e "CREATE USER 'pasa'@'localhost' IDENTIFIED BY 'pass13';GRANT ALL ON *.* TO 'pasa'@'localhost';FLUSH PRIVILEGES;"
+
+# Be nice and safe: remember to only have for as long as you need it...
+killall mysqld # to end it
+
