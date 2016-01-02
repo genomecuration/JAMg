@@ -398,10 +398,6 @@ foreach my $file ( @progFiles )
 }
 
 print "\nCongratulations!  RepeatModeler is now ready to use.\n";
-print "Simply place:\n";
-print "   $rmLocation\n";
-print "in your user's path and review the RepeatModeler documentation here:\n";
-print "   $rmLocation/README" . "\n\n";
 
 ####################### S U B R O U T I N E S ##############################
 
