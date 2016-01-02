@@ -18,7 +18,7 @@ all:
 	cd 3rd_party/hhsuite && cp lib64/libffindex.so.0.1 ../lib64/
 	cd 3rd_party/ncbi-blast/bin && ln -fs `pwd`/* ../../bin/
 	cd 3rd_party/cdbtools/cdbfasta && $(MAKE) && cp cdbfasta ../../bin/ && cp cdbyank ../../bin/ && $(MAKE) clean
-	cd 3rd_party/samtools && $(MAKE) && cp samtools ../bin/ && $(MAKE) clean
+	cd 3rd_party && tar -xjf samtools-1.3.tar.bz2 && ln -s samtools-1.3 samtools && cd samtools && ./configure --without-curses --prefix=`pwd`/../ && $(MAKE) && $(MAKE) install
 	cd 3rd_party/bedtools && if [ ! -d bin ]; then mkdir bin; fi && $(MAKE) -j 3 && cp bin/* ../bin/ && $(MAKE) clean
 	cd 3rd_party/blat && ln -fs `pwd`/* ../bin/
 	cd 3rd_party/parafly && ./configure --prefix=`pwd`/../ && if [ ! -d bin ]; then mkdir bin; fi && $(MAKE) install
