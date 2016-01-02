@@ -11,7 +11,7 @@ $cutoff = 22 if !$cutoff;
 
 open (IN,$file);
 open (OUT,">$out");
-print OUT "gff-version 3\n";
+print OUT "##gff-version 3\n";
 my $discard = <IN>.<IN>.<IN>;
 my %hash;
 while (my $ln=<IN>){

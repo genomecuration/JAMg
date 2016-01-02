@@ -13,7 +13,7 @@ $/=">";
 my $discard = <IN>;
 my %pseudo_counter;
 my %trna_counter;
-print OUT "gff-version 3\n";
+print OUT "##gff-version 3\n";
 while (my $record=<IN>){
 	chomp($record);
 	my @lines = split("\n",$record);
