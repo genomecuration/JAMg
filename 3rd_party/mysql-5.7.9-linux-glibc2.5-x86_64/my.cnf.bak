@@ -1,0 +1,66 @@
+# REPLACE $JAMG_PATH with the 'echo $JAMG_PATH' command output
+# REPLACE $HOME with the 'echo $HOME' command output
+# replace $USER with the 'echo $USER' command output
+[client]
+port            = 3336
+socket          = $HOME/var/run/mysqld.sock
+
+
+[mysqld_safe]
+socket          = $HOME/var/run/mysqld.sock
+nice            = 1
+user = $USER
+
+[mysqld]
+user = $USER
+server-id=127
+bind-address            = 127.0.0.1
+pid-file        = $HOME/var/run/mysqld/mysqld.pid
+socket          = $HOME/var/run/mysqld.sock
+port            = 3336
+basedir         = $JAMG_PATH/3rd_party/mysql
+### CHANGE THIS
+datadir        = 
+tmpdir          = /tmp
+lc-messages =  en_US
+plugin-dir = lib/plugin
+skip-external-locking
+explicit_defaults_for_timestamp = 1
+log_error = error.log
+sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,ERROR_FOR_DIVISION_BY_ZERO,NO_ZERO_IN_DATE,NO_ZERO_DATE
+large-pages = 1
+
+#
+# Instead of skip-networking the default is now to listen only on
+# localhost which is more compatible and is not less secure.
+#
+# * Fine Tuning
+#
+innodb_buffer_pool_size = 128M
+join_buffer_size = 128M
+sort_buffer_size = 2M
+read_rnd_buffer_size = 2M 
+key_buffer_size         = 16M
+max_allowed_packet      = 16M
+thread_stack            = 192K
+thread_cache_size       = 8
+# This replaces the startup script and checks MyISAM tables if needed
+# the first time they are touched
+myisam-recover-options  = BACKUP
+max_connections        = 100
+query_cache_limit       = 1M
+log_bin                 = $HOME/var/log/mysql/mysql-bin.log
+expire_logs_days        = 10
+max_binlog_size         = 100M
+binlog_do_db           = include_database_name
+binlog_ignore_db       = include_database_name
+
+[mysqldump]
+quick
+quote-names
+max_allowed_packet      = 16M
+
+[isamchk]
+key_buffer              = 16M
+
+
