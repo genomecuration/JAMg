@@ -24,7 +24,9 @@ before using a JAMg pipeline software
 Also in these documentes, $JAMg_PATH means your full JAMg path (i.e. this directory)
 
 = Perl Dependencies
+
 The following perl modules are required.
+
 * Pod::Usage
 * Data::Dumper
 * Getopt::Long
@@ -44,8 +46,27 @@ $ cpan Pod::Usage Data::Dumper Getopt::Long List::Util Digest::MD5 DBI DBD::mysq
   IO::File LWP::Simple Statistics::Descriptive Storable threads Carp threads::shared
 
 Note that you don't have to this as the system administrator: you can use cpan as a normal user
- just make sure it is setup correctly (run cpan by itself and follow the prompts; afterwards running "install Bundle::CPAN" is recommended)
-(that is how we run things on servers managed Australia-wide)
+ just make sure it is setup correctly (run cpan by itself and follow the prompts)
+(that is how we run things on some servers managed Australia-wide rather than in-house)
+
+I recommend that you have a CPAN version of at least 2.0. Ask your system administrator to install the Bundle as root (if it is possible)
+as this may save you considerable issues later on. If they refuse, you can STILL install it as a normal user
+
+$ cpan Bundle::CPAN
+
+= GeneMark
+
+If you are to use GeneMark then you have to download and install it manually from:
+http://exon.gatech.edu/genemark/license_download.cgi
+
+For convenience, you may place the file at $JAMG_PATH/3rd_party/genemark so th you can execute this file:
+$JAMG_PATH/3rd_party/genemark/gmes_petap.pl
+
+You will need to get your key and copy it as per the INSTALL directions.
+
+You will need to install these libraries
+$ cpan YAML Hash::Merge Logger::Simple Parallel::ForkManager
+
 
 = RepeatMasker libraries
 Then download the RepeatMasker libraries from GIRI (free registration required; 2 day waiting period) http://www.girinst.org
