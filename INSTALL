@@ -53,12 +53,16 @@ NB: "This version of RepeatMasker requires library version 20140131 or higher".
 decompress repeatmaskerlibraries-*.tar.gz in $JAMG_PATH/3rd_party/RepeatMasker and do
 $ cd  $JAMG_PATH/3rd_party/RepeatMasker && tar xzf FULL_PATH_TO_repeatmaskerlibraries-*.tar.gz
 
-= Install HHblits, BLASTDB etcdatabases
-You can install them here (or anywhere else you prefer) $JAMG_PATH/databases/hhblits/
+= OPTIONAL: Install HHblits, BLASTDB etc databases
+
+The HHblits is used for exon searching only. It is very time-consuming and not recommended for large (e.g. plant) genomes
+It is not important if you install these databases if you don't use them and you don't have to install them within JAMg,
+i.e. you can install them here or anywhere else you prefer, e.g. system-wde if you're the administrator
 
 See 
 * databases/hhblits/README
 * databases/blastdb/README
+* databases/ncbi_taxonomy/README
 
 For more rRNA repeat masking:
 uncompress databases/blastdb/repeats/*bz2
