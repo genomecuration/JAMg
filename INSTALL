@@ -11,26 +11,65 @@ Almost all third party software are provided in 3rd_party and will be installed 
 The only not installed is emboss which is complicated to install in the user-space (and is useful to have system wide
 anyway).
 
+= Variables
 
-= Dependencies
+Run the env.sh script to generate the environmental variables for installing/using JAMg. 
+
+$ bash env.sh
+$ source env.source 
+
+You can copy and change env.source if you prefer to annotate another genome but always do 'source env.source'
+before using a JAMg pipeline software
+
+Also in these documentes, $JAMg_PATH means your full JAMg path (i.e. this directory)
+
+= Perl Dependencies
 The following perl modules are required.
 * Pod::Usage
 * Data::Dumper
 * Getopt::Long
 * List::Util
 * Digest::MD5
+* DBI
+* DBD::mysql
+* IO::File
+* LWP::Simple and BioPerl - if you want to download NCBI sequences only
+* Statistics::Descriptive
+* Storable
+* threads and threads::shared
+* Carp
 
 You can install via CPAN:
-$ cpan Pod::Usage Data::Dumper Getopt::Long List::Util Digest::MD5
+$ cpan Pod::Usage Data::Dumper Getopt::Long List::Util Digest::MD5 DBI DBD::mysql \
+  IO::File LWP::Simple Statistics::Descriptive Storable threads Carp threads::shared
 
-Note that Pod::Usage Data::Dumper are only used for error messages so you could edit them out if you have to.
+Note that you don't have to this as the system administrator: you can use cpan as a normal user
+ just make sure it is setup correctly (run cpan by itself and follow the prompts; afterwards running "install Bundle::CPAN" is recommended)
+(that is how we run things on servers managed Australia-wide)
 
-The following software are required.
- * emboss
- 
-You can install them using a repository, e.g. on an Ubuntu:
-$ sudo apt-get install emboss
+= RepeatMasker libraries
+Then download the RepeatMasker libraries from GIRI (free registration required; 2 day waiting period) http://www.girinst.org
+NB: "This version of RepeatMasker requires library version 20140131 or higher".
+decompress repeatmaskerlibraries-*.tar.gz in $JAMG_PATH/3rd_party/RepeatMasker and do
+$ cd  $JAMG_PATH/3rd_party/RepeatMasker && tar xzf FULL_PATH_TO_repeatmaskerlibraries-*.tar.gz
 
+= Install HHblits, BLASTDB etcdatabases
+You can install them here (or anywhere else you prefer) $JAMG_PATH/databases/hhblits/
+
+See 
+* databases/hhblits/README
+* databases/blastdb/README
+
+For more rRNA repeat masking:
+uncompress databases/blastdb/repeats/*bz2
+$ bunzip2 -k databases/blastdb/repeats/*bz2
+
+= Finally, compile 3rd partty software
+
+Run 
+$ make 2>&1 | tee make.log
+
+This will take some time because there are a lot of third party utilities being made.
 
 == For people using intel compilers:
 ======================================================================================
@@ -50,45 +89,14 @@ export LDFLAGS="$LDFLAGS -fopenmp"
 
 ======================================================================================
 
-
-= Next step
-Then download the RepeatMasker libraries from GIRI (free registration required; 2 day waiting period) http://www.girinst.org
-NB: "This version of RepeatMasker requires library version 20140131 or higher".
-Place repeatmaskerlibraries-*.tar.gz in $JAMG_PATH/3rd_party/RepeatMasker
-
-Where $JAMG_PATH is shorthand for your full path for where you placed JAMg (e.g ~/software/jamg)
-
-Then run 
-make 2>&1 | tee make.log
-
-This will take some time because there are a lot of third party utilities being made.
-
-After it finishes you have to configure RepeatMasker
-cd $JAMG_PATH/3rd_party/RepeatMasker; ./configure
-Answer the prompts and use RM-BLAST
-file paths are in the JAMg distribution, e.g.
-$JAMG_PATH/3rd_party/RepeatMasker
-$JAMG_PATH/3rd_party/ncbi-blast/bin
-
-
-
-=============================================================================================================
-
 If there is another error with the external prorams, I'm not sure if I can help but maybe I've come across the error. 
-For example Samtools requires editing the various Makefiles if you have custom library paths (add $(LDFLAGS) in the compilation lines)
-
-Send the make.log but it is likely that the best option
-is to see which program was the last one (i.e. the one that failed) and try to compile it manually. It is not
-unlikely that your system is lacking a dependency (e.g. for Ubuntu/Debian see the 'apt-get build-dep' command, e.g.
-apt-get build-dep exonerate). If you don't want to do, you should talk to your system administrator.
-
 
 =============================================================================================================
 Please report bugs to:
 
  Alexie Papanicolaou
 
-        1 CSIRO Ecosystem Sciences, GPO 1700, Canberra 2601, Australia
+        1 Hawkesbury Institute for the Environment, Richmond, NSW, Australia
         alexie@butterflybase.org
 
 LICENSE
@@ -96,4 +104,3 @@ LICENSE
 See LICENSE
 
 Note it is provided "as is" without warranty of any kind.
-

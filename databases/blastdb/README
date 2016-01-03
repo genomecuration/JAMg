@@ -1,4 +1,7 @@
-Here you should a Uniref100 database
-wget -O uniref100.fasta.gz "ftp://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref100/uniref100.fasta.gz"
-gunzip uniref100.fasta.gz
-makeblastdb -parse_seqids -hash_index -in uniref100.fasta -title UniRef100 -out uniref100
+Here you should a Uniref100 database (or Uniref50 if you are stressed for resources/time)
+
+$ wget -O uniref100.fasta.gz "ftp://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref100/uniref100.fasta.gz"
+$ gunzip uniref100.fasta.gz
+
+# replace DATE with something to tell you what the date is!
+$ makeblastdb -parse_seqids -hash_index -in uniref100.fasta -title UniRef100_DATE -out uniref100   
