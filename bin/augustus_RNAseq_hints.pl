@@ -121,7 +121,7 @@ die "Cannot index genome $genome\n" unless -s $genome . '.fai';
 unless (-e "$master_bamfile.junctions.completed"){
  &process_cmd("$samtools_exec rmdup -S $master_bamfile - | $bedtools_exec bamtobed -bed12 | $bed_to_aug_script -prio 7 -out $master_bamfile.junctions.bed > $master_bamfile.junctions.hints" );
  # For JBrowse
- &process_cmd("$bedtools_exec bedtobam -bed12 -g $genome.fai -i $master_bamfile.junctions.bed| $samtools_exec sort -m 1073741824 - $master_bamfile.junctions");
+ &process_cmd("$bedtools_exec bedtobam -bed12 -g $genome.fai -i $master_bamfile.junctions.bed| $samtools_exec sort -m 1073741824 -o $master_bamfile.junctions.bam -");
  &process_cmd("$samtools_exec index $master_bamfile.junctions.bam");
  # For Augustus
  &only_keep_intronic("$master_bamfile.junctions.hints");
