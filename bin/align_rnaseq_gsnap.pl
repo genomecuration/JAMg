@@ -386,8 +386,7 @@ sub align_unpaired_files() {
              || -s "$base_out_filename"."_uniq.bam" );
   unless ( -s "$base_out_filename"."_uniq.bam" ) {
    &process_cmd(
-"$samtools_exec view -h -u -T $genome $base_out_filename"."_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - $base_out_filename"."_uniq"
-   );
+"$samtools_exec view -h -u -T $genome $base_out_filename"."_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_uniq.bam -");
    &process_cmd("$samtools_exec index $base_out_filename"."_uniq.bam");
    print LOG "\n$base_out_filename"."_uniq.bam:\n";
    &process_cmd(
@@ -397,8 +396,7 @@ sub align_unpaired_files() {
   }
   unless ( -s "$base_out_filename"."_mult.bam" ) {
    &process_cmd(
-"$samtools_exec view -h -u -T $genome $base_out_filename"."_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - $base_out_filename"."_mult"
-   );
+"$samtools_exec view -h -u -T $genome $base_out_filename"."_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_mult.bam -");
    &process_cmd("$samtools_exec index $base_out_filename"."_mult.bam");
    print LOG "\n$base_out_filename"."_mult.bam:\n";
    &process_cmd(
@@ -452,21 +450,20 @@ sub align_paired_files() {
   &process_cmd($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
   die "Failed to build genome ($genome.fai and $gmap_dir/$genome_dbname) " unless -s "$genome.fai" && -d "$gmap_dir/$genome_dbname";
   my $base_out_filename = $notpaired ? "gsnap.$base.unpaired"  : "gsnap.$base.concordant";
-  my $file_align_cmd = $align_cmd;
+  my $out_halfmapped = "gsnap.$base.halfmapping_uniq";
 
+  my $file_align_cmd = $align_cmd;
   $file_align_cmd .= ' --bunzip2 ' if $file =~ /\.bz2$/; 
   $file_align_cmd .= ' --gunzip ' if $file =~ /\.gz$/; 
   $file_align_cmd .= $qual_prot if $qual_prot;
 
-  $file_align_cmd .=
-    " --split-output=gsnap.$base $file $pair ";
+  $file_align_cmd .=    " --split-output=gsnap.$base $file $pair ";
   &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
     unless (    -s "$base_out_filename"."_uniq"
              || -s "$base_out_filename"."_uniq.bam" );
   unless ( -s "$base_out_filename"."_uniq.bam" ) {
    &process_cmd(
-"$samtools_exec view -h -u -T $genome $base_out_filename"."_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - $base_out_filename"."_uniq"
-   );
+"$samtools_exec view -h -u -T $genome $base_out_filename"."_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_uniq.bam -");
    &process_cmd("$samtools_exec index $base_out_filename"."_uniq.bam");
    print LOG "\n$base_out_filename"."_uniq.bam:\n";
    &process_cmd(
@@ -476,14 +473,18 @@ sub align_paired_files() {
   }
   unless ( -s "$base_out_filename"."_mult.bam" ) {
    &process_cmd(
-"$samtools_exec view -h -u -T $genome $base_out_filename"."_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory - $base_out_filename"."_mult"
-   );
+"$samtools_exec view -h -u -T $genome $base_out_filename"."_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_mult.bam -");
    &process_cmd("$samtools_exec index $base_out_filename"."_mult.bam");
    print LOG "\n$base_out_filename"."_mult.bam:\n";
    &process_cmd(
     "$samtools_exec flagstat $base_out_filename"."_mult.bam >> gsnap.$base.log"
    );
    unlink("$base_out_filename"."_mult");
+  }
+  if ( -s $out_halfmapped && !-s "$out_halfmapped.bam"){
+    &process_cmd("$samtools_exec view -h -u -T $genome $out_halfmapped | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $out_halfmapped.bam -");
+    &process_cmd("$samtools_exec index $out_halfmapped.bam");
+    unlink($out_halfmapped) if -s "$out_halfmapped.bam";
   }
 #  unless ( -s "$base_out_filename"."_uniq_mult.bam" ) {
 #   &process_cmd("$samtools_exec merge -@ $cpus -l 9 $base_out_filename"."_uniq_mult.bam $base_out_filename"."_uniq.bam $base_out_filename"."_mult.bam"   );
