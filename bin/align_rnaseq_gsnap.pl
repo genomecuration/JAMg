@@ -406,16 +406,13 @@ sub align_unpaired_files() {
    );
    unlink("$base_out_filename"."_mult");
   }
-  unless ( -s "$base_out_filename"."_uniq_mult.bam" ) {
-   &process_cmd(
-"$samtools_exec merge -@ $cpus -l 9 $base_out_filename"."_uniq_mult.bam $base_out_filename"."_uniq.bam $base_out_filename"."_mult.bam"
-   );
-   &process_cmd("$samtools_exec index $base_out_filename"."_uniq_mult.bam");
-   print LOG "\n$base_out_filename"."_uniq_mult.bam:\n";
-   &process_cmd(
-"$samtools_exec flagstat $base_out_filename"."_uniq_mult.bam >> gsnap.$base.log"
-   );
-  }
+# decided to remove as it was a resource hog
+#  unless ( -s "$base_out_filename"."_uniq_mult.bam" ) {
+#   &process_cmd("$samtools_exec merge -@ $cpus -l 9 $base_out_filename"."_uniq_mult.bam $base_out_filename"."_uniq.bam $base_out_filename"."_mult.bam"   );
+#   &process_cmd("$samtools_exec index $base_out_filename"."_uniq_mult.bam");
+#   print LOG "\n$base_out_filename"."_uniq_mult.bam:\n";
+#   &process_cmd("$samtools_exec flagstat $base_out_filename"."_uniq_mult.bam >> gsnap.$base.log"   );
+#  }
 
   print LOG "\nGSNAP Completed!\n";
   close LOG;
@@ -488,16 +485,12 @@ sub align_paired_files() {
    );
    unlink("$base_out_filename"."_mult");
   }
-  unless ( -s "$base_out_filename"."_uniq_mult.bam" ) {
-   &process_cmd(
-"$samtools_exec merge -@ $cpus -l 9 $base_out_filename"."_uniq_mult.bam $base_out_filename"."_uniq.bam $base_out_filename"."_mult.bam"
-   );
-   &process_cmd("$samtools_exec index $base_out_filename"."_uniq_mult.bam");
-   print LOG "\n$base_out_filename"."_uniq_mult.bam:\n";
-   &process_cmd(
-"$samtools_exec flagstat $base_out_filename"."_uniq_mult.bam >> gsnap.$base.log"
-   );
-  }
+#  unless ( -s "$base_out_filename"."_uniq_mult.bam" ) {
+#   &process_cmd("$samtools_exec merge -@ $cpus -l 9 $base_out_filename"."_uniq_mult.bam $base_out_filename"."_uniq.bam $base_out_filename"."_mult.bam"   );
+#   &process_cmd("$samtools_exec index $base_out_filename"."_uniq_mult.bam");
+#   print LOG "\n$base_out_filename"."_uniq_mult.bam:\n";
+#   &process_cmd("$samtools_exec flagstat $base_out_filename"."_uniq_mult.bam >> gsnap.$base.log"   );
+#  }
 
   print LOG "\nGSNAP Completed!\n";
   close LOG;
