@@ -16,6 +16,8 @@ run test with 100 genes, not 390+
 
 Create hint files for Augustus using RNASeq/EST. One is junction reads (excellent for introns), the other is RNASeq/EST coverage
 
+Will use up to 5Gb of RAM
+
 Mandatory options:
 
  -bam|in           s{1,}  	The input BAM file(s) (co-ordinate sorted).
@@ -121,7 +123,7 @@ die "Cannot index genome $genome\n" unless -s $genome . '.fai';
 unless (-e "$master_bamfile.junctions.completed"){
  &process_cmd("$samtools_exec rmdup -S $master_bamfile - | $bedtools_exec bamtobed -bed12 | $bed_to_aug_script -prio 7 -out $master_bamfile.junctions.bed > $master_bamfile.junctions.hints" );
  # For JBrowse
- &process_cmd("$bedtools_exec bedtobam -bed12 -g $genome.fai -i $master_bamfile.junctions.bed| $samtools_exec sort -m 1073741824 -o $master_bamfile.junctions.bam -");
+ &process_cmd("$bedtools_exec bedtobam -bed12 -g $genome.fai -i $master_bamfile.junctions.bed| $samtools_exec sort -m 4G -o $master_bamfile.junctions.bam -");
  &process_cmd("$samtools_exec index $master_bamfile.junctions.bam");
  # For Augustus
  &only_keep_intronic("$master_bamfile.junctions.hints");
@@ -130,7 +132,7 @@ unless (-e "$master_bamfile.junctions.completed"){
 
 unless (-e "$master_bamfile.coverage.bg.completed"){
  # For JBrowse
- &process_cmd("$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $master_bamfile| sort -S 1G -k1,1 -k2,2n > $master_bamfile.coverage.bg");
+ &process_cmd("$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $master_bamfile| sort -S 4G -k1,1 -k2,2n > $master_bamfile.coverage.bg");
  &process_cmd("bedGraphToBigWig $master_bamfile.coverage.bg $genome.fai $master_bamfile.coverage.bw") if `which bedGraphToBigWig`; 
  &touch("$master_bamfile.coverage.bg.completed");
 }
