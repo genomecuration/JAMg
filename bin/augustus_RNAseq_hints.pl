@@ -63,6 +63,7 @@ my ( $samtools_exec, $bedtools_exec, $bed_to_aug_script ) = &check_program( 'sam
 
 #Options
 my ( @bamfiles, $genome, $help,$no_hints );
+my $cpus = 4;
 my $window           = 50;
 my $min_score        = 20;
 my $strandness       = int(0);
@@ -75,7 +76,8 @@ pod2usage $! unless &GetOptions(
             'strandness:i'      => \$strandness,
             'window:i'          => \$window,
             'background_fold:i' => \$background_level,
-	    'nohints|no_hints'  => \$no_hints
+	    'nohints|no_hints'  => \$no_hints,
+	    'cpus:i'            => \$cpus
 );
 
 pod2usage if $help;
@@ -108,7 +110,7 @@ if (scalar(@bamfiles == 1)){
 		die "Cannot find $bamfile\n" unless -s $bamfile;
 	}
 	$master_bamfile = 'master_bamfile.bam';
-	&process_cmd("$samtools_exec merge -r $master_bamfile ".join(" ",@bamfiles)." && $samtools_exec index $master_bamfile") unless -s $master_bamfile;
+	&process_cmd("$samtools_exec merge -@ $cpus -r $master_bamfile ".join(" ",@bamfiles)." && $samtools_exec index $master_bamfile") unless -s $master_bamfile;
 }
 
 &process_cmd("$samtools_exec faidx $genome") unless -s $genome . '.fai';
