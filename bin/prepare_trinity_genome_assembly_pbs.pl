@@ -15,8 +15,8 @@ Optional:
 
 	-help
 	-intron_max      :i => Maximum intron size
-	-boundary        :i => Number of reads to define a boundary (def. 2). For deep RNA-Seq in very large scaffolds, you need to increase this (e.g 10 or 25; see distribution of wig file) 
-but you may lose lowly expressed transcripts.
+	-boundary        :i => Number of reads to define a boundary (def. 2). For deep RNA-Seq in very large scaffolds or genomic DNA contamination, 
+you need to increase this (e.g 10 or 25; see distribution of bg/bigwig file) but you may lose lowly expressed transcripts.
         -minimum_reads   :i => Minimum number of reads required to process (defaults to 50)
         -small_cutoff    :i => Maximum file size of *.reads file to assign it as a 'small' and quick run (defaults to 1024^3, i.e. 1 megabyte)
         -medium_cutoff   :i => As above but for assigning it as 'medium', defaults to 10 x small_cutoff (higher than this is going to be assigned as 'long')
@@ -57,7 +57,7 @@ my $scaffold_size_cutoff = 3000;
 my $intron_max_size = 70000;
 my $minimum_reads = 50;
 my $small_cut     = 1024 * 1024 * 1024;
-my ($medium_cut,@sam_files,@bam_files,$delete_sam,@read_files,$is_single_stranded,$single_end,$help,$do_split_scaffolds);
+my ($medium_cut,@user_provided_sam_files,@user_provided_bam_files,$delete_sam,@read_files,$is_single_stranded,$single_end,$help,$do_split_scaffolds);
 my $debug;
 my $cpus = 4;
 my $memory = '20G';
@@ -72,8 +72,8 @@ pod2usage $! unless &GetOptions(
 	'minimum_reads:i' => \$minimum_reads,
 	'small_cutoff:i' => \$small_cut,
 	'medium_cutoff:i' => \$medium_cut,
-	'sam:s{,}'   => \@sam_files,
-	'bam|files_bam:s{,}' => \@bam_files,
+	'sam:s{,}'   => \@user_provided_sam_files,
+	'bam|files_bam:s{,}' => \@user_provided_bam_files,
 	'intron_max:i'   => $intron_max_size,
 	'single_stranded:s' => \$is_single_stranded,
 	'single_end' => \$single_end,
@@ -91,38 +91,39 @@ if ($skip_sam){
 ############### PART ONE ###########################
 
 if (!$read_files[0]){
-	if (@bam_files){
-		foreach my $bam_file (@bam_files){
-			die "Cannot find BAM file $bam_file\n" unless -s $bam_file;
+	if (@user_provided_bam_files){
+		foreach my $user_provided_bam_file (@user_provided_bam_files){
+			die "Cannot find BAM file $user_provided_bam_file\n" unless -s $user_provided_bam_file;
 		}
-		print "Converting BAMs:\n".join(" ",@bam_files)."\n";
+		print "Converting BAMs:\n".join(" ",@user_provided_bam_files)."\n";
 		$delete_sam = 1;
-		my $sam_file = 'RNASeq_TGG_input.sam';
-		if (scalar(@bam_files > 1 )){
-			&process_cmd("$samtools_exec merge - ".join(" ",@bam_files)." |$samtools_exec view -@ $cpus -F4 - > $sam_file " ) unless -s $sam_file;
+		my $user_provided_sam_file = 'RNASeq_TGG_input.sam';
+		if (scalar(@user_provided_bam_files > 1 )){
+			&process_cmd("$samtools_exec merge - ".join(" ",@user_provided_bam_files)." |$samtools_exec view -@ $cpus -F4 - > $user_provided_sam_file " ) unless -s $user_provided_sam_file;
 		}else{
-			&process_cmd("$samtools_exec view -@ $cpus -F4 ".$bam_files[0]." > $sam_file") unless -s $sam_file;
+			&process_cmd("$samtools_exec view -@ $cpus -F4 ".$user_provided_bam_files[0]." > $user_provided_sam_file") unless -s $user_provided_sam_file;
 		}
-		pod2usage ("Can't produce SAM file from input... Are they sorted by co-ordinate?\n") unless @sam_files && -s $sam_files[0];
-		if ($do_split_scaffolds){
-			push(@sam_files,&split_scaffold_sam($sam_file,1));
-		}else{
-			push(@sam_files,$sam_file);
-		}
+		pod2usage ("Can't produce SAM file from input... Are they sorted by co-ordinate?\n") unless @user_provided_sam_files && -s $user_provided_sam_files[0];
+		push(@user_provided_sam_files,$user_provided_sam_file);
 	}
+
+	my @sam_files_to_process;
 
 	if ($do_split_scaffolds){
-		my $orig_sam = $sam_files[0];
-		@sam_files = ();
-		push(@sam_files,&split_scaffold_sam($orig_sam));
+		foreach my $orig_sam (@user_provided_sam_files){
+			push(@sam_files_to_process,&split_scaffold_sam($orig_sam));
+		}
+	}else{
+		@sam_files_to_process = @user_provided_sam_files;
 	}
 
-	pod2usage ("Can't find SAM files\n") unless @sam_files && -s $sam_files[0];
-        print "Will use SAM as input:\n".join(" ",@sam_files)."\n";
+
+	pod2usage ("Can't find SAM files\n") unless @sam_files_to_process && -s $sam_files_to_process[0];
+        print "Will use SAM as input:\n".join(" ",@sam_files_to_process)."\n";
 
  	my $thread_helper = new Thread_helper($threads);
-	foreach my $sam_file (@sam_files){
-		my $thread = threads->create( 'process_sam_file', $sam_file );
+	foreach my $file (@sam_files_to_process){
+		my $thread = threads->create( 'process_sam_file', $file );
 		$thread_helper->add_thread($thread);
 	}
 	$thread_helper->wait_for_all_threads_to_complete();
@@ -293,42 +294,12 @@ sub mytime() {
  return "$wday, $mon $mday, $year: $hour:$min:$sec\t";
 }
 
-
-sub split_scaffold_bam(){
-	my $bam_file = shift;
-	my $delete = shift;
-	die "No file $bam_file\n" unless $bam_file && -s $bam_file;
-	my @scaff_sams;
-	&process_cmd($samtools_exec." index $bam_file" ) unless -s "$bam_file.bai";	
-	my $total_scaffolds = scalar(@scaff_id_lines);
-	print "Splitting alignments per genome sequence above $scaffold_size_cutoff b.p. ($total_scaffolds)\n";
-	foreach my $scaff_id (@scaff_id_lines){
-		my $sam_file = "$bam_file.$scaff_id.sam";
-		&process_cmd($samtools_exec."  view -@ $cpus -F4 $bam_file $scaff_id > $sam_file" ) unless -s $sam_file;
-		unlink($sam_file) if -e $sam_file && !-s $sam_file;
-		push(@scaff_sams,$sam_file) if -s $sam_file;
-	}
-	die "No SAM files produced from genome\n" unless @scaff_sams && -s $scaff_sams[0];
-	unlink($bam_file) if $delete;
-	return @scaff_sams;
-}
-
-sub get_ids_bam(){
-	my @bam_scaff_ids = `$samtools_exec view -H $bam_files[0] |grep '^\@SQ' `;
-	foreach my $ln (@bam_scaff_ids){
-		if ($ln=~/\bSN:(\S+)\b\tLN:(\d+)/){
-			my $id = $1; my $size = $2;
-			next if !$size || $size < $scaffold_size_cutoff;
-			push(@scaff_id_lines,$id);
-		}
-	}
-}
-
 sub split_scaffold_sam(){
 	my $sam_file = shift;
 	my $delete = shift;
 	die "No file $sam_file\n" unless $sam_file && -s $sam_file;
 	my %fh_hash;
+	my @scaff_id_lines;
 	open (SAM,$sam_file);
 	while (my $ln=<SAM>){
 		my @data = split("\t",$ln);
