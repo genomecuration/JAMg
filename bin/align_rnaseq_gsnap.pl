@@ -158,13 +158,13 @@ if ($suffix) {
  $build_cmd =
 "$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 $genome >/dev/null ; $samtools_exec faidx $genome";
  $align_cmd =
-"$gsnap_exec -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam --no-sam-headers ";
+"$gsnap_exec -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam ";
 }
 else {
  $build_cmd =
 "$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 --no-sarray $genome >/dev/null ; $samtools_exec faidx $genome";
  $align_cmd =
-"$gsnap_exec --use-sarray=0 -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam --no-sam-headers ";
+"$gsnap_exec --use-sarray=0 -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam ";
 }
 
 
@@ -379,8 +379,7 @@ sub align_unpaired_files() {
   $file_align_cmd .= ' --gunzip ' if $file =~ /\.gz$/; 
   $file_align_cmd .= $qual_prot if $qual_prot;
 
-  $file_align_cmd .=
-    " --split-output=gsnap.$base $file  ";
+  $file_align_cmd .= " --split-output=gsnap.$base --read-group-id=$base $file ";
   &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
     unless (    -s "$base_out_filename"."_uniq"
              || -s "$base_out_filename"."_uniq.bam" );
@@ -462,7 +461,7 @@ sub align_paired_files() {
   $file_align_cmd .= ' --gunzip ' if $file =~ /\.gz$/; 
   $file_align_cmd .= $qual_prot if $qual_prot;
 
-  $file_align_cmd .=    " --split-output=gsnap.$base $file $pair ";
+  $file_align_cmd .=    " --split-output=gsnap.$base --read-group-id=$base $file $pair ";
   &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
     unless (    -s "$base_out_filename"."_uniq"
              || -s "$base_out_filename"."_uniq.bam" );
