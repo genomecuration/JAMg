@@ -66,8 +66,8 @@ use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 
-my ( $gmap_build_exec, $gsnap_exec, $samtools_exec,$bunzip2_exec ) =
-  &check_program( "gmap_build", "gsnap", "samtools",'bunzip2' );
+my ( $gmap_build_exec, $gsnap_exec, $samtools_exec,$bunzip2_exec,$bedtools_exec ) =
+  &check_program( "gmap_build", "gsnap", "samtools",'bunzip2','bedtools' );
 &samtools_version_check($samtools_exec);
 my ( $input_dir, $pattern2, $debug, $genome, $genome_dbname, $nofails, $suffix,$piccard_0m,
      $help, $just_write_out_commands, $split_input, $notpaired, $verbose, $matepair );
@@ -355,6 +355,12 @@ sub align_unpaired_files() {
   unless ( -s $base_out_filename."_uniq.bam" ) {
    &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename"."_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_uniq.bam -"   );
    &process_cmd("$samtools_exec index $base_out_filename"."_uniq.bam");
+
+   ## For JBrowse
+   &process_cmd("$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $base_out_filename"
+     ."_uniq.bam| sort -S 4G -k1,1 -k2,2n > $base_out_filename"."_uniq.coverage.bg");
+   &process_cmd("bedGraphToBigWig $base_out_filename"."_uniq.coverage.bg $genome.fai $base_out_filename"."_uniq.coverage.bw") if `which bedGraphToBigWig`;
+
    print LOG "\n$base_out_filename"."_uniq.bam:\n";
    &process_cmd(
     "$samtools_exec flagstat $base_out_filename"."_uniq.bam >> gsnap.$base.log"
@@ -425,6 +431,12 @@ sub align_paired_files() {
   unless ( -s "$base_out_filename"."_uniq.bam" ) {
    &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename"."_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_uniq.bam -");
    &process_cmd("$samtools_exec index $base_out_filename"."_uniq.bam");
+
+   ## For JBrowse
+   &process_cmd("$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $base_out_filename"
+     ."_uniq.bam| sort -S 4G -k1,1 -k2,2n > $base_out_filename"."_uniq.coverage.bg");
+   &process_cmd("bedGraphToBigWig $base_out_filename"."_uniq.coverage.bg $genome.fai $base_out_filename"."_uniq.coverage.bw") if `which bedGraphToBigWig`;
+
    print LOG "\n$base_out_filename"."_uniq.bam:\n";
    &process_cmd(
     "$samtools_exec flagstat $base_out_filename"."_uniq.bam >> gsnap.$base.log"
