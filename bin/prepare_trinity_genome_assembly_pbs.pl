@@ -8,8 +8,8 @@ Prepare data for Trinity Genome Guided. Run it on the base directory where align
 
 Mandatory Options:
 
-	   -bam |files  :s  => BAM files, co-ordinate sorted. They will be processed as one big file
-	OR -sam         :s  => SAM files, co-ordinate sorted. They will be processed separately
+	   -bam |files  :s  => BAM files, co-ordinate sorted. They will be processed as one big file (unless -split)
+	OR -sam         :s  => SAM files, co-ordinate sorted. They will be processed separately (may or may not be a good idea)
 
 Optional:
 
