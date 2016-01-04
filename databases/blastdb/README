@@ -5,3 +5,9 @@ $ gunzip uniref100.fasta.gz
 
 # replace DATE with something to tell you what the date is!
 $ makeblastdb -parse_seqids -hash_index -in uniref100.fasta -title UniRef100_DATE -out uniref100   
+
+$ wget -O uniref50.fasta.gz "ftp://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref50/uniref50.fasta.gz"
+$ gunzip uniref50.fasta.gz
+
+# replace DATE with something to tell you what the date is!
+$ makeblastdb -parse_seqids -hash_index -in uniref50.fasta -title UniRef50_DATE -out uniref50   
