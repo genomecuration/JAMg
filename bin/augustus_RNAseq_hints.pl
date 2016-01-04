@@ -2,12 +2,6 @@
 
 =pod
 
-=head1 TODO
-
-merge all rnseq hints at the end. maintain grp
-run test with 100 genes, not 390+
-
-
 =head1 NAME
 
  augustus_RNAseq_hints.pl
@@ -114,7 +108,7 @@ if (scalar(@bamfiles == 1)){
 		die "Cannot find $bamfile\n" unless -s $bamfile;
 	}
 	$master_bamfile = 'master_bamfile.bam';
-	&process_cmd("$samtools_exec merge -r $master_bamfile ".join(" ",@bamfiles)) unless -s $master_bamfile;
+	&process_cmd("$samtools_exec merge -r $master_bamfile ".join(" ",@bamfiles)." && $samtools_exec index $master_bamfile") unless -s $master_bamfile;
 }
 
 &process_cmd("$samtools_exec faidx $genome") unless -s $genome . '.fai';
@@ -149,7 +143,8 @@ if (    -e "$master_bamfile.junctions.completed"
  unless (-e "$master_bamfile.rnaseq.completed"){
   my $augustus_script_exec = $RealBin.'/../3rd_party/augustus/scripts/join_mult_hints.pl';
   if (-s $augustus_script_exec){
-  	&process_cmd("cat $master_bamfile.junctions.hints.intronic $master_bamfile.coverage.hints| sort -S 1G -n -k 4,4 | sort -S 1G -s -n -k 5,5 | sort -S 1G -s -n -k 3,3 | sort -S 1G -s -k 1,1| $augustus_script_exec > $master_bamfile.rnaseq.hints" );
+  	&process_cmd("cat $master_bamfile.junctions.hints.intronic $master_bamfile.coverage.hints| sort -S 1G -n -k 4,4 "
+        ."| sort -S 1G -s -n -k 5,5 | sort -S 1G -s -n -k 3,3 | sort -S 1G -s -k 1,1| $augustus_script_exec > $master_bamfile.rnaseq.hints" );
 	  &touch("$master_bamfile.rnaseq.completed");
   }
  }
