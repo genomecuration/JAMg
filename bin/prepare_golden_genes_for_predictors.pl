@@ -55,8 +55,8 @@ Other options:
     -softmasked      :s       => Genome that has been softmasked for repeats
     -nosingle                 => Don't allow single exon genes. Recommended, most are repeats even though some are legitimate genes (they will be detected downstream in JAMg)
     -flanks          :i       => Base pairs to add left and right when creating GenBank file for training
-    -identical       :i       => Identity cutoff to mark an exonerate aln as golden, out of 100 (def 98)
-    -similar         :i       => Similarity cutoff to mark an exonerate aln as golden, for exonerate out of 100 (def 95)
+    -identical       :i       => Identity % cutoff to mark an exonerate aln as golden (def 95, if something is 95% identical then it is gold)
+    -similar         :i       => Similarity % cutoff to mark an exonerate aln as golden (def 98, if something is 98% similar then it is gold)
     -intron          :i       => Max size of intron (def 70000 bp)
     -threads|cpu     :i       => Number of threads (def 1)
     -stop_exonerate           => Stop after exonerate finishes.
@@ -150,9 +150,9 @@ my $intron_size              = 70000;
 my $training_set_size        = 4000;
 my $aug_optimization_geneset = 450;
 my $augustus_flank_region    = 3000;
-my $identical_fraction       = 98;
+my $identical_fraction       = 95;
 my $minorf                   = 290;     #minimum orf size in bp
-my $similar_fraction         = 95;
+my $similar_fraction         = 98;
 my $threads                  = 1;
 my $mismatch_cutoff          = 10;
 
