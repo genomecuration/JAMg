@@ -17,7 +17,7 @@ read GENOME_PATH
 echo What is the maximum intron length? e.g. 70000
 read MAX_INTRON_LENGTH
 
-echo What is a species classification for RepeatMasker (e.g. Insecta, fungi, Viridiplantae, human, primates)
+echo "What is a species classification for RepeatMasker (e.g. Insecta, fungi, Viridiplantae, human, primates)?"
 read SPECIES_CATEGORY
 
 #system variables
