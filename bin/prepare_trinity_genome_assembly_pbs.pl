@@ -103,13 +103,14 @@ if (!$read_files[0]){
 		}else{
 			&process_cmd("$samtools_exec view -@ $cpus -F4 ".$user_provided_bam_files[0]." > $user_provided_sam_file") unless -s $user_provided_sam_file;
 		}
-		pod2usage ("Can't produce SAM file from input... Are they sorted by co-ordinate?\n") unless @user_provided_sam_files && -s $user_provided_sam_files[0];
+		pod2usage ("Can't produce SAM file from input... Are they sorted by co-ordinate?\n") unless -s $user_provided_sam_file;
 		push(@user_provided_sam_files,$user_provided_sam_file);
 	}
 
 	my @sam_files_to_process;
 
 	if ($do_split_scaffolds){
+		print "Splitting scaffolds...\n";
 		foreach my $orig_sam (@user_provided_sam_files){
 			push(@sam_files_to_process,&split_scaffold_sam($orig_sam));
 		}
