@@ -27,7 +27,7 @@ plugin-dir = lib/plugin
 skip-external-locking
 explicit_defaults_for_timestamp = 1
 log_error = error.log
-sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,ERROR_FOR_DIVISION_BY_ZERO,NO_ZERO_IN_DATE,NO_ZERO_DATE
+sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,ERROR_FOR_DIVISION_BY_ZERO
 large-pages = 1
 
 #
