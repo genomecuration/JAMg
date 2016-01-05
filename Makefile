@@ -14,7 +14,7 @@ all:
 	cd 3rd_party && tar xzf zlib-1.2.8.tar.gz && cd zlib-1.2.8 && ./configure --prefix=`pwd`/../ --64 && $(MAKE) && $(MAKE) install
 	cd 3rd_party && tar xzf libpng-1.6.19.tar.gz && cd libpng-1.6.19 && ./configure --prefix=`pwd`/../ --with-zlib-prefix=`pwd`/../ && $(MAKE) && $(MAKE) install
 	cd 3rd_party/mysql && find . -name "*bz2" -exec bunzip2 '{}' \; 
-	cd 3rd_party/EMBOSS && if [[ ! -e emboss/data/TAXONOMY/division.dmp ]]; then bunzip2 -k emboss/data/TAXONOMY/*bz2; fi && ./configure --prefix=`pwd`/../ --without-mysql --without-x --without-java --without-hpdf --without-auth --without-axis2c --without-postgresql --without-pngdriver --enable-64 && $(MAKE) -j3 && $(MAKE) install
+	cd 3rd_party/EMBOSS && if [[ ! -e emboss/data/TAXONOMY/division.dmp ]]; then bunzip2 -k emboss/data/TAXONOMY/*bz2; fi && ./configure --prefix=`pwd`/../ --without-mysql --without-x --without-java --without-hpdf --without-auth --without-axis2c --without-postgresql --without-pngdriver && $(MAKE) -j3 && $(MAKE) install
 	cd 3rd_party/hhsuite && cp lib64/libffindex.so.0.1 ../lib64/
 	cd 3rd_party/ncbi-blast/bin && ln -fs `pwd`/* ../../bin/
 	cd 3rd_party/cdbtools/cdbfasta && $(MAKE) && cp cdbfasta ../../bin/ && cp cdbyank ../../bin/ && $(MAKE) clean
