@@ -26,20 +26,21 @@ LDFLAGS="$LDFLAGS -L$JAMG_PATH/3rd_party/lib -L$JAMG_PATH/3rd_party/lib64 -L$JAM
 CPPFLAGS="$CPPFLAGS -I$JAMG_PATH/3rd_party/include -I$JAMG_PATH/3rd_party/mysql/include -fPIC -I$JAMG_PATH/3rd_party/include -I$JAMG_PATH/3rd_party/mysql/include -fPIC"
 CFLAGS="$CFLAGS -I$JAMG_PATH/3rd_party/include -I$JAMG_PATH/3rd_party/mysql/include -fPIC -I$JAMG_PATH/3rd_party/include -I$JAMG_PATH/3rd_party/mysql/include -fPIC"
 PATH=$JAMG_PATH/bin:$JAMG_PATH/3rd_party/bin:$PATH
+PERL5LIB=$JAMG_PATH/PerlLib:$PERL5LIB
 
 echo " 
 #!/bin/bash
+
+# system speficic
+export JAMG_PATH=$JAMG_PATH
+export LOCAL_CPUS=$LOCAL_CPUS
+export MAX_MEMORY_G=$MAX_MEMORY_G
 
 # species specific (can edit these)
 export GENOME_NAME=$GENOME_NAME
 export GENOME_PATH=$GENOME_PATH
 export MAX_INTRON_LENGTH=$MAX_INTRON_LENGTH
 export SPECIES_CATEGORY=$SPECIES_CATEGORY
-
-# system speficic
-export JAMG_PATH=$JAMG_PATH
-export LOCAL_CPUS=$LOCAL_CPUS
-export MAX_MEMORY_G=$MAX_MEMORY_G
 
 # compilation variables
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH
@@ -51,6 +52,8 @@ export CPPFLAGS=\"$CPPFLAGS\"
 export CFLAGS=\"$CFLAGS\"
 
 export PATH=$JAMG_PATH/bin:$JAMG_PATH/3rd_party/bin:$PATH
+
+export PERL5LIB=$PERL5LIB
 
 " > env.source
 
