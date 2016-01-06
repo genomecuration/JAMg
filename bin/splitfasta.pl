@@ -78,7 +78,7 @@ while (my $record=<FILE>){
 			print ".";
 		}
 	 }
-	 print OUT $record;
+	 print OUT ">".$record;
 }
 close (FILE);
 close (OUT);
