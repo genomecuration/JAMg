@@ -147,6 +147,9 @@ if (    -e "$master_bamfile.junctions.completed"
   if (-s $augustus_script_exec){
   	&process_cmd("cat $master_bamfile.junctions.hints.intronic $master_bamfile.coverage.hints| sort -S 1G -n -k 4,4 "
         ."| sort -S 1G -s -n -k 5,5 | sort -S 1G -s -n -k 3,3 | sort -S 1G -s -k 1,1| $augustus_script_exec > $master_bamfile.rnaseq.hints" );
+	&process_cmd("grep intron $master_bamfile.junctions.hints.intronic | sort -S 1G -n -k 4,4 | sort -S 1G -s -n -k 5,5 | sort -S 1G -s -n -k 3,3"
+	."| sort -S 1G -s -k 1,1| $augustus_script_exec > $master_bamfile.junctions.hints.intronic.only");
+	&convert_mult_to_score("$master_bamfile.junctions.hints.intronic.only");
 	  &touch("$master_bamfile.rnaseq.completed");
   }
  }
@@ -347,4 +350,18 @@ sub median() {
  my $array_ref = shift;
  my @sorted = sort { $a <=> $b } @{$array_ref};
  return $sorted[ int( @sorted / 2 ) ];
+}
+
+
+sub convert_mult_to_score(){
+	my $file = shift;
+	return unless $file && -s $file;
+	open (IN,$file);
+	open (OUT,">$file.scored");
+	while (my $ln=<IN>){
+		my @data = split("\t",$ln);
+		next unless $data[8];
+		
+	}
+
 }

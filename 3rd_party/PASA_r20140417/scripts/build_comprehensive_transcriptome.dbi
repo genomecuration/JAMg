@@ -344,11 +344,11 @@ sub get_TDN_component {
     
     my $component;
 
-    if ($cdna_acc =~ /^(.*comp\d+_c\d+)/) {
+    if ($cdna_acc =~ /(.*comp\d+_c\d+)/) {
         # orig style of trin accessions
         $component = $1;
     }
-    elsif ($cdna_acc =~ /^(c\d+_g\d+)/) {
+    elsif ($cdna_acc =~ /_(c\d+_g\d+)_i\d+/) {
         $component = $1;
     }
     else {
