@@ -118,10 +118,12 @@ die "Cannot index genome $genome\n" unless -s $genome . '.fai';
 unless (-e "$master_bamfile.junctions.completed"){
  &process_cmd("$samtools_exec rmdup -S $master_bamfile - | $bedtools_exec bamtobed -bed12 | $bed_to_aug_script -prio 7 -out $master_bamfile.junctions.bed"
  ."|sort -S 2G -n -k 4,4 | sort -S 2G -s -n -k 5,5 | sort -S 2G -s -n -k 3,3 | sort -S 2G -s -k 1,1 -o $master_bamfile.junctions.hints" ) unless -s "$master_bamfile.junctions.hints";
- # For Augustus
- &only_keep_intronic("$master_bamfile.junctions.hints");
- # don't merge before getting intronic.
- &merge_hints("$master_bamfile.junctions.hints");
+ unless ($no_hints){
+	 # For Augustus
+	 &only_keep_intronic("$master_bamfile.junctions.hints");
+	 # don't merge before getting intronic.
+	 &merge_hints("$master_bamfile.junctions.hints");
+ }
  # For JBrowse
  &process_cmd("$bedtools_exec bedtobam -bed12 -g $genome.fai -i $master_bamfile.junctions.bed| $samtools_exec sort -m 4G -@ 4 -o $master_bamfile.junctions.bam -") unless -s "$master_bamfile.junctions.bam";
  &process_cmd("$samtools_exec index $master_bamfile.junctions.bam");
@@ -147,6 +149,7 @@ if (    -e "$master_bamfile.junctions.completed"
    &process_cmd("cat $master_bamfile.junctions.hints.intronic $master_bamfile.coverage.hints"
 	."|sort -S 2G -n -k 4,4 | sort -S 2G -s -n -k 5,5 | sort -S 2G -s -n -k 3,3 | sort -S 2G -s -k 1,1 -o $master_bamfile.rnaseq.hints" );
    &merge_hints("$master_bamfile.rnaseq.hints");
+   &convert_mult_to_score("$master_bamfile.rnaseq.hints");
    &touch("$master_bamfile.rnaseq.completed");
  }
  print "Done!\n";
@@ -242,7 +245,7 @@ sub bg2hints() {
 
  close OUT;
  close IN;
- &cmd_process("sort -S 2G -n -k 4,4 $outfile| sort -S 2G -s -n -k 5,5 | sort -S 2G -s -n -k 3,3 | sort -S 2G -s -k 1,1 -o $outfile.");
+ &process_cmd("sort -S 2G -n -k 4,4 $outfile| sort -S 2G -s -n -k 5,5 | sort -S 2G -s -n -k 3,3 | sort -S 2G -s -k 1,1 -o $outfile.");
  rename("$outfile.",$outfile);
  return $outfile;
 }
