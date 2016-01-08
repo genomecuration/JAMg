@@ -431,7 +431,7 @@ int main(int argc,char** argv)
                  cmdstr << "bash -c \" set -o pipefail; bowtie -a -m 20 --best --strata --threads " << nCPU 
                         << " --chunkmbs 512 -q -S "
                         << " -f target " << readsForPairs 
-                        << " | samtools view -F4 -Sb - | samtools sort -no - - > " << bowtie_sam_file << " \" ";
+                        << " | samtools view -F4 -Sb - | samtools sort -m 5G -no - - > " << bowtie_sam_file << " \" ";
                  
                  cerr << "CMD: " << cmdstr.str() << endl;
                  Execute(cmdstr.str().c_str());
