@@ -219,7 +219,7 @@ if ( -s "medium_trinity_GG.cmds" ) {
  open( IN, "medium_trinity_GG.cmds" );
  my @array;
  while ( my $ln = <IN> ) {
-  $ln =~ s/max_memory 2G --CPU 4/max_memory 4G --CPU 2/;
+  $ln =~ s/max_memory 2G --CPU 4/max_memory 4G --CPU 2 --no_bowtie/;
   chomp($ln);
   $ln .= " >/dev/null\n";
   push( @array, $ln );
@@ -237,7 +237,7 @@ if ( -s "large_trinity_GG.cmds" ) {
  open( IN,  "large_trinity_GG.cmds" );
  open( OUT, ">large_trinity_GG.cmds." );
  while ( my $ln = <IN> ) {
-  $ln =~ s/max_memory 2G --CPU 4/max_memory 4G --CPU 6/;
+  $ln =~ s/max_memory 2G --CPU 4/max_memory 4G --CPU 6 --no_bowtie/;
   chomp($ln);
   $ln .= " >/dev/null\n";
   print OUT $ln;
