@@ -2,12 +2,6 @@
 
 =pod
 
-=head1 TODO
-
-merge all rnseq hints at the end. maintain grp
-run test with 100 genes, not 390+
-
-
 =head1 NAME
 
  augustus_RNAseq_hints.pl
@@ -15,6 +9,8 @@ run test with 100 genes, not 390+
 =head1 USAGE
 
 Create hint files for Augustus using RNASeq/EST. One is junction reads (excellent for introns), the other is RNASeq/EST coverage
+
+Will use up to 5Gb of RAM
 
 Mandatory options:
 
@@ -67,19 +63,21 @@ my ( $samtools_exec, $bedtools_exec, $bed_to_aug_script ) = &check_program( 'sam
 
 #Options
 my ( @bamfiles, $genome, $help,$no_hints );
+my $cpus = 4;
 my $window           = 50;
 my $min_score        = 20;
 my $strandness       = int(0);
 my $background_level = 4;
 pod2usage $! unless &GetOptions(
             'help'              => \$help,
-            'bam|in:s{,}'          => \@bamfiles,
+            'bam|in:s{,}'       => \@bamfiles,
             'genome|fasta:s'    => \$genome,
             'min_score:i'       => \$min_score,
             'strandness:i'      => \$strandness,
             'window:i'          => \$window,
             'background_fold:i' => \$background_level,
-	    'nohints|no_hints'  => \$no_hints
+	    'nohints|no_hints'  => \$no_hints,
+	    'cpus:i'            => \$cpus
 );
 
 pod2usage if $help;
@@ -112,25 +110,29 @@ if (scalar(@bamfiles == 1)){
 		die "Cannot find $bamfile\n" unless -s $bamfile;
 	}
 	$master_bamfile = 'master_bamfile.bam';
-	&process_cmd("$samtools_exec merge -r $master_bamfile ".join(" ",@bamfiles)) unless -s $master_bamfile;
+	&process_cmd("$samtools_exec merge -@ $cpus -r $master_bamfile ".join(" ",@bamfiles)." && $samtools_exec index $master_bamfile") unless -s $master_bamfile;
 }
 
 &process_cmd("$samtools_exec faidx $genome") unless -s $genome . '.fai';
 die "Cannot index genome $genome\n" unless -s $genome . '.fai';
-
 unless (-e "$master_bamfile.junctions.completed"){
- &process_cmd("$samtools_exec rmdup -S $master_bamfile - | $bedtools_exec bamtobed -bed12 | $bed_to_aug_script -prio 7 -out $master_bamfile.junctions.bed > $master_bamfile.junctions.hints" );
+ &process_cmd("$samtools_exec rmdup -S $master_bamfile - | $bedtools_exec bamtobed -bed12 | $bed_to_aug_script -prio 7 -out $master_bamfile.junctions.bed"
+ ."|sort -S 2G -n -k 4,4 | sort -S 2G -s -n -k 5,5 | sort -S 2G -s -n -k 3,3 | sort -S 2G -s -k 1,1 -o $master_bamfile.junctions.hints" ) unless -s "$master_bamfile.junctions.hints";
+ unless ($no_hints){
+	 # For Augustus
+	 &only_keep_intronic("$master_bamfile.junctions.hints");
+	 # don't merge before getting intronic.
+	 &merge_hints("$master_bamfile.junctions.hints");
+ }
  # For JBrowse
- &process_cmd("$bedtools_exec bedtobam -bed12 -g $genome.fai -i $master_bamfile.junctions.bed| $samtools_exec sort -m 1073741824 - $master_bamfile.junctions");
+ &process_cmd("$bedtools_exec bedtobam -bed12 -g $genome.fai -i $master_bamfile.junctions.bed| $samtools_exec sort -m 4G -@ 4 -o $master_bamfile.junctions.bam -") unless -s "$master_bamfile.junctions.bam";
  &process_cmd("$samtools_exec index $master_bamfile.junctions.bam");
- # For Augustus
- &only_keep_intronic("$master_bamfile.junctions.hints");
  &touch("$master_bamfile.junctions.completed");
 }
 
 unless (-e "$master_bamfile.coverage.bg.completed"){
  # For JBrowse
- &process_cmd("$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $master_bamfile| sort -S 1G -k1,1 -k2,2n > $master_bamfile.coverage.bg");
+ &process_cmd("$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $master_bamfile| sort -S 4G -k1,1 -k2,2n -o $master_bamfile.coverage.bg");
  &process_cmd("bedGraphToBigWig $master_bamfile.coverage.bg $genome.fai $master_bamfile.coverage.bw") if `which bedGraphToBigWig`; 
  &touch("$master_bamfile.coverage.bg.completed");
 }
@@ -142,14 +144,13 @@ unless (-e "$master_bamfile.coverage.hints.completed" && !$no_hints){
 }
 
 if (    -e "$master_bamfile.junctions.completed"
-     && -e "$master_bamfile.coverage.hints.completed" )
-{
+     && -e "$master_bamfile.coverage.hints.completed" ){
  unless (-e "$master_bamfile.rnaseq.completed"){
-  my $augustus_script_exec = $RealBin.'/../3rd_party/augustus/scripts/join_mult_hints.pl';
-  if (-s $augustus_script_exec){
-  	&process_cmd("cat $master_bamfile.junctions.hints.intronic $master_bamfile.coverage.hints| sort -S 1G -n -k 4,4 | sort -S 1G -s -n -k 5,5 | sort -S 1G -s -n -k 3,3 | sort -S 1G -s -k 1,1| $augustus_script_exec > $master_bamfile.rnaseq.hints" );
-	  &touch("$master_bamfile.rnaseq.completed");
-  }
+   &process_cmd("cat $master_bamfile.junctions.hints $master_bamfile.coverage.hints"
+	."|sort -S 2G -n -k 4,4 | sort -S 2G -s -n -k 5,5 | sort -S 2G -s -n -k 3,3 | sort -S 2G -s -k 1,1 -o $master_bamfile.rnaseq.hints" );
+   &merge_hints("$master_bamfile.rnaseq.hints");
+   &convert_mult_to_score("$master_bamfile.rnaseq.hints");
+   &touch("$master_bamfile.rnaseq.completed");
  }
  print "Done!\n";
 }
@@ -200,9 +201,6 @@ sub bg2hints() {
  }
 
  # print final area
-#TODO: NB this is still wrong.
-#~/workspace/transcripts4community/jamg/test_suite 
-#rm -f gsnap.drosoph_50M_vs_droso_opt_temp.concordant_uniq.bam.coverage.hints.completed gsnap.drosoph_50M_vs_droso_opt_temp.concordant_uniq.bam.coverage.hints ; ../bin/augustus_RNAseq_hints.pl -dir ../3rd_party/augustus.2.7 -bam gsnap.drosoph_50M_vs_droso_opt_temp.concordant_uniq.bam -genome optimization.fasta; less gsnap.drosoph_50M_vs_droso_opt_temp.concordant_uniq.bam.coverage.hints
  open( OUT, ">$outfile" );
  foreach my $ref ( sort { $a cmp $b } keys %area ) {
   my @coords = sort { $a <=> $b } ( keys %{ $area{$ref} } );
@@ -247,32 +245,54 @@ sub bg2hints() {
 
  close OUT;
  close IN;
+ &process_cmd("sort -S 2G -n -k 4,4 $outfile| sort -S 2G -s -n -k 5,5 | sort -S 2G -s -n -k 3,3 | sort -S 2G -s -k 1,1 -o $outfile.");
+ rename("$outfile.",$outfile);
  return $outfile;
 }
 
 sub only_keep_intronic(){
  my $file = shift;
  my %hash;
+
+ # get introns (we will postprocess them later)
  open (IN,$file);
+ open (OUT1,">".$file.".intron.only");
  while (my $ln=<IN>){
-  next unless $ln=~/\tintron\t/;
-  if ($ln=~/grp=([^;]+)/){
-   $hash{$1}++;
+   print OUT1 $ln if ($ln=~/\tintron\t/);
+ }
+ close OUT1;
+ close IN;
+ # group introns and remove solitary ones
+ &merge_hints("$file.intron.only");
+ &convert_mult_to_score("$file.intron.only");
+
+ # find exons matching intron 
+ open (IN,$file.".intron.only");
+ while (my $ln=<IN>){
+  my @data = split("\t",$ln);
+  if ($data[8]=~/grp=([^;]+)/){
+   $hash{$1}=$data[5];
   }
  }
  close IN;
+
  open (IN,$file);
- open (OUT,">".$file.".intronic");
+ open (OUT2,">".$file.".intronic");
  while (my $ln=<IN>){
-  if ($ln=~/\tintron\t/){
-   print OUT $ln ;
-  }
-  elsif ($ln=~/grp=([^;]+)/){
-   print OUT $ln if $hash{$1};
+  my @data = split("\t",$ln);
+  if ($data[2] eq 'intron'){
+   print OUT2 $ln;
+  }elsif ($data[8]=~/grp=([^;]+)/){
+   my $grp =$1;
+   if ($hash{$grp}){
+	$data[5]= $hash{$grp};
+	print OUT2 join("\t",@data);
+   }
   }
  }
  close IN;
- close OUT;
+ close OUT2;
+ rename($file.".intronic",$file);
 }
 
 sub merge_hints(){
@@ -280,8 +300,8 @@ sub merge_hints(){
  open (IN,$file);
  open (OUT,">$file.merged");
  my (@current_line,@previous_line);
-while (<IN>) {
-    @current_line = split /\t/;
+ while (my $ln=<IN>) {
+    @current_line = split ("\t",$ln);
     if (!@previous_line){
         @previous_line = @current_line;
     }elsif(($current_line[0] eq $previous_line[0]) && ($current_line[2] eq $previous_line[2]) && 
@@ -348,4 +368,23 @@ sub median() {
  my $array_ref = shift;
  my @sorted = sort { $a <=> $b } @{$array_ref};
  return $sorted[ int( @sorted / 2 ) ];
+}
+
+
+sub convert_mult_to_score(){
+	my $file = shift;
+	return unless $file && -s $file;
+	open (IN,$file);
+	open (OUT,">$file.scored");
+	while (my $ln=<IN>){
+		my @data = split("\t",$ln);
+		if ($data[8] && $data[8]=~/mult=(\d+)/){
+			$data[5] = $1;
+			print OUT join("\t",@data);
+		}
+		
+	}
+	close IN;
+	close OUT;
+	rename("$file.scored",$file);
 }

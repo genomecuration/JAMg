@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
 use strict;
-
+use warnings;
 our $DEBUG = 0;
 
 my $usage = "usage: $0 extFile\n\n";
@@ -31,10 +31,9 @@ while (<EXT>) {
 	    acc => $acc } );
     
 }
-
 ## Sort the chains by acc, orient and start
 
-@chains = sort { 
+my @chains2 = sort { 
     $a->{acc} cmp $b->{acc}
     ||
     $a->{orient} <=> $b->{orient} 
@@ -42,6 +41,7 @@ while (<EXT>) {
 	$a->{dstart} <=> $b->{dstart}
 } @chains;
 
+@chains = @chains2;undef(@chains2);
 
 my @collapsedChains = shift @chains;
 
@@ -120,15 +120,15 @@ while (@chains) {
 
 ## Sort collapsed chains by dstart and score:
 
-@collapsedChains = sort { $a->{dstart} <=> $b->{dstart}
-			  || 
-			      $b->{score} <=> $a->{score} } @collapsedChains;
+my @collapsedChains2 = sort { $a->{dstart} <=> $b->{dstart}
+			  || $b->{score} <=> $a->{score} 
+} @collapsedChains;
 
-
+@collapsedChains = @collapsedChains2;
+undef(@collapsedChains2);
 
 ## output collapsed chains:
 print $header;
-
 foreach my $chain (@collapsedChains) {
     my ($dstart, 
 	$dend,

@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 
-my $file = shift||die;
+my $file = shift||die "Give aragorn output file";
 my $out = $file.'.gff3';
 open (IN,$file);
 open (OUT,">$out");
@@ -13,6 +13,7 @@ $/=">";
 my $discard = <IN>;
 my %pseudo_counter;
 my %trna_counter;
+print OUT "##gff-version 3\n";
 while (my $record=<IN>){
 	chomp($record);
 	my @lines = split("\n",$record);

@@ -55,8 +55,8 @@ Other options:
     -softmasked      :s       => Genome that has been softmasked for repeats
     -nosingle                 => Don't allow single exon genes. Recommended, most are repeats even though some are legitimate genes (they will be detected downstream in JAMg)
     -flanks          :i       => Base pairs to add left and right when creating GenBank file for training
-    -identical       :i       => Identity cutoff to mark an exonerate aln as golden, out of 100 (def 95)
-    -similar         :i       => Similarity cutoff to mark an exonerate aln as golden, for exonerate out of 100 (def 98)
+    -identical       :i       => Identity % cutoff to mark an exonerate aln as golden (def 95, if something is 95% identical then it is gold)
+    -similar         :i       => Similarity % cutoff to mark an exonerate aln as golden (def 98, if something is 98% similar then it is gold)
     -intron          :i       => Max size of intron (def 70000 bp)
     -threads|cpu     :i       => Number of threads (def 1)
     -stop_exonerate           => Stop after exonerate finishes.
@@ -2912,11 +2912,11 @@ sub run_aat() {
   return unless $input_fasta && $type;
   my @commands;
   if ( $type eq 'protein' ) {
-   my $aat_score = $same_species ? 400 : 80;
-   my $aat_word =
+   my $aat_score = $same_species ? 400 : 60;
+   my $aat_word_options =
      $same_species
-     ? 5
-     : 4;    # five is much faster than default and 3 is much slower.
+     ? '5 -d 20'
+     : '4 -d 100';    # five is much faster than default and 3 is much slower.
    print "Preparing/running AAT...\n";
    my $matrix_file = "$aat_dir/matrices/BS";
    die "Cannot find AAT's matrices/BS as $matrix_file\n"
@@ -2924,8 +2924,8 @@ sub run_aat() {
    foreach my $genome_file (@$uppercase_genome_files) {
     next if $genome_file =~ /\.aat\./ || -d $genome_file;
     push( @commands,
-"$aat_dir/dps $genome_file $input_fasta $matrix_file -c 300000 -f $aat_score -w $aat_word -i 30 -a $intron_size > $genome_file.aat.d ;"
-       . "$aat_dir/ext $genome_file.aat.d -f $aat_score > $genome_file.aat.ext ;"
+"$aat_dir/dps $genome_file $input_fasta $matrix_file -c 3000000 -f $aat_score -w $aat_word_options -i 30 -a $intron_size > $genome_file.aat.d ;"
+       . "$aat_dir/ext $genome_file.aat.d > $genome_file.aat.ext ;"
        . "$aat_dir/extCollapse.pl $genome_file.aat.ext > $genome_file.aat.extCol ;"
        . "$aat_dir/filter $genome_file.aat.extCol -c 1 > $genome_file.aat.filter ; rm -f $genome_file.aat.d $genome_file.aat.ext $genome_file.aat.extCol \n"
     ) unless -s "$genome_file.aat.filter";

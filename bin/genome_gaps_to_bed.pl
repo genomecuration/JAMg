@@ -11,9 +11,6 @@
 genome_gaps_to_bed.pl <fastafile> [sequence ID]
 
  Create a BED file that shows where that gaps (Ns) are in a FASTA file.
- Requires Kent's src code
-
- git clone git://genome-source.cse.ucsc.edu/kent.git
  
 =head1 AUTHORS
 
