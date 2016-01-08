@@ -146,7 +146,7 @@ unless (-e "$master_bamfile.coverage.hints.completed" && !$no_hints){
 if (    -e "$master_bamfile.junctions.completed"
      && -e "$master_bamfile.coverage.hints.completed" ){
  unless (-e "$master_bamfile.rnaseq.completed"){
-   &process_cmd("cat $master_bamfile.junctions.hints.intronic $master_bamfile.coverage.hints"
+   &process_cmd("cat $master_bamfile.junctions.hints $master_bamfile.coverage.hints"
 	."|sort -S 2G -n -k 4,4 | sort -S 2G -s -n -k 5,5 | sort -S 2G -s -n -k 3,3 | sort -S 2G -s -k 1,1 -o $master_bamfile.rnaseq.hints" );
    &merge_hints("$master_bamfile.rnaseq.hints");
    &convert_mult_to_score("$master_bamfile.rnaseq.hints");
