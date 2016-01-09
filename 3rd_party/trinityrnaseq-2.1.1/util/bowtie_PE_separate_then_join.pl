@@ -452,7 +452,7 @@ main: {
         push (@to_delete, "combined.nameSorted.pre.bam");
         
         ## sort by coordinate.
-        $cmd = "samtools sort -m $sort_buffer_size -o combined.nameSorted.pre.bam - > $outfile_basename.coordSorted.pre.bam";
+        $cmd = "samtools sort -m $sort_buffer_size -o $outfile_basename.coordSorted.pre.bam combined.nameSorted.pre.bam";
         &process_cmd($cmd) unless (-e "$outfile_basename.coordSorted.pre.bam.finished");
         $cmd = "touch $outfile_basename.coordSorted.pre.bam.finished";
         &process_cmd($cmd) unless (-e "$outfile_basename.coordSorted.pre.bam.finished");
@@ -460,7 +460,7 @@ main: {
     }
     else {
         ## single file
-        my $cmd = "samtools sort -m $sort_buffer_size -o single/single.nameSorted.bam - > $outfile_basename.coordSorted.pre.bam";
+        my $cmd = "samtools sort -m $sort_buffer_size -o $outfile_basename.coordSorted.pre.bam single/single.nameSorted.bam";
         &process_cmd($cmd) unless (-e "$outfile_basename.coordSorted.pre.bam.finished");
         $cmd = "touch $outfile_basename.coordSorted.pre.bam.finished";
         &process_cmd($cmd) unless (-e "$outfile_basename.coordSorted.pre.bam.finished");
@@ -469,7 +469,8 @@ main: {
     
     # add transcribed orientation info:
     if ($SS_lib_type) {
-        my $cmd = "$util_dir/SAM_set_transcribed_orient_info.pl $outfile_basename.coordSorted.pre.bam $SS_lib_type | samtools view -bt target.fa.fai -S -o - - | samtools sort -m $sort_buffer_size -o - - >  $outfile_basename.coordSorted.bam";
+        my $cmd = "$util_dir/SAM_set_transcribed_orient_info.pl $outfile_basename.coordSorted.pre.bam $SS_lib_type | samtools view -bt target.fa.fai -S -o - -"
+		." | samtools sort -m $sort_buffer_size -o $outfile_basename.coordSorted.bam -";
         &process_cmd($cmd) unless (-e "$outfile_basename.coordSorted.bam.finished");
         $cmd = "touch $outfile_basename.coordSorted.bam.finished";
         &process_cmd($cmd) unless (-e "$outfile_basename.coordSorted.bam.finished");
@@ -477,7 +478,7 @@ main: {
     }
     else {
         # not strand-specific, keep as is and don't disrupt current flow (so use expected output name)
-        my $cmd = "samtools sort -m $sort_buffer_size -o $outfile_basename.coordSorted.pre.bam - > $outfile_basename.coordSorted.bam";
+        my $cmd = "samtools sort -m $sort_buffer_size -o $outfile_basename.coordSorted.bam $outfile_basename.coordSorted.pre.bam";
         &process_cmd($cmd) unless (-e "$outfile_basename.coordSorted.bam.finished");
         
         $cmd = "touch $outfile_basename.coordSorted.bam.finished";
@@ -492,7 +493,7 @@ main: {
     @to_delete = (); # reinit        
     
     ## provide name-sorted SAM
-    my $cmd = "samtools sort -m $sort_buffer_size -no $outfile_basename.coordSorted.bam - > $outfile_basename.nameSorted.bam";
+    my $cmd = "samtools sort -m $sort_buffer_size -no $outfile_basename.nameSorted.bam $outfile_basename.coordSorted.bam";
     &process_cmd($cmd) unless (-e "$outfile_basename.nameSorted.bam.finished");
     $cmd = "touch $outfile_basename.nameSorted.bam.finished";
     &process_cmd($cmd) unless (-e "$outfile_basename.nameSorted.bam.finished");
@@ -547,7 +548,7 @@ main: {
             push (@to_delete, $sam_file);
         
             $cmd = ($bam_file =~ /coordSorted/) 
-                ? "samtools view -bt target.fa.fai $sam_file | samtools sort -m $sort_buffer_size -o - - > $bam_file" # .bam ext added auto
+                ? "samtools view -bt target.fa.fai $sam_file | samtools sort -m $sort_buffer_size -o $bam_file.bam -" # .bam ext added auto
                 : "samtools view -bt target.fa.fai $sam_file > $bam_file"; # explicitly adding .bam extension
             
             
@@ -745,7 +746,7 @@ sub run_bowtie_alignment_pipeline {
     }
     
     # name-sort 
-    $cmd = "samtools sort -m $sort_buffer_size -no $target.bam - > $target.nameSorted.bam";
+    $cmd = "samtools sort -m $sort_buffer_size -no $target.nameSorted.bam $target.bam";
     &process_cmd($cmd) unless (-e "$target.nameSorted.bam.finished");
     $cmd = "touch $target.nameSorted.bam.finished";
     &process_cmd($cmd) unless (-e "$target.nameSorted.bam.finished");

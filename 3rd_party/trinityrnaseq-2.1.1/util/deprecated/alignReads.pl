@@ -619,7 +619,7 @@ main: {
                 
         unless ($NO_BAM) {
             # convert to bam format
-            my $cmd = "samtools view -bt target.fa.fai -S $outfile_basename.coordSorted.sam | samtools sort -m $sort_buffer_size -  $outfile_basename.coordSorted";
+            my $cmd = "samtools view -bt target.fa.fai -S $outfile_basename.coordSorted.sam | samtools sort -m $sort_buffer_size -o $outfile_basename.coordSorted.bam -";
             &process_cmd($cmd) if ( (! -e "$outfile_basename.coordSorted.bam.finished") && -s "$outfile_basename.coordSorted.sam");
             $cmd = "touch $outfile_basename.coordSorted.bam.finished";
             &process_cmd($cmd) unless (-e "$outfile_basename.coordSorted.bam.finished");
@@ -967,7 +967,7 @@ sub run_gsnap_alignment_pipeline {
     $cmd = "samtools view -bt target.fa.fai gsnap.sam > gsnap.bam";
     &process_cmd($cmd);
 
-    $cmd = "samtools sort -m $sort_buffer_size gsnap.bam gsnap.coordSorted";
+    $cmd = "samtools sort -m $sort_buffer_size -o gsnap.coordSorted.bam gsnap.bam";
     &process_cmd($cmd);
     
     $cmd = "samtools index gsnap.coordSorted.bam";
@@ -1037,7 +1037,7 @@ sub run_bwa_alignment_pipeline {
     $cmd = "sort -k1,1 -k3,3 -S $sort_buffer_size -T . $coordsorted_sam_filename > $outfile_basename.nameSorted.sam";
     &process_cmd($cmd);
 
-    $cmd = "samtools view -bt target.fa.fai $coordsorted_sam_filename | samtools sort -m $sort_buffer_size - $outfile_basename.coordSorted";
+    $cmd = "samtools view -bt target.fa.fai $coordsorted_sam_filename | samtools sort -m $sort_buffer_size -o $outfile_basename.coordSorted.bam -";
     &process_cmd($cmd) if ( (! -s "$outfile_basename.coordSorted.bam") && (-s $coordsorted_sam_filename) );
     
     $cmd = "samtools index $outfile_basename.coordSorted.bam";
