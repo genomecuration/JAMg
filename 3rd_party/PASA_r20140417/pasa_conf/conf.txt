@@ -5,7 +5,7 @@
 ## MySQL settings:
 
 # server actively running MySQL
-MYSQLSERVER=localhost
+MYSQLSERVER=localhost:3336
 
 # read-write username and password
 MYSQL_RW_USER=pasa

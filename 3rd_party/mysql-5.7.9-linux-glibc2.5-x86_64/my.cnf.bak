@@ -3,11 +3,11 @@
 # replace $USER with the 'echo $USER' command output
 [client]
 port            = 3336
-socket          = $HOME/var/run/mysqld.sock
+socket          = /tmp/mysql.sock
 
 
 [mysqld_safe]
-socket          = $HOME/var/run/mysqld.sock
+socket          = /tmp/mysql.sock
 nice            = 1
 user = $USER
 
@@ -15,12 +15,12 @@ user = $USER
 user = $USER
 server-id=127
 bind-address            = 127.0.0.1
-pid-file        = $HOME/var/run/mysqld/mysqld.pid
-socket          = $HOME/var/run/mysqld.sock
+pid-file        = /tmp/mysqld.pid
+socket          = /tmp/mysql.sock
 port            = 3336
 basedir         = $JAMG_PATH/3rd_party/mysql
 ### CHANGE THIS
-datadir        = 
+datadir        = $JAMG_PATH/3rd_party/mysql/data
 tmpdir          = /tmp
 lc-messages =  en_US
 plugin-dir = lib/plugin

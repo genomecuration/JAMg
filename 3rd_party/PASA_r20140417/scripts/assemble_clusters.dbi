@@ -92,11 +92,11 @@ if (-d "assemblies") {
     foreach my $file (@already_ran_files) {
         my $contig = basename($file);
         $contig =~ s/\.assemblies$//;
-        print STDERR "Already processed: $contig\n";
+        #print STDERR "Already processed: $contig\n";
         $contigs_already_processed{$contig} = 1;
     }
 
-    print STDERR "It appears that some assemblies were generated from an earlier pass.  Only contigs w/o existing alignment assemblies will be pursued.  Otherwise, kill this process and remove the 'assemblies' directory, then restart.\n";
+    print STDERR "It appears that ".scalar(@already_ran_files)." assemblies were generated from an earlier pass.  Only contigs w/o existing alignment assemblies will be pursued.  Otherwise, kill this process and remove the 'assemblies' directory, then restart.\n";
     
     sleep(10);
     
@@ -162,7 +162,7 @@ sub assemble_transcripts_on_scaffold {
     
     ## Get clusters based on that chromo
     my @cluster_ids = Ath1_cdnas::get_cluster_ids_via_annotdb_asmbl_id($dbproc, $asmbl_id);
-    
+    print "Chromosome: $asmbl_id\n";
     foreach my $cluster_id (@cluster_ids) {
         
         print "\n\n// cluster: $cluster_id\n";

@@ -53,7 +53,7 @@ my $mysql_rw_password = &Pasa_conf::getParam("MYSQL_RW_PASSWORD");
 #$admin_db = ""; # just forcing a connection. ??? why???
 
 ## Create the database if needed
-my $dbproc = &Mysql_connect::connect_to_db($mysql_server,"",$mysql_rw_user,$mysql_rw_password);
+my $dbproc = &Mysql_connect::connect_to_db($mysql_server,"mysql",$mysql_rw_user,$mysql_rw_password);
 &Mysql_connect::RunMod($dbproc,"drop database $mysql_db") if $opt_r;
 my $query = "create database $mysql_db";
 &Mysql_connect::RunMod($dbproc, $query);

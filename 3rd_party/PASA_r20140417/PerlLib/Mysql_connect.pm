@@ -22,13 +22,12 @@ my $QUERYFAIL;
 ############### DATABASE CONNECTIVITY ################################
 ####
 sub connect_to_db {
-    my ($server, $db, $username, $password) = @_;
-    
+    my ($server, $db, $username, $password , $port) = @_;
     unless (defined ($server) && defined($db) && defined($username) && defined($password)) {
         confess "Error, need all method parameters (server, db, username, password) ";
     }
     
-    my $dbh = DBI->connect("DBI:mysql:$db:$server", $username, $password);
+    my $dbh = DBI->connect("DBI:mysql:database=$db:host=$server", $username, $password);
     unless (ref $dbh) {
         croak "Cannot connect to $server: $DBI::errstr";
     }
