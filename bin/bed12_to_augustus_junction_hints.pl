@@ -127,7 +127,7 @@ OUTER: while ( my $ln = <STDIN> ) {
  }
  if ( scalar(@blockSizes) == 1 ) {
 
-  # no intron
+  # no intron. not really expected
   my $type  = 'exonpart';
   my $start = $data[1];
   my $stop  = $data[2];

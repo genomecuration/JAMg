@@ -481,8 +481,8 @@ sub grab_intronic_bam(){
 	# without \t at end, allows for double introns (cf bed12_to_augustus_junction_hints.pl )
 	&process_cmd("$samtools_exec view -@ $cpus -q $min_jr_score -m $min_jr_length $file |grep -P '[0-9]{2,}M[0-9]{2,}N[0-9]{2,}M'|"
 		." samtools view -T $genome -@ $cpus -b -o $outfile -");
-	&process_cmd("$samtools_exec rmdup -S $outfile - |$samtools_exec sort -m 4G -@ $cpus -o $outfile.sorted -");
-	&process_cmd("$samtools_exec index $outfile.sorted");
+	&process_cmd("$samtools_exec rmdup -S $outfile - |$samtools_exec sort -m 4G -@ $cpus -o $outfile.sorted - &");
+#	&process_cmd("$samtools_exec index $outfile.sorted");
 	return $outfile;
 }
 
