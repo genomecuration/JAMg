@@ -25,6 +25,7 @@ Other options:
  -background_fold  i  		Background (defaults to 4), see perldoc
  -no_hints            		Don't create hints file for Augustus, just process junction reads
  -cpus             i		Number of CPUs for sorting (defaults to 4)
+ -memory           s            Amount of memory for sorting. Use K/M/G for kilo/mega/giga-bytes (defaults to 5G)
  -min_jr_length    i		Minimum read length to use for junctions (def to 75)
  -min_jr_score     i		Minimum MAQ score to use for junctions (def to 34)
 
@@ -61,13 +62,11 @@ use lib ("$RealBin/../PerlLib");
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 use Fasta_reader;
 
-my ( $samtools_exec, $bedtools_exec, $bed_to_aug_script ) = &check_program( 'samtools', 'bedtools','bed12_to_augustus_junction_hints.pl' );
-
-
-
 #Options
-my ( @bamfiles, $genome, $help,$no_hints );
+my ( @bamfiles, $genome, $help,$no_hints, $master_bamfile );
+
 my $cpus = 4;
+my $sort_buffer = '5G';
 my $window           = 50;
 my $min_coverage        = 20;
 my $min_jr_score        = 34;
@@ -84,9 +83,13 @@ pod2usage $! unless &GetOptions(
             'background_fold:i' => \$background_level,
 	    'nohints|no_hints'  => \$no_hints,
 	    'cpus:i'            => \$cpus,
+	    'memory:s'          => \$sort_buffer,
 	    'min_jr_length:i'   => \$min_jr_length,
-	    'min_jr_score:i'    => $min_jr_score
+	    'min_jr_score:i'    => \$min_jr_score
 );
+
+my ( $samtools_exec, $bedtools_exec, $bed_to_aug_script ) = &check_program( 'samtools', 'bedtools','bed12_to_augustus_junction_hints.pl' );
+my $sort_exec = &check_sort_version;
 
 pod2usage if $help;
 
@@ -107,10 +110,10 @@ elsif ( $strandness < 1 ) {
  $strand = '-';
 }
 else {
- die;
+ die "Weird strand option given $strandness";
 }
 
-my $master_bamfile;
+
 if (scalar(@bamfiles == 1)){
   $master_bamfile = $bamfiles[0];
 }else{
@@ -126,23 +129,27 @@ die "Cannot index genome $genome\n" unless -s $genome . '.fai';
 unless (-e "$master_bamfile.junctions.completed"){
  my $junction_bam = &grab_intronic_bam($master_bamfile);
  if (-f $junction_bam && (-s $junction_bam) > 10000){
- &process_cmd("$bedtools_exec bamtobed -bed12 < $junction_bam | $bed_to_aug_script -prio 7 -out $master_bamfile.junctions.bed"
- ."|sort -S 2G -n -k 4,4 | sort -S 2G -s -n -k 5,5 | sort -S 2G -s -n -k 3,3 | sort -S 2G -s -k 1,1"
- ." -o $master_bamfile.junctions.hints" ) unless (-s "$master_bamfile.junctions.hints");
+ 	&process_cmd("$bedtools_exec bamtobed -bed12 < $junction_bam | $bed_to_aug_script -prio 7 -out $master_bamfile.junctions.bed"
+ 	."|$sort_exec -n -k 4,4 | $sort_exec -s -n -k 5,5 | $sort_exec -s -n -k 3,3 | $sort_exec -s -k 1,1"
+ 	." -o $master_bamfile.junctions.hints" ) unless (-s "$master_bamfile.junctions.hints");
+	# i put it here as previous cmd takes ages
+	&process_cmd("fg;$samtools_exec index $junction_bam.sorted") unless -s "$junction_bam.sorted.bai";
 
- unless ($no_hints){
-	 # For Augustus
-	 &intron_driven_fixes("$master_bamfile.junctions.hints");
-	 # don't merge before getting intronic.
-	 &merge_hints("$master_bamfile.junctions.hints");
-  }
- }else{	warn "No junction reads found!"; }
+	 unless ($no_hints){
+		 # For Augustus
+		 &intron_driven_fixes("$master_bamfile.junctions.hints");
+		 # don't merge before getting intronic.
+		 &merge_hints("$master_bamfile.junctions.hints");
+	  }
+ }else{	
+	warn "No junction reads found!";
+ }
  &touch("$master_bamfile.junctions.completed");
 }
 
 unless (-e "$master_bamfile.coverage.bg.completed"){
  # For JBrowse
- &process_cmd("$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $master_bamfile| sort -S 4G -k1,1 -k2,2n -o $master_bamfile.coverage.bg");
+ &process_cmd("$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $master_bamfile| $sort_exec -k1,1 -k2,2n -o $master_bamfile.coverage.bg");
  &process_cmd("bedGraphToBigWig $master_bamfile.coverage.bg $genome.fai $master_bamfile.coverage.bw") if `which bedGraphToBigWig`; 
  &touch("$master_bamfile.coverage.bg.completed");
 }
@@ -157,7 +164,7 @@ if (    -e "$master_bamfile.junctions.completed"
      && -e "$master_bamfile.coverage.hints.completed" ){
  unless (-e "$master_bamfile.rnaseq.completed"){
    &process_cmd("cat $master_bamfile.junctions.hints $master_bamfile.coverage.hints"
-	."|sort -S 2G -n -k 4,4 | sort -S 2G -s -n -k 5,5 | sort -S 2G -s -n -k 3,3 | sort -S 2G -s -k 1,1 -o $master_bamfile.rnaseq.hints" );
+	."|$sort_exec -n -k 4,4 | $sort_exec -s -n -k 5,5 | $sort_exec -s -n -k 3,3 | $sort_exec -s -k 1,1 -o $master_bamfile.rnaseq.hints" );
    &merge_hints("$master_bamfile.rnaseq.hints");
    &touch("$master_bamfile.rnaseq.completed");
  }
@@ -254,7 +261,7 @@ sub bg2hints() {
 
  close OUT;
  close IN;
- &process_cmd("sort -S 2G -n -k 4,4 $outfile| sort -S 2G -s -n -k 5,5 | sort -S 2G -s -n -k 3,3 | sort -S 2G -s -k 1,1 -o $outfile.");
+ &process_cmd("$sort_exec -n -k 4,4 $outfile| $sort_exec -s -n -k 5,5 | $sort_exec -s -n -k 3,3 | $sort_exec -s -k 1,1 -o $outfile.");
  rename("$outfile.",$outfile);
  return $outfile;
 }
@@ -477,12 +484,12 @@ sub revcomp {
 sub grab_intronic_bam(){
 	my $file = shift;
 	my $outfile = $file.".junctions.bam";
+	return $outfile if -s $outfile;
 	# at least 10 bp each side and intron at least 10bp.
 	# without \t at end, allows for double introns (cf bed12_to_augustus_junction_hints.pl )
 	&process_cmd("$samtools_exec view -@ $cpus -q $min_jr_score -m $min_jr_length $file |grep -P '[0-9]{2,}M[0-9]{2,}N[0-9]{2,}M'|"
 		." samtools view -T $genome -@ $cpus -b -o $outfile -");
-	&process_cmd("$samtools_exec rmdup -S $outfile - |$samtools_exec sort -m 4G -@ $cpus -o $outfile.sorted - &");
-#	&process_cmd("$samtools_exec index $outfile.sorted");
+	&process_cmd("$samtools_exec rmdup -S $outfile - |$samtools_exec sort -m $sort_buffer -@ $cpus -o $outfile.sorted - &");
 	return $outfile;
 }
 
@@ -508,3 +515,19 @@ the interpretation of N is not defined.
  Sum of lengths of the M/I/S/=/X operations shall equal the length of SEQ.
 
 =cut
+
+sub check_sort_version(){
+	my ($sort_exec) = &check_program('sort');
+	my @v=`$sort_exec --version`;
+	if ($v[0] && $v[0]=~/(\d+)\.(\d+)\s*$/){
+		my $major = $1;
+		my $minor = $2;
+		if ($major >= 8 && $minor >= 6){
+			return "$sort_exec --parallel $cpus -S $sort_buffer";
+		}else{
+			return "$sort_exec -S $sort_buffer";
+		}
+	}else{
+		die "Sort of coreutils not found!";
+	}
+}
