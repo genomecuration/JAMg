@@ -208,14 +208,10 @@ my @top_hits_files;
     }
 }
 
-
-
-if (-s "$output_prefix.gff3") {
-    print STDERR "WARNING, REPLACING EXISTING FILE: $output_prefix.gff3.  KILL THIS NOW TO PREVENT THIS. (you have 10 seconds)\n";
-    sleep(10);
-    print STDERR "OK, too late.  replacing it now.\n";
-    unlink("$output_prefix.gff3");
-}
+unless  (-e "$output_prefix.gff3.completed") {
+	if (-s "$output_prefix.gff3") {
+	    unlink("$output_prefix.gff3");
+	}
 
 foreach my $top_hits_file (@top_hits_files) {
     
@@ -230,9 +226,9 @@ foreach my $top_hits_file (@top_hits_files) {
 foreach my $pslx_file (@pslx_files) {
     unlink($pslx_file) unless $KEEP_PSLX; # these files can be huge. Once have top hits, no longer need all hits (hopefully).
 }
-
+	system("touch $output_prefix.gff3.completed");
 print STDERR "done.\n";
-
+}
 exit(0);
 
 
