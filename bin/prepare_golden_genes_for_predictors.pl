@@ -37,7 +37,7 @@ And one of:
     -pasa_peptides :s => Protein output from pasa
     -pasa_assembly :s => Contigs provided as input to pasa
     -pasa_cds      :s => CDS output from pasa
-    -pasa_genome   :s => Genome alignment GFF
+    -pasa_genome   :s => Genome alignment as GFF or BED
 
 3. OR
 
@@ -1629,8 +1629,7 @@ GENE: while ( my $record = <IN> ) {
    next GENE;
   }
   if ( $master_gene_list{$mrna_id} ) {
-   print LOG2
-"Gene $mrna_id found more than once. Skipping new data and keeping what I found first\n";
+   print LOG2 "Gene $mrna_id found more than once. Skipping new data and keeping what I found first\n";
    $skipped++;
    next GENE;
   }
@@ -1654,7 +1653,8 @@ GENE: while ( my $record = <IN> ) {
        && $previous_ref
        && $last_position_check{$ref_id}{$strand}
        && $previous_ref eq $ref_id
-       && $smallest_coord <= $last_position_check{$ref_id}{$strand} )
+       && $smallest_coord <= $last_position_check{$ref_id}{$strand}
+	 )
   {
    print LOG2 "Gene overlapping $previous_mrna_id found: $mrna_id\n";
    $overlap_found{$previous_mrna_id}{$mrna_id} = $record . $delimiter;
@@ -1728,9 +1728,9 @@ GENE: while ( my $record = <IN> ) {
   close OUT;
 
  }
-
- print "\tOverlaps checked. Skipped $skipped genes. See $out.log for details\n";
- return $skipped;
+ 
+ print "\tOverlaps checked. Kept ".scalar(keys %kept)." genes. See $out.log for details\n";
+# return $skipped;
 }
 
 sub parse_gb() {
@@ -2183,8 +2183,9 @@ sub gff3_fix_phase() {
  open( IN, $gff3_file ) || confess( "Cannot find $gff3_file " . $! );
  my $index_file = "$gff3_file.inx";
  my $gene_obj_indexer = new Gene_obj_indexer( { "create" => $index_file } );
- my $asmbl_id_to_gene_list_href =
-   &GFF3_utils::index_GFF3_gene_objs( $gff3_file, $gene_obj_indexer );
+ my $asmbl_id_to_gene_list_href = &GFF3_utils::index_GFF3_gene_objs( $gff3_file, $gene_obj_indexer );
+ die "There was an error indexing the data!" unless $asmbl_id_to_gene_list_href && scalar(keys %{$asmbl_id_to_gene_list_href})>0;
+
  open( OUT,  ">$gff3_file.gff3" );
  open( PEP,  ">$gff3_file.pep" );
  open( CDS,  ">$gff3_file.cds" );
@@ -2265,11 +2266,11 @@ sub gff_to_gtf() {
 
  my $gff3_file = shift;
  open( OUT, ">$gff3_file.gtf" );
+
  my $inx_file = "$gff3_file.inx";
  my $gene_obj_indexer = new Gene_obj_indexer( { "create" => $inx_file } );
-
- my $asmbl_id_to_gene_list_href =
-   &GFF3_utils::index_GFF3_gene_objs( $gff3_file, $gene_obj_indexer );
+ my $asmbl_id_to_gene_list_href = &GFF3_utils::index_GFF3_gene_objs( $gff3_file, $gene_obj_indexer );
+ die "There was an error indexing the data!" unless $asmbl_id_to_gene_list_href && scalar(keys %{$asmbl_id_to_gene_list_href})>0;
 
  foreach my $asmbl_id ( sort keys %$asmbl_id_to_gene_list_href ) {
 
@@ -2361,11 +2362,10 @@ sub parse_genome_gff() {
  die unless $gff_file && -s $gff_file;
  my $program = shift;
  $program = 'PASA' unless $program;
- my $number_overlapping =
-   &remove_overlapping_gff( $gff_file, $gff_file . ".nr" );
+ &remove_overlapping_gff( $gff_file, $gff_file . ".nr" );
  $gff_file .= '.nr';
- open( IN, $gff_file ) || die("Cannot find $gff_file\n");
 
+ open( IN, $gff_file ) || die("Cannot find $gff_file\n");
  while ( my $ln = <IN> ) {
   next if $ln =~ /^#/ || $ln =~ /^\s*$/ || $ln !~ /\tmRNA\t/;
   chomp($ln);
@@ -2399,7 +2399,7 @@ sub parse_genome_gff() {
    print OUT $data[3] . "\t"
      . $data[4]
      . "\t999\t0\t0\t$orient\t0\t0\t$mrna_id\n";
-   $allowed_data{$mrna_id} = 1;
+   $allowed_data{$mrna_id} = $data[1];
   }
   close OUT;
  }
@@ -2424,11 +2424,10 @@ sub prepare_pasa_output() {
 
  print "Indexing...\n";
  my $contig_seq_hashref = &read_fasta($pasa_assembly_file);
-
  my $index_file = "$pasa_gff.inx";
  my $gene_obj_indexer = new Gene_obj_indexer( { "create" => $index_file } );
- my $asmbl_id_to_gene_list_href =
-   &GFF3_utils::index_GFF3_gene_objs( $pasa_gff, $gene_obj_indexer );
+ my $asmbl_id_to_gene_list_href = &GFF3_utils::index_GFF3_gene_objs( $pasa_gff, $gene_obj_indexer );
+ die "There was an error indexing the data!" unless $asmbl_id_to_gene_list_href && scalar(keys %{$asmbl_id_to_gene_list_href})>0;
 
  print "Finding contigs from pasa...\n";
  my ( $contig_counter, $gene_counter, $mrna_counter ) =
@@ -2437,7 +2436,7 @@ sub prepare_pasa_output() {
  open( ANNOT, ">$fasta_contigs.annotations" );
  open( TROUT, ">$fasta_contigs" );
 
- foreach my $asmbl_id ( keys %$asmbl_id_to_gene_list_href ) {
+ foreach my $asmbl_id ( keys %{$asmbl_id_to_gene_list_href} ) {
   my @gene_ids = @{ $asmbl_id_to_gene_list_href->{$asmbl_id} };
   $contig_counter++;
   foreach my $gene_id (@gene_ids) {
@@ -2447,9 +2446,7 @@ sub prepare_pasa_output() {
                                              %params );
 
    $gene_counter++;
-   foreach
-     my $isoform ( $gene_obj_ref, $gene_obj_ref->get_additional_isoforms() )
-   {
+   foreach my $isoform ( $gene_obj_ref, $gene_obj_ref->get_additional_isoforms() ) {
     my $com_name   = $isoform->{com_name};
     my $isoform_id = $isoform->{Model_feat_name};
     next unless $allowed_data_hashref->{$isoform_id};
@@ -3311,12 +3308,15 @@ sub check_for_options() {
   warn "\t$pasa_peptides not found\n"
     if ( $pasa_peptides && !-s $pasa_peptides );
   warn "\t$pasa_cds not found\n" if ( $pasa_cds && !-s $pasa_cds );
-  warn "\t$pasa_genome_gff not found\n"
-    if ( $pasa_gff && !-s $pasa_genome_gff );
+  warn "\t$pasa_genome_gff not found\n" if ( $pasa_genome_gff && !-s $pasa_genome_gff );
   warn "\t$peptide_file not found\n" if ( $peptide_file && !-s $peptide_file );
   warn "\t$mrna_file not found\n"    if ( $mrna_file    && !-s $mrna_file );
   die "\n";
 
+ }
+
+ if ($pasa_genome_gff && $pasa_genome_gff=~/\.bed$/){
+	$pasa_genome_gff = &bed_to_gff3($pasa_genome_gff);
  }
 
  die "Max intron size (-intron) cannot be 0!\n"
@@ -3364,4 +3364,80 @@ sub get_gff_delimiter() {
  close IN;
  confess "I don't know what delimiter to use for $file" if !$delimiter;
  return $delimiter;
+}
+
+
+sub bed_to_gff3(){
+	# from $JAMG_PATH/3rd_party/PASA/misc_utilities/bed_to_gene_gff3.pl
+	my $input_bed = shift;
+	my $outfile = $input_bed;
+	$outfile=~s/\.bed$//;$outfile.='.gff3';
+	print "Converting $input_bed BED to $outfile GFF\n";
+	open (OUT,">$outfile");
+	my $counter = 0;
+	open (my $fh, $input_bed) or die "Error, cannot open file $input_bed";
+	while (<$fh>) {
+		my @x = split(/\t/);
+		next unless $x[5];
+		my $scaff = $x[0];
+		my $gene_lend = $x[1] + 1;
+		my $gene_rend = $x[2];
+		my $com_name = $x[3];
+		my $score = $x[4];
+		my $orient = $x[5];
+		$orient = '+' if ($orient eq '*');
+		my $coding_lend = $x[6] + 1;
+		my $coding_rend = $x[7];
+		my $rgb_color = $x[8];
+
+		my $num_exons = $x[9];
+
+		my $lengths_text = $x[10];
+		my $exon_relative_starts_text = $x[11];
+
+		my @lengths = split(/,/, $lengths_text);
+		my @exon_relative_starts = split(/,/, $exon_relative_starts_text);
+
+		my @exons;
+
+		my $sum_len = 0;
+
+		while (@lengths) {
+			my $len = shift @lengths;
+			my $start = shift @exon_relative_starts;
+			my $exon_lend = $gene_lend + $start;
+			my $exon_rend = $exon_lend + $len - 1;
+			push (@exons, [$exon_lend, $exon_rend]);
+			$sum_len += $len;
+		}
+
+		if ($sum_len < 3) {
+			next;
+		}
+		
+		eval {
+			
+			my $gene_obj = new Gene_obj();
+
+            if ($coding_lend == $coding_rend +1) { ## not coding
+                $coding_lend = 0;
+                $coding_rend = 0;
+            }
+            
+			$gene_obj->build_gene_obj_exons_n_cds_range(\@exons, $coding_lend, $coding_rend, $orient);
+			
+			$gene_obj->{com_name} = $com_name;
+			$gene_obj->{asmbl_id} = $scaff;
+			
+			$counter++;
+			$gene_obj->{TU_feat_name} = "gene.$counter";
+			$gene_obj->{Model_feat_name} = "model.$counter";
+			
+			print OUT $gene_obj->to_GFF3_format() . "\n";
+		
+		};
+	}
+	close OUT;
+	print "Error when conveting to GFF $outfile from BED $input_bed:\n$@\n" unless -s $outfile;
+	return $outfile;
 }
