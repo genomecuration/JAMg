@@ -225,7 +225,7 @@ my $scaffold_seq_hashref      = &read_fasta($genome_sequence_file);
 "$makeblastdb_exec -in $genome_sequence_file -out $genome_sequence_file -hash_index -parse_seqids -dbtype nucl"
 ) unless -s "$genome_sequence_file.nin";
 &process_cmd(
-"$gmap_build_exec -D $genome_sequence_file_dir -d $genome_sequence_file_base.gmap $genome_file"
+"$gmap_build_exec -e 0 -D $genome_sequence_file_dir -d $genome_sequence_file_base.gmap $genome_file"
 ) unless -d "$genome_sequence_file_dir/$genome_sequence_file_base.gmap" || $peptide_file;
 
 unlink("$genome_sequence_file.cidx");
