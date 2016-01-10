@@ -67,6 +67,9 @@ my ( @bamfiles, $genome, $help,$no_hints, $master_bamfile );
 
 my $cpus = 4;
 my $sort_buffer = '5G';
+my $tmpdir = $ENV{'TMP'};
+$tmpdir = $ENV{'TMPDIR'} if !$tmpdir;
+$tmpdir = '/tmp' if !$tmpdir;
 my $window           = 50;
 my $min_coverage        = 20;
 my $min_jr_score        = 34;
@@ -85,7 +88,8 @@ pod2usage $! unless &GetOptions(
 	    'cpus:i'            => \$cpus,
 	    'memory:s'          => \$sort_buffer,
 	    'min_jr_length:i'   => \$min_jr_length,
-	    'min_jr_score:i'    => \$min_jr_score
+	    'min_jr_score:i'    => \$min_jr_score,
+	    'tmp:s'             => \$tmpdir
 );
 
 my ( $samtools_exec, $bedtools_exec, $bed_to_aug_script ) = &check_program( 'samtools', 'bedtools','bed12_to_augustus_junction_hints.pl' );
@@ -502,7 +506,7 @@ sub grab_intronic_bam(){
 	# without \t at end, allows for double introns (cf bed12_to_augustus_junction_hints.pl )
 	&process_cmd("$samtools_exec view -@ $cpus -q $min_jr_score -m $min_jr_length $file |grep -P '[0-9]{2,}M[0-9]{2,}N[0-9]{2,}M'|"
 		." samtools view -T $genome -@ $cpus -b -o $outfile -");
-	&process_cmd("$samtools_exec rmdup -S $outfile - |$samtools_exec sort -m $sort_buffer -@ $cpus -o $outfile.sorted - &");
+	&process_cmd("$samtools_exec rmdup -S $outfile - |$samtools_exec sort -m $sort_buffer -o $outfile.sorted - &");
 	return $outfile;
 }
 
@@ -532,13 +536,14 @@ the interpretation of N is not defined.
 sub check_sort_version(){
 	my ($sort_exec) = &check_program('sort');
 	my @v=`$sort_exec --version`;
+
 	if ($v[0] && $v[0]=~/(\d+)\.(\d+)\s*$/){
 		my $major = $1;
 		my $minor = $2;
 		if ($major >= 8 && $minor >= 6){
-			return "$sort_exec --parallel $cpus -S $sort_buffer";
+			return "$sort_exec -T $tmpdir --parallel $cpus -S $sort_buffer";
 		}else{
-			return "$sort_exec -S $sort_buffer";
+			return "$sort_exec -S $sort_buffer -T $tmpdir";
 		}
 	}else{
 		die "Sort of coreutils not found!";
