@@ -20,9 +20,9 @@ PERLDIR = /usr/bin
 PERLBIN = perl
 
 ## where you want things installed
-BINDIR  = $(PWD)
-LIBDIR  = $(PWD)
-MANDIR  = $(PWD)
+BINDIR  = $(PWD)/../bin
+LIBDIR  = $(PWD)/../lib
+MANDIR  = $(PWD)/../man
 
 ## NOTE !!  If you later manually move the location of 
 ## binaries or data files in the BINDIR or LIBDIR directories,
