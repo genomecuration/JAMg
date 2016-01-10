@@ -419,7 +419,7 @@ sub get_intron_orient(){
 	open (SPLICE1,">$hint_file.splice.augustus");
 	open (SPLICE2,">$hint_file.splice.gmap");
 	open (GFF,">$hint_file.intron.only");
-	my $counter=int(0);
+	my $printed_counter=int(1);
 	my (%intron_count,%intron_printed);
 	while (my $ln=<IN>){
 		my @data = split("\t",$ln);
@@ -445,11 +445,10 @@ sub get_intron_orient(){
 			print GFF $ln;
 			next;
 		}
-		$counter++;
-		$intron_count{$ref:$start..$end}++;
+		$intron_count{"$ref:$start..$end"}++;
 
-		only if supported by at least 30 introns, then save in database
-		if (!$intron_printed{$ref:$start..$end} && $intron_count{$ref:$start..$end} && $intron_count{$ref:$start..$end} >= 30){
+		#only if supported by at least 30 introns, then save in database
+		if (!$intron_printed{"$ref:$start..$end"} && $intron_count{"$ref:$start..$end"} && $intron_count{"$ref:$start..$end"} >= 30){
 			# sequence 40 bp up and 40 bp upstream
 			my $site1_seq = lc(substr($fasta_data{$ref},($start-1-40),82));
 			my $site2_seq = lc(substr($fasta_data{$ref},($end-1-1-40),82));
@@ -463,9 +462,10 @@ sub get_intron_orient(){
 			print SPLICE1 "$type1 $site1_seq\n" if $site1_seq;
 			print SPLICE1 "$type2 $site2_seq\n" if $site2_seq;
 			#gmap
-			my $intron_gsnap_txt = ($strand eq '-') ? ">intron.$counter $ref:$end..$start\n" : ">intron.$counter $ref:$start..$end\n";
+			my $intron_gsnap_txt = ($strand eq '-') ? ">intron.$printed_counter $ref:$end..$start\n" : ">intron.$printed_counter $ref:$start..$end\n";
 			print SPLICE2 $intron_gsnap_txt;
-			$intron_printed{$ref:$start..$end}++;
+			$intron_printed{"$ref:$start..$end"}++;
+			$printed_counter++;
 		}
 
 		$data[6] = $strand;
