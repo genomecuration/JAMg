@@ -12,9 +12,9 @@ $cutoff = 22 if !$cutoff;
 open (IN,$file);
 open (OUT,">$out");
 print OUT "##gff-version 3\n";
-my $discard = <IN>.<IN>.<IN>;
 my %hash;
 while (my $ln=<IN>){
+	next if ($ln=~/^Sequence\s/ || $ln=~/^Name\s/ || $ln=~/^-+\s/);
 	chomp($ln);
 	my @data = split("\t",$ln);
 	next unless $data[8];
