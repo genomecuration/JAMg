@@ -254,7 +254,7 @@ sub bg2hints() {
      . $i . "\t"
      . $k . "\t"
      . $median
-     . "\t$strand\t.\tsrc=R;pri=4\n";
+     . "\t$strand\t.\tsrc=RCOV;pri=4\n";
    $i +=  $window ;
   }
  }
@@ -420,7 +420,7 @@ sub get_intron_orient(){
 	open (SPLICE2,">$hint_file.splice.gmap");
 	open (GFF,">$hint_file.intron.only");
 	my $counter=int(0);
-	my %uniquefy;
+	my (%intron_count,%intron_printed);
 	while (my $ln=<IN>){
 		my @data = split("\t",$ln);
 		next unless $data[6] && $data[2] eq 'intron';
@@ -446,24 +446,26 @@ sub get_intron_orient(){
 			next;
 		}
 		$counter++;
-		# sequence 40 bp up and 40 bp upstream
-		my $site1_seq = lc(substr($fasta_data{$ref},($start-1-40),82));
-		my $site2_seq = lc(substr($fasta_data{$ref},($end-1-1-40),82));
-		$site1_seq =~ tr/n/-/;$site2_seq =~ tr/n/-/;
-		if ($strand eq '-'){
-			$site1_seq = &revcomp($site1_seq);
-			$site2_seq = &revcomp($site2_seq);
-			$intron_gsnap_txt = ">intron.$counter $ref:$end..$start\n";
-		}
-		my ($type1,$type2) = ($strand eq '+') ? ('dss','ass') : ('ass','dss');
-		if (!$uniquefy{$ref:$start..$end}){
+		$intron_count{$ref:$start..$end}++;
+
+		only if supported by at least 30 introns, then save in database
+		if (!$intron_printed{$ref:$start..$end} && $intron_count{$ref:$start..$end} && $intron_count{$ref:$start..$end} >= 30){
+			# sequence 40 bp up and 40 bp upstream
+			my $site1_seq = lc(substr($fasta_data{$ref},($start-1-40),82));
+			my $site2_seq = lc(substr($fasta_data{$ref},($end-1-1-40),82));
+			$site1_seq =~ tr/n/-/;$site2_seq =~ tr/n/-/;
+			if ($strand eq '-'){
+				$site1_seq = &revcomp($site1_seq);
+				$site2_seq = &revcomp($site2_seq);
+			}
+			my ($type1,$type2) = ($strand eq '+') ? ('dss','ass') : ('ass','dss');
 			#augustus
 			print SPLICE1 "$type1 $site1_seq\n" if $site1_seq;
 			print SPLICE1 "$type2 $site2_seq\n" if $site2_seq;
 			#gmap
-			my $intron_gsnap_txt = ">intron.$counter $ref:$start..$end\n";
+			my $intron_gsnap_txt = ($strand eq '-') ? ">intron.$counter $ref:$end..$start\n" : ">intron.$counter $ref:$start..$end\n";
 			print SPLICE2 $intron_gsnap_txt;
-			$uniquefy{$ref:$start..$end}++;
+			$intron_printed{$ref:$start..$end}++;
 		}
 
 		$data[6] = $strand;
