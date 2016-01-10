@@ -11,14 +11,15 @@ $cutoff = 22 if !$cutoff;
 
 open (IN,$file);
 open (OUT,">$out");
-print OUT "##gff-version 3\n";
+#print OUT "##gff-version 3\n";
 my %hash;
 while (my $ln=<IN>){
 	next if ($ln=~/^Sequence\s/ || $ln=~/^Name\s/ || $ln=~/^-+\s/);
 	chomp($ln);
-	my @data = split("\t",$ln);
+	my @data = split(/\s+/,$ln);
+	#foreach my $d (@data){	$d=~s/^\s+//;	$d=~s/\s+$//;}
 	next unless $data[8];
-	my ($start,$end,$strand) = ($data[3] > $data[2]) ? ($data[2],$data[3],'+') : ($data[3],$data[2],'-');
+	my ($start,$end,$strand) = ($data[3] >= $data[2]) ? ($data[2],$data[3],'+') : ($data[3],$data[2],'-');
 	my $trna = $data[4];
 	next if $trna eq 'Undet';
 	my $anticodon = $data[5];
