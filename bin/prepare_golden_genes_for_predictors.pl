@@ -33,11 +33,11 @@ And one of:
 
 2. PASA: output of PASA/scripts/pasa_asmbls_to_training_set.dbi:
 
-    -pasa_gff      :s => GFF output from pasa
-    -pasa_peptides :s => Protein output from pasa
-    -pasa_assembly :s => Contigs provided as input to pasa
-    -pasa_cds      :s => CDS output from pasa
-    -pasa_genome   :s => Genome alignment as GFF or BED
+    -pasa_assembly :s => Contig FASTA produced by pasa
+    -pasa_gff      :s => GFF output from pasa & pasa_asmbls_to_training_set.dbi
+    -pasa_peptides :s => Protein output from pasa & pasa_asmbls_to_training_set.dbi
+    -pasa_cds      :s => CDS output from pasa & pasa_asmbls_to_training_set.dbi
+    -pasa_genome   :s => Genome alignment as GFF from pasa_asmbls_to_training_set.dbi
 
 3. OR
 
@@ -2403,7 +2403,7 @@ sub parse_genome_gff() {
   }
   close OUT;
  }
- print "Skipped $skipped single exon genes\n" if $skipped;
+ print "\tSkipped $skipped single exon genes\n" if $skipped;
 
  # update to non-overlapping file in case we need to use it again.
  $pasa_genome_gff = $gff_file;
@@ -2421,8 +2421,7 @@ sub prepare_pasa_output() {
 
  # will sort and remove overlapping genes. returns valid genes
  my $allowed_data_hashref = &parse_genome_gff( $pasa_genome_gff, 'PASA' );
-
- print "Indexing...\n";
+ print "Indexing PASA assembly file...\n";
  my $contig_seq_hashref = &read_fasta($pasa_assembly_file);
  my $index_file = "$pasa_gff.inx";
  my $gene_obj_indexer = new Gene_obj_indexer( { "create" => $index_file } );
@@ -2433,6 +2432,7 @@ sub prepare_pasa_output() {
  my ( $contig_counter, $gene_counter, $mrna_counter ) =
    ( int(0), int(0), int(0) );
  my %contigs_used;
+
  open( ANNOT, ">$fasta_contigs.annotations" );
  open( TROUT, ">$fasta_contigs" );
 
@@ -2442,10 +2442,10 @@ sub prepare_pasa_output() {
   foreach my $gene_id (@gene_ids) {
    my %params;
    my $gene_obj_ref = $gene_obj_indexer->get_gene($gene_id);
-   $gene_obj_ref->create_all_sequence_types( \$contig_seq_hashref->{$asmbl_id},
-                                             %params );
-
+   die "Cannot find gene $gene_id" unless $gene_obj_ref;
+   $gene_obj_ref->create_all_sequence_types( \$contig_seq_hashref->{$asmbl_id}, %params );
    $gene_counter++;
+
    foreach my $isoform ( $gene_obj_ref, $gene_obj_ref->get_additional_isoforms() ) {
     my $com_name   = $isoform->{com_name};
     my $isoform_id = $isoform->{Model_feat_name};
@@ -2458,7 +2458,6 @@ sub prepare_pasa_output() {
         || $isoform->{is_pseudogene}
         || ( $com_name && $com_name =~ /prime_partial/ );
     }
-
     #$mrna_seq is now always given in + orientation
     #my $mrna_seq = $isoform->get_cDNA_sequence();
     # my $orientation = '+';
@@ -3316,6 +3315,7 @@ sub check_for_options() {
  }
 
  if ($pasa_genome_gff && $pasa_genome_gff=~/\.bed$/){
+	die "Please provide the GFF file for the -pasa_genome\n";
 	$pasa_genome_gff = &bed_to_gff3($pasa_genome_gff);
  }
 
@@ -3373,6 +3373,11 @@ sub bed_to_gff3(){
 	my $outfile = $input_bed;
 	$outfile=~s/\.bed$//;$outfile.='.gff3';
 	print "Converting $input_bed BED to $outfile GFF\n";
+	if (-s $outfile){
+		print "GFF $outfile already exists. Will use it. Stop and delete it otherwise\n";
+		sleep(2);
+		return $outfile;
+	}
 	open (OUT,">$outfile");
 	my $counter = 0;
 	open (my $fh, $input_bed) or die "Error, cannot open file $input_bed";
@@ -3425,14 +3430,22 @@ sub bed_to_gff3(){
             }
             
 			$gene_obj->build_gene_obj_exons_n_cds_range(\@exons, $coding_lend, $coding_rend, $orient);
-			
-			$gene_obj->{com_name} = $com_name;
+			if ($com_name && $com_name=~/ID=([^;]+)/){
+				#'ID=asmbl_40814|m.42780;Name=ORF_(asmbl_40814|g.42780,_asmbl_40814|m.42780);'
+				$gene_obj->{Model_feat_name} = $1;
+				if ($com_name=~/Name=([^;]+)/){
+					$gene_obj->{com_name} = $1;
+					if ($gene_obj->{com_name}=~/(asmbl_\d+\|g\.\d+)/){
+						$gene_obj->{TU_feat_name} = $1;
+					}
+				}
+			}else{
+				$gene_obj->{Model_feat_name} = "model.$counter";
+				$gene_obj->{TU_feat_name} = "gene.$counter";
+				$gene_obj->{com_name} = $com_name;
+			}
 			$gene_obj->{asmbl_id} = $scaff;
-			
 			$counter++;
-			$gene_obj->{TU_feat_name} = "gene.$counter";
-			$gene_obj->{Model_feat_name} = "model.$counter";
-			
 			print OUT $gene_obj->to_GFF3_format() . "\n";
 		
 		};
