@@ -133,7 +133,7 @@ unless (-e "$master_bamfile.junctions.completed"){
  	."|$sort_exec -n -k 4,4 | $sort_exec -s -n -k 5,5 | $sort_exec -s -n -k 3,3 | $sort_exec -s -k 1,1"
  	." -o $master_bamfile.junctions.hints" ) unless (-s "$master_bamfile.junctions.hints");
 	# i put it here as previous cmd takes ages
-	&process_cmd("fg;$samtools_exec index $junction_bam.sorted") unless -s "$junction_bam.sorted.bai";
+	&process_cmd("fg 2>/dev/null;$samtools_exec index $junction_bam.sorted") unless -s "$junction_bam.sorted.bai";
 
 	 unless ($no_hints){
 		 # For Augustus
@@ -417,9 +417,10 @@ sub get_intron_orient(){
 	open (IN,$hint_file) || die;
 	# # spit out splice sites while at it
 	open (SPLICE1,">$hint_file.splice.augustus");
-	open (SPLICE2,">$hint_file.splice.gsnap");
+	open (SPLICE2,">$hint_file.splice.gmap");
 	open (GFF,">$hint_file.intron.only");
 	my $counter=int(0);
+	my %uniquefy;
 	while (my $ln=<IN>){
 		my @data = split("\t",$ln);
 		next unless $data[6] && $data[2] eq 'intron';
@@ -445,7 +446,6 @@ sub get_intron_orient(){
 			next;
 		}
 		$counter++;
-		my $intron_gsnap_txt = ">intron.$counter $ref:$start..$end\n";
 		# sequence 40 bp up and 40 bp upstream
 		my $site1_seq = lc(substr($fasta_data{$ref},($start-1-40),82));
 		my $site2_seq = lc(substr($fasta_data{$ref},($end-1-1-40),82));
@@ -456,12 +456,15 @@ sub get_intron_orient(){
 			$intron_gsnap_txt = ">intron.$counter $ref:$end..$start\n";
 		}
 		my ($type1,$type2) = ($strand eq '+') ? ('dss','ass') : ('ass','dss');
-		#augustus
-		print SPLICE1 "$type1 $site1_seq\n" if $site1_seq;
-		print SPLICE1 "$type2 $site2_seq\n" if $site2_seq;
-
-		#gsnap
-		print SPLICE2 $intron_gsnap_txt;
+		if (!$uniquefy{$ref:$start..$end}){
+			#augustus
+			print SPLICE1 "$type1 $site1_seq\n" if $site1_seq;
+			print SPLICE1 "$type2 $site2_seq\n" if $site2_seq;
+			#gmap
+			my $intron_gsnap_txt = ">intron.$counter $ref:$start..$end\n";
+			print SPLICE2 $intron_gsnap_txt;
+			$uniquefy{$ref:$start..$end}++;
+		}
 
 		$data[6] = $strand;
 		print GFF join("\t",@data);
@@ -470,6 +473,14 @@ sub get_intron_orient(){
 	close GFF;
 	close SPLICE1;
 	close SPLICE2;
+
+	#uniquefy
+	system("$sort_exec -u -o $hint_file.splice.augustus. $hint_file.splice.augustus");
+	rename("$hint_file.splice.augustus.","$hint_file.splice.augustus");
+
+	system("$sort_exec -u -k2,2 -o $hint_file.splice.gmap. $hint_file.splice.gmap");
+	rename("$hint_file.splice.gmap.","$hint_file.splice.gmap");
+
 	return "$hint_file.intron.only";
 }
 
