@@ -76,7 +76,7 @@ my $scores_file = "$filename.scores";
 my $sort_by_score_file = "$scores_file.sort_by_score";
 {
     ## sort the file by accession, score desc
-    my $cmd = "sort -k1,1 -k2,2nr $scores_file > $sort_by_score_file";
+    my $cmd = "sort -S 2G -k1,1 -k2,2nr $scores_file > $sort_by_score_file";
     &process_cmd($cmd);
 }
 
@@ -118,7 +118,7 @@ my $top_line_file = "$sort_by_score_file.top";
 my $sort_by_line_no_file = "$top_line_file.sort_by_line_no";
 {
     ## now sort by line number
-    my $cmd = "sort -k3,3n $top_line_file > $sort_by_line_no_file";
+    my $cmd = "sort -S 2G -k3,3n $top_line_file > $sort_by_line_no_file";
     &process_cmd($cmd);
     
 }
