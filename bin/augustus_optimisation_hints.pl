@@ -15,12 +15,6 @@ Mandatory options:
  -hints|in         s{1,}  	The hints file you want to process
  -fasta		   s  		The FASTA file as created by prepare_golden (e.g. final_golden_genes.gff3.nr.golden.optimization.good.gb.fasta)
 
-Other options:
-
- -cpus             i		Number of CPUs for sorting (defaults to 4)
- -memory           s            Amount of memory for sorting. Use K/M/G for kilo/mega/giga-bytes (defaults to 5G)
-
-
 =head1 AUTHORS
 
  Alexie Papanicolaou
@@ -100,12 +94,16 @@ print "Found $total_count values\n\n";
 # ==> master_bamfile2.bam.rnaseq.hints <==
 #Herato0101      RNASeq  exonpart        436     469     21      .       .       src=RCOV;pri=4
 $|=1;
+
+
+open (OUT,">$fasta_file.hints");
+
+
 foreach my $hint_file (@hintfiles){
 	print "Parsing hints file $hint_file\n";
 	my $line_max = `wc -l < $hint_file`;chomp($line_max);
 	my $line_count = int(0);
 	open (IN,$hint_file);
-	open (OUT,">$hint_file.opt");
 	while (my $ln =<IN>){
 		$line_count++;
 		my @data = split("\t",$ln);
@@ -135,11 +133,11 @@ foreach my $hint_file (@hintfiles){
 		print "$prog %  \r" if $prog % 10 == 0;
 	}
 	close IN;
-	close OUT;
 	print "100 % \n";
 }
 $|=0;
 
+close OUT;
 
 ######################################
 sub check_sort_version(){
