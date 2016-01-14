@@ -28,6 +28,7 @@ Other options:
  -memory           s            Amount of memory for sorting. Use K/M/G for kilo/mega/giga-bytes (defaults to 5G)
  -min_jr_length    i		Minimum read length to use for junctions (def to 75)
  -min_jr_score     i		Minimum MAQ score to use for junctions (def to 34)
+ -min_jr_reads     i            Minimum number of introns to use for print out "known" splice sites database (Augustus and GMAP). Not used for hints. Defaults to 30
 
 =head1 DESCRIPTION
 
@@ -76,6 +77,7 @@ my $min_jr_score        = 34;
 my $min_jr_length       = 75;
 my $strandness       = int(0);
 my $background_level = 4;
+my $intron_coverage_cutoff = 30;
 pod2usage $! unless &GetOptions(
             'help'              => \$help,
             'bam|in:s{,}'       => \@bamfiles,
@@ -89,6 +91,7 @@ pod2usage $! unless &GetOptions(
 	    'memory:s'          => \$sort_buffer,
 	    'min_jr_length:i'   => \$min_jr_length,
 	    'min_jr_score:i'    => \$min_jr_score,
+	    'min_jr_reads:i'    => \$intron_coverage_cutoff,
 	    'tmp:s'             => \$tmpdir
 );
 
@@ -414,10 +417,12 @@ sub convert_mult_to_score(){
 
 sub get_intron_orient(){
 	my $hint_file = shift;
+	print "Reading genome file $genome\n";
 	my $fasta_obj = new Fasta_reader($genome);
 	my %fasta_data = $fasta_obj->retrieve_all_seqs_hash();
 	# use the introns to set orientation for both introns and exons
 	# (this would require parsing the file a couple of time)
+	#print "Parsing HINT file $hint_file\n";
 	open (IN,$hint_file) || die;
 	# # spit out splice sites while at it
 	open (SPLICE1,">$hint_file.splice.augustus");
@@ -428,31 +433,36 @@ sub get_intron_orient(){
 	while (my $ln=<IN>){
 		my @data = split("\t",$ln);
 		next unless $data[6] && $data[2] eq 'intron';
+		chomp($data[8]);
 		my ($ref,$type,$start,$end,$strand) = ($data[0],$data[2],$data[3],$data[4],$data[6]);
 		die "Cannot find sequence for $ref in genome FASTA file\n" unless $fasta_data{$ref};
 		die "Unexpected GFF with start higher than the end\n$ln" if $start > $end;
 		# acceptor and donor sites (3' and 5' on + strand)
 		my $site1 = uc(substr($fasta_data{$ref},($start-1),2));
 		my $site2 = uc(substr($fasta_data{$ref},($end-1-1),2));
+		my ($donor,$acceptor,$type1,$type2);
 		if (
 		(($site1 eq 'GT' || $site1 eq 'GC') && $site2 eq 'AG') ||
 		($site1 eq 'AT' && $site2 eq 'AC')
 		 ){
 			$strand = '+';
+			($donor,$acceptor,$type1,$type2) = ($site1,$site2,'dss','ass');
 		}elsif (
 		(($site2 eq 'AC' || $site2 eq 'GC') && $site1 eq 'CT') ||
 		($site2 eq 'AT' && $site1 eq 'GT')
 		 ){
 			$strand = '-';
+			($donor,$acceptor,$type1,$type2) = ($site2,$site1,'ass','dss');
 		}else{
 			# leave them unchanged
-			print GFF $ln;
+			$data[8] .='noncanonical=true;';
+			print GFF join("\t",@data)."\n";
 			next;
 		}
 		$intron_count{"$ref:$start..$end"}++;
 
-		#only if supported by at least 30 introns, then save in database
-		if (!$intron_printed{"$ref:$start..$end"} && $intron_count{"$ref:$start..$end"} && $intron_count{"$ref:$start..$end"} >= 30){
+		#only if supported by at least intron_coverage_cutoff introns, then save in database
+		if (!$intron_printed{"$ref:$start..$end"} && $intron_count{"$ref:$start..$end"} && $intron_count{"$ref:$start..$end"} >= $intron_coverage_cutoff){
 			# sequence 40 bp up and 40 bp upstream
 			my $site1_seq = lc(substr($fasta_data{$ref},($start-1-40),82));
 			my $site2_seq = lc(substr($fasta_data{$ref},($end-1-1-40),82));
@@ -461,7 +471,6 @@ sub get_intron_orient(){
 				$site1_seq = &revcomp($site1_seq);
 				$site2_seq = &revcomp($site2_seq);
 			}
-			my ($type1,$type2) = ($strand eq '+') ? ('dss','ass') : ('ass','dss');
 			#augustus
 			print SPLICE1 "$type1 $site1_seq\n" if $site1_seq;
 			print SPLICE1 "$type2 $site2_seq\n" if $site2_seq;
@@ -471,8 +480,9 @@ sub get_intron_orient(){
 			$intron_printed{"$ref:$start..$end"}++;
 			$printed_counter++;
 		}
-
+		# print ALL of them
 		$data[6] = $strand;
+                $data[8].="donor=$donor;acceptor=$acceptor;noncanonical=false;";
 		print GFF join("\t",@data);
 	}
 	close IN;

@@ -120,8 +120,8 @@ foreach my $hint_file (@hintfiles){
 				foreach my $gene_stop (keys %{$ref_data{$ref}{$gene_start}}){
 					last if $hint_stop > $gene_stop;
 					if ($hint_start >= $gene_start && $hint_stop <= $gene_stop){
-						my $opt_hint_start = $hint_start - $gene_start ;
-						my $opt_hint_stop  = $hint_stop - $gene_start;
+						my $opt_hint_start = $hint_start - $gene_start +1;
+						my $opt_hint_stop  = $hint_stop - $gene_start +1;
 						my @opt_data = @data;
 						$opt_data[0] = $ref."_$gene_start"."-$gene_stop";
 						$opt_data[3] = $opt_hint_start;
@@ -131,11 +131,12 @@ foreach my $hint_file (@hintfiles){
 				}
 			}
 		}
-		print "$line_count / $line_max           \r" if $line_count % 10000 == 0;
+		my $prog = int($line_count / $line_max);
+		print "$prog %  \r" if $prog % 10 == 0;
 	}
 	close IN;
 	close OUT;
-	print "$line_count / $line_max                  \n"
+	print "100 % \n";
 }
 $|=0;
 
