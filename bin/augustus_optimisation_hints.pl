@@ -129,8 +129,8 @@ foreach my $hint_file (@hintfiles){
 				}
 			}
 		}
-		my $prog = int($line_count / $line_max);
-		print "$prog %  \r" if $prog % 10 == 0;
+		my $prog = int(($line_count / $line_max) * 100);
+		print "$prog %  \r" if $line_count % 10000 == 0;
 	}
 	close IN;
 	print "100 % \n";
