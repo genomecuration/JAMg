@@ -17,6 +17,9 @@ read GENOME_PATH
 echo What is the maximum intron length? e.g. 70000
 read MAX_INTRON_LENGTH
 
+echo "What is the name of the species for Augustus (no spaces, use underscore)?"
+read SPECIES
+
 echo "What is a species classification for RepeatMasker (e.g. Insecta, fungi, Viridiplantae, human, primates)?"
 read SPECIES_CATEGORY
 
@@ -40,6 +43,7 @@ export MAX_MEMORY_G=$MAX_MEMORY_G
 export GENOME_NAME=$GENOME_NAME
 export GENOME_PATH=$GENOME_PATH
 export MAX_INTRON_LENGTH=$MAX_INTRON_LENGTH
+export SPECIES=$SPECIES
 export SPECIES_CATEGORY=$SPECIES_CATEGORY
 
 # compilation variables
