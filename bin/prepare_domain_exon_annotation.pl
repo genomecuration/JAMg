@@ -916,8 +916,17 @@ sub parse_hhr() {
                 my ($id,$type,$gff_start,$gff_end,$score,$strand,$src,$prio,$uid,$name,$hit_start,$hit_stop,$evalue) = (
        $hash_ref->{'scaffold_id'},  $hash_ref->{'type'},$hash_ref->{'gff_start'},$hash_ref->{'gff_end'},$hash_ref->{'score'},$hash_ref->{'strand'},$hash_ref->{'src'},$hash_ref->{'prio'},$hash_ref->{'uid'},$hash_ref->{'name'},$hash_ref->{'hit_start'},$hash_ref->{'hit_stop'},$hash_ref->{'evalue'}
                         );
-                     print HINTS "$id\thhblits\t$type\t$gff_start\t$gff_end\t$score\t$strand\t.\tsrc=$src;grp=$hit_id;pri=$prio\n";
-                     print GFF3  "$id\thhblits\tprotein_match\t$gff_start\t$gff_end\t$score\t$strand\t.\tID=$uid;Name=$name;Target=$hit_id $hit_start $hit_stop\n";
+			# In GFF3 (such as hints etc START < STOP
+			my $gff3_start = $gff_start;
+			my $gff3_stop = $gff_stop;
+				if ($gff3_start > $gff3_stop){
+					my $t = $gff3_start;
+					$gff3_start = $gff3_stop;
+					$gff3_stop = $t;
+			}
+
+                     print HINTS "$id\thhblits\t$type\t$gff3_start\t$gff3_end\t$score\t$strand\t.\tsrc=$src;grp=$hit_id;pri=$prio\n";
+                     print GFF3  "$id\thhblits\tprotein_match\t$gff3_start\t$gff3_end\t$score\t$strand\t.\tID=$uid;Name=$name;Target=$hit_id $hit_start $hit_stop\n";
                      print GENEID "$id\thhblits\tsr\t$gff_start\t$gff_end\t$score\t$strand\t.\n";
                      if ($strand eq '-') {
                         print GLIMMER "$id $gff_end $gff_start $score $evalue\n\n";

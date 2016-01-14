@@ -108,6 +108,12 @@ foreach my $hint_file (@hintfiles){
 		$line_count++;
 		my @data = split("\t",$ln);
 		next unless $data[8];
+		if ($data[3] > $data[4]){
+			my $t = $data[4];
+			$data[4] = $data[3];
+			$data[3] = $t;
+			$data[6] = '-';
+		}
 		die "Unexpected start > stop in hints file:\n$ln\n" if $data[3] > $data[4] ;
 		my ($ref,$hint_start,$hint_stop) = ($data[0],$data[3],$data[4]);
 		# if we have a reference sequence match
@@ -210,8 +216,9 @@ sub merge_hints(){
         $previous_line[8] = "mult=" . ($lm+$m) . ";$grp" . $previous_line[8]."\n";
      
     }elsif (
-    !(($current_line[0] eq $previous_line[0]) && ($current_line[2] eq $previous_line[2]) && ($current_line[3] == $previous_line[3]) && ($current_line[4] == $previous_line[4])  && ($current_line[6] eq $previous_line[6]))
-    ){
+	    !(($current_line[0] eq $previous_line[0]) && ($current_line[2] eq $previous_line[2]) 
+	&& ($current_line[3] == $previous_line[3]) && ($current_line[4] == $previous_line[4])  
+	&& ($current_line[6] eq $previous_line[6]))){
         print OUT join("\t",@previous_line);
         @previous_line = @current_line;
     }
