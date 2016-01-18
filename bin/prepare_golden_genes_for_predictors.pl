@@ -64,6 +64,7 @@ Other options:
     -minorf          :i       => Minimum size of ORF (and therefore amino acids; def. 290 bp)
     -mismatch_cutoff :i       => Maximum number of mismatches allowed in exonerate (def 10)
     -same_species             => Contigs/proteins and genome is the same species
+    -liberal                  => Use fewer cut-off types (e.g. no start/stop codons etc) for exonerate post-processing (good for very foreign proteins)
     -norefine                 => Don't use -refine for exonerate
     -norerun                  => Don't re-run exonerate (assume it already exists as [input file].exonerate.results
     -augustus                 => Directory where Augustus is installed (if not in your path)
@@ -85,6 +86,14 @@ Other options:
  Fraction of similar residues > 95%
  No more than 10 mismatches allowed
  Overlaps: For a particular genomic start/stop co-ordinate & length, only one gene is printed (one with best score); NO isoforms (alt. splicings) allowed.
+
+ The file .exonerate.results.corrected.golden.log says why each gene was discarded
+
+To rerun it with different criteria:
+ Delete the *.exonerate.results.corrected* files (NOT *.exonerate.results) and final_golden_genes*
+  $ rm -f *.exonerate.results.corrected*
+ Then run the command with the new cut-offs using -norerun
+
 
 =head1 AUTHORS
 
@@ -141,7 +150,8 @@ my (
      $pasa_assembly_file, $pasa_peptides,         $mrna_file,
      $softmasked_genome,  $stop_after_correction, $norefine,
      $nodataprint,        $no_gmap,               $no_exonerate,
-     $pasa_genome_gff,    $extra_gff_file,        $show_help
+     $pasa_genome_gff,    $extra_gff_file,        $show_help, 
+     $liberal_cutoffs
 );
 
 my $no_rerun_exonerate;
@@ -195,7 +205,8 @@ pod2usage $! unless &GetOptions(
             'augustus_dir:s'     => \$augustus_dir,
             'no_exonerate'       => \$no_exonerate,
             'no_gmap'            => \$no_gmap,
-            'extra_gff:s'        => \$extra_gff_file
+            'extra_gff:s'        => \$extra_gff_file,
+	    'liberal'            => \$liberal_cutoffs
 );
 
 my ( $makeblastdb_exec, $tblastn_exec, $tblastx_exec ) =
@@ -230,7 +241,8 @@ my $scaffold_seq_hashref      = &read_fasta($genome_sequence_file);
 
 unlink("$genome_sequence_file.cidx");
 &process_cmd("$cdbfasta_exec $genome_sequence_file");
-my $uppercase_genome_files = &splitfasta( $genome_file, $genome_dir, 1 );
+#my $uppercase_genome_files = &split_fasta( $genome_file, $genome_dir, 1 );
+my $aat_uppercase_genome_files = &split_fasta_multi( $genome_file, $genome_dir);
 
 # We now have the option to use exonerate or another method.
 # It turns out that exonerate is very good at getting rid of the false positives
@@ -338,8 +350,8 @@ else {
 #################################################################################################################
 sub correct_exonerate_gff() {
  my $exonerate_file = shift;
- print
-"Processing $exonerate_file using these cut-offs: identical:$identical_fraction similar:$similar_fraction;  No more than $mismatch_cutoff mismatches in total; Methionine and * in protein sequence; Start codon and stop codon in genome; No overlapping genes; Splice sites (GT..AG or GC..AG)\n";
+ print "Processing $exonerate_file using these cut-offs: identical:$identical_fraction similar:$similar_fraction;  No more than $mismatch_cutoff mismatches in total; Methionine and * in protein sequence; Start codon and stop codon in genome; No overlapping genes; Splice sites (GT..AG or GC..AG)\n" unless $liberal_cutoffs;
+ print "Processing $exonerate_file using few cut-offs (liberal): identical:$identical_fraction similar:$similar_fraction;  No more than $mismatch_cutoff mismatches in total\n" unless $liberal_cutoffs;
 
  #pod2usage unless $exonerate_file && -s $exonerate_file;
  # IF WE NEED TO GET WHOLE SCAFFOLD SEQUENCE:
@@ -741,7 +753,7 @@ sub create_golden_gffs_from_exonerate() {
     . $details_hashref->{$query_id}{'target_end'} . "\t"
     . $details_hashref->{$query_id}{'target_seq'} . "\n"
     unless $nodataprint;
-  if (
+  if ( !$liberal_cutoffs && 
        $pass_check{
             's'
           . $details_hashref->{$query_id}{'target_start'} . 'e'
@@ -785,14 +797,14 @@ sub create_golden_gffs_from_exonerate() {
    $failed_cutoff++;
    next;
   }
-  if ( $details_hashref->{$query_id}{'non_canonical_splice_sites'} > 0 ) {
+  if ( !$liberal_cutoffs && $details_hashref->{$query_id}{'non_canonical_splice_sites'} > 0 ) {
    print LOG "$query_id rejected: there are non-canonical splice sites : "
      . $details_hashref->{$query_id}{'non_canonical_splice_sites'} . "\n";
    $failed_cutoff++;
    next;
   }
 
-  unless ( $is_cdna
+  unless ( $liberal_cutoffs || $is_cdna
           || substr( $details_hashref->{$query_id}{'query_seq'}, 0, 1 ) eq 'M' )
   {
    print LOG "$query_id rejected: query does not start with M: "
@@ -800,7 +812,7 @@ sub create_golden_gffs_from_exonerate() {
    $failed_cutoff++;
    next;
   }
-  unless ( $is_cdna
+  unless ( $liberal_cutoffs || $is_cdna
          || substr( $details_hashref->{$query_id}{'query_seq'}, -1, 1 ) eq '*' )
   {
    print LOG "$query_id rejected: query does not end with stop codon (*): "
@@ -808,7 +820,7 @@ sub create_golden_gffs_from_exonerate() {
    $failed_cutoff++;
    next;
   }
-  unless (
+  unless ( $liberal_cutoffs || 
           substr( $details_hashref->{$query_id}{'target_seq'}, 0, 3 ) eq 'ATG' )
   {
    print LOG "$query_id rejected: target does not start with ATG: "
@@ -816,7 +828,7 @@ sub create_golden_gffs_from_exonerate() {
    $failed_cutoff++;
    next;
   }
-  unless (
+  unless ( $liberal_cutoffs || 
        (
            substr( $details_hashref->{$query_id}{'target_seq'}, -3, 3 ) eq 'TAG'
         || substr( $details_hashref->{$query_id}{'target_seq'}, -3, 3 ) eq 'TAA'
@@ -877,7 +889,7 @@ sub create_golden_gffs_from_exonerate() {
        length( $details_hashref->{$query_id}{'target_seq'} ) )
   {
    $failed_cutoff++;
-   print LOG "$query_id rejected: single coding exon\n";
+   print LOG "$query_id rejected: user requested no single coding exon\n";
    next;
   }
 
@@ -957,7 +969,8 @@ GENE: while ( my $record = <IN> ) {
 "Processed $counter transcripts.\nFound $number_of_passing_genes sequences passing criteria.\n\n";
  close LOG;
  print
-"Processed $counter transcripts.\nFound $number_of_passing_genes sequences passing criteria.\n\n";
+"Processed $counter transcripts.\nFound $number_of_passing_genes sequences passing criteria.\n";
+ print "See $basename_exonerate.golden.log for details what happened to each gene\n\n";
 
  #cleanup
  unlink( $exonerate_file . '.pep' );
@@ -2057,7 +2070,7 @@ sub shuffle_fasta() {
  return "$fasta.shuff";
 }
 
-sub splitfasta() {
+sub split_fasta() {
  my @files;
  my $file2split         = shift;
  my $outdir             = shift;
@@ -2519,8 +2532,8 @@ sub run_exonerate() {
  my ($parafly_exec) = &check_program('ParaFly');
  $exonerate_file =
      $pasa_gff
-   ? $pasa_gff . '.exonerate.results'
-   : $peptide_file . '.exonerate.results';
+   ? basename($pasa_gff) . '.exonerate.results'
+   : basename($peptide_file) . '.exonerate.results';
 
  my $exonerate_command_file = "run_exonerate_commands.cmd";
 
@@ -2540,9 +2553,7 @@ sub run_exonerate() {
     )
   {
    print "Re-processing with exonerate\n";
-   &process_cmd(
-"$parafly_exec -shuffle -CPU $threads -c $exonerate_command_file -failed_cmds $exonerate_command_file.failed -v "
-   );
+   &process_cmd("$parafly_exec -shuffle -CPU $threads -c $exonerate_command_file -failed_cmds $exonerate_command_file.failed -v "   );
   }
   else {
 
@@ -2558,8 +2569,7 @@ sub run_exonerate() {
     }
     print "Running exonerate...\n";
     unlink($exonerate_file);
-    my $exonerate_options =
-" -minorf $minorf -protein -in $peptide_file -separate -filter $genome_dir/*filter -threads $threads -intron_max $intron_size  $same_species ";
+    my $exonerate_options =" -minorf $minorf -protein -in $peptide_file -separate -filter $genome_dir/*filter -threads $threads -intron_max $intron_size  $same_species ";
     $exonerate_options .= " -softmask -ref $softmasked_genome "
       if ($softmasked_genome);
     $exonerate_options .= " -ref $genome_file "
@@ -2585,8 +2595,7 @@ sub run_exonerate() {
      &run_aat( $fasta_contigs, 'nucl' );
     }
     print "Running exonerate...\n";
-    my $exonerate_options =
-" -minorf $minorf -annotation $fasta_contigs.annotations -in $fasta_contigs -separate -filter $genome_dir/*filter "
+    my $exonerate_options =" -minorf $minorf -annotation $fasta_contigs.annotations -in $fasta_contigs -separate -filter $genome_dir/*filter "
       . " -threads $threads -intron_max $intron_size $same_species ";
     $exonerate_options .= " -softmask -ref $softmasked_genome "
       if ($softmasked_genome);
@@ -2614,7 +2623,7 @@ sub run_exonerate() {
 
  }
  die
-"Have not completed with the current exonerate run. You can force this message to be ignored with -norerun \n"
+"Have not completed with the current exonerate run. Rerun this program once more. If it still fails, you can force this message to be ignored with -norerun \n"
    unless $no_rerun_exonerate;
  print "Completed processing exonerate file as $exonerate_file\n";
 
@@ -2674,10 +2683,10 @@ sub run_aligner() {
   if (    ( $pasa_cds && $fasta_in eq $pasa_cds )
        || ( $pasa_peptides && $fasta_in eq $pasa_peptides ) )
   {
-   &splitfasta( $fasta_in, $output_directory, $splits, 'type:complete', 1 );
+   &split_fasta( $fasta_in, $output_directory, $splits, 'type:complete', 1 );
   }
   else {
-   &splitfasta( $fasta_in, $output_directory, $splits, undef, 1 );
+   &split_fasta( $fasta_in, $output_directory, $splits, undef, 1 );
   }
  }
  my @fastas = glob("$output_directory/*");
@@ -2917,46 +2926,42 @@ sub run_aat() {
    my $matrix_file = "$aat_dir/matrices/BS";
    die "Cannot find AAT's matrices/BS as $matrix_file\n"
      unless -s $matrix_file;
-   foreach my $genome_file (@$uppercase_genome_files) {
+   foreach my $genome_file (@$aat_uppercase_genome_files) {
     next if $genome_file =~ /\.aat\./ || -d $genome_file;
-    push( @commands,
-"$aat_dir/dps $genome_file $input_fasta $matrix_file -c 3000000 -f $aat_score -w $aat_word_options -i 30 -a $intron_size > $genome_file.aat.d ;"
-       . "$aat_dir/ext $genome_file.aat.d > $genome_file.aat.ext ;"
-       . "$aat_dir/extCollapse.pl $genome_file.aat.ext > $genome_file.aat.extCol ;"
-       . "$aat_dir/filter $genome_file.aat.extCol -c 1 > $genome_file.aat.filter ; rm -f $genome_file.aat.d $genome_file.aat.ext $genome_file.aat.extCol \n"
+    push( @commands,"$aat_dir/dps $genome_file $input_fasta $matrix_file -c 3000000 -f $aat_score -w $aat_word_options -i 30 -a $intron_size > $genome_file.aat.d "
+       . "&& $aat_dir/ext $genome_file.aat.d > $genome_file.aat.ext ;"
+#       . "$aat_dir/extCollapse.pl $genome_file.aat.ext > $genome_file.aat.extCol ;"
+#       . "$aat_dir/filter $genome_file.aat.extCol -c 1 > $genome_file.aat.filter ; rm -f $genome_file.aat.d $genome_file.aat.ext $genome_file.aat.extCol \n"
     ) unless -s "$genome_file.aat.filter";
    }
    open( CMD, ">$aat_command_file" );
    print CMD shuffle(@commands);
    close CMD;
-   &process_cmd(
-"$parafly_exec -shuffle -CPU $threads -c $aat_command_file -v -failed_cmds $aat_command_file.failed"
-   );
+   &process_cmd("$parafly_exec -shuffle -CPU $threads -c $aat_command_file -v -failed_cmds $aat_command_file.failed");
    system("find $genome_dir -empty -delete");
+   &recombine_split_aat_multi($genome_dir);
   }
   else {
    my $aat_score = $same_species ? 200 : 80;
    my $aat_o     = $similar_fraction - 20;
    my $aat_p     = $identical_fraction - 20;
    print "Preparing/running AAT...\n";
-   foreach my $genome_file (@$uppercase_genome_files) {
+   foreach my $genome_file (@$aat_uppercase_genome_files) {
     next if $genome_file =~ /\.aat\./ || -d $genome_file;
 
-    push( @commands,
-"$aat_dir/dds $genome_file $input_fasta -o $aat_o -p $aat_p -c 300000 -f $aat_score -i 30 -a $intron_size > $genome_file.aat.d ;"
-       . "$aat_dir/ext $genome_file.aat.d -f $aat_score > $genome_file.aat.ext ;"
-       . "$aat_dir/extCollapse.pl $genome_file.aat.ext > $genome_file.aat.extCol ;"
-       . "$aat_dir/filter $genome_file.aat.extCol -c 1 > $genome_file.aat.filter ; rm -f $genome_file.aat.d $genome_file.aat.ext $genome_file.aat.extCol \n"
+    push( @commands,"$aat_dir/dds $genome_file $input_fasta -o $aat_o -p $aat_p -c 300000 -f $aat_score -i 30 -a $intron_size > $genome_file.aat.d ;"
+       . " && $aat_dir/ext $genome_file.aat.d -f $aat_score > $genome_file.aat.ext ;"
+#       . "$aat_dir/extCollapse.pl $genome_file.aat.ext > $genome_file.aat.extCol ;"
+#       . "$aat_dir/filter $genome_file.aat.extCol -c 1 > $genome_file.aat.filter ; rm -f $genome_file.aat.d $genome_file.aat.ext $genome_file.aat.extCol \n"
     ) unless -s "$genome_file.aat.filter";
    }
    open( CMD, ">$aat_command_file" );
    print CMD shuffle(@commands);
    close CMD;
-   &process_cmd(
-"$parafly_exec -shuffle -CPU $threads -c $aat_command_file -v -failed_cmds $aat_command_file.failed"
-   );
+   &process_cmd("$parafly_exec -shuffle -CPU $threads -c $aat_command_file -v -failed_cmds $aat_command_file.failed" );
   }
   system("find $genome_dir -empty -delete");
+  &recombine_split_aat_multi($genome_dir);
 
  }
 
@@ -3453,4 +3458,105 @@ sub bed_to_gff3(){
 	close OUT;
 	print "Error when conveting to GFF $outfile from BED $input_bed:\n$@\n" unless -s $outfile;
 	return $outfile;
+}
+
+
+sub split_fasta_multi(){
+	my ($file,$outdir) = @_;
+	return if -d $outdir;
+	my ($size_mbp,$overlap_bp,$suffix) = (0.5,1e4,'');
+	return unless $file && -s $file;
+	my @files;
+	my $orig_sep = $/;
+	$/ =  ">";
+	open (FILE,$file) || die $!;
+	while (my $record=<FILE>){
+		chomp($record);
+		next unless $record;
+		my @lines = split("\n",$record);
+		my $id = shift (@lines);
+		next unless $id;
+		my $label = $id;
+		$label =~ s/^(\S+).*$/$1/;
+		$label =~ s/\|/_/g;
+		$label =~ s/_+$//;
+		my $seq = join("",@lines);
+		$seq=~s/\s+//g;
+		if (length($seq) <= $size_mbp){
+			my $outfile=$label.$suffix;
+			open (OUT,">$outdir\/$outfile");
+			print OUT ">".$label."\n".$seq."\n";
+			close OUT;
+			push (@files,$outfile);
+		}else{
+			my @seq_array = split("",$seq);
+			for (my $split_start=0;$split_start<scalar(@seq_array);$split_start+=$size_mbp-$overlap_bp){
+				my $split_end = int($split_start + $size_mbp) >= scalar(@seq_array) ? int(scalar(@seq_array)-1) : int($split_start + $size_mbp);
+				if ($split_start > (scalar(@seq_array)-$overlap_bp)){last;}
+				my $split_seq = join('',@seq_array[$split_start..$split_end]);
+				my $split_label = $label.'_'.$split_start.'-'.$split_end;
+				my $outfile=$split_label.$suffix;
+				open (OUT, ">$outdir\/$outfile");
+				print OUT ">".$split_label."\n".$split_seq."\n";
+				close OUT;
+				push (@files,$outfile);
+			}
+		}
+	}
+	close (FILE);
+	$/=$orig_sep;
+	return \@files;
+}
+
+
+sub recombine_split_aat_multi(){
+	my ($indir,$suffix) = @_;
+	return unless $indir && -d $indir;
+	$suffix = '.aat.ext' unless $suffix;
+	my @files = glob($indir."/*$suffix");
+	return unless $files[0] && -s $files[0];
+
+	my ( $aat_dir, $parafly_exec ) = &check_program( 'AAT.pl', 'ParaFly' );
+	$aat_dir = dirname($aat_dir);
+
+	foreach my $file (map  { $_->[1] }  sort { $a->[0] <=> $b->[0] }map  { /_(\d+)-\d+$/; [$1, $_] } @files){
+		next unless $file=~/^(\S+)_(\d+)-(\d+)$suffix$/;
+		my ($ref_id,$ref_start,$ref_stop) = (basename($1),$2,$3);
+		open (IN,$file);
+		my $header = <IN>;
+		my @header_data = split(/\s+/,$header);
+
+		my $outfile = $indir."/".$ref_id.$suffix;
+		if (-s $outfile){
+			open (OUT,">>$outfile");
+		}else{
+			my $ref_length = length($scaffold_seq_hashref->{$ref_id}) || die "Cannot find sequence $ref_id in genome\n";
+			open (OUT,">$outfile");
+			$header_data[1] = sprintf("%28s",$ref_length);
+			$header_data[2] = sprintf("%8s",$header_data[2]);
+			print OUT join (" ",@header_data)."\n";
+		}
+		while (my $ln=<IN>){
+			if ($ln=~/^\s+(\d+)\s+(\d+)(\s+.+)$/){
+				my ($split_start,$split_end,$rest) = ($1,$2,$3);
+				my $correct_start = sprintf("%8s",($split_start + $ref_start));
+				my $correct_end = sprintf("%8s",($split_end + $ref_start));
+				print OUT $correct_start." ".$correct_end.$rest."\n";
+			}
+		}
+		
+		close IN;
+		close OUT;
+		unlink($file);
+	}
+	my @all_files = glob($indir."/*$suffix");
+	foreach my $file (@all_files){
+		if ($file=~/^(\S)+$suffix/){
+			my $b = $1;
+			next if -s "$b.aat.filter";
+			system("$aat_dir/extCollapse.pl $file > $b.aat.extCol && $aat_dir/filter $b.aat.extCol -c 1 > $b.aat.filter");
+			unlink($file.".aat.d") if -s "$b.aat.filter";
+			unlink($file.".aat.extCol") if -s "$b.aat.filter";
+		}
+	}
 }

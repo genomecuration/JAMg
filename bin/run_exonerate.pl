@@ -355,6 +355,8 @@ else {
   }
   $queries{$id}{'seq'} .= '*'
     unless !$queries{$id}{'seq'} || $queries{$id}{'seq'} =~ /\*$/;
+  # convert U to X
+  $queries{$id}{'seq'} =~ tr/U/X/;
  }
 }
 
