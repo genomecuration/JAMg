@@ -72,10 +72,11 @@ $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/:$RealBin:$RealBin/../3rd_par
 $ENV{HHLIB} =  "$RealBin/../3rd_party/hhsuite/lib/hh";
 
 my (
-     $genome,          $circular,          $repeatmasker_options,
+     $genome,          $circular,          
      $mpi_host_string, $help,              $verbose,$only_repeat,
      $scratch_dir,     $no_uniprot_search, $no_transposon_search, $only_parse
 );
+my $repeatmasker_options = '';
 my $minsize       = 100;
 my $cpus          = 2;
 my $hhblits_cpus  = 10;
@@ -137,7 +138,14 @@ pod2usage "For MPI engine I need a host definition with -hosts\n"
 my ( $getorf_exec, $repeatmasker_exec ) =
   &check_program( 'getorf', 'RepeatMasker' );
 
-unless (-s $genome . '.masked'){
+if (-s $genome.'.hardmasked' && !-s $genome . '.masked'){
+	print "Found $genome.hardmasked. Using it as a masked file\n";
+	symlink($genome.'.hardmasked',$genome . '.masked');
+}
+
+if (-s $genome . '.masked'){
+  print "Found masked file $genome.masked. Skipping repeatmasking\n";
+}else{
   &do_repeat_masking($repeatmasker_options);
 }
 
@@ -918,15 +926,15 @@ sub parse_hhr() {
                         );
 			# In GFF3 (such as hints etc START < STOP
 			my $gff3_start = $gff_start;
-			my $gff3_stop = $gff_stop;
+			my $gff3_stop = $gff_end;
 				if ($gff3_start > $gff3_stop){
 					my $t = $gff3_start;
 					$gff3_start = $gff3_stop;
 					$gff3_stop = $t;
 			}
 
-                     print HINTS "$id\thhblits\t$type\t$gff3_start\t$gff3_end\t$score\t$strand\t.\tsrc=$src;grp=$hit_id;pri=$prio\n";
-                     print GFF3  "$id\thhblits\tprotein_match\t$gff3_start\t$gff3_end\t$score\t$strand\t.\tID=$uid;Name=$name;Target=$hit_id $hit_start $hit_stop\n";
+                     print HINTS "$id\thhblits\t$type\t$gff3_start\t$gff3_stop\t$score\t$strand\t.\tsrc=$src;grp=$hit_id;pri=$prio\n";
+                     print GFF3  "$id\thhblits\tprotein_match\t$gff3_start\t$gff3_stop\t$score\t$strand\t.\tID=$uid;Name=$name;Target=$hit_id $hit_start $hit_stop\n";
                      print GENEID "$id\thhblits\tsr\t$gff_start\t$gff_end\t$score\t$strand\t.\n";
                      if ($strand eq '-') {
                         print GLIMMER "$id $gff_end $gff_start $score $evalue\n\n";
