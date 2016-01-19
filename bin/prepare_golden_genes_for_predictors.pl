@@ -2546,6 +2546,7 @@ sub run_exonerate() {
   && ( -s $exonerate_command_file == -s $exonerate_command_file . '.completed' )
    );
  unless ($no_rerun_exonerate) {
+  print "Finding rough co-ordinates...\n";
   &run_aat() if !$same_species;
   if (
    -s $exonerate_command_file
@@ -2569,7 +2570,7 @@ sub run_exonerate() {
     else {
      &run_aat( $peptide_file, 'protein' );
     }
-    print "Running exonerate...\n";
+    print "Finding accurate co-ordinates using exonerate...\n";
     unlink($exonerate_file);
     my $exonerate_options =" -minorf $minorf -protein -in $peptide_file -separate -filter $genome_dir/*filter -threads $threads -intron_max $intron_size  $same_species ";
     $exonerate_options .= " -softmask -ref $softmasked_genome "
@@ -2596,7 +2597,7 @@ sub run_exonerate() {
     if ( !$same_species ) {
      &run_aat( $fasta_contigs, 'nucl' );
     }
-    print "Running exonerate...\n";
+    print "Finding accurate co-ordinates using exonerate...\n";
     my $exonerate_options =" -minorf $minorf -annotation $fasta_contigs.annotations -in $fasta_contigs -separate -filter $genome_dir/*filter "
       . " -threads $threads -intron_max $intron_size $same_species ";
     $exonerate_options .= " -softmask -ref $softmasked_genome "
