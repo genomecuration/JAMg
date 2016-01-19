@@ -2931,7 +2931,7 @@ sub run_aat() {
      unless -s $matrix_file;
    foreach my $genome_file (@$aat_uppercase_genome_files) {
     next if $genome_file =~ /\.aat\./ || -d $genome_file;
-    push( @commands,"$aat_dir/dps $genome_file $input_fasta $matrix_file -c 3000000 -f $aat_score -w $aat_word_options -i 30 -a $intron_size > $genome_file.aat.d "
+    push( @commands,"$aat_dir/dps $genome_file $input_fasta $matrix_file -c 5000000 -f $aat_score -w $aat_word_options -i 30 -a $intron_size > $genome_file.aat.d "
         . "&& $aat_dir/ext $genome_file.aat.d -f $aat_score > $genome_file.aat.ext && rm -f $genome_file.aat.d"
         ."\n"
     ) unless -s "$genome_file.aat.ext";
@@ -2950,8 +2950,7 @@ sub run_aat() {
    print "Preparing/running AAT...\n";
    foreach my $genome_file (@$aat_uppercase_genome_files) {
     next if $genome_file =~ /\.aat\./ || -d $genome_file;
-
-    push( @commands,"$aat_dir/dds $genome_file $input_fasta -o $aat_o -p $aat_p -c 300000 -f $aat_score -i 30 -a $intron_size > $genome_file.aat.d "
+    push( @commands,"$aat_dir/dds $genome_file $input_fasta -o $aat_o -p $aat_p -c 5000000 -f $aat_score -i 30 -a $intron_size > $genome_file.aat.d "
         . " && $aat_dir/ext $genome_file.aat.d -f $aat_score > $genome_file.aat.ext && rm -f $genome_file.aat.d"
 	."\n"
     ) unless -s "$genome_file.aat.ext";
@@ -3466,7 +3465,7 @@ sub split_fasta_multi(){
 	my ($file,$outdir) = @_;
 	return if -d $outdir;
 	mkdir ($outdir);
-	my ($size_bp,$overlap_bp,$suffix) = (0.5*1e6,1e4,'.seq');
+	my ($size_bp,$overlap_bp,$suffix) = (0.2*1e6,1e4,'.seq');
 	return unless $file && -s $file;
 	my @files;
 	my $orig_sep = $/;
@@ -3517,14 +3516,20 @@ sub split_fasta_multi(){
 sub recombine_split_aat_multi(){
 	my ($indir,$suffix) = @_;
 	return unless $indir && -d $indir;
-	$suffix = '.aat.ext' unless $suffix;
+	$suffix = '.seq.aat.ext' unless $suffix;
 	my @files = glob($indir."/*$suffix");
 	return unless $files[0] && -s $files[0];
 
 	my ( $aat_dir, $parafly_exec ) = &check_program( 'AAT.pl', 'ParaFly' );
 	$aat_dir = dirname($aat_dir);
-
-	foreach my $file (map  { $_->[1] }  sort { $a->[0] <=> $b->[0] }map  { /_(\d+)-\d+$/; [$1, $_] } @files){
+	my @files2;
+	foreach my $f (@files){
+		next unless $f=~/^\S+_\d+-\d+$suffix$/;
+		push(@files2,$f);
+	}
+	@files = @files2;undef(@files2);
+	print "Merging results from ".scalar(@files)." files...\n";
+	foreach my $file (map  { $_->[1] }  sort { $a->[0] <=> $b->[0] }map  { /_(\d+)-\d+$suffix$/; [$1, $_] } @files){
 		next unless $file=~/^(\S+)_(\d+)-(\d+)$suffix$/;
 		my ($ref_id,$ref_start,$ref_stop) = (basename($1),$2,$3);
 		open (IN,$file);
