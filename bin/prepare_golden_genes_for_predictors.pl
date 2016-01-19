@@ -2101,7 +2101,8 @@ sub split_fasta() {
   my $seq = join( '', @lines );
   $seq =~ s/\s+//g;
   $seq =~ s/\*$//;    # for protein stop codons
-  next unless $seq;
+  # we will only search those that are big enough.
+  next unless $seq && length($seq)>5000;
   $seqcount++;
 
   if (   !$filecount
@@ -2123,6 +2124,7 @@ sub split_fasta() {
  close(OUT);
  $/ = $orig_sep;
  unlink($shuffled_file) if $shuffle;
+ print "Split $file2split into ".scalar(@files)." segments\n";
  return \@files;
 }
 
@@ -2917,7 +2919,7 @@ sub run_aat() {
   return unless $input_fasta && $type;
   my @commands;
   if ( $type eq 'protein' ) {
-   my $aat_score = $same_species ? 400 : 60;
+   my $aat_score = $same_species ? 400 : 40;
    my $aat_word_options =
      $same_species
      ? '5 -d 20'
@@ -2929,10 +2931,9 @@ sub run_aat() {
    foreach my $genome_file (@$aat_uppercase_genome_files) {
     next if $genome_file =~ /\.aat\./ || -d $genome_file;
     push( @commands,"$aat_dir/dps $genome_file $input_fasta $matrix_file -c 3000000 -f $aat_score -w $aat_word_options -i 30 -a $intron_size > $genome_file.aat.d "
-       . "&& $aat_dir/ext $genome_file.aat.d > $genome_file.aat.ext ;"
-#       . "$aat_dir/extCollapse.pl $genome_file.aat.ext > $genome_file.aat.extCol ;"
-#       . "$aat_dir/filter $genome_file.aat.extCol -c 1 > $genome_file.aat.filter ; rm -f $genome_file.aat.d $genome_file.aat.ext $genome_file.aat.extCol \n"
-    ) unless -s "$genome_file.aat.filter";
+        . "&& $aat_dir/ext $genome_file.aat.d -f $aat_score > $genome_file.aat.ext && rm -f $genome_file.aat.d"
+        ."\n"
+    ) unless -s "$genome_file.aat.ext";
    }
    open( CMD, ">$aat_command_file" );
    print CMD shuffle(@commands);
@@ -2942,18 +2943,17 @@ sub run_aat() {
    &recombine_split_aat_multi($genome_dir);
   }
   else {
-   my $aat_score = $same_species ? 200 : 80;
+   my $aat_score = $same_species ? 200 : 50;
    my $aat_o     = $similar_fraction - 20;
    my $aat_p     = $identical_fraction - 20;
    print "Preparing/running AAT...\n";
    foreach my $genome_file (@$aat_uppercase_genome_files) {
     next if $genome_file =~ /\.aat\./ || -d $genome_file;
 
-    push( @commands,"$aat_dir/dds $genome_file $input_fasta -o $aat_o -p $aat_p -c 300000 -f $aat_score -i 30 -a $intron_size > $genome_file.aat.d ;"
-       . " && $aat_dir/ext $genome_file.aat.d -f $aat_score > $genome_file.aat.ext ;"
-#       . "$aat_dir/extCollapse.pl $genome_file.aat.ext > $genome_file.aat.extCol ;"
-#       . "$aat_dir/filter $genome_file.aat.extCol -c 1 > $genome_file.aat.filter ; rm -f $genome_file.aat.d $genome_file.aat.ext $genome_file.aat.extCol \n"
-    ) unless -s "$genome_file.aat.filter";
+    push( @commands,"$aat_dir/dds $genome_file $input_fasta -o $aat_o -p $aat_p -c 300000 -f $aat_score -i 30 -a $intron_size > $genome_file.aat.d "
+        . " && $aat_dir/ext $genome_file.aat.d -f $aat_score > $genome_file.aat.ext && rm -f $genome_file.aat.d"
+	."\n"
+    ) unless -s "$genome_file.aat.ext";
    }
    open( CMD, ">$aat_command_file" );
    print CMD shuffle(@commands);
@@ -3465,7 +3465,7 @@ sub split_fasta_multi(){
 	my ($file,$outdir) = @_;
 	return if -d $outdir;
 	mkdir ($outdir);
-	my ($size_bp,$overlap_bp,$suffix) = (0.5*1e6,1e4,'');
+	my ($size_bp,$overlap_bp,$suffix) = (0.5*1e6,1e4,'.seq');
 	return unless $file && -s $file;
 	my @files;
 	my $orig_sep = $/;
@@ -3483,11 +3483,12 @@ sub split_fasta_multi(){
 		$label =~ s/_+$//;
 		my $seq = join("",@lines);
 		$seq=~s/\s+//g;
-		next unless $seq && length($seq)>0;
+		# we will only search those that are big enough.
+		next unless $seq && length($seq)>5000;
 		if (length($seq) <= $size_bp){
-			my $outfile=$label.$suffix;
-			open (OUT,">$outdir/$outfile") || die $!;
-			print OUT ">".$label."\n".$seq."\n";
+			my $outfile = $outdir.'/'.$label.$suffix;
+			open (OUT,">$outfile") || die $!;
+			print OUT ">".$label."\n".&wrap_text($seq)."\n";
 			close OUT;
 			push (@files,$outfile);
 		}else{
@@ -3497,9 +3498,9 @@ sub split_fasta_multi(){
 				if ($split_start > (scalar(@seq_array)-$overlap_bp)){last;}
 				my $split_seq = join('',@seq_array[$split_start..$split_end]);
 				my $split_label = $label.'_'.$split_start.'-'.$split_end;
-				my $outfile=$split_label.$suffix;
-				open (OUT, ">$outdir/$outfile") || die $!;
-				print OUT ">".$split_label."\n".$split_seq."\n";
+				my $outfile = $outdir.'/'.$split_label.$suffix;
+				open (OUT, ">$outfile") || die $!;
+				print OUT ">".$split_label."\n".&wrap_text($split_seq)."\n";
 				close OUT;
 				push (@files,$outfile);
 			}
@@ -3507,6 +3508,7 @@ sub split_fasta_multi(){
 	}
 	close (FILE);
 	$/=$orig_sep;
+	print "Split $file into ".scalar(@files)." segments\n";
 	return \@files;
 }
 
