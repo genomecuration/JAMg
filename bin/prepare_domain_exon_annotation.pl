@@ -73,9 +73,11 @@ $ENV{HHLIB} =  "$RealBin/../3rd_party/hhsuite/lib/hh";
 
 my (
      $genome,          $circular,          
-     $mpi_host_string, $help,              $verbose,$only_repeat,
-     $scratch_dir,     $no_uniprot_search, $no_transposon_search, $only_parse
+     $help,            $verbose,$only_repeat,
+     $scratch_dir,     $no_uniprot_search,
+     $no_transposon_search, $only_parse
 );
+my $mpi_host_string = '';
 my $repeatmasker_options = '';
 my $minsize       = 100;
 my $cpus          = 2;
@@ -85,6 +87,8 @@ my $transposon_db = $RealBin. "/../databases/hhblits/transposons";
 my $uniprot_db =  $RealBin . "/../databases/hhblits/refseq_plant";
 my $min_exons_before_reporting = 2;
 
+my ( $getorf_exec, $repeatmasker_exec ) = &check_program( 'getorf', 'RepeatMasker' );
+my ( $hhblits_exec, $ffindex_apply_exec,, $ffindex_from_fasta_exec ) = &check_program( 'hhblits', 'ffindex_apply', 'ffindex_from_fasta' );
 
 GetOptions(
             'fasta|genome|in:s' => \$genome,
@@ -110,8 +114,8 @@ GetOptions(
 pod2usage( -verbose => 2 ) if $help;
 
 unless ($only_repeat){
-	die "The Transposon DB ($transposon_db) has not been prepared. See ".$RealBin . "/../databases/hhblits/README\n" unless $no_transposon_search || -s $transposon_db."_hhm_db";
-	die "The UniProt DB ($uniprot_db) has not been prepared. See ".$RealBin . "/../databases/hhblits/README\n" unless $no_uniprot_search || -s $uniprot_db."_hhm_db";
+	die "The Transposon DB (eg. -transposon_db or $transposon_db) has not been prepared. See ".$RealBin . "/../databases/hhblits/README\n" unless $no_transposon_search || -s $transposon_db."_hhm_db";
+	die "The UniProt DB (e.g. -uniprot_db or $uniprot_db) has not been prepared. See ".$RealBin . "/../databases/hhblits/README\n" unless $no_uniprot_search || -s $uniprot_db."_hhm_db";
 }
 
 if ($only_parse){
@@ -130,13 +134,6 @@ die pod2usage "Engine must be local, localmpi or PBS\n"
            || $engine =~ /pbs/
            || $engine =~ /none/
            || $engine =~ /cluster/ );
-
-pod2usage "For MPI engine I need a host definition with -hosts\n"
-  if $engine && $engine eq 'mpi' && !$mpi_host_string;
-
-
-my ( $getorf_exec, $repeatmasker_exec ) =
-  &check_program( 'getorf', 'RepeatMasker' );
 
 if (-s $genome.'.hardmasked' && !-s $genome . '.masked'){
 	print "Found $genome.hardmasked. Using it as a masked file\n";
@@ -157,16 +154,16 @@ if ($only_repeat){
 }
 
 
-my $exons = "$genome.exons";
+my $exons = basename($genome).".exons";
 my $getorf_options .= $circular ? '-circular' : '';
 
 &process_cmd(
        #"$getorf_exec -sequence $genome -outseq $exons.aa -minsize 150 -find 0 ")
-       "$getorf_exec -sequence $genome -outseq $exons.aa -minsize 300 -find 0 ")
+       "$getorf_exec -sequence $genome -outseq $exons.aa -minsize 200 -find 0 ") # nucleotide length
   unless -s $exons . '.aa';
 &process_cmd(
        #"$getorf_exec -sequence $genome -outseq $exons.nt -minsize 150 -find 2 ")
-       "$getorf_exec -sequence $genome -outseq $exons.nt -minsize 300 -find 2 ")
+       "$getorf_exec -sequence $genome -outseq $exons.nt -minsize 200 -find 2 ")
   unless -s $exons . '.nt';
 die "No exon file could be produced.\n"
   unless -s $exons . '.aa' && -s $exons . '.nt';
@@ -181,8 +178,6 @@ if ( $engine =~ /none/ ) {
  exit(0);
 }
 
-my ( $hhblits_exec, $ffindex_apply_exec,, $ffindex_from_fasta_exec ) =
-  &check_program( 'hhblits', 'ffindex_apply', 'ffindex_from_fasta' );
 
 print "Preparing HHblits files for $engine\n";
 # change the following so it happens per database
@@ -443,6 +438,7 @@ sub prepare_localmpi() {
 
 sub prepare_mpi() {
  my $host_string = shift;
+ pod2usage "For MPI engine I need a host definition with -hosts\n" if $engine && $engine eq 'mpi' && !$host_string;
  my %hash;
  my @hosts_defs = split( '-', $host_string );
  foreach my $host_str (@hosts_defs) {

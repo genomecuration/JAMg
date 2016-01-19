@@ -3464,7 +3464,8 @@ sub bed_to_gff3(){
 sub split_fasta_multi(){
 	my ($file,$outdir) = @_;
 	return if -d $outdir;
-	my ($size_mbp,$overlap_bp,$suffix) = (0.5,1e4,'');
+	mkdir ($outdir);
+	my ($size_bp,$overlap_bp,$suffix) = (0.5*1e6,1e4,'');
 	return unless $file && -s $file;
 	my @files;
 	my $orig_sep = $/;
@@ -3482,21 +3483,22 @@ sub split_fasta_multi(){
 		$label =~ s/_+$//;
 		my $seq = join("",@lines);
 		$seq=~s/\s+//g;
-		if (length($seq) <= $size_mbp){
+		next unless $seq && length($seq)>0;
+		if (length($seq) <= $size_bp){
 			my $outfile=$label.$suffix;
-			open (OUT,">$outdir\/$outfile");
+			open (OUT,">$outdir/$outfile") || die $!;
 			print OUT ">".$label."\n".$seq."\n";
 			close OUT;
 			push (@files,$outfile);
 		}else{
 			my @seq_array = split("",$seq);
-			for (my $split_start=0;$split_start<scalar(@seq_array);$split_start+=$size_mbp-$overlap_bp){
-				my $split_end = int($split_start + $size_mbp) >= scalar(@seq_array) ? int(scalar(@seq_array)-1) : int($split_start + $size_mbp);
+			for (my $split_start=0;$split_start<scalar(@seq_array);$split_start+=$size_bp-$overlap_bp){
+				my $split_end = int($split_start + $size_bp) >= scalar(@seq_array) ? int(scalar(@seq_array)-1) : int($split_start + $size_bp);
 				if ($split_start > (scalar(@seq_array)-$overlap_bp)){last;}
 				my $split_seq = join('',@seq_array[$split_start..$split_end]);
 				my $split_label = $label.'_'.$split_start.'-'.$split_end;
 				my $outfile=$split_label.$suffix;
-				open (OUT, ">$outdir\/$outfile");
+				open (OUT, ">$outdir/$outfile") || die $!;
 				print OUT ">".$split_label."\n".$split_seq."\n";
 				close OUT;
 				push (@files,$outfile);
