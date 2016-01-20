@@ -166,6 +166,12 @@ my $similar_fraction         = 98;
 my $threads                  = 1;
 my $mismatch_cutoff          = 10;
 
+my $cpus = 4;
+my $sort_buffer = '5G';
+my $tmpdir = $ENV{'TMP'};
+$tmpdir = $ENV{'TMPDIR'} if !$tmpdir;
+$tmpdir = '/tmp' if !$tmpdir;
+
 #globals
 my $failed_cutoff = int(0);
 my ( $cdbfasta_exec, $cdbyank_exec ) = &check_program( 'cdbfasta', 'cdbyank' );
@@ -208,6 +214,8 @@ pod2usage $! unless &GetOptions(
             'extra_gff:s'        => \$extra_gff_file,
 	    'liberal'            => \$liberal_cutoffs
 );
+
+my $sort_exec = &check_sort_version;
 
 my ( $makeblastdb_exec, $tblastn_exec, $tblastx_exec ) =
   &check_program( 'makeblastdb', 'tblastn', 'tblastx' );
@@ -3563,6 +3571,11 @@ sub recombine_split_aat_multi(){
 	my @all_files = glob($indir."/*$suffix");
 	foreach my $file (sort {$a cmp $b} @all_files){
 		#my $base = basename($file);
+		#we do NOT need to sort the file. But if we did, this would be the code
+		#system("head -1 $file > $file.sorted");
+		#&process_cmd($sort_exec." -nk1 -nk2 $file >> $file.sorted");
+		#system("sed -i '$d' $file.sorted");
+		#rename("$file.sorted",$file);
 		if ($file=~/^(\S+)$suffix$/){
 			my $b = $1;
 			next if -s "$b.aat.filter";
@@ -3570,5 +3583,22 @@ sub recombine_split_aat_multi(){
 			unlink($file.".aat.d") if -s "$b.aat.filter";
 			unlink($file.".aat.extCol") if -s "$b.aat.filter";
 		}
+	}
+}
+
+sub check_sort_version(){
+	my ($sort_exec) = &check_program('sort');
+	my @v=`$sort_exec --version`;
+
+	if ($v[0] && $v[0]=~/(\d+)\.(\d+)\s*$/){
+		my $major = $1;
+		my $minor = $2;
+		if ($major >= 8 && $minor >= 6){
+			return "$sort_exec -T $tmpdir --parallel $cpus -S $sort_buffer";
+		}else{
+			return "$sort_exec -S $sort_buffer -T $tmpdir";
+		}
+	}else{
+		die "Sort of coreutils not found!";
 	}
 }
