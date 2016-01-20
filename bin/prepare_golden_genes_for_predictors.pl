@@ -3524,6 +3524,7 @@ sub recombine_split_aat_multi(){
 	$aat_dir = dirname($aat_dir);
 	my @files2;
 	foreach my $f (@files){
+		# do not process those without output / those already post-processed
 		next unless $f=~/^\S+_\d+-\d+$suffix$/;
 		push(@files2,$f);
 	}
@@ -3560,8 +3561,9 @@ sub recombine_split_aat_multi(){
 		unlink($file);
 	}
 	my @all_files = glob($indir."/*$suffix");
-	foreach my $file (@all_files){
-		if ($file=~/^(\S)+$suffix/){
+	foreach my $file (sort {$a cmp $b} @all_files){
+		#my $base = basename($file);
+		if ($file=~/^(\S+)$suffix$/){
 			my $b = $1;
 			next if -s "$b.aat.filter";
 			system("$aat_dir/extCollapse.pl $file > $b.aat.extCol && $aat_dir/filter $b.aat.extCol -c 1 > $b.aat.filter");
