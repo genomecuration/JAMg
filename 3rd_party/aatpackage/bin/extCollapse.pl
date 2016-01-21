@@ -119,17 +119,9 @@ while (@chains) {
 
 
 ## Sort collapsed chains by dstart and score:
-
-my @collapsedChains2 = sort { $a->{dstart} <=> $b->{dstart}
-			  || $b->{score} <=> $a->{score} 
-} @collapsedChains;
-
-@collapsedChains = @collapsedChains2;
-undef(@collapsedChains2);
-
 ## output collapsed chains:
 print $header;
-foreach my $chain (@collapsedChains) {
+foreach my $chain (sort { $a->{dstart} <=> $b->{dstart} || $b->{score} <=> $a->{score}} @collapsedChains) {
     my ($dstart, 
 	$dend,
 	$score,
@@ -150,7 +142,7 @@ foreach my $chain (@collapsedChains) {
 		    );
     
     printf("%8d %8d %6d %7d %5d %1d %5d %5d %s\n",
-	   $dstart, $dend, $score, $astart, $aend, $orient, $zero1, $zero2, $acc);
+	   $dstart, $dend, $score, $astart, $aend, $orient, $zero1, $zero2, $acc) if $acc;
     
 }
 
