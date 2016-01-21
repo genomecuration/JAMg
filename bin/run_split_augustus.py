@@ -136,7 +136,7 @@ def prepare_augustus_commands( UTR, gff3, species, uniqueGeneId, genemodel, alte
         augustus.append(seq_files[chunk].name)
         augustus.append('2> ' + chunkfile( rundir, 'log', chunk ))
         augustus.append('> ' + chunkfile( rundir, 'result', chunk) )
-        cmds.append( '%s &' % ' '.join( augustus ) )
+        cmds.append( '%s' % ' '.join( augustus ) )
     return cmds
         
         
