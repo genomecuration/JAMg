@@ -29,7 +29,7 @@ Other options:
  -min_jr_length    i		Minimum read length to use for junctions (def to 75)
  -min_jr_score     i		Minimum MAQ score to use for junctions (def to 34)
  -min_jr_reads     i            Minimum number of introns to use for print out "known" splice sites database (Augustus and GMAP). Not used for hints. Defaults to 30
- -min_intron       i            Minimum intron length (def 10)
+ -min_intron       i            Minimum intron length (def 30)
 
 =head1 DESCRIPTION
 
@@ -79,7 +79,7 @@ my $min_jr_length       = 75;
 my $strandness       = int(0);
 my $background_level = 4;
 my $intron_coverage_cutoff = 30;
-my $min_intron_length = 10;
+my $min_intron_length = 30;
 
 pod2usage $! unless &GetOptions(
             'help'              => \$help,
@@ -298,7 +298,7 @@ sub intron_driven_fixes(){
  while (my $ln=<IN>){
   my @data = split("\t",$ln);
   if ($data[8]=~/grp=([^;]+)/){
-   $hash{$1}=$data[5];
+   $hash{$1} = {'cov' => $data[5],'strand' => $data[6]};
   }
  }
  close IN;
@@ -307,12 +307,13 @@ sub intron_driven_fixes(){
  open (OUT2,">".$file.".intronic");
  while (my $ln=<IN>){
   my @data = split("\t",$ln);
-  # only print those with groups
+  # only print those with groups, ie. no solitary ones
   # and introns that met criteria of convert_mult_to_score
   if ($data[8]=~/grp=([^;]+)/){
      my $group = $1;
      next unless $hash{group};
-     $data[5]= $hash{$group} if $data[2] ne 'intron';
+     $data[5] = $hash{$group}{'cov'} if $data[2] ne 'intron';
+     $data[6] = $hash{$group}{'strand'};
      print OUT2 join("\t",@data);
   }
  }
