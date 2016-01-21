@@ -3563,10 +3563,13 @@ sub recombine_split_aat_multi(){
 	my @all_files = glob($indir."/*$suffix");
 	foreach my $file (sort {$a cmp $b} @all_files){
 		if ($file=~/^(\S+)$suffix$/){
-			system("$aat_dir/extCollapse_AP.pl $file > $b.aat.extCol && $aat_dir/filter $b.aat.extCol -c 1 > $b.aat.filter");
+			my $b = $1;
+			system("$aat_dir/extCollapse_AP.pl $file && $aat_dir/filter $file"."Col -c 1 > $b.aat.filter");
 			system("$aat_dir/filter $b.aat.extCol -c 1 > $b.aat.filter");
-			unlink($file.".aat.d") if -s "$b.aat.filter";
-			unlink($file.".aat.extCol") if -s "$b.aat.filter";
+			if (-s "$b.aat.filter"){
+				unlink($file.".aat.d");
+				unlink($file."Col");
+			}
 		}
 	}
 }
