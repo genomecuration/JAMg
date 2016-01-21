@@ -47,6 +47,7 @@ export SPECIES=$SPECIES
 export SPECIES_CATEGORY=$SPECIES_CATEGORY
 
 # compilation variables
+export AUGUSTUS_CONFIG_PATH=$JAMG_PATH/3rd_party/augustus/config
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH
 
 export LDFLAGS=\"$LDFLAGS\"

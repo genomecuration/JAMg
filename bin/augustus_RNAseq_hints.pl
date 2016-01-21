@@ -29,6 +29,7 @@ Other options:
  -min_jr_length    i		Minimum read length to use for junctions (def to 75)
  -min_jr_score     i		Minimum MAQ score to use for junctions (def to 34)
  -min_jr_reads     i            Minimum number of introns to use for print out "known" splice sites database (Augustus and GMAP). Not used for hints. Defaults to 30
+ -min_intron       i            Minimum intron length (def 10)
 
 =head1 DESCRIPTION
 
@@ -78,6 +79,8 @@ my $min_jr_length       = 75;
 my $strandness       = int(0);
 my $background_level = 4;
 my $intron_coverage_cutoff = 30;
+my $min_intron_length = 10;
+
 pod2usage $! unless &GetOptions(
             'help'              => \$help,
             'bam|in:s{,}'       => \@bamfiles,
@@ -91,6 +94,7 @@ pod2usage $! unless &GetOptions(
 	    'memory:s'          => \$sort_buffer,
 	    'min_jr_length:i'   => \$min_jr_length,
 	    'min_jr_score:i'    => \$min_jr_score,
+	    'min_intron:i'      => \$min_intron_length,
 	    'min_jr_reads:i'    => \$intron_coverage_cutoff,
 	    'tmp:s'             => \$tmpdir
 );
@@ -303,14 +307,13 @@ sub intron_driven_fixes(){
  open (OUT2,">".$file.".intronic");
  while (my $ln=<IN>){
   my @data = split("\t",$ln);
-  if ($data[2] eq 'intron'){
-   print OUT2 $ln;
-  }elsif ($data[8]=~/grp=([^;]+)/){
-   my $grp =$1;
-   if ($hash{$grp}){
-	$data[5]= $hash{$grp};
-	print OUT2 join("\t",@data);
-   }
+  # only print those with groups
+  # and introns that met criteria of convert_mult_to_score
+  if ($data[8]=~/grp=([^;]+)/){
+     my $group = $1;
+     next unless $hash{group};
+     $data[5]= $hash{$group} if $data[2] ne 'intron';
+     print OUT2 join("\t",@data);
   }
  }
  close IN;
@@ -403,12 +406,12 @@ sub convert_mult_to_score(){
 	open (OUT,">$file.scored");
 	while (my $ln=<IN>){
 		my @data = split("\t",$ln);
-		# discard singletons
+		next unless abs($data[4] - $data[3]) >= $min_intron_length; 
+		# discard singletons	
 		if ($data[8] && $data[8]=~/mult=(\d+)/){
 			$data[5] = $1;
 			print OUT join("\t",@data);
-		}
-		
+		}	
 	}
 	close IN;
 	close OUT;
