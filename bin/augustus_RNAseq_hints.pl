@@ -312,16 +312,22 @@ sub intron_driven_fixes(){
   my @data = split("\t",$ln);
   # only print those with groups, ie. no solitary ones
   # and introns that met criteria of convert_mult_to_score
+  next if $data[2] eq 'intron'; # add later
   if ($data[8] && $data[8]=~/grp=([^;]+)/){
      my $group = $1;
      next unless exists($hash{$group});
-     $data[5] = $hash{$group}{'cov'} if $data[2] ne 'intron';
+     $data[5] = $hash{$group}{'cov'};
      $data[6] = $hash{$group}{'strand'};
      print OUT2 join("\t",@data);
   }
  }
  close IN;
  close OUT2;
+  
+ system("cat $intronic_file $outfile"
+ ." |$sort_exec -n -k 4,4 | $sort_exec -s -n -k 5,5 | $sort_exec -s -n -k 3,3 | $sort_exec -s -k 1,1"
+ ." -o $outfile.sorted");
+ rename("$outfile.sorted",$outfile);
 }
 
 sub merge_hints(){
@@ -413,6 +419,7 @@ sub convert_mult_to_score(){
 		# discard singletons	
 		if ($data[8] && $data[8]=~/mult=(\d+)/){
 			$data[5] = $1;
+			$data[8] =~ s/mult=\d+;//;
 			print OUT join("\t",@data);
 		}	
 	}
