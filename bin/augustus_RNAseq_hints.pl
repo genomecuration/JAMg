@@ -280,7 +280,7 @@ sub bg2hints() {
 sub intron_driven_fixes(){
  my $file = shift;
  my $outfile = $file;
- $outfile = ~s/junctions.all.hints/junctions.hints/;
+ $outfile =~ s/junctions.all.hints/junctions.hints/;
 
  my %hash;
 
