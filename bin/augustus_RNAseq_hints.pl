@@ -300,7 +300,7 @@ sub intron_driven_fixes(){
  open (IN,$intronic_file);
  while (my $ln=<IN>){
   my @data = split("\t",$ln);
-  if ($data[8]=~/grp=([^;]+)/){
+  if ($data[8] && $data[8]=~/grp=([^;]+)/){
    $hash{$1} = {'cov' => $data[5],'strand' => $data[6]};
   }
  }
@@ -428,7 +428,7 @@ sub get_intron_orient(){
 	my %fasta_data = $fasta_obj->retrieve_all_seqs_hash();
 	# use the introns to set orientation for both introns and exons
 	# (this would require parsing the file a couple of time)
-	#print "Parsing HINT file $hint_file\n";
+	print "Parsing HINT file $hint_file\n";
 	open (IN,$hint_file) || die;
 	# # spit out splice sites while at it
 	open (SPLICE1,">$hint_file.splice.augustus");
@@ -489,7 +489,7 @@ sub get_intron_orient(){
 		# print ALL of them
 		$data[6] = $strand;
                 $data[8].="donor=$donor;acceptor=$acceptor;noncanonical=false;";
-		print GFF join("\t",@data);
+		print GFF join("\t",@data)."\n";
 	}
 	close IN;
 	close GFF;
