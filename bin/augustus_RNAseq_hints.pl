@@ -142,13 +142,13 @@ unless (-e "$master_bamfile.junctions.completed"){
  if (-f $junction_bam && (-s $junction_bam) > 10000){
  	&process_cmd("$bedtools_exec bamtobed -bed12 < $junction_bam | $bed_to_aug_script -prio 7 -out $master_bamfile.junctions.bed"
  	."|$sort_exec -n -k 4,4 | $sort_exec -s -n -k 5,5 | $sort_exec -s -n -k 3,3 | $sort_exec -s -k 1,1"
- 	." -o $master_bamfile.junctions.hints" ) unless (-s "$master_bamfile.junctions.hints");
+ 	." -o $master_bamfile.junctions.all.hints" ) unless (-s "$master_bamfile.junctions.all.hints");
 	# i put it here as previous cmd takes ages
 	&process_cmd("fg 2>/dev/null;$samtools_exec index $junction_bam.sorted") unless -s "$junction_bam.sorted.bai";
 
 	 unless ($no_hints){
 		 # For Augustus
-		 &intron_driven_fixes("$master_bamfile.junctions.hints");
+		 &intron_driven_fixes("$master_bamfile.junctions.all.hints");
 		 # don't merge before getting intronic.
 		 &merge_hints("$master_bamfile.junctions.hints");
 	  }
@@ -279,6 +279,9 @@ sub bg2hints() {
 
 sub intron_driven_fixes(){
  my $file = shift;
+ my $outfile = $file;
+ $outfile = ~s/junctions.all.hints/junctions.hints/;
+
  my %hash;
 
  # get introns (we will postprocess them later)
@@ -304,14 +307,14 @@ sub intron_driven_fixes(){
  close IN;
 
  open (IN,$file);
- open (OUT2,">".$file.".intronic");
+ open (OUT2,">".$outfile);
  while (my $ln=<IN>){
   my @data = split("\t",$ln);
   # only print those with groups, ie. no solitary ones
   # and introns that met criteria of convert_mult_to_score
-  if ($data[8]=~/grp=([^;]+)/){
+  if ($data[8] && $data[8]=~/grp=([^;]+)/){
      my $group = $1;
-     next unless $hash{group};
+     next unless exists($hash{$group});
      $data[5] = $hash{$group}{'cov'} if $data[2] ne 'intron';
      $data[6] = $hash{$group}{'strand'};
      print OUT2 join("\t",@data);
@@ -319,7 +322,6 @@ sub intron_driven_fixes(){
  }
  close IN;
  close OUT2;
- rename($file.".intronic",$file);
 }
 
 sub merge_hints(){

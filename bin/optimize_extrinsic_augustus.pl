@@ -87,6 +87,8 @@ $cpus        = 1;
 $exec_dir    = $ENV{'AUGUSTUS_PATH'} . '/bin' if $ENV{'AUGUSTUS_PATH'};
 $config_path = $ENV{'AUGUSTUS_PATH'} . '/config' if $ENV{'AUGUSTUS_PATH'};
 $config_path = $ENV{'AUGUSTUS_CONFIG_PATH'} if $ENV{'AUGUSTUS_CONFIG_PATH'};
+my $extrinsic_iteration_counter : shared;
+my %cfg_track : shared; # hack to prevent same config from being rerun
 
 my ($common_parameters) = '';
 
@@ -136,12 +138,12 @@ my @feature_headers = @$feature_headers_ref;
 #######################################################################################
 # initialize and first test
 #######################################################################################
-my $extrinsic_iteration_counter : shared;
+
 $extrinsic_iteration_counter = int(0);
 
 my $thread_helper = new Thread_helper($cpus);
-my $thread        = threads->create('run_evaluation');
-$thread_helper->add_thread($thread);
+my $empty_eval_thread        = threads->create('run_evaluation');
+$thread_helper->add_thread($empty_eval_thread);
 my $todo = int(0);
 
 foreach my $src ( keys %sources_that_need_to_be_checked ) {
@@ -162,14 +164,13 @@ foreach my $src ( keys %sources_that_need_to_be_checked ) {
        }
      }
    }
+  }
  }
-}
 }
 
 print "Will search for $todo parameters with $cpus CPUs\n";
 sleep(1);
 
-my %cfg_track; # hack to prevent same config from being rerun
 my %file_handles;
 unlink("$output_directory/track_evidence_lines.txt") if -s "$output_directory/track_evidence_lines.txt";
 
@@ -206,7 +207,7 @@ foreach my $src ( keys %sources_that_need_to_be_checked ) {
 	   if (!$cfg_track{$cfg_serial}){
 	     my $thread = threads->create( 'write_extrinsic_cfg', $cfg_hash, $cfg_extra,$track_fh );
 	     $thread_helper->add_thread($thread);
-	     $cfg_track{$cfg_serial}++;
+		#sleep(1);
 	   }
 	 }
        }
@@ -216,20 +217,26 @@ foreach my $src ( keys %sources_that_need_to_be_checked ) {
  }
 }
 
+my $no_hint_accuracy = &get_accuracy_without_xtn($empty_eval_thread);
 $thread_helper->wait_for_all_threads_to_complete();
 my @failed_threads = $thread_helper->get_failed_threads();
 if (@failed_threads) {
   warn "Error, " . scalar(@failed_threads) . " threads failed.\nThis is probably if Augustus didn't like some combinations of search parameters but performed ok in the majority of searches. In that case that's ok to proceed or you can opt to retry (I won't delete existing). Any other failure is indicative of something else wrong.\n\n";
 }
 
-foreach my $src ( keys %sources_that_need_to_be_checked ) {
+# add here a routine to check between columns
+die Dumper $no_hint_accuracy;
+
+# this is post-processing
+### FINISHED
+
+foreach my $src (sort keys %sources_that_need_to_be_checked ) {
  my $track_fh = $file_handles{$src};
  print $track_fh "\n";
  close $track_fh;
  system("cat $output_directory/track_evidence_lines.$src.txt >> $output_directory/track_evidence_lines.txt");
 }
 
-### FINISHED
 
 my @results = `grep Accuracy $output_directory/*log | sort -rnk 2`;
 if ( !$results[0] ) {
@@ -355,29 +362,23 @@ sub check_prediction_finished(){
 
 sub run_evaluation {
  my $extrinsic_file = shift;
-
  my ( $pred_out, $augustus_cmd);
  if ( $extrinsic_file && -s $extrinsic_file ) {
   $pred_out = $extrinsic_file;
   $pred_out =~ s/.cfg/.prediction/;
   &check_prediction_finished($pred_out,$pred_out.'.log') if -s $pred_out;
-  $augustus_cmd =
-"$augustus_exec --genemodel=complete --species=$species --alternatives-from-evidence=true --AUGUSTUS_CONFIG_PATH=$config_path --extrinsicCfgFile=$extrinsic_file --hintsfile=$hint_file $common_parameters $optimize_gb > $pred_out 2>/dev/null";
+  $augustus_cmd ="$augustus_exec --genemodel=complete --species=$species --alternatives-from-evidence=true --AUGUSTUS_CONFIG_PATH=$config_path --extrinsicCfgFile=$extrinsic_file --hintsfile=$hint_file $common_parameters $optimize_gb > $pred_out 2>/dev/null";
  }
  else {
   $pred_out = $output_directory . '/no_hints.prediction';
   &check_prediction_finished($pred_out,$pred_out.'.log') if -s $pred_out;
-  $augustus_cmd =
-"$augustus_exec --genemodel=complete --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $common_parameters $optimize_gb > $pred_out 2>/dev/null";
+  $augustus_cmd ="$augustus_exec --genemodel=complete --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $common_parameters $optimize_gb > $pred_out 2>/dev/null";
  }
-
  &process_cmd($augustus_cmd) unless -s $pred_out;
-
  unless ( -s $pred_out.'.log' ) {
   if ( $pred_out && -s $pred_out ) {
    my @eval_results = &parse_evaluation($pred_out);
    my ($accuracy,$results_ref) = &estimate_accuracy(@eval_results) ;
-   $accuracy = sprintf( "%.4f", $accuracy );
    open( TLOG, '>' . $pred_out . '.log' );
    print TLOG "#Accuracy: $accuracy; "
      . join( ", ", @$results_ref )
@@ -447,9 +448,8 @@ sub estimate_accuracy {
  }
 
  my @results = ( "Base_SeNsitivity: $bsn", "Base_SPecificity: $bsp", "Exon_SeNsitivity: $esn", "Exon_SPecificity: $esp", "Gene_SeNsitivity: $gsn", "Gene_SPecificity: $gsp", "UTR_5_median_diff: $smd", "UTR_3_median_diff: $tmd" );
-
+ $accuracy = sprintf( "%.4f", $accuracy );
  return ($accuracy,\@results);
-
 }
 
 sub printmetavalues {
@@ -504,6 +504,10 @@ sub write_extrinsic_cfg() {
  my $extrinsic_ref          = shift;
  my $cfg_extra              = shift;
  my $track_fh               = shift;
+
+ my $cfg_serial = Dumper $extrinsic_ref;
+ $cfg_track{$cfg_serial}=-1;
+
  my $main_species_extrinsic_file = $output_directory . "/extrinsic.cfg";
  my $local_species_extrinsic_file = $main_species_extrinsic_file;
   my $prn = "[SOURCES]\n";
@@ -541,53 +545,24 @@ sub write_extrinsic_cfg() {
    $prn .= "\n";
   }
   $prn .= "\n";
- if ($extrinsic_ref) {
+  
+  my $check_md5 =  md5_hex($prn);
+
   lock($extrinsic_iteration_counter);
-  $local_species_extrinsic_file .= ".$extrinsic_iteration_counter";
+  $local_species_extrinsic_file .= ".$check_md5";
   $extrinsic_iteration_counter++;
+  unless (-s $local_species_extrinsic_file){
+    open( OUT, ">$local_species_extrinsic_file" ) || die;
+    print OUT $prn . "\n";
+    close OUT;
+  }
   my $pred_out = $local_species_extrinsic_file;
   $pred_out =~ s/.cfg/.prediction/;
   &check_prediction_finished($pred_out,$pred_out.'.log',$local_species_extrinsic_file) if -s $pred_out;
   print $track_fh "\t$pred_out.log";
- }
+  my $accuracy = &run_evaluation($local_species_extrinsic_file);
+  $cfg_track{$cfg_serial}=$accuracy;
 
- # don't rerun if it exists and it is exactly the same configuration
- if ( -s $local_species_extrinsic_file) {
-  my $check = '';
-  open (IN,$local_species_extrinsic_file) || die("Cannot open $local_species_extrinsic_file:\n$!\n");
-  while (my $ln=<IN>){
-	next if $ln=~/^\s*$/;
-	$check .= $ln;
-  }
-  close IN;
-  my $check_new = '';
-  my @prnt = split("\n",$prn);
-  foreach my $ln (@prnt){
-	next if $ln=~/^\s*$/;
-	$check_new .= $ln."\n";
-  }
-
-  if (md5_hex($check) ne md5_hex($check_new)){
-	  open( OUT, ">$local_species_extrinsic_file" ) || die;
-	  print OUT $prn . "\n";
-	  close OUT;
-	  my $pred_out = $local_species_extrinsic_file;
-	  $pred_out =~ s/.cfg/.prediction/;
-	  unlink($pred_out);
-	  unlink($pred_out.".log");
-	  my $accuracy = &run_evaluation($local_species_extrinsic_file);
-  }
- }else{
-	# does not exist
-	  open( OUT, ">$local_species_extrinsic_file" ) || die;
-	  print OUT $prn . "\n";
-	  close OUT;
-	  my $pred_out = $local_species_extrinsic_file;
-	  $pred_out =~ s/.cfg/.prediction/;
-	  unlink($pred_out);
-	  unlink($pred_out.".log");
-	  my $accuracy = &run_evaluation($local_species_extrinsic_file);
- }
   print "\r$extrinsic_iteration_counter/$todo    ";
 }
 
@@ -739,3 +714,16 @@ sub copy_search_replace_file(){
 }
 
 
+sub get_accuracy_without_xtn(){
+  my $thread = shift;
+  $thread->join() if $thread->is_running();
+  if (my $error = $thread->error()) {
+     die "ERROR, Failed to finish evaluation without hints.\n";
+  }
+  my $pred_out = $output_directory . '/no_hints.prediction';
+  &check_prediction_finished($pred_out,$pred_out.'.log');
+  die "Failed to finish evaluation without hints.\n" unless -s $pred_out;
+  my @eval_results = &parse_evaluation($pred_out);
+  my ($accuracy,$results_ref) = &estimate_accuracy(@eval_results) ;
+  return $accuracy;
+}

@@ -7,9 +7,6 @@
  This script will create a hints file for Augustus using junction reads. Junction reads are important because they annotate the introns.
  Give a bed12 file of junction reads (reduced with samtools dedup if possible) to get intron/exon boundary hints. See bedtools bamtobed to create the bed12
 
- example
-  samtools rmdup -S SRR836188.coordSorted.bam - | bedtools bamtobed -bed12 | bed12_to_augustus_junction_hints.pl| ~/software/augustus/scripts/join_mult_hints.pl 
-
  Options:
 
  -help              This!
