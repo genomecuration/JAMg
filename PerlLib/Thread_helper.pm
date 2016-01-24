@@ -37,7 +37,7 @@ use threads;
 
 =cut
 
-our $SLEEPTIME = 0;
+our $SLEEPTIME = 30;
 
 our $THREAD_MONITORING = 0; # set to 1 to watch thread management
 
