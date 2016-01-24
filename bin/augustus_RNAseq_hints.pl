@@ -63,6 +63,8 @@ use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 use Fasta_reader;
+use threads;
+use Thread_helper;
 
 #Options
 my ( @bamfiles, $genome, $help,$no_hints, $master_bamfile );
@@ -137,14 +139,14 @@ if (scalar(@bamfiles == 1)){
 
 &process_cmd("$samtools_exec faidx $genome") unless -s $genome . '.fai';
 die "Cannot index genome $genome\n" unless -s $genome . '.fai';
+my $thread_helper = new Thread_helper($cpus);
+
 unless (-e "$master_bamfile.junctions.completed"){
  my $junction_bam = &grab_intronic_bam($master_bamfile);
  if (-f $junction_bam && (-s $junction_bam) > 10000){
  	&process_cmd("$bedtools_exec bamtobed -bed12 < $junction_bam | $bed_to_aug_script -prio 7 -out $master_bamfile.junctions.bed"
  	."|$sort_exec -n -k 4,4 | $sort_exec -s -n -k 5,5 | $sort_exec -s -n -k 3,3 | $sort_exec -s -k 1,1"
  	." -o $master_bamfile.junctions.all.hints" ) unless (-s "$master_bamfile.junctions.all.hints");
-	# i put it here as previous cmd takes ages
-	&process_cmd("fg 2>/dev/null;$samtools_exec index $junction_bam.sorted") unless -s "$junction_bam.sorted.bai";
 
 	 unless ($no_hints){
 		 # For Augustus
@@ -155,6 +157,7 @@ unless (-e "$master_bamfile.junctions.completed"){
  }else{	
 	warn "No junction reads found!";
  }
+ unlink("$master_bamfile.junctions.all.hints");
  &touch("$master_bamfile.junctions.completed");
 }
 
@@ -180,6 +183,7 @@ if (    -e "$master_bamfile.junctions.completed"
    &touch("$master_bamfile.rnaseq.completed");
  }
 
+ $thread_helper->wait_for_all_threads_to_complete();
  print "Done!\n";
 }
 elsif (!$no_hints) {
@@ -529,8 +533,15 @@ sub grab_intronic_bam(){
 	# without \t at end, allows for double introns (cf bed12_to_augustus_junction_hints.pl )
 	&process_cmd("$samtools_exec view -@ $cpus -q $min_jr_score -m $min_jr_length $file |grep -P '[0-9]{2,}M[0-9]{2,}N[0-9]{2,}M'|"
 		." samtools view -T $genome -@ $cpus -b -o $outfile -");
-	&process_cmd("$samtools_exec rmdup -S $outfile - |$samtools_exec sort -m $sort_buffer -o $outfile.sorted - &");
+	my $thread        = threads->create('remove_dups',$outfile);
+	$thread_helper->add_thread($thread);
 	return $outfile;
+}
+
+sub remove_dups(){
+	my $outfile = shift;
+	&process_cmd("$samtools_exec rmdup -S $outfile - |$samtools_exec sort -m $sort_buffer -o $outfile.sorted -");
+	&process_cmd("$samtools_exec index $outfile.sorted");
 }
 
 
