@@ -2,10 +2,6 @@
 
 =pod
 
-=head1 TODO
-
-print out new hint file with only the src that we are testing
-
 =head1 NAME
 
 Optimize extrinsic configuration for Augustus. Based on optimize_augustus by Mario Stanke, 23.04.2007 
@@ -78,7 +74,8 @@ my (
      $config_path, $cpus,             $utr,
      $exec_dir,    $output_directory, $species_config_dir,
      $notrain,     $trans_table,      $genemodel,
-     $min_coding,  $hint_file,        $verbose, $prefer_specificity
+     $min_coding,  $hint_file,        $verbose, $prefer_specificity,
+     $debug
 );
 $|           = 1;
 $rounds      = 1;
@@ -110,7 +107,8 @@ pod2usage $! unless &GetOptions(
              'hints:s'                => \$hint_file,
              'output:s'               => \$output_directory,
              'verbose'                => \$verbose,
-             'specificity'            => \$prefer_specificity
+             'specificity'            => \$prefer_specificity,
+             'debug'                  => \$debug,
 );
 
 # globals
@@ -127,7 +125,7 @@ my @feature_order =
 print "Started: " . &mytime . "\n";
 
 # we only need to train once
-system("cat $optimize_gb $training_set > train.set 2>/dev/null");
+system("cat $optimize_gb $training_set > train.set 2>/dev/null") if $training_set ;
 &process_cmd("$etrain_exec --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $common_parameters $be_silent train.set  >/dev/null 2>/dev/null ") unless $notrain;
 unlink("train.set");
 
@@ -159,7 +157,8 @@ foreach my $src ( keys %sources_that_need_to_be_checked ) {
        my $parameter_range = $metaextrinsic_hash_ref->{$src}->{$feat}->{'value'};
        if ( scalar(@$parameter_range) > 1 ) {
 	 foreach my $value (@$parameter_range) {
-	   $todo++;
+	  $todo++;
+  	  $sources_that_need_to_be_checked{$src}++;
 	 }
        }
      }
@@ -169,14 +168,16 @@ foreach my $src ( keys %sources_that_need_to_be_checked ) {
 }
 
 print "Will search for $todo parameters with $cpus CPUs\n";
-sleep(1);
 
 my %file_handles;
 unlink("$output_directory/track_evidence_lines.txt") if -s "$output_directory/track_evidence_lines.txt";
 
+warn Dumper \%sources_that_need_to_be_checked;
+
 #NB we really expect one line of evidence to be checked at a time...!
 foreach my $src ( keys %sources_that_need_to_be_checked ) {
  next if $src eq 'M';
+ print "\nProcessing $src\n";
  open (my $track_fh,">$output_directory/track_evidence_lines.$src.txt");
  $file_handles{$src} = $track_fh;
  print $track_fh "$src\t";
@@ -205,9 +206,12 @@ foreach my $src ( keys %sources_that_need_to_be_checked ) {
 	   $cfg_hash->{'local malus'}->{$feat}->{'value'} = $local_malus;
 	   my $cfg_serial = Dumper $cfg_hash;
 	   if (!$cfg_track{$cfg_serial}){
-	     my $thread = threads->create( 'write_extrinsic_cfg', $cfg_hash, $cfg_extra,$track_fh );
-	     $thread_helper->add_thread($thread);
-		#sleep(1);
+	     my $thread = threads->create( 'write_extrinsic_cfg', $cfg_hash, $cfg_extra,$track_fh,$src );
+	     if ($debug){
+		$thread_helper->add_thread($thread,1);
+	     }else{
+		$thread_helper->add_thread($thread,30);
+	    }
 	   }
 	 }
        }
@@ -216,6 +220,7 @@ foreach my $src ( keys %sources_that_need_to_be_checked ) {
   }
  }
 }
+
 
 my $no_hint_accuracy = &get_accuracy_without_xtn($empty_eval_thread);
 $thread_helper->wait_for_all_threads_to_complete();
@@ -362,12 +367,16 @@ sub check_prediction_finished(){
 
 sub run_evaluation {
  my $extrinsic_file = shift;
+ my $track_being_optimized = shift;
  my ( $pred_out, $augustus_cmd);
- if ( $extrinsic_file && -s $extrinsic_file ) {
+ if ( $extrinsic_file && -s $extrinsic_file && $track_being_optimized) {
   $pred_out = $extrinsic_file;
   $pred_out =~ s/.cfg/.prediction/;
+  my $tested_hint_file = $pred_out.'.hints';
   &check_prediction_finished($pred_out,$pred_out.'.log') if -s $pred_out;
-  $augustus_cmd ="$augustus_exec --genemodel=complete --species=$species --alternatives-from-evidence=true --AUGUSTUS_CONFIG_PATH=$config_path --extrinsicCfgFile=$extrinsic_file --hintsfile=$hint_file $common_parameters $optimize_gb > $pred_out 2>/dev/null";
+  system("grep '$track_being_optimized' $hint_file > $tested_hint_file") unless -s $tested_hint_file;
+  return unless -s  $tested_hint_file;
+  $augustus_cmd ="$augustus_exec --genemodel=complete --species=$species --alternatives-from-evidence=true --AUGUSTUS_CONFIG_PATH=$config_path --extrinsicCfgFile=$extrinsic_file --hintsfile=$tested_hint_file $common_parameters $optimize_gb > $pred_out 2>/dev/null";
  }
  else {
   $pred_out = $output_directory . '/no_hints.prediction';
@@ -383,7 +392,7 @@ sub run_evaluation {
    print TLOG "#Accuracy: $accuracy; "
      . join( ", ", @$results_ref )
      . "\n";
-   if ($extrinsic_file) {
+   if ($extrinsic_file && -s $extrinsic_file) {
     open( IN, $extrinsic_file );
     while ( my $ln = <IN> ) { print TLOG $ln; }
     close IN;
@@ -469,7 +478,7 @@ sub check_options() {
  die("Augustus config directory not in environment (\$AUGUSTUS_CONFIG_PATH) and not specified.\n") unless $config_path && -d $config_path;
 
  $optimize_gb = shift if !$optimize_gb;
- pod2usage("Optimizing file missing\n") if ( !$optimize_gb );
+ pod2usage("Optimisation file missing\n") if ( !$optimize_gb );
  $extrinsic = "$RealBin/../configs/extrinsic_meta.cfg" unless $extrinsic;
  pod2usage "No --extrinsic file with metaparameters provided\n"
    unless $extrinsic && -s $extrinsic;
@@ -501,9 +510,7 @@ sub check_options() {
 }
 
 sub write_extrinsic_cfg() {
- my $extrinsic_ref          = shift;
- my $cfg_extra              = shift;
- my $track_fh               = shift;
+ my ($extrinsic_ref, $cfg_extra, $track_fh, $track_being_tested) = @_;
 
  my $cfg_serial = Dumper $extrinsic_ref;
  $cfg_track{$cfg_serial}=-1;
@@ -538,6 +545,7 @@ sub write_extrinsic_cfg() {
    $prn .= "\tM 1 " . $extrinsic_ref->{'M'}->{$feature}->{'value'};
 
    foreach my $source ( keys %{$extrinsic_ref} ) {
+      next unless $source eq $track_being_tested;
       next if $source eq 'bonus' || $source eq 'malus' || $source eq 'M' || $source eq 'local malus';
       my $multiplier = $extrinsic_ref->{$source}->{$feature}->{'value'} || die "No bonus found for $source $feature\n";
       $prn .= "\t$source 1 $multiplier";
@@ -547,10 +555,12 @@ sub write_extrinsic_cfg() {
   $prn .= "\n";
   
   my $check_md5 =  md5_hex($prn);
-
-  lock($extrinsic_iteration_counter);
-  $local_species_extrinsic_file .= ".$check_md5";
-  $extrinsic_iteration_counter++;
+  if ($check_md5){
+	#lock needs a scope
+	  lock($extrinsic_iteration_counter);
+	  $extrinsic_iteration_counter++;
+	  $local_species_extrinsic_file .= ".$check_md5";
+  }
   unless (-s $local_species_extrinsic_file){
     open( OUT, ">$local_species_extrinsic_file" ) || die;
     print OUT $prn . "\n";
@@ -560,8 +570,11 @@ sub write_extrinsic_cfg() {
   $pred_out =~ s/.cfg/.prediction/;
   &check_prediction_finished($pred_out,$pred_out.'.log',$local_species_extrinsic_file) if -s $pred_out;
   print $track_fh "\t$pred_out.log";
-  my $accuracy = &run_evaluation($local_species_extrinsic_file);
-  $cfg_track{$cfg_serial}=$accuracy;
+  my $accuracy = &run_evaluation($local_species_extrinsic_file,$track_being_tested);
+  if ($accuracy){
+	  lock(%cfg_track);
+	  $cfg_track{$cfg_serial}=$accuracy;
+  }
 
   print "\r$extrinsic_iteration_counter/$todo    ";
 }

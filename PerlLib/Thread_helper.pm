@@ -65,14 +65,14 @@ sub new {
 
 sub add_thread {
     my $self = shift;
-    my ($thread) = @_;
+    my ($thread,$sleep) = @_;
 
     my $num_threads = $self->get_num_threads();
     
     if ($num_threads >= $self->{max_num_threads}) {
         
         print STDERR "- Thread_helper: have $num_threads threads running, waiting for a thread to finish...." if $THREAD_MONITORING;
-        $self->wait_for_open_thread();
+        $self->wait_for_open_thread($sleep);
         print STDERR " done waiting.\n" if $THREAD_MONITORING;
     }
     else {
@@ -96,7 +96,9 @@ sub get_num_threads {
 ####
 sub wait_for_open_thread {
     my $self = shift;
-    
+    my $sleep = @_;
+    $sleep = $SLEEPTIME if !$sleep;
+
     if ($self->get_num_threads() >= $self->{max_num_threads}) {
         
         my $waiting_for_thread_to_complete = 1;
@@ -123,7 +125,7 @@ sub wait_for_open_thread {
                 }
             }
             if ($waiting_for_thread_to_complete) {
-                sleep($SLEEPTIME) if $SLEEPTIME; 
+                sleep($sleep) if $sleep; 
             }
         }
         
