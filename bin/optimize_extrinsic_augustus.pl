@@ -230,7 +230,7 @@ if (@failed_threads) {
 }
 
 # add here a routine to check between columns
-die Dumper $no_hint_accuracy;
+#die Dumper $no_hint_accuracy if $debug;
 
 # this is post-processing
 ### FINISHED
