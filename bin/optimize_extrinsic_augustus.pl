@@ -224,13 +224,14 @@ foreach my $src ( keys %sources_that_need_to_be_checked ) {
 
 my $no_hint_accuracy = &get_accuracy_without_xtn($empty_eval_thread);
 $thread_helper->wait_for_all_threads_to_complete();
+sleep(10);
 my @failed_threads = $thread_helper->get_failed_threads();
 if (@failed_threads) {
   warn "Error, " . scalar(@failed_threads) . " threads failed.\nThis is probably if Augustus didn't like some combinations of search parameters but performed ok in the majority of searches. In that case that's ok to proceed or you can opt to retry (I won't delete existing). Any other failure is indicative of something else wrong.\n\n";
 }
 
 # add here a routine to check between columns
-#die Dumper $no_hint_accuracy if $debug;
+die Dumper $no_hint_accuracy if $debug;
 
 # this is post-processing
 ### FINISHED
@@ -253,7 +254,7 @@ if ( scalar(@results) == $todo ) {
 }
 else {
  print
-"Done but something happened, not all results may have been completed ($todo != "
+"Common warning: Done but something happened, not all results may have been completed. Probably nothing to worry about ($todo != "
    . scalar(@results) . ")!\n";
 }
 
@@ -376,14 +377,19 @@ sub run_evaluation {
   &check_prediction_finished($pred_out,$pred_out.'.log') if -s $pred_out;
   system("grep '$track_being_optimized' $hint_file > $tested_hint_file") unless -s $tested_hint_file;
   return unless -s  $tested_hint_file;
-  $augustus_cmd ="$augustus_exec --genemodel=complete --species=$species --alternatives-from-evidence=true --AUGUSTUS_CONFIG_PATH=$config_path --extrinsicCfgFile=$extrinsic_file --hintsfile=$tested_hint_file $common_parameters $optimize_gb > $pred_out 2>/dev/null";
+  $augustus_cmd ="$augustus_exec --genemodel=complete --species=$species --alternatives-from-evidence=true --AUGUSTUS_CONFIG_PATH=$config_path --extrinsicCfgFile=$extrinsic_file --hintsfile=$tested_hint_file $common_parameters $optimize_gb >> $pred_out 2>/dev/null";
  }
  else {
   $pred_out = $output_directory . '/no_hints.prediction';
   &check_prediction_finished($pred_out,$pred_out.'.log') if -s $pred_out;
-  $augustus_cmd ="$augustus_exec --genemodel=complete --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $common_parameters $optimize_gb > $pred_out 2>/dev/null";
+  $augustus_cmd ="$augustus_exec --genemodel=complete --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $common_parameters $optimize_gb >> $pred_out 2>/dev/null";
  }
- &process_cmd($augustus_cmd) unless -s $pred_out;
+ unless (-s $pred_out){
+	open (OUT,">$pred_out");
+	print OUT "# $augustus_cmd \n";
+	close OUT;
+	&process_cmd($augustus_cmd);
+ }
  unless ( -s $pred_out.'.log' ) {
   if ( $pred_out && -s $pred_out ) {
    my @eval_results = &parse_evaluation($pred_out);
@@ -519,7 +525,8 @@ sub write_extrinsic_cfg() {
  my $local_species_extrinsic_file = $main_species_extrinsic_file;
   my $prn = "[SOURCES]\n";
   foreach my $src ( keys %{$extrinsic_ref} ) {
-   $prn .= $src . ' ' unless $src eq 'bonus' || $src eq 'malus' || $src eq 'local malus';
+#   $prn .= $src . ' ' unless $src eq 'bonus' || $src eq 'malus' || $src eq 'local malus';
+   $prn .= $src . ' ' if $src eq $track_being_tested || $src eq 'M';
   }
   chop($prn);
   $prn .= "\n";
