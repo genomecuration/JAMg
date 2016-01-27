@@ -116,7 +116,7 @@ sub wait_for_open_thread {
                 }
                 else {
                     $waiting_for_thread_to_complete = 0;
-                    $thread->join();
+                    $thread->join() if $thread->is_joinable;
                     if (my $error = $thread->error()) {
                         my $thread_id = $thread->tid;
                         print STDERR "ERROR, thread $thread_id exited with error $error\n";
@@ -144,10 +144,10 @@ sub wait_for_open_thread {
 ####
 sub wait_for_all_threads_to_complete {
     my $self = shift;
-    
     my @current_threads = @{$self->{current_threads}};
     foreach my $thread (@current_threads) {
-        $thread->join();
+        while ($thread->is_running){sleep($SLEEPTIME);}
+        $thread->join() if $thread->is_joinable;
         if (my $error = $thread->error()) {
             my $thread_id = $thread->tid;
             print STDERR "ERROR, thread $thread_id exited with error $error\n";

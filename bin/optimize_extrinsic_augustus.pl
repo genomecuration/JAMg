@@ -145,7 +145,6 @@ $thread_helper->add_thread($empty_eval_thread);
 my $todo = int(0);
 
 foreach my $src ( keys %sources_that_need_to_be_checked ) {
- next if $src eq 'M';
  foreach my $feat (@feature_headers) {
   next if $feat eq 'feature';
   my $bonus_range = $metaextrinsic_hash_ref->{'bonus'}->{$feat}->{'value'};
@@ -176,7 +175,6 @@ warn Dumper \%sources_that_need_to_be_checked;
 
 #NB we really expect one line of evidence to be checked at a time...!
 foreach my $src ( keys %sources_that_need_to_be_checked ) {
- next if $src eq 'M';
  print "\nProcessing $src\n";
  open (my $track_fh,">$output_directory/track_evidence_lines.$src.txt");
  $file_handles{$src} = $track_fh;
@@ -224,63 +222,23 @@ foreach my $src ( keys %sources_that_need_to_be_checked ) {
 
 my $no_hint_accuracy = &get_accuracy_without_xtn($empty_eval_thread);
 $thread_helper->wait_for_all_threads_to_complete();
-sleep(10);
+sleep(10) unless $debug;
+&shutdown_fh();
+
 my @failed_threads = $thread_helper->get_failed_threads();
 if (@failed_threads) {
   warn "Error, " . scalar(@failed_threads) . " threads failed.\nThis is probably if Augustus didn't like some combinations of search parameters but performed ok in the majority of searches. In that case that's ok to proceed or you can opt to retry (I won't delete existing). Any other failure is indicative of something else wrong.\n\n";
 }
 
 # add here a routine to check between columns
-die Dumper $no_hint_accuracy if $debug;
+#die Dumper $no_hint_accuracy if $debug;
 
 # this is post-processing
 ### FINISHED
-
-foreach my $src (sort keys %sources_that_need_to_be_checked ) {
- my $track_fh = $file_handles{$src};
- print $track_fh "\n";
- close $track_fh;
- system("cat $output_directory/track_evidence_lines.$src.txt >> $output_directory/track_evidence_lines.txt");
-}
+my ($result_hash,@ordered_results) = &post_process;
+#die Dumper $result_hash;
 
 
-my @results = `grep Accuracy $output_directory/*log | sort -rnk 2`;
-if ( !$results[0] ) {
- die
-"No output files produced. This is weird, maybe you requested it to stop or something else happened? Report please!\n";
-}
-if ( scalar(@results) == $todo ) {
- print "Done and all good!\n";
-}
-else {
- print
-"Common warning: Done but something happened, not all results may have been completed. Probably nothing to worry about ($todo != "
-   . scalar(@results) . ")!\n";
-}
-
-my $basic_file = "$output_directory/no_hints.prediction.log";
-if ( -s $basic_file ) {
- my $first_log = `grep Accuracy $basic_file`;
- if ($first_log) {
-  $first_log =~ /Accuracy:\s([\.\d]+)/;
-  my $first_accuracy = $1;
-  print
-"Without any extrinsic evidence the accuracy was $first_accuracy\n$first_log";
- }
-}
-if ( $results[0] =~ /^([^:]+)/ ) {
- my $file          = $1;
- my $best_log = `grep Accuracy $file`;
- $best_log =~ /Accuracy:\s([\.\d]+)/;
- my $best_accuracy = $1;
- print "Best config file is found in $file with accuracy $best_accuracy\n$best_log\n";
- print "You may however want to run this command and see if there is a config file that performs better in any specific statistic:\n";
- print "grep Acc $output_directory/*log | sort -nk 2\n\n";
- if (-s "$output_directory/track_evidence_lines.txt"){
-   my $best_output = &parse_best_predictions("$output_directory/track_evidence_lines.txt");
-   print "Remember that this is for a single line of evidence at a time. This is the best file for each evidence you have provided (cf. $output_directory/track_evidence_lines.*):\n$best_output\n";
- }
-}
 
 ################################################################################################################
 ################################################################################################################
@@ -376,8 +334,12 @@ sub run_evaluation {
   my $tested_hint_file = $pred_out.'.hints';
   &check_prediction_finished($pred_out,$pred_out.'.log') if -s $pred_out;
   system("grep '$track_being_optimized' $hint_file > $tested_hint_file") unless -s $tested_hint_file;
-  return unless -s  $tested_hint_file;
-  $augustus_cmd ="$augustus_exec --genemodel=complete --species=$species --alternatives-from-evidence=true --AUGUSTUS_CONFIG_PATH=$config_path --extrinsicCfgFile=$extrinsic_file --hintsfile=$tested_hint_file $common_parameters $optimize_gb >> $pred_out 2>/dev/null";
+  if (-s $tested_hint_file){
+	  $augustus_cmd ="$augustus_exec --genemodel=complete --species=$species --alternatives-from-evidence=true --AUGUSTUS_CONFIG_PATH=$config_path --extrinsicCfgFile=$extrinsic_file --hintsfile=$tested_hint_file $common_parameters $optimize_gb >> $pred_out 2>/dev/null";
+  }else{
+	unlink($tested_hint_file);
+	return;
+  }
  }
  else {
   $pred_out = $output_directory . '/no_hints.prediction';
@@ -523,12 +485,10 @@ sub write_extrinsic_cfg() {
 
  my $main_species_extrinsic_file = $output_directory . "/extrinsic.cfg";
  my $local_species_extrinsic_file = $main_species_extrinsic_file;
-  my $prn = "[SOURCES]\n";
+  my $prn = "[SOURCES]\nM";
   foreach my $src ( keys %{$extrinsic_ref} ) {
-#   $prn .= $src . ' ' unless $src eq 'bonus' || $src eq 'malus' || $src eq 'local malus';
-   $prn .= $src . ' ' if $src eq $track_being_tested || $src eq 'M';
+   $prn .= " $src" if $src eq $track_being_tested;
   }
-  chop($prn);
   $prn .= "\n";
   $prn .= $cfg_extra . "\n\n" if $cfg_extra;
   $prn .= "[GENERAL]\n";
@@ -553,7 +513,6 @@ sub write_extrinsic_cfg() {
 
    foreach my $source ( keys %{$extrinsic_ref} ) {
       next unless $source eq $track_being_tested;
-      next if $source eq 'bonus' || $source eq 'malus' || $source eq 'M' || $source eq 'local malus';
       my $multiplier = $extrinsic_ref->{$source}->{$feature}->{'value'} || die "No bonus found for $source $feature\n";
       $prn .= "\t$source 1 $multiplier";
    }
@@ -583,7 +542,7 @@ sub write_extrinsic_cfg() {
 	  $cfg_track{$cfg_serial}=$accuracy;
   }
 
-  print "\r$extrinsic_iteration_counter/$todo    ";
+  print STDERR "\r$extrinsic_iteration_counter/$todo    ";
 }
 
 sub parse_extrinsic_meta() {
@@ -629,7 +588,7 @@ sub parse_extrinsic_meta() {
    if ( $score =~ /,/ ) {
     @parameters = split( ',', $score );
     $sources_that_need_to_be_checked{$source} = 1
-      unless $source eq 'bonus' || $source eq 'malus' || $source eq 'local malus';
+      unless $source eq 'bonus' || $source eq 'malus' || $source eq 'local malus' || $source eq 'M';
    }
    elsif ( $score =~ /-/ ) {
     my ( $min, $max ) = split( '-', $score );
@@ -644,7 +603,7 @@ sub parse_extrinsic_meta() {
     }
     $parameters[-1] = $max;
     $sources_that_need_to_be_checked{$source} = 1
-      unless $source eq 'bonus' || $source eq 'malus' || $source eq 'local malus';
+      unless $source eq 'bonus' || $source eq 'malus' || $source eq 'local malus' || $source eq 'M';
    }
    else {
     $basic      = $score;
@@ -747,3 +706,60 @@ sub get_accuracy_without_xtn(){
   my ($accuracy,$results_ref) = &estimate_accuracy(@eval_results) ;
   return $accuracy;
 }
+
+
+sub shutdown_fh(){
+	foreach my $src (sort keys %sources_that_need_to_be_checked ) {
+	 my $track_fh = $file_handles{$src};
+	 print $track_fh "\n";
+	 close $track_fh;
+	 system("cat $output_directory/track_evidence_lines.$src.txt >> $output_directory/track_evidence_lines.txt");
+	}
+}
+
+sub post_process(){
+	my (%result_hash,%better_that_nohints);
+	my $no_hint_file = "$output_directory/no_hints.prediction.log";
+	my $no_hint_log = `grep Accuracy $no_hint_file`;
+	print "Without any extrinsic evidence the accuracy was $no_hint_accuracy\n$no_hint_log";
+	my @results = `grep -H Accuracy $output_directory/*log | sort -rnk 2`; # sorting based on accuracy so no glob
+	if ( !$results[0] ) { die "No output files produced. This is weird, maybe you requested it to stop or something else happened? Report please!\n";}
+	else {print "Done and all good!\n";}
+	for (my $i=0;$i<scalar(@results);$i++){
+		if ($results[$i] =~ /^([^:]+)/ ) {
+			my $f = $1;
+			if ($f && -s $f){
+				$results[$i] = $f;
+				$result_hash{$f}{'acc_line'} = `head -n 1 $f`;
+				$result_hash{$f}{'src_line'} = `head -n 3 $f|tail -n 1`;
+				if ($result_hash{$f}{'acc_line'} =~ /Accuracy:\s([\.\d]+)/){
+					$result_hash{$f}{'value'} = $1;
+					chomp($result_hash{$f}{'acc_line'});
+					chomp($result_hash{$f}{'src_line'});
+					$result_hash{$f}{'src_line'} =~s/^M\s+//;
+					if ($result_hash{$f}{'value'} > $no_hint_accuracy){
+						#already sorted
+						push(@{$better_that_nohints{$result_hash{$f}}{'all'}{'src_line'}}, $result_hash{$f}{'value'});
+						$better_that_nohints{$result_hash{$f}}{'best'}{'src_line'}  = $result_hash{$f}{'value'} if !$better_that_nohints{$result_hash{$f}}{'best'}{'src_line'}  || $better_that_nohints{$result_hash{$f}}{'best'}{'src_line'} < $result_hash{$f}{'value'};
+						#print "File $f tested for ".$result_hash{$f}{'src_line'}." and has a better than base ($no_hint_accuracy) accuracy of ".$result_hash{$f}{'value'}."\n";
+					}
+				}else{
+					warn "File $f failed to produce any accuracy statistics\n";
+				}
+			}
+		}
+	}
+	my $best_log = $results[0];
+	my $best_accuracy = $result_hash{$best_log}{'value'};
+	my $best_line = $result_hash{$best_log}{'acc_line'};
+	print "Best config file (across all evidence tracks) is found in $best_log with accuracy $best_accuracy\n$best_line\n";
+	print "You could run this command and see if there is a config file that performs better in any specific statistic:\n";
+	print "\$  grep Acc $output_directory/*log | sort -nk 2\n\n";
+	my $best_output = &parse_best_predictions("$output_directory/track_evidence_lines.txt");
+	if (-s "$output_directory/track_evidence_lines.txt"){
+	  print "Remember that this is for a single line of evidence at a time. This is the best file for each evidence you have provided (cf. $output_directory/track_evidence_lines.*):\n$best_output\n";
+	}
+
+	return (\%result_hash,@results,\%better_that_nohints);
+}
+

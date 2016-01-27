@@ -2891,7 +2891,7 @@ sub run_blast() {
 }
 
 sub run_aat() {
- my $input_fasta = shift;
+ my $db_fasta = shift;
  my $type        = shift;
 
 # this is different as it's parallelized versus genome.
@@ -2912,12 +2912,10 @@ sub run_aat() {
    )
  {
   print "Re-processing with AAT\n";
-  &process_cmd(
-"$parafly_exec -shuffle -CPU $threads -c $aat_command_file -failed_cmds $aat_command_file.failed -v "
-  );
+  &process_cmd("$parafly_exec -shuffle -CPU $threads -c $aat_command_file -failed_cmds $aat_command_file.failed -v "  );
  }
  else {
-  return unless $input_fasta && $type;
+  return unless $db_fasta && $type;
   my @commands;
   if ( $type eq 'protein' ) {
    my $aat_score = $same_species ? 400 : 40;
@@ -2931,7 +2929,9 @@ sub run_aat() {
      unless -s $matrix_file;
    foreach my $genome_file (@$aat_uppercase_genome_files) {
     next if $genome_file =~ /\.aat\./ || -d $genome_file;
-    push( @commands,"$aat_dir/dps $genome_file $input_fasta $matrix_file -c 5000000 -f $aat_score -w $aat_word_options -i 30 -a $intron_size > $genome_file.aat.d "
+    my $max_number_of_hits = (-s $genome_file < 20000)  ? 5000 : 500000;
+    $max_number_of_hits = 5000000 if (-s $genome_file > 0.2*1e6);
+    push( @commands,"$aat_dir/dps $genome_file $db_fasta $matrix_file -c $max_number_of_hits -f $aat_score -w $aat_word_options -i 30 -a $intron_size > $genome_file.aat.d "
         . "&& $aat_dir/ext $genome_file.aat.d -f $aat_score > $genome_file.aat.ext && rm -f $genome_file.aat.d"
         ."\n"
     ) unless -s "$genome_file.aat.ext";
@@ -2950,7 +2950,9 @@ sub run_aat() {
    print "Preparing/running AAT...\n";
    foreach my $genome_file (@$aat_uppercase_genome_files) {
     next if $genome_file =~ /\.aat\./ || -d $genome_file;
-    push( @commands,"$aat_dir/dds $genome_file $input_fasta -o $aat_o -p $aat_p -c 5000000 -f $aat_score -i 30 -a $intron_size > $genome_file.aat.d "
+    my $max_number_of_hits = (-s $genome_file < 20000)  ? 5000 : 500000;
+    $max_number_of_hits = 500000 if (-s $genome_file > 0.2*1e6);
+    push( @commands,"$aat_dir/dds $genome_file $db_fasta -o $aat_o -p $aat_p -c $max_number_of_hits -f $aat_score -i 30 -a $intron_size > $genome_file.aat.d "
         . " && $aat_dir/ext $genome_file.aat.d -f $aat_score > $genome_file.aat.ext && rm -f $genome_file.aat.d"
 	."\n"
     ) unless -s "$genome_file.aat.ext";
@@ -3463,7 +3465,10 @@ sub bed_to_gff3(){
 
 sub split_fasta_multi(){
 	my ($file,$outdir) = @_;
-	return if -d $outdir;
+	if (-d $outdir){
+		my @files = glob("$outdir/*seq");	
+		return \@files;
+	}
 	mkdir ($outdir);
 	my ($size_bp,$overlap_bp,$suffix) = (0.2*1e6,1e4,'.seq');
 	return unless $file && -s $file;
