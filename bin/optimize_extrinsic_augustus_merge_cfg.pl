@@ -9,7 +9,7 @@ die unless $files[1] && -s $files[1];
 
 #  $cfg{$source}->{ $feature_headers[$i] }->{'value'}  = $score
 
-my (%common,%sources,%srcparam,$manual_str,%cfg);
+my (%common,%sources,%srcparam,$manual_str,%cfg,$common_print);
 my @feature_order =
   qw/start stop tss tts ass dss exonpart exon intronpart intron CDSpart CDS UTRpart UTR irpart nonexonpart genicpart/;
 
@@ -17,33 +17,31 @@ foreach my $f (@files){
 	&parse_cfg($f);
 }
 
-open (OUT,">out.cfg");
-print OUT '[SOURCES]'."\nM";
+$common_print='[SOURCES]'."\nM";
 foreach my $src (keys %sources){
-	print OUT ' '.$src;
+	$common_print.= ' '.$src;
 }
 
 
-print OUT "\n\n";
-print OUT '[SOURCE-PARAMETERS]'."\n";
+$common_print.= "\n\n";
+$common_print.= '[SOURCE-PARAMETERS]'."\n";
 foreach my $ln (keys %srcparam){
-	print OUT $ln;
+	$common_print.= $ln;
 }
 
 
-print OUT "\n";
+$common_print.= "\n";
 foreach my $ln (keys %common){
-	print OUT $ln;
+	$common_print.= $ln;
 }
 
+my $number_of_cfgs_to_print = 1;
 my (%prints);
 foreach my $feature (@feature_order){
-	print OUT $feature;
 	foreach my $bonus (1,keys %{$cfg{$feature}{'bonus'}}){
 		foreach my $malus (1,keys %{$cfg{$feature}{'malus'}}){
 			foreach my $lc_malus (1,keys %{$cfg{$feature}{'local_malus'}}){
-				my $p;
-				$p = "$feature $bonus $malus $lc_malus ".$manual_str;
+				my $p = "$feature $bonus $malus $lc_malus ".$manual_str;
 				foreach my $src (keys %sources){
 					if (exists($cfg{$feature}{$src}) && scalar(keys %{$cfg{$feature}{$src}})>1){
 						foreach my $value (1,keys %{$cfg{$feature}{$src}}){
@@ -59,12 +57,57 @@ foreach my $feature (@feature_order){
 			}
 		}
 	}
+	$number_of_cfgs_to_print = $number_of_cfgs_to_print * scalar(@{$prints{$feature}});
+}
+
+my (@fhs);
+my %cfg_vals;
+my %feat_tupple;
+for (my $cfg_i=int(0);$cfg_i<$number_of_cfgs_to_print ; $cfg_i++){
+	my $outfile = "out.cfg.".$cfg_i;
+	open (my $fh,">$outfile");
+	$fhs[$cfg_i] = $fh;
+	print $fh $common_print;
+	foreach my $feature (@feature_order){
+		my @values = @{$prints{$feature}};
+		if (scalar(@values)==1){
+			print $fh $values[0];
+		}else{
+			@{$cfg_vals{$feature}} = @values;
+			$feat_tupple{$feature}=1;
+		}
+	}	
+}
+
+my $num_feat_tupple =  scalar(keys %feat_tupple);
+warn $num_feat_tupple;
+warn Dumper \%cfg_vals;
+
+my %print2;
+for (my $cfg_i=int(0);$cfg_i<$number_of_cfgs_to_print ; $cfg_i++){
+	my $fh = $fhs[$cfg_i];
+	for (my $f=0;$f<$num_feat_tupple;$f++){
+		my $feature = ${keys %feat_tupple}[$f];
+die $feature;
+		my @Fvalues = @{$cfg_vals{$feat_tupple{$feature}}};
+		print $fh $Fvalues[$cfg_i] if $Fvalues[$cfg_i];
+	}
+}
+for (my $cfg_i=$num_feat_tupple;$cfg_i<$number_of_cfgs_to_print ; $cfg_i++){
+	my $fh = $fhs[$cfg_i];
+	for (my $f=0;$f<$num_feat_tupple;$f++){
+		my @Fvalues = @{$cfg_vals{$feat_tupple{$f}}};
+		print $fh $Fvalues[$cfg_i] if $Fvalues[$cfg_i];
+	}
 }
 
 
-die Dumper \%prints;
+foreach my $fh (@fhs){
+	close $fh;
+}
 
-close OUT;
+#die Dumper \%prints;
+
 
 
 

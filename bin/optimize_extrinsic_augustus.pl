@@ -319,6 +319,7 @@ sub check_prediction_finished(){
 	if ($check !~/^# total time/){
 		unlink($file);
 		foreach my $todelete (@todeletes){
+			warn "File $todelete had not finished. Deleting\n"; 
 			unlink($todelete);
 		}
 	}
@@ -333,7 +334,7 @@ sub run_evaluation {
   $pred_out =~ s/.cfg/.prediction/;
   my $tested_hint_file = $pred_out.'.hints';
   &check_prediction_finished($pred_out,$pred_out.'.log') if -s $pred_out;
-  system("grep '$track_being_optimized' $hint_file > $tested_hint_file") unless -s $tested_hint_file;
+  system("grep 'src=$track_being_optimized;' $hint_file > $tested_hint_file") unless -s $tested_hint_file;
   if (-s $tested_hint_file){
 	  $augustus_cmd ="$augustus_exec --genemodel=complete --species=$species --alternatives-from-evidence=true --AUGUSTUS_CONFIG_PATH=$config_path --extrinsicCfgFile=$extrinsic_file --hintsfile=$tested_hint_file $common_parameters $optimize_gb >> $pred_out 2>/dev/null";
   }else{
@@ -535,7 +536,7 @@ sub write_extrinsic_cfg() {
   my $pred_out = $local_species_extrinsic_file;
   $pred_out =~ s/.cfg/.prediction/;
   &check_prediction_finished($pred_out,$pred_out.'.log',$local_species_extrinsic_file) if -s $pred_out;
-  print $track_fh "\t$pred_out.log";
+  print $track_fh " $pred_out.log";
   my $accuracy = &run_evaluation($local_species_extrinsic_file,$track_being_tested);
   if ($accuracy){
 	  lock(%cfg_track);

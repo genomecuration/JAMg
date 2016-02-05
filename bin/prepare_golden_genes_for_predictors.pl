@@ -2900,11 +2900,8 @@ sub run_aat() {
  $aat_dir = dirname($aat_dir);
  my $aat_command_file = "./" . basename($genome_dir) . ".commands";
 
- # check if it already has been processed
- return
-   if ( -s $aat_command_file
-        && ( -s $aat_command_file == -s $aat_command_file . '.completed' ) );
-
+ # check if it already has be processed
+ return  if ( -s $aat_command_file && ( -s $aat_command_file == -s $aat_command_file . '.completed' ) );
  if (
       -s $aat_command_file && !-s $aat_command_file . '.completed'
       || (    -s $aat_command_file
@@ -3569,8 +3566,8 @@ sub recombine_split_aat_multi(){
 	foreach my $file (sort {$a cmp $b} @all_files){
 		if ($file=~/^(\S+)$suffix$/){
 			my $b = $1;
-			system("$aat_dir/extCollapse_AP.pl $file && $aat_dir/filter $file"."Col -c 1 > $b.aat.filter");
-			system("$aat_dir/filter $b.aat.extCol -c 1 > $b.aat.filter");
+			system("$aat_dir/extCollapse_AP.pl $file");
+			system("$aat_dir/filter $file"."Col -c 1 > $b.aat.filter");
 			if (-s "$b.aat.filter"){
 				unlink($file.".aat.d");
 				unlink($file."Col");
