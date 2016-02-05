@@ -64,7 +64,7 @@ while (my $ln = <EXT>) {
     }
 }
 #last line
-my ($prev_dstart, $prev_dend, $prev_score, $prev_astart, $prev_aend, $prev_orient, $prev_zero1, $prev_zero2, $prev_acc) = split (/\s+/,$previous_ln);
+my ($prev_dstart, $prev_dend, $prev_score, $prev_astart, $prev_aend, $prev_orient, $prev_zero1, $prev_zero2, $prev_acc) = split (/\s+/,$previous_ln) if $previous_ln;
 printf OUT1 ("%8d %8d %6d %7d %5d %1d %5d %5d %s\n",$prev_dstart, $prev_dend, $prev_score, $prev_astart, $prev_aend, $prev_orient, $prev_zero1, $prev_zero2, $prev_acc) if $prev_acc;
 
 close EXT;
