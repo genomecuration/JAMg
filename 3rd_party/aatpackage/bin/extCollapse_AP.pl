@@ -19,7 +19,7 @@ $tmpdir = '/tmp' if !$tmpdir;
 my $sort_exec = &check_sort_version;
 # sort based on hit ID and strand and start
 warn "Sorting...\n" if $DEBUG;
-system("$sort_exec -nk1 $extFile | $sort_exec -s -nk6,6 | $sort_exec -s -k9,9 >> $extFile.sorted");
+system("$sort_exec -nk1 $extFile | $sort_exec -s -nk6,6 | $sort_exec -s -k9,9 >> $extFile.sorted") unless -s $extFile.sorted;
 
 open (EXT, "$extFile.sorted") or die "Cannot open $extFile.sorted\n";
 open (OUT1,">$extFile.collapsed1") || die $!;
