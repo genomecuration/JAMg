@@ -37,6 +37,7 @@ Optional:
  -memory             Memory for samtools sorting, use suffix G M b (def '35G')
  -verbose
  -piccard_0m         Ask gsnap to add 0M between insertions (only for piccard compatibility, issues with most other software)
+ -filetype       :s  Only process files ending with this text
 
 =head1 AUTHORS
 
@@ -79,6 +80,8 @@ my $cpus               = 6;
 my $memory             = '35G';
 my $pattern1            = '_1_';
 my $pe_distance        = 10000;
+my $filetype = '';
+
 &GetOptions(
              'debug'           => \$debug,'verbose'=>\$verbose,
              'fasta:s'         => \$genome,
@@ -98,7 +101,8 @@ my $pe_distance        = 10000;
              'notpaired'       => \$notpaired,
 	     'matepair'        => \$matepair,
              'piccard_0m'      => \$piccard_0m,
-	     'input_dir:s'     => \$input_dir
+	     'input_dir:s'     => \$input_dir,
+	     'filetype:s'      => \$filetype,
 );
 
 pod2usage if $help;
@@ -124,7 +128,7 @@ unless ( $pattern2 || $notpaired ) {
  $pattern2 =~ s/1/2/;
 }
 
-my @files = glob("$input_dir/*$pattern1*");
+my @files = glob("$input_dir/*$pattern1*$filetype");
 push( @files, @ARGV );
 push( @files, "$input_dir/$pattern1" ) if -s "$input_dir/$pattern1";
 my %verified_files;
@@ -352,7 +356,7 @@ sub align_unpaired_files() {
   &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
     unless (    -s $base_out_filename."_uniq"
              || -s $base_out_filename."_uniq.bam" );
-  unless ( -s $base_out_filename."_uniq.bam" ) {
+  unless ( -s $base_out_filename."_uniq.bam" || $just_write_out_commands) {
    &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename"."_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_uniq.bam -"   );
    &process_cmd("$samtools_exec index $base_out_filename"."_uniq.bam");
 
@@ -367,9 +371,8 @@ sub align_unpaired_files() {
    );
    unlink($base_out_filename."_uniq");
   }
-  unless ( -s $base_out_filename."_mult.bam" ) {
-   &process_cmd(
-"$samtools_exec view -h -u -T $genome $base_out_filename"."_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_mult.bam -"   );
+  unless ( -s $base_out_filename."_mult.bam" || $just_write_out_commands) {
+   &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename"."_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_mult.bam -"   );
    &process_cmd("$samtools_exec index $base_out_filename"."_mult.bam");
    print LOG "\n$base_out_filename"."_mult.bam:\n";
    &process_cmd(
@@ -385,7 +388,7 @@ sub align_unpaired_files() {
 #   &process_cmd("$samtools_exec flagstat $base_out_filename"."_uniq_mult.bam >> gsnap.$base.log" );
 #  }
 
-  print LOG "\nGSNAP Completed!\n";
+  print LOG "\nGSNAP Completed!\n" unless $just_write_out_commands;
   close LOG;
   print CMD "\n" if $just_write_out_commands;
  }
@@ -426,7 +429,7 @@ sub align_paired_files() {
   &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
     unless (    -s "$base_out_filename"."_uniq"
              || -s "$base_out_filename"."_uniq.bam" );
-  unless ( -s "$base_out_filename"."_uniq.bam" ) {
+  unless ( -s "$base_out_filename"."_uniq.bam" || $just_write_out_commands) {
    &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename"."_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_uniq.bam -");
    &process_cmd("$samtools_exec index $base_out_filename"."_uniq.bam");
 
@@ -441,14 +444,14 @@ sub align_paired_files() {
    );
    unlink("$base_out_filename"."_uniq");
   }
-  unless ( -s "$base_out_filename"."_mult.bam" ) {
+  unless ( -s "$base_out_filename"."_mult.bam" || $just_write_out_commands) {
    &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename"."_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_mult.bam -");
    &process_cmd("$samtools_exec index $base_out_filename"."_mult.bam");
    print LOG "\n$base_out_filename"."_mult.bam:\n";
    &process_cmd( "$samtools_exec flagstat $base_out_filename"."_mult.bam >> gsnap.$base.log" );
    unlink("$base_out_filename"."_mult");
   }
-  if ( -s $out_halfmapped && !-s "$out_halfmapped.bam"){
+  if (!$just_write_out_commands && ( -s $out_halfmapped && !-s "$out_halfmapped.bam")){
     &process_cmd("$samtools_exec view -h -u -T $genome $out_halfmapped | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $out_halfmapped.bam -");
     &process_cmd("$samtools_exec index $out_halfmapped.bam");
     unlink($out_halfmapped) if -s "$out_halfmapped.bam";
@@ -462,7 +465,7 @@ sub align_paired_files() {
 #   &process_cmd("$samtools_exec flagstat $base_out_filename"."_uniq_mult.bam >> gsnap.$base.log"   );
 #  }
 
-  print LOG "\nGSNAP Completed!\n";
+  print LOG "\nGSNAP Completed!\n" unless $just_write_out_commands;
   close LOG;
   print CMD "\n" if $just_write_out_commands;
  }
