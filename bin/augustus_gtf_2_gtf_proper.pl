@@ -83,11 +83,22 @@ next;
 		push(@gene_data,$res);
 next;
 	}
-	$data[8]=~/gene_id\s(\S+)/;
-	my $newdata ="gene_id $1";
-	$data[8]=~/transcript_id\s(\S+)/;
-	$newdata.=" transcript_id $1";
-        $newdata.=" Name $1";
+	my ($newdata);
+	if ($data[8]=~/gene_id\s(\S+)/){
+		$newdata ="gene_id $1";
+	}elsif($data[2] eq 'gene' && $data[8]=~/ID=(\S+)/){
+                $newdata ="gene_id $1";
+        }
+	if ($data[8]=~/transcript_id\s(\S+)/){
+		$newdata.=" transcript_id $1";
+        	$newdata.=" Name $1";
+	}elsif($data[2] eq 'transcript' && $data[8]=~/ID=([^;]+)/){
+
+		$newdata.=" transcript_id $1";
+        	$newdata.=" Name $1";
+	}
+
+	next unless $newdata;
 	$data[8] = $newdata;
 	my $res = join("\t",@data)."\n";
 	push(@gene_data,$res);
