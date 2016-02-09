@@ -162,7 +162,7 @@ if ($suffix) {
 }
 else {
  $build_cmd =
-"$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 --no-sarray $genome >/dev/null ; $samtools_exec faidx $genome";
+"$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 --build-sarray=0 $genome >/dev/null ; $samtools_exec faidx $genome";
  $align_cmd =
 "$gsnap_exec --use-sarray=0 -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam ";
 }
@@ -176,6 +176,9 @@ if (!$intron_splice_db){
   sleep(1);
  }
 }
+
+system($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
+die "Failed to build genome ($genome.fai and $gmap_dir/$genome_dbname) " unless -s "$genome.fai" && -d "$gmap_dir/$genome_dbname";
 
 $align_cmd .= " --nofails "                    if $nofails;
 $align_cmd .= " -s $intron_splice_db "         if $intron_splice_db;
@@ -370,8 +373,6 @@ sub align_unpaired_files() {
    next if $log[-1] && $log[-1] =~ /^GSNAP Completed/;
   }
   open( LOG, ">gsnap.$base.log" );
-  &process_cmd($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
-  die "Failed to build genome ($genome.fai and $gmap_dir/$genome_dbname) " unless -s "$genome.fai" && -d "$gmap_dir/$genome_dbname";
   my $base_out_filename = $notpaired ? "gsnap.$base.unpaired"  : "gsnap.$base.concordant";
   my $file_align_cmd = $align_cmd;
 
@@ -451,8 +452,6 @@ sub align_paired_files() {
    next if $log[-1] && $log[-1] =~ /^GSNAP Completed/;
   }
   open( LOG, ">gsnap.$base.log" );
-  &process_cmd($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
-  die "Failed to build genome ($genome.fai and $gmap_dir/$genome_dbname) " unless -s "$genome.fai" && -d "$gmap_dir/$genome_dbname";
   my $base_out_filename = $notpaired ? "gsnap.$base.unpaired"  : "gsnap.$base.concordant";
   my $out_halfmapped = "gsnap.$base.halfmapping_uniq";
 
