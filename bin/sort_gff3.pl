@@ -16,7 +16,9 @@ my %sort_order = (
 	'five_prime_UTR' => 3,
 	'exon' =>3,
 	'intron' =>3,
-	'CDS' =>5
+	'CDS' =>5,
+	'tss' => 3,
+	'tts' => 3,
 );
 
 $delimiter =&get_gff_delimiter($file) unless $delimiter;
@@ -51,6 +53,18 @@ sub sort_gff3() {
 	my @n;
 	for (my $i=0;$i<@gene_data;$i++){
 		my @d = split("\t",$gene_data[$i]);
+		if ($d[2] && $d[2] eq 'transcript'){
+			$d[2] = 'mRNA';
+			$gene_data[$i] = join("\t",@d);
+		}
+		if ($d[2] && $d[2] eq 'transcription_start_site'){
+			$d[2] = 'tss';
+			$gene_data[$i] = join("\t",@d);
+		}
+		if ($d[2] && $d[2] eq 'transcription_end_site'){
+			$d[2] = 'tts';
+			$gene_data[$i] = join("\t",@d);
+		}
 		push(@n,$gene_data[$i]) if $d[2] && $sort_order{$d[2]};
 	}
 	@gene_data = @n;

@@ -2901,7 +2901,7 @@ sub run_aat() {
  my $aat_command_file = "./" . basename($genome_dir) . ".commands";
 
  # check if it already has be processed
- return  if ( -s $aat_command_file && ( -s $aat_command_file == -s $aat_command_file . '.completed' ) );
+ #return  if ( -s $aat_command_file && ( -s $aat_command_file == -s $aat_command_file . '.completed' ) );
  if (
       -s $aat_command_file && !-s $aat_command_file . '.completed'
       || (    -s $aat_command_file
