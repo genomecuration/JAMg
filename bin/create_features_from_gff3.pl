@@ -108,7 +108,6 @@ sub gff3_process() {
     next unless $isoform->has_CDS() || !$isoform->get_CDS_span();
     my @model_span  = $isoform->get_CDS_span();
     next if ( abs( $model_span[0] - $model_span[1] ) < 3 );
-warn Dumper $isoform;
     my $common_name = $isoform->{transcript_name} || $isoform->{com_name};
     my $description = '';
     my $alt_name    = '';
