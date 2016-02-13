@@ -47,31 +47,38 @@ unless ($annot_file && $format =~ /^(GTF|GFF3)$/) {
 }
 
 my $core_annot_filename = basename($annot_file);
-my ($exonfh, $intronfh, $genicfh, $intergenicfh);
+my ($exonfh, $intronfh, $genicfh, $intergenicfh, $utrfh);
 if ($EXPORT_FLAG) {
 	open ($exonfh, ">$core_annot_filename.exons") or die $!;
 	open ($intronfh, ">$core_annot_filename.introns") or die $!;
 	open ($genicfh, ">$core_annot_filename.genes") or die $!;
 	open ($intergenicfh, ">$core_annot_filename.intergenic") or die $!;
+	open ($utrfh, ">$core_annot_filename.utr") or die $!;
 }
 
 # stats interested in:
-my $gene_count = 0;
-my $mRNA_count = 0;
-my $alt_spliced_gene_count = 0;
-my $intron_containing_gene_count = 0;
-my $unique_exon_count = 0;
-my $unique_cds_count = 0;
-my $unique_intron_count = 0;
+my $gene_count = int(0);
+my $mRNA_count = int(0);
+my $alt_spliced_gene_count = int(0);
+my $intron_containing_gene_count = int(0);
+my $got_5utr = int(0);
+my $got_3utr = int(0);
+my $unique_exon_count = int(0);
+my $unique_cds_count = int(0);
+my $unique_intron_count = int(0);
+my $unique_5utr_count = int(0);
+my $unique_3utr_count = int(0);
+my $alt_splice_diff_CDSs_count = int(0);
+my $diff_splice_CDS_count = int(0);
 
-my $alt_splice_diff_CDSs_count = 0;
-my $diff_splice_CDS_count = 0;
+my $num_intergenic_regions = int(0);
+my $sum_intergenic_lengths = int(0);
+my $sum_gene_lengths = int(0);
+my $sum_intron_lengths = int(0);
+my $sum_exon_lengths = int(0);
+my $sum_5utr_lengths = int(0);
+my $sum_3utr_lengths = int(0);
 
-my $num_intergenic_regions = 0;
-my $sum_intergenic_lengths = 0;
-my $sum_gene_lengths = 0;
-my $sum_intron_lengths = 0;
-my $sum_exon_lengths = 0;
 
 main: {
         
@@ -97,6 +104,8 @@ main: {
 		my %exons;
 		my %cdss;
 		my %introns;
+		my %utr5;
+		my %utr3;
 
 		my @gene_spans;
 
@@ -117,13 +126,14 @@ main: {
 			}
 
 
-			my $got_intron_containing_gene_flag = 0;
-			
+			my ($got_3utr_flag,$got_5utr_flag,$got_intron_containing_gene_flag);
+						
 			foreach my $isoform ($gene_obj, $gene_obj->get_additional_isoforms()) {
 				$mRNA_count++;
 
 				my @all_cds_coords;
 				my @exons = $isoform->get_exons();
+
 				foreach my $exon (@exons) {
 					my $exon_token = join ("_", $exon->get_coords());
 					$exons{$exon_token} = 1;
@@ -147,12 +157,33 @@ main: {
 				my $complete_cds_token = join ("_", sort @all_cds_coords);
 				$complete_CDS_tokens{$complete_cds_token} = 1;
 				
+				if ( my @utrs = $isoform->get_5prime_UTR_coords()){
+					$got_5utr_flag++;
+					foreach my $set (@utrs){
+						my $prime5_utr_token = join ("_", @$set);
+						$utr5{$prime5_utr_token}++;
+					}
+				}
+				if ( my @utrs = $isoform->get_3prime_UTR_coords()){
+					$got_3utr_flag++;
+					foreach my $set (@utrs){
+						my $prime3_utr_token = join ("_", @$set);
+						$utr3{$prime3_utr_token}++;
+					}
+				}
+
 			}
 
 			if ($got_intron_containing_gene_flag) {
 				$intron_containing_gene_count++;
 			}
 
+			if ($got_5utr_flag){
+				$got_5utr++;
+			}
+			if ($got_3utr_flag){
+				$got_3utr++;
+			}
 
 			my $num_cds_tokens = scalar (keys %complete_CDS_tokens);
 			
@@ -170,10 +201,14 @@ main: {
 		my @unique_exons = keys %exons;
 		my @unique_cdss = keys %cdss;
 		my @unique_introns = keys %introns;
+		my @unique_5utr = keys %utr5;
+		my @unique_3utr = keys %utr3;
 
 		$unique_exon_count += scalar(@unique_exons);
 		$unique_cds_count += scalar(@unique_cdss);
 		$unique_intron_count += scalar(@unique_introns);
+		$unique_5utr_count += scalar(@unique_5utr);
+		$unique_3utr_count += scalar(@unique_3utr);
 
 		## get sum lengths:
 		foreach my $exon (@unique_exons) {
@@ -189,6 +224,19 @@ main: {
 			$sum_intron_lengths += $intron_len;
 			print $intronfh "intron\t$contig\t$intron_lend\t$intron_rend\t$intron_len\n" if $EXPORT_FLAG;
 		}
+
+		foreach my $utr (@unique_5utr){
+			my ($lend, $rend) = sort {$a<=>$b} split (/_/, $utr);
+			my $len = $rend - $lend + 1;
+			$sum_5utr_lengths += $len;
+			print $utrfh "UTR5\t$contig\t$lend\t$rend\t$len\n" if $EXPORT_FLAG;			
+		}
+		foreach my $utr (@unique_3utr){
+			my ($lend, $rend) = sort {$a<=>$b} split (/_/, $utr);
+			my $len = $rend - $lend + 1;
+			$sum_3utr_lengths += $len;
+			print $utrfh "UTR3\t$contig\t$lend\t$rend\t$len\n" if $EXPORT_FLAG;			
+		}
 		
 		
 	} # end of foreach contig
@@ -200,11 +248,11 @@ main: {
 	printf ("%d genes\n", $gene_count);
 	printf ("%d mRNAs\n", $mRNA_count);
 	printf ("%d exons\n", $unique_exon_count);
-	printf ("%d cdss\n", $unique_cds_count);
+	printf ("%d CDSs\n", $unique_cds_count);
 	printf ("%d introns\n", $unique_intron_count);
-	
+
 	printf ("\n%.1f exons per gene\n", $unique_exon_count / $gene_count);
-	printf ("%.1f cdss per gene\n", $unique_cds_count / $gene_count);
+	printf ("%.1f CDSs per gene\n", $unique_cds_count / $gene_count);
 	printf ("%.1f introns per gene\n", $unique_intron_count / $gene_count);
 	
 	print "\n";
@@ -212,6 +260,11 @@ main: {
 	printf ("%.1f%% genes alternatively spliced\n", $alt_spliced_gene_count / $gene_count * 100);
 	print "\n";
 	printf ("%.2f transcripts per gene\n", $mRNA_count / $gene_count);
+
+	print "\n";
+	printf ("%d have 5'UTR\n",$got_5utr);
+	printf ("%d have 3'UTR\n",$got_3utr);
+	print "\n";
 	
 	if ($alt_spliced_gene_count) {
 		my $genes_not_alt_spliced = $gene_count - $alt_spliced_gene_count;
@@ -247,6 +300,7 @@ if ($EXPORT_FLAG) {
 	close $intronfh;
 	close $genicfh;
 	close $intergenicfh;
+	close $utrfh;
 }
 
 
