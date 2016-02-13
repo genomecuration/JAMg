@@ -273,7 +273,7 @@ sub analyze_intergenics {
 		my $gene_length = $gene_rend - $gene_lend + 1;
 		$sum_gene_lengths += $gene_length;
 
-		print $genicfh "GENE\t$contig\t$gene_lend\t$gene_rend\t$gene_length\n";
+		print $genicfh "GENE\t$contig\t$gene_lend\t$gene_rend\t$gene_length\n" if $EXPORT_FLAG;
 		
 		push (@intergenics, [$prev_rend + 1, $gene_lend - 1] );
 		
