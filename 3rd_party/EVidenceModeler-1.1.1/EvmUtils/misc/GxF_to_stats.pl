@@ -285,12 +285,14 @@ main: {
 
 	## Lengths:
 	print "\n";
-	printf("%.2f avg gene length\n", ($sum_gene_lengths / $gene_count));
-	printf("%.2f avg exon length\n", ($sum_exon_lengths / $unique_exon_count));
-	printf("%.2f avg intron length\n", ($sum_intron_lengths / $unique_intron_count));
-	
-	printf("%.2f avg bp between genes\n", ($sum_intergenic_lengths / $num_intergenic_regions));
-	
+	print  &thousands($sum_gene_lengths)." bp total gene length\n";	
+	print  &thousands($sum_exon_lengths)." bp total unique exon length\n";	
+	print  &thousands($sum_intron_lengths)." bp total unique intron length\n";	
+	print  &thousands($sum_intergenic_lengths)." bp total intergenic length\n";	
+	printf("%.2f bp average gene length\n", ($sum_gene_lengths / $gene_count));
+	printf("%.2f bp average exon length\n", ($sum_exon_lengths / $unique_exon_count));
+	printf("%.2f bp average intron length\n", ($sum_intron_lengths / $unique_intron_count));	
+	printf("%.2f bp average distance between genes\n", ($sum_intergenic_lengths / $num_intergenic_regions));
 	
 }
 
