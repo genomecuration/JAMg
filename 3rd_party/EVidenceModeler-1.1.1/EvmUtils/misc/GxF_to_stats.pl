@@ -260,8 +260,8 @@ main: {
 	printf ("%.2f transcripts per gene\n", $mRNA_count / $gene_count);
 
 	print "Across all genes:\n";
-	print &thousands($got_5utr)." have 5'UTR (total: ".&thousands($sum_5utr_lengths)." bp)\n";
-	print &thousands($got_3utr)." have 3'UTR (total: ".&thousands($sum_3utr_lengths)." bp)\n";
+	print &thousands($got_5utr)." have 5'UTR\n";
+	print &thousands($got_3utr)." have 3'UTR\n";
 	print &thousands($got_5utr_long)." have 5'UTR >= 30 bp\n";
 	print &thousands($got_3utr_long)." have 3'UTR >= 30 bp\n";
 	print "\n";
@@ -269,14 +269,11 @@ main: {
 	if ($alt_spliced_gene_count) {
 		my $genes_not_alt_spliced = $gene_count - $alt_spliced_gene_count;
 		printf ("%.2f transcripts per alt-spliced gene\n", ( $mRNA_count - $genes_not_alt_spliced ) / $alt_spliced_gene_count );
-		print "\n";
 	}
 
-	if ($alt_splice_diff_CDSs_count) {
-		
+	if ($alt_splice_diff_CDSs_count) {	
 		print &thousands($alt_splice_diff_CDSs_count)." genes alt spliced w/ altsplicing in coding regions.\n";
 		my $genes_not_alt_spliced = $gene_count - $alt_splice_diff_CDSs_count;
-		
 		printf("%.2f CDS-structures per alt-spliced gene\n\n\n", ($diff_splice_CDS_count - $genes_not_alt_spliced) / $alt_splice_diff_CDSs_count);
 		
 	}
@@ -285,14 +282,18 @@ main: {
 
 	## Lengths:
 	print "\n";
-	print  &thousands($sum_gene_lengths)." bp total gene length\n";	
-	print  &thousands($sum_exon_lengths)." bp total unique exon length\n";	
-	print  &thousands($sum_intron_lengths)." bp total unique intron length\n";	
-	print  &thousands($sum_intergenic_lengths)." bp total intergenic length\n";	
-	printf("%.2f bp average gene length\n", ($sum_gene_lengths / $gene_count));
-	printf("%.2f bp average exon length\n", ($sum_exon_lengths / $unique_exon_count));
-	printf("%.2f bp average intron length\n", ($sum_intron_lengths / $unique_intron_count));	
-	printf("%.2f bp average distance between genes\n", ($sum_intergenic_lengths / $num_intergenic_regions));
+	print &thousands($sum_gene_lengths)." bp total gene length\n";	
+	print &thousands($sum_exon_lengths)." bp total unique exon length\n";	
+	print &thousands($sum_intron_lengths)." bp total unique intron length\n";
+	print &thousands($sum_5utr_lengths)." bp total 5'UTR length\n";	
+	print &thousands($sum_3utr_lengths)." bp total 3'UTR length\n";	
+	print &thousands($sum_intergenic_lengths)." bp total intergenic length\n";
+	print &thousands(sprintf("%.2f", ($sum_gene_lengths / $gene_count)))." bp average gene length\n";
+	print &thousands(sprintf("%.2f", ($sum_exon_lengths / $unique_exon_count)))." bp average exon length\n";
+	print &thousands(sprintf("%.2f", ($sum_intron_lengths / $unique_intron_count)))." bp average intron length\n";
+	print &thousands(sprintf("%.2f", ($sum_5utr_lengths / $unique_5utr_count)))." bp average 5'UTR length\n";
+	print &thousands(sprintf("%.2f", ($sum_3utr_lengths / $unique_3utr_count)))." bp average 3'UTR length\n";
+	print &thousands(sprintf("%.2f", ($sum_intergenic_lengths / $num_intergenic_regions)))." bp average distance between genes\n";
 	
 }
 
