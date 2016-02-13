@@ -78,6 +78,7 @@ my $sum_intron_lengths = int(0);
 my $sum_exon_lengths = int(0);
 my $sum_5utr_lengths = int(0);
 my $sum_3utr_lengths = int(0);
+my ($got_5utr_long, $got_3utr_long)=(int(0),int(0));
 
 
 main: {
@@ -126,7 +127,7 @@ main: {
 			}
 
 
-			my ($got_3utr_flag,$got_5utr_flag,$got_intron_containing_gene_flag);
+			my ($got_intron_containing_gene_flag);
 						
 			foreach my $isoform ($gene_obj, $gene_obj->get_additional_isoforms()) {
 				$mRNA_count++;
@@ -158,14 +159,14 @@ main: {
 				$complete_CDS_tokens{$complete_cds_token} = 1;
 				
 				if ( my @utrs = $isoform->get_5prime_UTR_coords()){
-					$got_5utr_flag++;
+					$got_5utr++;
 					foreach my $set (@utrs){
 						my $prime5_utr_token = join ("_", @$set);
 						$utr5{$prime5_utr_token}++;
 					}
 				}
 				if ( my @utrs = $isoform->get_3prime_UTR_coords()){
-					$got_3utr_flag++;
+					$got_3utr++;
 					foreach my $set (@utrs){
 						my $prime3_utr_token = join ("_", @$set);
 						$utr3{$prime3_utr_token}++;
@@ -176,13 +177,6 @@ main: {
 
 			if ($got_intron_containing_gene_flag) {
 				$intron_containing_gene_count++;
-			}
-
-			if ($got_5utr_flag){
-				$got_5utr++;
-			}
-			if ($got_3utr_flag){
-				$got_3utr++;
 			}
 
 			my $num_cds_tokens = scalar (keys %complete_CDS_tokens);
@@ -230,12 +224,16 @@ main: {
 			my $len = $rend - $lend + 1;
 			$sum_5utr_lengths += $len;
 			print $utrfh "UTR5\t$contig\t$lend\t$rend\t$len\n" if $EXPORT_FLAG;			
+			next unless $len >= 30;
+			$got_5utr_long++;
 		}
 		foreach my $utr (@unique_3utr){
 			my ($lend, $rend) = sort {$a<=>$b} split (/_/, $utr);
 			my $len = $rend - $lend + 1;
 			$sum_3utr_lengths += $len;
 			print $utrfh "UTR3\t$contig\t$lend\t$rend\t$len\n" if $EXPORT_FLAG;			
+			next unless $len >= 30;
+			$got_3utr_long++;
 		}
 		
 		
@@ -245,36 +243,38 @@ main: {
 	## summarize statistics:
 	
 	print "\n\n";
-	printf ("%d genes\n", $gene_count);
-	printf ("%d mRNAs\n", $mRNA_count);
-	printf ("%d exons\n", $unique_exon_count);
-	printf ("%d CDSs\n", $unique_cds_count);
-	printf ("%d introns\n", $unique_intron_count);
+	print &thousands($gene_count)." genes\n";
+	print &thousands($mRNA_count)." mRNAs\n";
+	print &thousands($unique_exon_count)." unique exons\n";
+	print &thousands($unique_cds_count)." unique CDSs\n";
+	print &thousands($unique_intron_count)." unique introns\n";
 
 	printf ("\n%.1f exons per gene\n", $unique_exon_count / $gene_count);
 	printf ("%.1f CDSs per gene\n", $unique_cds_count / $gene_count);
 	printf ("%.1f introns per gene\n", $unique_intron_count / $gene_count);
 	
 	print "\n";
-	printf ("%d genes alternatively spliced\n", $alt_spliced_gene_count);
+	print &thousands($alt_spliced_gene_count)." genes alternatively spliced\n";
 	printf ("%.1f%% genes alternatively spliced\n", $alt_spliced_gene_count / $gene_count * 100);
 	print "\n";
 	printf ("%.2f transcripts per gene\n", $mRNA_count / $gene_count);
 
-	print "\n";
-	printf ("%d have 5'UTR\n",$got_5utr);
-	printf ("%d have 3'UTR\n",$got_3utr);
+	print "Across all genes:\n";
+	print &thousands($got_5utr)." have 5'UTR (total: ".&thousands($sum_5utr_lengths)." bp)\n";
+	print &thousands($got_3utr)." have 3'UTR (total: ".&thousands($sum_3utr_lengths)." bp)\n";
+	print &thousands($got_5utr_long)." have 5'UTR >= 30 bp\n";
+	print &thousands($got_3utr_long)." have 3'UTR >= 30 bp\n";
 	print "\n";
 	
 	if ($alt_spliced_gene_count) {
 		my $genes_not_alt_spliced = $gene_count - $alt_spliced_gene_count;
 		printf ("%.2f transcripts per alt-spliced gene\n", ( $mRNA_count - $genes_not_alt_spliced ) / $alt_spliced_gene_count );
-		print "\n\n";
+		print "\n";
 	}
 
 	if ($alt_splice_diff_CDSs_count) {
 		
-		printf ("%d genes alt spliced w/ altsplicing in coding regions.\n", $alt_splice_diff_CDSs_count);
+		print &thousands($alt_splice_diff_CDSs_count)." genes alt spliced w/ altsplicing in coding regions.\n";
 		my $genes_not_alt_spliced = $gene_count - $alt_splice_diff_CDSs_count;
 		
 		printf("%.2f CDS-structures per alt-spliced gene\n\n\n", ($diff_splice_CDS_count - $genes_not_alt_spliced) / $alt_splice_diff_CDSs_count);
@@ -352,3 +352,11 @@ sub analyze_intergenics {
 
 		
 		
+sub thousands($){
+        my $val = shift;
+        return int(0) if !$val;
+        $val = sprintf("%.0f", $val);
+        1 while $val =~ s/(.*\d)(\d\d\d)/$1,$2/;
+        return $val;
+}
+
