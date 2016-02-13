@@ -291,8 +291,8 @@ main: {
 	print &thousands(sprintf("%.2f", ($sum_gene_lengths / $gene_count)))." bp average gene length\n";
 	print &thousands(sprintf("%.2f", ($sum_exon_lengths / $unique_exon_count)))." bp average exon length\n";
 	print &thousands(sprintf("%.2f", ($sum_intron_lengths / $unique_intron_count)))." bp average intron length\n";
-	print &thousands(sprintf("%.2f", ($sum_5utr_lengths / $unique_5utr_count)))." bp average 5'UTR length\n";
-	print &thousands(sprintf("%.2f", ($sum_3utr_lengths / $unique_3utr_count)))." bp average 3'UTR length\n";
+	print &thousands(sprintf("%.2f", ($sum_5utr_lengths / $unique_5utr_count)))." bp average 5'UTR length\n" if $unique_5utr_count >0;
+	print &thousands(sprintf("%.2f", ($sum_3utr_lengths / $unique_3utr_count)))." bp average 3'UTR length\n" if $unique_3utr_count >0;
 	print &thousands(sprintf("%.2f", ($sum_intergenic_lengths / $num_intergenic_regions)))." bp average distance between genes\n";
 	
 }
