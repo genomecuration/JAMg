@@ -72,7 +72,7 @@ sub parse_GFF3_file {
 						   feature_ID => $feature_ID
 						 };	
 
-	if (exists ($feature_ID_to_data_struct{$feature_ID})) {
+	if (exists ($feature_ID_to_data_struct{$feature_ID}) && ($feat_type ne 'CDS' && $feat_type ne 'exon')) {
 	  ## allow it for now, but make sure the data are the same!
 	  my $stored_feature = $feature_ID_to_data_struct{$feature_ID};
 	  if (! identical_features($stored_feature, $feature_struct)) {

@@ -3220,7 +3220,7 @@ sub populate_intergenic_regions {
             my $lend_intergenic = $coordsets[$i]->[1];
             my $rend_intergenic = $coordsets[$i+1]->[0];
             if ($lend_intergenic > $rend_intergenic) {
-                warn "Error with prediction: $predType" . #Dumper (\@coordsets) . 
+                warn "Error with prediction: $predType " . #Dumper (\@coordsets) . 
                     " lend_intergenic: $lend_intergenic, rend_intergenic: $rend_intergenic ";
                 next;
             }
@@ -3508,7 +3508,8 @@ sub filter_predictions_low_support {
         }
         
         if ($offset < 0) { 
-            confess "Error, offset to augment prediction score for predicted introns is negative: $offset\n";
+            #confess "Error, offset to augment prediction score for predicted introns is negative: $offset\n";
+	    $offset = 0;
         }
         
         my $raw_noncoding_score = $noncoding_score + $noncoding_intron_addition;
