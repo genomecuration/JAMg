@@ -34,6 +34,7 @@ all:
 	cd 3rd_party/snap && $(MAKE) && cp fathom ../bin/
 	cd 3rd_party/gmap && ./configure --prefix=`pwd`/../ --with-gmapdb=`pwd`/../../databases/gmap/ && $(MAKE) -j3 && $(MAKE) check && $(MAKE) install
 	cd databases/hhblits && printf "\n\nUncompressing databases, this may take a while...\n\n" find . -name "*tar.bz2" -exec tar -xjf '{}' \;
+	cd 3rd_party/fasta && cp bin/* ../bin/
 	cd 3rd_party/exonerate/bin && ln -fs `pwd`/* ../../bin/
 	cd 3rd_party/tRNAscan-SE && $(MAKE) && $(MAKE) install
 	cd 3rd_party/aragorn && gcc -O3 -o aragorn aragorn1.2.36.c && cp aragorn ../bin/
