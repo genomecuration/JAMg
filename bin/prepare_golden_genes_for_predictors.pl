@@ -151,7 +151,7 @@ my (
      $softmasked_genome,  $stop_after_correction, $norefine,
      $nodataprint,        $no_gmap,               $no_exonerate,
      $pasa_genome_gff,    $extra_gff_file,        $show_help, 
-     $liberal_cutoffs
+     $liberal_cutoffs, $aat_dir, $parafly_exec
 );
 
 my $no_rerun_exonerate;
@@ -191,7 +191,7 @@ pod2usage $! unless &GetOptions(
             'similar:i'          => \$similar_fraction,
             'overwrite'          => \$overwrite,
             'intron:i'           => \$intron_size,
-            'threads|cpu:i'      => \$threads,
+            'threads|cpus:i'     => \$threads,
             'nosingle|no_single' => \$no_single_exon,
             'complete'           => \$only_complete,
             'stop_exonerate'     => \$stop_after_correction,
@@ -2531,7 +2531,7 @@ sub prepare_pasa_output() {
 
 sub run_exonerate() {
  my $is_blast;
- my ($parafly_exec) = &check_program('ParaFly');
+ ($parafly_exec) = &check_program('ParaFly');
  $exonerate_file =
      $pasa_gff
    ? basename($pasa_gff) . '.exonerate.results'
@@ -2896,11 +2896,13 @@ sub run_aat() {
 
 # this is different as it's parallelized versus genome.
 # also it is not using the pasa_cds because that is not appropriate input for exonerate.
- my ( $aat_dir, $parafly_exec ) = &check_program( 'AAT.pl', 'ParaFly' );
+ ( $aat_dir, $parafly_exec ) = &check_program( 'AAT.pl', 'ParaFly' );
  $aat_dir = dirname($aat_dir);
  my $aat_command_file = "./" . basename($genome_dir) . ".commands";
 
  # check if it already has be processed
+ #debug
+#&recombine_split_aat_multi($genome_dir);
  #return  if ( -s $aat_command_file && ( -s $aat_command_file == -s $aat_command_file . '.completed' ) );
  if (
       -s $aat_command_file && !-s $aat_command_file . '.completed'
@@ -3516,13 +3518,13 @@ sub split_fasta_multi(){
 
 
 sub recombine_split_aat_multi(){
-	my ($indir,$suffix) = @_;
+	my ($indir) = @_;
 	return unless $indir && -d $indir;
-	$suffix = '.seq.aat.ext' unless $suffix;
+	my $suffix = '.seq.aat.ext';
 	my @files = glob($indir."/*$suffix");
 	return unless $files[0] && -s $files[0];
 
-	my ( $aat_dir, $parafly_exec ) = &check_program( 'AAT.pl', 'ParaFly' );
+	( $aat_dir, $parafly_exec ) = &check_program( 'AAT.pl', 'ParaFly' );
 	$aat_dir = dirname($aat_dir);
 	my @files2;
 	foreach my $f (@files){
@@ -3532,8 +3534,52 @@ sub recombine_split_aat_multi(){
 	}
 	@files = @files2;undef(@files2);
 	print "Merging results from ".scalar(@files)." files...\n";
+	my $thread_helper = new Thread_helper($threads);
+	my $counter = int(0);
 	foreach my $file (map  { $_->[1] }  sort { $a->[0] <=> $b->[0] }map  { /_(\d+)-\d+$suffix$/; [$1, $_] } @files){
-		next unless $file=~/^(\S+)_(\d+)-(\d+)$suffix$/;
+		$counter++;
+		print "$counter       \r" if $counter % 100 == 0;
+		my $thread = threads->create( 'fix_aat1',$file,$suffix,$indir );
+		$thread_helper->add_thread($thread);
+	}
+	$thread_helper->wait_for_all_threads_to_complete();
+	undef($thread_helper);
+	$thread_helper = new Thread_helper($threads);
+	my @all_files = glob($indir."/*$suffix");
+	$counter = int(0);
+	print "Post-processing results from ".scalar(@all_files)." files...\n";
+	foreach my $file (@all_files){
+		if ($file=~/^(\S+)$suffix$/){
+			$counter++;
+			print "$counter       \r" if $counter % 100 == 0;
+			my $b = $1;
+			next if -s "$b.aat.filter";
+			my $thread = threads->create( 'fix_aat2',$file,$suffix,$indir );
+			$thread_helper->add_thread($thread);
+		}
+	}
+        $thread_helper->wait_for_all_threads_to_complete();
+	print "Post-processing done\n";
+}
+
+sub fix_aat2(){
+	my ($file,$suffix,$indir) = @_;
+		if ($file=~/^(\S+)$suffix$/){
+			my $b = $1;
+			return if -s "$b.aat.filter";
+			system("$aat_dir/extCollapse_AP.pl $file");
+			system("$aat_dir/filter $file"."Col -c 1 > $b.aat.filter");
+			if (-s "$b.aat.filter"){
+				unlink($file.".aat.d");
+				unlink($file."Col");
+			}
+		}
+}
+
+sub fix_aat1(){
+	my ($file,$suffix,$indir) = @_;
+		return unless $file=~/^(\S+)_(\d+)-(\d+)$suffix$/;
+
 		my ($ref_id,$ref_start,$ref_stop) = (basename($1),$2,$3);
 		open (IN,$file);
 		my $header = <IN>;
@@ -3562,17 +3608,3 @@ sub recombine_split_aat_multi(){
 		close OUT;
 		unlink($file);
 	}
-	my @all_files = glob($indir."/*$suffix");
-	foreach my $file (sort {$a cmp $b} @all_files){
-		if ($file=~/^(\S+)$suffix$/){
-			my $b = $1;
-			system("$aat_dir/extCollapse_AP.pl $file");
-			system("$aat_dir/filter $file"."Col -c 1 > $b.aat.filter");
-			if (-s "$b.aat.filter"){
-				unlink($file.".aat.d");
-				unlink($file."Col");
-			}
-		}
-	}
-}
-
