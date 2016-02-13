@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr//bin/env perl
 
 use strict;
 
@@ -41,8 +41,10 @@ our \$FASTAPATH = /full/path/to/fasta
 
     ;
 
+use FindBin qw($RealBin);
+$ENV{PATH} .= ":$RealBin/../../bin/";
 
-our $FASTAPATH = "";
+our $FASTAPATH = "$RealBin/../../bin/fasta36";
 our $SEE;
 
 ####
