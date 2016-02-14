@@ -44,8 +44,8 @@ our $THREAD_MONITORING = 0; # set to 1 to watch thread management
 
 sub new {
     my ($packagename) = shift;
-    my ($num_threads) = @_;
-
+    my ($num_threads,$SLEEPTIME) = @_;
+    $SLEEPTIME = 30 if !$SLEEPTIME;
     unless ($num_threads && $num_threads =~ /^\d+$/) {
         confess "Error, need number of threads as constructor param";
     }
@@ -71,7 +71,7 @@ sub add_thread {
     
     if ($num_threads >= $self->{max_num_threads}) {
         
-        print STDERR "- Thread_helper: have $num_threads threads running, waiting for a thread to finish...." if $THREAD_MONITORING;
+        print STDERR "- Thread_helper: have $num_threads threads running, waiting $sleep sec for a thread to finish...." if $THREAD_MONITORING;
         $self->wait_for_open_thread($sleep);
         print STDERR " done waiting.\n" if $THREAD_MONITORING;
     }
@@ -125,7 +125,7 @@ sub wait_for_open_thread {
                 }
             }
             if ($waiting_for_thread_to_complete) {
-                sleep($sleep) if $sleep; 
+                sleep($sleep) if $sleep && $sleep >0; 
             }
         }
         

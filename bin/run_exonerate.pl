@@ -201,9 +201,7 @@ print "Will exclude " . scalar( keys %exclude_ids ) . " queries"
 print "Searching $fasta_file vs $reference_file\n";
 if (@aat_filter_files) {
  print "Temporary output from dps. Using it...\n";
- foreach my $file (@aat_filter_files) {
-  &parse_aat_filter($file);
- }
+  &parse_aat_filter(\@aat_filter_files);
 }
 elsif ( !$blast_file ) {
  my $reference_base = basename($reference_file);
@@ -343,7 +341,6 @@ if ( !$is_protein ) {
  }
 }
 else {
-
  #is protein, add stop codon at the end
  #min aa = $minaa
  foreach my $id ( keys %queries ) {
@@ -359,7 +356,6 @@ else {
   $queries{$id}{'seq'} =~ tr/U/X/;
  }
 }
-
 #exonerate efficiency
 my (%reference_hash);
 open( NOTUSED, ">$fasta_file.annotations.notused" );
@@ -470,14 +466,16 @@ sub parse_analyze_blast() {
 }
 #################3
 sub parse_aat_filter() {
- my $file = shift || die;
+ my $files_ref = shift;
+ my ( %hash );
+ my %top_score;
+ foreach my $file (@$files_ref){
 
  my $basename = basename($file);
  open( IN, $file ) || die "Cannot open $file";
  $basename =~ /^(.+)\.\w+\.filter/;    #TODO GROSS ASSUMPTION!!
  my $ref = $1 || die;
 
- my ( %hash, %top_score );
 
  #  warn "Assuming file's reference is $ref\n";
 
@@ -492,60 +490,54 @@ sub parse_aat_filter() {
   die $ln unless $query;
   next if exists $exclude_ids{$query};
   next if $score < $dps_min_score;
-
   if ( $dend < $dstart ) {
    my $t = $dstart;
    $dstart = $dend;
    $dend   = $t;
   }
-  if ($paths_need_to_be_made) {
-   # this still doesn't make paths.
-   $hash{$query}{$ref}{'score'}  = $score;
-   $hash{$query}{$ref}{'dstart'} = $dstart
-     if !$hash{$query}{$ref}{'dstart'}
-      || $hash{$query}{$ref}{'dstart'} > $dstart;
-   $hash{$query}{$ref}{'dend'} = $dend
-     if !$hash{$query}{$ref}{'dend'} || $hash{$query}{$ref}{'dend'} < $dend;
-   if ( !$top_score{$query} ) {
-    $top_score{$query}{'ref'}   = $ref;
-    $top_score{$query}{'score'} = $score;
-   }
-   else {
-    if ( $top_score{$query}{'score'} < $score ) {
-     $top_score{$query}{'ref'}   = $ref;
-     $top_score{$query}{'score'} = $score;
-    }
-   }
-  }
-  else {
-   next
-     if (    $top_score{$query}{'ref'}
-          && $score < $top_score{$query}{'score'} );
-   $hash{$query}{$ref}{'score'}  = $score;
-   $hash{$query}{$ref}{'dstart'} = $dstart;
-   $hash{$query}{$ref}{'dend'}   = $dend;
-   $top_score{$query}{'ref'}   = $ref;
-   $top_score{$query}{'score'} = $score;
-  }
+   $hash{$query}{$ref}{'score'}  += $score;
+   $hash{$query}{$ref}{'dstart'} = $dstart if !$hash{$query}{$ref}{'dstart'} || $hash{$query}{$ref}{'dstart'} > $dstart;
+   $hash{$query}{$ref}{'dend'}   = $dend if !$hash{$query}{$ref}{'dend'} || $hash{$query}{$ref}{'dend'} < $dend;
 
  }
  close IN;
-# print "Preparing hits from $file...\n";
- foreach my $query ( keys %hash ) {
-  my $seq       = $contig_seq_hash->{$query};
-  if ( !$seq ) {
-   #warn "Sequence not found for $query. Skipping...\n";
+}
+
+ foreach my $query (keys %hash){
+	foreach my $ref (keys %{$hash{$query}}){
+		my $score = $hash{$query}{$ref}{'score'} ||next;
+		if (!$top_score{$query}{'ref'}){
+   			$top_score{$query}{'ref'}   = $ref;
+			$top_score{$query}{'score'} = $hash{$query}{$ref}{'score'};
+		}elsif ($top_score{$query}{'score'} < $hash{$query}{$ref}{'score'}){
+			#my $p= "top score for $query is $ref";
+			#$p.= "($score is higher than ".$top_score{$query}{'ref'}." of ".$top_score{$query}{'score'}.")" if $top_score{$query}{'ref'};
+			#warn $p."\n";
+   			$top_score{$query}{'ref'}   = $ref;
+			$top_score{$query}{'score'} = $hash{$query}{$ref}{'score'};
+		}
+	}
+  }
+ foreach my $query (keys %hash){
+
+  if (!$hash{$query}{$top_score{$query}{'ref'}}){
    $exclude_ids{$query} = 1;
    next;
   }
-
+  my $seq       = $contig_seq_hash->{$query};
+  if ( !$seq ) {
+   $exclude_ids{$query} = 1;
+   next;
+  }
   $queries{$query}{'seq'}         = $seq;
   $queries{$query}{'length'}      = length($seq);
   $queries{$query}{'hit'}         = $top_score{$query}{'ref'};
   $queries{$query}{'score'}       = $top_score{$query}{'score'};
   $queries{$query}{'lower_bound'} = $hash{$query}{$top_score{$query}{'ref'}}{'dstart'};
   $queries{$query}{'upper_bound'} = $hash{$query}{$top_score{$query}{'ref'}}{'dend'};
- }
+
+   }
+
 }
 
 sub parse_aat_core() {

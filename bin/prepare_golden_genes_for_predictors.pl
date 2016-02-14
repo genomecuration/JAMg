@@ -58,7 +58,7 @@ Other options:
     -identical       :i       => Identity % cutoff to mark an exonerate aln as golden (def 95, if something is 95% identical then it is gold)
     -similar         :i       => Similarity % cutoff to mark an exonerate aln as golden (def 98, if something is 98% similar then it is gold)
     -intron          :i       => Max size of intron (def 70000 bp)
-    -threads|cpu     :i       => Number of threads (def 1)
+    -threads|cpu     :i       => Number of threads (def 4)
     -stop_exonerate           => Stop after exonerate finishes.
     -stop_golden              => Stop after sorting out which alignments were very good. Use it to prevent checks for Augustus/snap/BioPerl etc
     -minorf          :i       => Minimum size of ORF (and therefore amino acids; def. 290 bp)
@@ -163,7 +163,7 @@ my $augustus_flank_region    = 3000;
 my $identical_fraction       = 95;
 my $minorf                   = 290;     #minimum orf size in bp
 my $similar_fraction         = 98;
-my $threads                  = 1;
+my $threads                  = 4;
 my $mismatch_cutoff          = 10;
 
 #globals
@@ -230,7 +230,7 @@ print "Indexing genome\n";
 my $genome_sequence_file_dir  = dirname($genome_sequence_file);
 my $genome_sequence_file_base = basename($genome_sequence_file);
 my $genome_dir                = basename($genome_file) . '_dir';
-my $scaffold_seq_hashref      = &read_fasta($genome_sequence_file);
+my ($scaffold_seq_hashref,$scaffold_seq_length) = &read_fasta($genome_sequence_file);
 
 &process_cmd(
 "$makeblastdb_exec -in $genome_sequence_file -out $genome_sequence_file -hash_index -parse_seqids -dbtype nucl"
@@ -2579,6 +2579,8 @@ sub run_exonerate() {
       if ( !$softmasked_genome );
     $exonerate_options .= " -norefine "   if $norefine;
     $exonerate_options .= " -from_blast " if $is_blast;
+    my $aat_score = $same_species ? 100 : 20;
+    $exonerate_options .= " -score_dps $aat_score";
 
     &process_cmd( 'run_exonerate.pl' . $exonerate_options );
     die "Exonerate run failed for some reason....\n"
@@ -2606,6 +2608,9 @@ sub run_exonerate() {
       if ( !$softmasked_genome );
     $exonerate_options .= " -norefine "   if $norefine;
     $exonerate_options .= " -from_blast " if $is_blast;
+    my $aat_score = $same_species ? 100 : 20;
+    $exonerate_options .= " -score_dps $aat_score";
+
     &process_cmd( 'run_exonerate.pl' . $exonerate_options );
     die "Exonerate run failed for some reason....\n"
       if ( !-d basename($fasta_contigs) . "_queries" );
@@ -2901,8 +2906,8 @@ sub run_aat() {
  my $aat_command_file = "./" . basename($genome_dir) . ".commands";
 
  # check if it already has be processed
- #debug&recombine_split_aat_multi($genome_dir);
- #return  if ( -s $aat_command_file && ( -s $aat_command_file == -s $aat_command_file . '.completed' ) );
+ #debug &recombine_split_aat_multi($genome_dir);
+ return  if ( -s $aat_command_file && ( -s $aat_command_file == -s $aat_command_file . '.completed' ) );
  if (
       -s $aat_command_file && !-s $aat_command_file . '.completed'
       || (    -s $aat_command_file
@@ -3252,7 +3257,7 @@ sub predict_orfs() {
 
 sub read_fasta() {
  my $fasta = shift;
- my %hash;
+ my (%hash,%hash_length);
  my $orig_sep = $/;
  $/ = '>';
  open( IN, $fasta ) || confess( "Cannot open $fasta : " . $! );
@@ -3265,11 +3270,12 @@ sub read_fasta() {
   $seq =~ s/\s+//g;
   if ( $id && $seq && $id =~ /^(\S+)/ ) {
    $hash{$1} = $seq;
+   $hash_length{$1} = length($seq);
   }
  }
  close IN;
  $/ = $orig_sep;
- return \%hash;
+ return (\%hash,\%hash_length);
 }
 
 sub check_for_options() {
@@ -3528,22 +3534,23 @@ sub recombine_split_aat_multi(){
 	my @files2;
 	foreach my $f (@files){
 		# do not process those without output / those already post-processed
-		next unless $f=~/^\S+_\d+-\d+$suffix$/;
+		next unless -s $f && $f=~/^\S+_\d+-\d+$suffix$/;
 		push(@files2,$f);
 	}
 	@files = @files2;undef(@files2);
 	print "Merging results from ".scalar(@files)." files...\n";
-	my $thread_helper = new Thread_helper($threads);
+	my $thread_helper = new Thread_helper($threads,1);
 	my $counter = int(0);
 	foreach my $file (map  { $_->[1] }  sort { $a->[0] <=> $b->[0] }map  { /_(\d+)-\d+$suffix$/; [$1, $_] } @files){
 		$counter++;
 		print "$counter       \r" if $counter % 100 == 0;
+		next unless -s $file && $file=~/^(\S+)_(\d+)-(\d+)$suffix$/;
 		my $thread = threads->create( 'fix_aat1',$file,$suffix,$indir );
-		$thread_helper->add_thread($thread);
+		$thread_helper->add_thread($thread,int(0));
 	}
 	$thread_helper->wait_for_all_threads_to_complete();
 	undef($thread_helper);
-	$thread_helper = new Thread_helper($threads);
+	my $thread_helper2 = new Thread_helper($threads,1);
 	my @all_files = glob($indir."/*$suffix");
 	$counter = int(0);
 	print "Post-processing results from ".scalar(@all_files)." files...\n";
@@ -3552,58 +3559,58 @@ sub recombine_split_aat_multi(){
 			$counter++;
 			print "$counter       \r" if $counter % 100 == 0;
 			my $b = $1;
-			next if -s "$b.aat.filter";
+			next if -s "$b.aat.filter" || !-s $file || -s $file < 50;
 			my $thread = threads->create( 'fix_aat2',$file,$suffix,$indir );
-			$thread_helper->add_thread($thread);
+			$thread_helper2->add_thread($thread,int(0));
+			#OR	&fix_aat2($file,$suffix,$indir);
 		}
 	}
-        $thread_helper->wait_for_all_threads_to_complete();
+        $thread_helper2->wait_for_all_threads_to_complete();
 	print "Post-processing done\n";
 }
 
 sub fix_aat2(){
 	my ($file,$suffix,$indir) = @_;
-		if ($file=~/^(\S+)$suffix$/){
-			my $b = $1;
-			return if -s "$b.aat.filter";
-			system("$aat_dir/extCollapse_AP.pl $file");
-			system("$aat_dir/filter $file"."Col -c 1 > $b.aat.filter");
-			if (-s "$b.aat.filter"){
-				unlink($file.".aat.d");
-				unlink($file."Col");
-			}
+	if ($file=~/^(\S+)$suffix$/){
+		my $b = $1;
+		return if -s "$b.aat.filter" || -f $file."Col";
+		system("$aat_dir/extCollapse_AP.pl $file");
+		return unless -s $file."Col";
+		system("$aat_dir/filter $file"."Col -c 1 > $b.aat.filter");
+		if (-s "$b.aat.filter"){
+			unlink($file.".aat.d");
+			unlink($file."Col");
 		}
+	}
 }
 
 sub fix_aat1(){
 	my ($file,$suffix,$indir) = @_;
-		return unless $file=~/^(\S+)_(\d+)-(\d+)$suffix$/;
-
-		my ($ref_id,$ref_start,$ref_stop) = (basename($1),$2,$3);
-		open (IN,$file);
-		my $header = <IN>;
-		my @header_data = split(/\s+/,$header);
-
-		my $outfile = $indir."/".$ref_id.$suffix;
-		if (-s $outfile){
-			open (OUT,">>$outfile");
-		}else{
-			my $ref_length = length($scaffold_seq_hashref->{$ref_id}) || die "Cannot find sequence $ref_id in genome\n";
-			open (OUT,">$outfile");
-			$header_data[1] = sprintf("%28s",$ref_length);
-			$header_data[2] = sprintf("%8s",$header_data[2]);
-			print OUT join (" ",@header_data)."\n";
-		}
-		while (my $ln=<IN>){
-			if ($ln=~/^\s+(\d+)\s+(\d+)(\s+.+)$/){
-				my ($split_start,$split_end,$rest) = ($1,$2,$3);
-				my $correct_start = sprintf("%8s",($split_start + $ref_start));
-				my $correct_end = sprintf("%8s",($split_end + $ref_start));
-				print OUT $correct_start." ".$correct_end.$rest."\n";
-			}
-		}
-		
-		close IN;
-		close OUT;
-		unlink($file);
+	return unless $file=~/^(\S+)_(\d+)-(\d+)$suffix$/;
+	my ($ref_id,$ref_start,$ref_stop) = (basename($1),$2,$3);
+	open (IN,$file);
+	my $header = <IN>;
+	my @header_data = split(/\s+/,$header);
+	my $outfile = $indir."/".$ref_id.$suffix;
+	if (-s $outfile){
+		open (OUT,">>$outfile");
+	}else{
+		my $ref_length = $scaffold_seq_length->{$ref_id} || die "Cannot find sequence $ref_id in genome\n";
+		open (OUT,">$outfile");
+		$header_data[1] = sprintf("%28s",$ref_length);
+		$header_data[2] = sprintf("%8s",$header_data[2]);
+		print OUT join (" ",@header_data)."\n";
 	}
+	while (my $ln=<IN>){
+		if ($ln=~/^\s+(\d+)\s+(\d+)(\s+.+)$/){
+			my ($split_start,$split_end,$rest) = ($1,$2,$3);
+			my $correct_start = sprintf("%8s",($split_start + $ref_start));
+			my $correct_end = sprintf("%8s",($split_end + $ref_start));
+			print OUT $correct_start." ".$correct_end.$rest."\n";
+		}
+	}
+	
+	close IN;
+	close OUT;
+	unlink($file);
+}
