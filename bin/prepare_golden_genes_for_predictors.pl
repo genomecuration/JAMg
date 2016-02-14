@@ -249,7 +249,7 @@ my $aat_uppercase_genome_files = &split_fasta_multi( $genome_file, $genome_dir);
 # We now have the option to use exonerate or another method.
 # It turns out that exonerate is very good at getting rid of the false positives
 # but aatpackage is not good enough as input when the species of the genome is the
-# same as the other mRNA. Instead we can use BLAST (slower).
+# same as the mRNA. Instead we can use BLAST (slower).
 # also, in addition to exonerate, gmap might be of use. it will need post-processing
 # but it might be better than exonerate (it is certainly MUCH faster).
 

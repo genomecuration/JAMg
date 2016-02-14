@@ -647,7 +647,7 @@ sub scaffold_exonerate() {
    $cmd = " -s 100 -Q protein -m protein2genome --percent 30 "
      if $is_protein && $not_exhaustive;
   }
-  $cmd .= ' --refine region ' if !$no_refine && !$is_protein;
+  $cmd .= ' --refine region ' if !$no_refine && $not_exhaustive;
   $cmd .= " --softmasktarget y " if $softmasked;
   $cmd .= " $query_file $scaffold_file ";
   print CMD (
@@ -764,7 +764,7 @@ sub separate_exonerate() {
     $cmd = " -s 100 -Q protein -m protein2genome --percent 20 "
       if $is_protein && $not_exhaustive;
    }
-   $cmd .= ' --refine region ' if !$no_refine && !$is_protein;
+   $cmd .= ' --refine region ' if !$no_refine && $not_exhaustive;
    $cmd .= " --softmasktarget y " if $softmasked;
    $cmd .= " $query_file $scaffold_file ";
    print CMD (
