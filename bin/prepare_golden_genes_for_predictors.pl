@@ -65,7 +65,8 @@ Other options:
     -mismatch_cutoff :i       => Maximum number of mismatches allowed in exonerate (def 10)
     -same_species             => Contigs/proteins and genome is the same species
     -liberal                  => Use fewer cut-off types (e.g. no start/stop codons etc) for exonerate post-processing (good for very foreign proteins)
-    -norefine                 => Don't use -refine for exonerate
+    -norefine                 => Exonerate: do not use refine at all. avoids segmentation faults at the cost of accuracy (recommend you just do it manually for failed ones only)
+    -exhaustive               => Run a much slower exonerate
     -norerun                  => Don't re-run exonerate (assume it already exists as [input file].exonerate.results
     -augustus                 => Directory where Augustus is installed (if not in your path)
     -extra_gff       :s       => Any extra GFF lines to consider (give a file)
@@ -151,7 +152,7 @@ my (
      $softmasked_genome,  $stop_after_correction, $norefine,
      $nodataprint,        $no_gmap,               $no_exonerate,
      $pasa_genome_gff,    $extra_gff_file,        $show_help, 
-     $liberal_cutoffs, $aat_dir, $parafly_exec
+     $liberal_cutoffs, $aat_dir, $parafly_exec, $do_exhaustive
 );
 
 my $no_rerun_exonerate;
@@ -200,6 +201,7 @@ pod2usage $! unless &GetOptions(
             'mismatch_cutoff:i'  => \$mismatch_cutoff,
             'same_species'       => \$same_species,
             'norefine'           => \$norefine,
+            'exhaustive'           => \$do_exhaustive,
             'norerun'            => \$no_rerun_exonerate,
             'nodataprint'        => \$nodataprint,
             'augustus_dir:s'     => \$augustus_dir,
@@ -2578,6 +2580,7 @@ sub run_exonerate() {
     $exonerate_options .= " -ref $genome_file "
       if ( !$softmasked_genome );
     $exonerate_options .= " -norefine "   if $norefine;
+    $exonerate_options .= " -local_protein "   if !$do_exhaustive;
     $exonerate_options .= " -from_blast " if $is_blast;
     my $aat_score = $same_species ? 100 : 20;
     $exonerate_options .= " -score_dps $aat_score";
@@ -2607,6 +2610,7 @@ sub run_exonerate() {
     $exonerate_options .= " -ref $genome_file "
       if ( !$softmasked_genome );
     $exonerate_options .= " -norefine "   if $norefine;
+    $exonerate_options .= " -local_protein "   if !$do_exhaustive;
     $exonerate_options .= " -from_blast " if $is_blast;
     my $aat_score = $same_species ? 100 : 20;
     $exonerate_options .= " -score_dps $aat_score";

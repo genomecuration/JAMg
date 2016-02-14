@@ -14,25 +14,25 @@ Run exonerate
  @ Stage 1:
  *  -in|fasta:s  => Fasta file (cDNA or protein)
  *  -reference:s => Fasta with reference sequences (genome)
-  -protein      => File is a protein (otherwise assumed to be cDNA)
-  -minorf:i     => minimum ORF size for cDNA
-  -annotation   => Define ORF in cDNA input (rather that find longest)
-  -blast_hash:s => Blast HASH file from analyze_blast
-  -only_coding  => For cDNA: Use only the coding sequence (coding2genome model). Otherwise (default) use cdna2genome (includes UTR)
-  -exclude:s    => Exclude file (one ID per line) or comma separated string of IDs 
-  -threads      => Threads/CPUs to use
-  -eval_cutoff:s=> Evalue cutoff for BLAST (def 1e-80)
-  -bit_cutoff:i => Bit score cutoff for BLAST (def 100 for protein tblastn, 500 for nucleotide megablast)
-  -prep_only:i  => Set to 1 or more. Do BLAST and prepare commands only. If number >1 is given, then split cmds to that many subfiles (e.g. to run with Parafly)
-  -norefine     => Don't refine region in exonerate. Prevents segmentation faults in some searches
-  -aat:s        => AAT FILTER output files (one or more). Do not use blast hash
-  -score_dps:i  => Minimum DDS/DPS score (def 100)
-  -intron_max   => Def 70000
-  -same_species => FASTA file is from same species as referene genome
-  -softmask     => genome has been softmasked with repeatmasker
+  -protein       => File is a protein (otherwise assumed to be cDNA)
+  -minorf:i      => minimum ORF size for cDNA
+  -annotation    => Define ORF in cDNA input (rather that find longest)
+  -blast_hash:s  => Blast HASH file from analyze_blast
+  -only_coding   => For cDNA: Use only the coding sequence (coding2genome model). Otherwise (default) use cdna2genome (includes UTR)
+  -exclude:s     => Exclude file (one ID per line) or comma separated string of IDs 
+  -threads       => Threads/CPUs to use
+  -eval_cutoff:s => Evalue cutoff for BLAST (def 1e-80)
+  -bit_cutoff:i  => Bit score cutoff for BLAST (def 100 for protein tblastn, 500 for nucleotide megablast)
+  -prep_only:i   => Set to 1 or more. Do BLAST and prepare commands only. If number >1 is given, then split cmds to that many subfiles (e.g. to run with Parafly)
+  -norefine      => Don't refine region in exonerate. Prevents segmentation faults in some searches
+  -aat:s         => AAT FILTER output files (one or more). Do not use blast hash
+  -score_dps:i   => Minimum DDS/DPS score (def 100)
+  -intron_max    => Def 70000
+  -same_species  => FASTA file is from same species as referene genome
+  -softmask      => genome has been softmasked with repeatmasker
   -local_protein => Don't run an exhaustive global alignment for the protein (use it for those that crash)
   -separate      => Only run exonerate on part of the assembly, padded with -padding. Very fast!
-  -padding      => genome padding for exonerate alignment (2000)
+  -padding       => genome padding for exonerate alignment (2000)
 
  @ Stage 2:
   -postprocess:s{,}' => The result files of exonerate if run with -separate in orted to reconstruct co-ordinates of the GFF (and only the GFF)
