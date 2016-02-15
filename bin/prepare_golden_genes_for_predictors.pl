@@ -2588,9 +2588,10 @@ sub run_exonerate() {
     &process_cmd( 'run_exonerate.pl' . $exonerate_options );
     die "Exonerate run failed for some reason....\n"
       if ( !-d basename($peptide_file) . "_queries" );
-    system(   "cat "
-            . basename($peptide_file)
-            . "_queries/*exonerate_results >> $exonerate_file" );
+    my @files_to_cat = glob(basename($peptide_file)."_queries/*exonerate_results");
+    foreach my $f (@files_to_cat){
+	 system("cat $f >> $exonerate_file");
+    }
    }
    elsif ($mrna_file) {
     die "Not implemented yet - see GMAP output\n";

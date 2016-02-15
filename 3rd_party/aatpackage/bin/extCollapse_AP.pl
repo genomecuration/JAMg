@@ -36,15 +36,14 @@ while (my $ln = <EXT>) {
     $ln =~ s/^\s+//; #rm leading whitespace
     ## using var names as in ext.c
     my ($next_dstart, $next_dend, $next_score, $next_astart, $next_aend, $next_orient, $next_zero1, $next_zero2, $next_acc) = split (/\s+/,$ln);
+    next if (!$next_dstart || $next_dstart!~/^\d+$/ || $next_dstart < 1 || !$next_dend || $next_dend!~/^\d+$/ || $next_dend < 1 || !$next_score || $next_score!~/^\d+$/ || $next_score < 1 || !$next_acc);
     
     if (!$previous_ln){
-	$previous_ln = $ln ; 
+	$previous_ln = $ln if $ln=~/\d+/; 
 	next;
     }
 
     my ($prev_dstart, $prev_dend, $prev_score, $prev_astart, $prev_aend, $prev_orient, $prev_zero1, $prev_zero2, $prev_acc) = split (/\s+/,$previous_ln);
-    next if !$prev_dstart || $prev_dstart < 1 || !$prev_dend || $prev_dend < 1 || !$prev_score || $prev_score < 1 || !$prev_acc;
-
 	
     if ($next_acc && $prev_acc && $next_acc eq $prev_acc 
 	&& $next_orient == $prev_orient && $next_dstart <= $prev_dend) {
@@ -66,13 +65,13 @@ while (my $ln = <EXT>) {
 	$previous_ln = $ln;
 	next if ($prev_dstart > 9999999999 || $prev_dend > 9999999999);
 	printf OUT1 ("%10d %10d %6d %7d %5d %1d %5d %5d %s\n",
-          $prev_dstart, $prev_dend, $prev_score, $prev_astart, $prev_aend, $prev_orient, $prev_zero1, $prev_zero2, $prev_acc) if $prev_acc;
+          $prev_dstart, $prev_dend, $prev_score, $prev_astart, $prev_aend, $prev_orient, $prev_zero1, $prev_zero2, $prev_acc) if ($prev_acc && $prev_score && $prev_score >0);
     }
 }
 #last line
 my ($prev_dstart, $prev_dend, $prev_score, $prev_astart, $prev_aend, $prev_orient, $prev_zero1, $prev_zero2, $prev_acc) = split (/\s+/,$previous_ln) if $previous_ln;
 next if ($prev_dstart > 9999999999 || $prev_dend > 9999999999);
-printf OUT1 ("%10d %10d %6d %7d %5d %1d %5d %5d %s\n",$prev_dstart, $prev_dend, $prev_score, $prev_astart, $prev_aend, $prev_orient, $prev_zero1, $prev_zero2, $prev_acc) if $prev_acc;
+printf OUT1 ("%10d %10d %6d %7d %5d %1d %5d %5d %s\n",$prev_dstart, $prev_dend, $prev_score, $prev_astart, $prev_aend, $prev_orient, $prev_zero1, $prev_zero2, $prev_acc) if ($prev_acc && $prev_score && $prev_score >0);
 
 close EXT;
 close OUT1;

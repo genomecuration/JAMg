@@ -75,11 +75,11 @@ AUTOMAKE = ${SHELL} /home/aap599/software/JAMg/3rd_party/aatpackage/missing --ru
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS =  -I/home/aap599/include -L/home/aap599/lib/ -L/home/aap599/lib64/  -fPIC
-CPPFLAGS = -I/home/aap599/include 
+CFLAGS =  -I/home/aap599/include -L/home/aap599/lib/ -L/home/aap599/lib64/  -fPIC -I/home/aap599/include -L/home/aap599/lib/ -L/home/aap599/lib64/ -L/home/aap599/lib/ -L/home/aap599/lib64/  -fPIC
+CPPFLAGS = -I/home/aap599/include -I/home/aap599/include 
 CXX = g++
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -I/home/aap599/include 
+CXXFLAGS = -I/home/aap599/include -I/home/aap599/include 
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
@@ -92,7 +92,7 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
-LDFLAGS = -L/home/aap599/lib/ -L/home/aap599/lib64/ 
+LDFLAGS = -L/home/aap599/lib/ -L/home/aap599/lib64/ -L/home/aap599/lib/ -L/home/aap599/lib64/ 
 LIBOBJS = 
 LIBS = 
 LTLIBOBJS = 
