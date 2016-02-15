@@ -133,7 +133,7 @@ main(argc, argv) int argc; char *argv[];
  sscanf(s, "Query sequence length: %d", &dnalen);
  fgets(s, ACCLEN, Ap);
  sscanf(s, "Maximum database sequence length: %d", &aalen);
- printf("                     %8d %8d\n", dnalen, aalen);
+ printf("                     %10d %10d\n", dnalen, aalen);
  bucket = ( bbkptr * ) ckalloc( (dnalen + 2) * sizeof(bbkptr) );
  for ( i = 0; i <= dnalen ; i++ )
    bucket[i] = NULL;
@@ -155,12 +155,12 @@ main(argc, argv) int argc; char *argv[];
      continue;
    line = ( char * ) ckalloc( ACCLEN * sizeof(char));
    if ( dstart <= dend )
-     { sprintf(line, "%8d %8d %6d %7d %5d %1d %5d %5d %s",
+     { sprintf(line, "%10d %10d %6d %7d %5d %1d %5d %5d %s",
 	       dstart, dend, score, astart, aend, 1, 0, 0, acc);
      first = dstart;
      }
    else
-     { sprintf(line, "%8d %8d %6d %7d %5d %1d %5d %5d %s",
+     { sprintf(line, "%10d %10d %6d %7d %5d %1d %5d %5d %s",
 	       dend, dstart, score, astart, aend, 0, 0, 0, acc);
      first = dend;
      }

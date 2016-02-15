@@ -99,7 +99,7 @@ my (
      $no_refine,                     @aat_filter_files,
      $same_species,                  $softmasked,
      @post_process_similarity_files, $separate,
-     @post_process_result_files,     $not_exhaustive,
+     @post_process_result_files,     $not_exhaustive, $verbose,
      $annotation_file,               $paths_need_to_be_made
 );
 
@@ -122,6 +122,7 @@ my ( $makeblastdb_exec, $blastn_exec, $tblastn_exec ) =
 my ($getorf_exec) = &check_program('getorf');
 
 pod2usage $! unless &GetOptions(
+	 'verbose'          => \$verbose,
          'help'             => \$help,
          'annotations:s'    => \$annotation_file,
          'minorf:i'         => \$minorf,
@@ -487,7 +488,7 @@ sub parse_aat_filter() {
     /^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\S+)/;
   my ( $dstart, $dend, $score, $astart, $aend, $orient, $zero1, $zero2, $query )
     = ( $1, $2, $3, $4, $5, $6, $7, $8, $9 );
-  die $ln unless $query;
+  next unless $query;
   next if exists $exclude_ids{$query};
   next if $score < $dps_min_score;
   if ( $dend < $dstart ) {
@@ -1013,6 +1014,7 @@ sub check_program() {
 
 sub process_cmd {
  my ($cmd) = @_;
+ warn "CMD: $cmd\n" if $verbose;
  my $ret = system($cmd);
  if ( $ret && $ret != 256 ) {
   die "Error, cmd died with ret $ret\n";

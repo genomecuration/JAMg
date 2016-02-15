@@ -371,9 +371,9 @@ chlen--;
  (void) fclose(Ap);
  Ap = ckopen(argv[3], "r");
  fgets(cline, ACCLEN, Ap);
- sscanf(cline, "                     %8d %8d\n", &dnalen, &aalen);
+ sscanf(cline, "                     %10d %10d\n", &dnalen, &aalen);
  for ( cpt = chains; fgets(cline, ACCLEN, Ap) != NULL; cpt->aa = NULL, cpt++)
-   sscanf(cline, "%8d %8d %6d %7d %5d %1d %5d %5d %s", &cpt->dstart,
+   sscanf(cline, "%10d %10d %6d %7d %5d %1d %5d %5d %s", &cpt->dstart,
 	  &cpt->dend, &cpt->score, &cpt->astart, &cpt->aend, &cpt->ort,
 	  &cpt->soff, &cpt->eoff, cpt->acc);
  (void) fclose(Ap);
@@ -998,7 +998,7 @@ display(A,B,M,N,S,AP,BP,dbort,orient, chain_num)
 	   dbend = dblen - dbend + 1;
 	   }
 	 if ( flen >= minexon )
-	   { printf("\nExon %2d %8d %8d  Confidence: %3d %3d\n",
+	   { printf("\nExon %2d %10d %10d  Confidence: %3d %3d\n",
 		    ++exonid, xstart, xend, (100*fmc)/flen, (100*tmc)/tlen);
 	   //db coords should always be in the forward orientation.
 	   if (dbstart > dbend) {
@@ -1087,7 +1087,7 @@ display(A,B,M,N,S,AP,BP,dbort,orient, chain_num)
      dbend = dblen - dbend + 1;
      }
    if ( flen >= minexon )
-     { printf("\nExon %2d %8d %8d  Confidence: %3d %3d\n",
+     { printf("\nExon %2d %10d %10d  Confidence: %3d %3d\n",
 	      ++exonid, xstart, xend, (100*fmc)/flen, (100*tmc)/tlen);
      //db coords should always be in the forward orientation.
      if (dbstart > dbend) {

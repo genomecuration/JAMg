@@ -89,8 +89,8 @@ AUTOMAKE = ${SHELL} /home/aap599/software/JAMg/3rd_party/aatpackage/missing --ru
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS =  -I/home/aap599/include -L/home/aap599/lib/ -L/home/aap599/lib64/  -fPIC
-CPPFLAGS = -I/home/aap599/include 
+CFLAGS =  -I/home/aap599/include -L/home/aap599/lib/ -L/home/aap599/lib64/  -fPIC -I/home/aap599/include -L/home/aap599/lib/ -L/home/aap599/lib64/ -L/home/aap599/lib/ -L/home/aap599/lib64/  -fPIC
+CPPFLAGS = -I/home/aap599/include -I/home/aap599/include 
 CXX = g++
 CXXDEPMODE = depmode=gcc3
 CXXFLAGS = -Wall -Wno-deprecated 

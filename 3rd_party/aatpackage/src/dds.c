@@ -942,7 +942,7 @@ Search(P, D, PN, DN, ort)
 	       if (align)
 		 {
 		   fprintf(alignfp,
-			   "\n//\n[Alignment_chain %d]\nChain%8d %8d %6d %4d %7d %5d %s\n",
+			   "\n//\n[Alignment_chain %d]\nChain%10d %10d %6d %4d %7d %5d %s\n",
 			   global_chain_num,
 			   dstart, 
 			   dend, 
@@ -1028,7 +1028,7 @@ Search(P, D, PN, DN, ort)
 		 if (align)
 		   {
 		     fprintf(alignfp,
-			     "\n//\n[Alignment_chain %d]\nChain%8d %8d %6d %4d %7d %5d %s\n",
+			     "\n//\n[Alignment_chain %d]\nChain%10d %10d %6d %4d %7d %5d %s\n",
 			     global_chain_num,
                              dstart, 
                              dend, 
@@ -1453,7 +1453,7 @@ display2(A,B,M,N,AP,DP,orient)
      if (align)
        {
 	 fprintf(alignfp,
-		 "\n%8d %s %d\n         %s\n%8d %s %d\n",
+		 "\n%10d %s %d\n         %s\n%10d %s %d\n",
 		 mdp,
 		 DLINE,
 		 mdp2,

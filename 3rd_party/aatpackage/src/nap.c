@@ -418,9 +418,9 @@ main(argc, argv) int argc; char *argv[];
  (void) fclose(Ap);
  Ap = ckopen(argv[3], "r");
  fgets(cline, ACCLEN, Ap);
- sscanf(cline, "                     %8d %8d\n", &dnalen, &aalen);
+ sscanf(cline, "                     %10d %10d\n", &dnalen, &aalen);
  for ( cpt = chains; fgets(cline, ACCLEN, Ap) != NULL; cpt->aa = NULL, cpt++)
-   sscanf(cline, "%8d %8d %6d %7d %5d %1d %5d %5d %s", &cpt->dstart,
+   sscanf(cline, "%10d %10d %6d %7d %5d %1d %5d %5d %s", &cpt->dstart,
 	  &cpt->dend, &cpt->score, &cpt->astart, &cpt->aend, &cpt->ort,
 	  &cpt->soff, &cpt->eoff, cpt->acc);
  (void) fclose(Ap);
@@ -2096,7 +2096,7 @@ display(A,B,M,N,AN,DN,S,ST,AP,DP,orient,ttt, chain_num)
 	     xend = dnalen - xend + 1;
 	     }
 	   if ( flen >= minexon )
-	     { printf("\nExon %2d %8d %8d  Confidence: %3d %3d\n",
+	     { printf("\nExon %2d %10d %10d  Confidence: %3d %3d\n",
 		      ++exonid, xstart, xend, (100*fmc)/flen, (100*tmc)/tlen);
 	     fprintf(Btabp,"%s\t%s\t%d\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%f\t%f\t%d\t%d\t%d\t%s\t%d\t%s\t%d\n",
 		     dhead+1, btab_date, dnalen, program,
@@ -2152,7 +2152,7 @@ display(A,B,M,N,AN,DN,S,ST,AP,DP,orient,ttt, chain_num)
 	     xend = dnalen - xend + 1;
 	     }
 	   if ( flen >= minexon )
-	     { printf("\nExon %2d %8d %8d  Confidence: %3d %3d\n",
+	     { printf("\nExon %2d %10d %10d  Confidence: %3d %3d\n",
 		      ++exonid, xstart, xend, (100*fmc)/flen, (100*tmc)/tlen);
 	     fprintf(Btabp,"%s\t%s\t%d\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%f\t%f\t%d\t%d\t%d\t%s\t%d\t%s\t%d\n",
 		     dhead+1, btab_date, dnalen, program,
@@ -2215,7 +2215,7 @@ display(A,B,M,N,AN,DN,S,ST,AP,DP,orient,ttt, chain_num)
 	   xend = dnalen - xend + 1;
 	   }
 	 if ( flen >= minexon )
-	   { printf("\nExon %2d %8d %8d  Confidence: %3d %3d\n",
+	   { printf("\nExon %2d %10d %10d  Confidence: %3d %3d\n",
 		    ++exonid, xstart, xend, (100*fmc)/flen, (100*tmc)/tlen);
 	   fprintf(Btabp,"%s\t%s\t%d\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%f\t%f\t%d\t%d\t%d\t%s\t%d\t%s\t%d\n",
 		   dhead+1, btab_date, dnalen, program,
@@ -2377,7 +2377,7 @@ display(A,B,M,N,AN,DN,S,ST,AP,DP,orient,ttt, chain_num)
      xend = dnalen - xend + 1;
      }
    if ( flen >= minexon )
-     { printf("\nExon %2d %8d %8d  Confidence: %3d %3d\n",
+     { printf("\nExon %2d %10d %10d  Confidence: %3d %3d\n",
 	      ++exonid, xstart, xend, (100*fmc)/flen, (100*tmc)/tlen);
      fprintf(Btabp,"%s\t%s\t%d\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%f\t%f\t%d\t%d\t%d\t%s\t%d\t%s\t%d\n",
 	     dhead+1, btab_date, dnalen, program,

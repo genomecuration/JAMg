@@ -590,7 +590,7 @@ Show()
 	     if ( (exon = t->first) != NULL &&
 		  ( qort && exon->end < qcod || !qort && exon->end > qcod))
 	       { 
-		 (void) printf("%-21s         Exon  %8d %8d  Confidence: %3d %3d\n",
+		 (void) printf("%-21s         Exon  %10d %10d  Confidence: %3d %3d\n",
 			       t->name, exon->start, exon->end, exon->cons, exon->cone);
 		 t->first = exon->next;
 		 free(exon);

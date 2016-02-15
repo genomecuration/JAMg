@@ -141,7 +141,7 @@ foreach my $chain (sort { $a->{dstart} <=> $b->{dstart} || $b->{score} <=> $a->{
 		    $chain->{zero2}
 		    );
     
-    printf("%8d %8d %6d %7d %5d %1d %5d %5d %s\n",
+    printf("%10d %10d %6d %7d %5d %1d %5d %5d %s\n",
 	   $dstart, $dend, $score, $astart, $aend, $orient, $zero1, $zero2, $acc) if $acc;
     
 }

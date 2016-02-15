@@ -3602,14 +3602,14 @@ sub fix_aat1(){
 		my $ref_length = $scaffold_seq_length->{$ref_id} || die "Cannot find sequence $ref_id in genome\n";
 		open (OUT,">$outfile");
 		$header_data[1] = sprintf("%28s",$ref_length);
-		$header_data[2] = sprintf("%8s",$header_data[2]);
+		$header_data[2] = sprintf("%10s",$header_data[2]);
 		print OUT join (" ",@header_data)."\n";
 	}
 	while (my $ln=<IN>){
 		if ($ln=~/^\s+(\d+)\s+(\d+)(\s+.+)$/){
 			my ($split_start,$split_end,$rest) = ($1,$2,$3);
-			my $correct_start = sprintf("%8s",($split_start + $ref_start));
-			my $correct_end = sprintf("%8s",($split_end + $ref_start));
+			my $correct_start = sprintf("%10s",($split_start + $ref_start));
+			my $correct_end = sprintf("%10s",($split_end + $ref_start));
 			print OUT $correct_start." ".$correct_end.$rest."\n";
 		}
 	}
