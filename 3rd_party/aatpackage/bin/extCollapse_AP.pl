@@ -19,11 +19,14 @@ $tmpdir = '/tmp' if !$tmpdir;
 my $sort_exec = &check_sort_version;
 # sort based on hit ID and strand and start
 warn "Sorting...\n" if $DEBUG;
-system("$sort_exec -nk1 $extFile | $sort_exec -s -nk6,6 | $sort_exec -s -k9,9 >> $extFile.sorted") unless -s "$extFile.sorted";
+open (TMP,"$extFile");
+my $header = <TMP>;
+close TMP;
 
+system("$sort_exec -nk1 $extFile | $sort_exec -s -nk6,6 | $sort_exec -s -k9,9 > $extFile.sorted") unless -s "$extFile.sorted";
 open (EXT, "$extFile.sorted") or die "Cannot open $extFile.sorted\n";
 open (OUT1,">$extFile.collapsed1") || die $!;
-my $header = <EXT>;
+my $discard = <EXT>;
 my $previous_ln;
 
 warn "Processing sorted fiel...\n" if $DEBUG;
@@ -33,14 +36,16 @@ while (my $ln = <EXT>) {
     $ln =~ s/^\s+//; #rm leading whitespace
     ## using var names as in ext.c
     my ($next_dstart, $next_dend, $next_score, $next_astart, $next_aend, $next_orient, $next_zero1, $next_zero2, $next_acc) = split (/\s+/,$ln);
+    
     if (!$previous_ln){
-	print OUT1 $header;
 	$previous_ln = $ln ; 
 	next;
     }
 
     my ($prev_dstart, $prev_dend, $prev_score, $prev_astart, $prev_aend, $prev_orient, $prev_zero1, $prev_zero2, $prev_acc) = split (/\s+/,$previous_ln);
-  	
+    next if !$prev_dstart || $prev_dstart < 1 || !$prev_dend || $prev_dend < 1 || !$prev_score || $prev_score < 1 || !$prev_acc;
+
+	
     if ($next_acc && $prev_acc && $next_acc eq $prev_acc 
 	&& $next_orient == $prev_orient && $next_dstart <= $prev_dend) {
 	
@@ -58,27 +63,30 @@ while (my $ln = <EXT>) {
 	warn "expanding current chain.\n" if $DEBUG;
     } 
     else {
+	$previous_ln = $ln;
+	next if ($prev_dstart > 9999999999 || $prev_dend > 9999999999);
 	printf OUT1 ("%10d %10d %6d %7d %5d %1d %5d %5d %s\n",
           $prev_dstart, $prev_dend, $prev_score, $prev_astart, $prev_aend, $prev_orient, $prev_zero1, $prev_zero2, $prev_acc) if $prev_acc;
-	$previous_ln = $ln;
     }
 }
 #last line
 my ($prev_dstart, $prev_dend, $prev_score, $prev_astart, $prev_aend, $prev_orient, $prev_zero1, $prev_zero2, $prev_acc) = split (/\s+/,$previous_ln) if $previous_ln;
+next if ($prev_dstart > 9999999999 || $prev_dend > 9999999999);
 printf OUT1 ("%10d %10d %6d %7d %5d %1d %5d %5d %s\n",$prev_dstart, $prev_dend, $prev_score, $prev_astart, $prev_aend, $prev_orient, $prev_zero1, $prev_zero2, $prev_acc) if $prev_acc;
 
 close EXT;
 close OUT1;
 
 warn "Resorting...\n" if $DEBUG;
-system("head -1 $extFile.collapsed1 > $outfile");
+open (OUT,">$outfile");
+print OUT $header;
+close OUT;
 # i added uniq here because there is a bug somewhere i cant find
 system("$sort_exec -nk1,1 -nk2,2 $extFile.collapsed1|uniq >> $outfile");
 system("sed -i '\$d' $outfile");
 unlink("$extFile.collapsed1");
 unlink("$extFile.sorted");
 
-exit(0);
 
 #########################
 
