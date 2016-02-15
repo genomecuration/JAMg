@@ -2586,8 +2586,7 @@ sub run_exonerate() {
     $exonerate_options .= " -score_dps $aat_score";
 
     &process_cmd( 'run_exonerate.pl' . $exonerate_options );
-    die "Exonerate run failed for some reason....\n"
-      if ( !-d basename($peptide_file) . "_queries" );
+    die "Exonerate run failed for some reason....\n" if ( !-d basename($peptide_file) . "_queries" );
     my @files_to_cat = glob(basename($peptide_file)."_queries/*exonerate_results");
     foreach my $f (@files_to_cat){
 	 system("cat $f >> $exonerate_file");
@@ -2603,6 +2602,7 @@ sub run_exonerate() {
     if ( !$same_species ) {
      &run_aat( $fasta_contigs, 'nucl' );
     }
+    unlink($exonerate_file);
     print "Finding accurate co-ordinates using exonerate...\n";
     my $exonerate_options =" -minorf $minorf -annotation $fasta_contigs.annotations -in $fasta_contigs -separate -filter $genome_dir/*filter "
       . " -threads $threads -intron_max $intron_size $same_species ";
@@ -2619,11 +2619,10 @@ sub run_exonerate() {
     &process_cmd( 'run_exonerate.pl' . $exonerate_options );
     die "Exonerate run failed for some reason....\n"
       if ( !-d basename($fasta_contigs) . "_queries" );
-    unlink($exonerate_file);
-    system(   "cat "
-            . basename($fasta_contigs)
-            . "_queries/*exonerate_results >> $exonerate_file" );
-
+    my @files_to_cat = glob(basename($peptide_file)."_queries/*exonerate_results");
+    foreach my $f (@files_to_cat){
+	 system("cat $f >> $exonerate_file");
+    }
    }
 
   }
@@ -2635,6 +2634,12 @@ sub run_exonerate() {
     -s $exonerate_command_file == -s $exonerate_command_file . '.completed' ) );
 
  }
+  $no_rerun_exonerate = 1
+    if ( -s $exonerate_file
+   && -s $exonerate_command_file
+   && -s $exonerate_command_file . '.completed'
+   && (
+    -s $exonerate_command_file == -s $exonerate_command_file . '.completed' ) );
  die
 "Have not completed with the current exonerate run. Rerun this program once more. If it still fails, you can force this message to be ignored with -norerun \n"
    unless $no_rerun_exonerate;
