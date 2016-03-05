@@ -98,6 +98,7 @@ sub gff3_process() {
 
    $gene_obj_ref->create_all_sequence_types( \$genome_seq, %params );
    my $gene_seq = $gene_obj_ref->get_gene_sequence();
+   next if !$gene_seq;
    $gene_seq =~ s/(\S{80})/$1\n/g;
    chomp $gene_seq;
    print GENE ">$gene_id type:gene\n$gene_seq\n";
