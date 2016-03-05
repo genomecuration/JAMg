@@ -2155,6 +2155,12 @@ sub gff2hints() {
   for ( my $i = 2 ; $i < scalar(@lines) ; $i++ ) {
    my @data = split( "\t", $lines[$i] );
    next unless $data[8];
+	#seems that some programs do not set start stop for inverse strands correctly!
+	if ($data[4] < $data[3]){
+		my $te = $data[3];
+		$data[3] = $data[4];
+		$data[4] = $te;
+	}
    if ( $data[2] eq 'mRNA' ) {
     $data[2] = 'genicpart';
     print OUT join( "\t", @data[ 0 .. 7 ] )
