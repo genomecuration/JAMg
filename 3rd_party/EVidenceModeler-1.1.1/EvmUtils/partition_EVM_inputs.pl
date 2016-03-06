@@ -162,7 +162,7 @@ while (my $seq_obj = $fasta_reader->next()) {
     
     my @ranges = &get_range_list($sequence_length);
     my $num_ranges = scalar (@ranges);
-    print "$accession has $num_ranges partitions.\n";
+    #print "$accession has $num_ranges partitions.\n";
     
     if ($num_ranges == 1) {
         # do not partition further. (as indicated below with 'N')
@@ -263,7 +263,7 @@ sub partition_files_based_on_contig {
             if ($contig_id ne $curr_contig) {
                 $curr_contig = $contig_id;
                 unless (-d "$curr_contig") {
-                    print STDERR "writing $file for $curr_contig\n";
+                    #print STDERR "writing $file for $curr_contig\n";
                     mkdir $curr_contig or die "Error, cannot mkdir $curr_contig";
                 }
                 close $ofh if $ofh;

@@ -6,8 +6,11 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case bundling);
+use Carp;
 use File::Basename;
 use FindBin;
+use threads;
+use Thread_helper; 
 
 my ($SEE, $help, $partitions_file, $output_file_name, $genome);
 
@@ -53,22 +56,32 @@ while (<$fh>) {
 }
 close $fh;
 
+my $thread_helper = new Thread_helper(20);
 foreach my $accession (keys %base_directories) {
     my $base_directory = $base_directories{$accession};
     
-    print "// Processing $accession, $base_directory\n";
+  #  print "// Processing $accession, $base_directory\n";
     
     my $cmd = "$bindir/EVM_to_GFF3.pl $base_directory/$output_file_name $accession > $base_directory/$output_file_name.gff3";
-    my $ret = system $cmd;
-    if ($ret) {
-        die "Error, cmd $cmd died with ret $ret ";
-    }
+    my $thread = threads->create( 'process_cmd', $cmd );
+     $thread_helper->add_thread($thread);
 }
-
+$thread_helper->wait_for_all_threads_to_complete();
 exit(0);
 
 
 ####
+sub process_cmd {
+ my ( $cmd ) = @_;
+ my $ret = system($cmd);
+ if ( $ret && $ret != 256 ) {
+  confess "Error, cmd died with ret $ret\n";
+ }
+ return;
+}
+
+
+
 sub parse_and_add_predictions {
     my ($output_file, $partition_lend, $predictions_aref) = @_;
     
