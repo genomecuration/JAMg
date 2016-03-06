@@ -2,8 +2,6 @@
 
 use strict;
 use warnings;
-use Data::Dumper;
-use Carp;
 
 my $file = shift ||die;
 my $delimiter = shift;
@@ -22,7 +20,7 @@ my %sort_order = (
 );
 
 $delimiter =&get_gff_delimiter($file) unless $delimiter;
-print "Using delimiter $delimiter\n";
+print "Using delimiter '$delimiter'\n";
 
 &sort_gff3($file,$delimiter);
 
@@ -40,6 +38,8 @@ sub sort_gff3() {
 	# sort gene records according to scaffold and coord
       my @first  = split( "\n", $a );
       my @second = split( "\n", $b );
+      shift(@first) if $first[0] &&  $first[0]=~/^#/; #gff3 line
+      shift(@second) if $second[0] && $second[0]=~/^#/; #gff3 line
       return 1 if !$first[0];
       return -1 if !$second[0];
       my @split1 = split( "\t", $first[0] ); # gene
@@ -91,7 +91,7 @@ sub get_gff_delimiter() {
  my $delimiter;
  my $file = shift;
  return if !-s $file;
- open( IN, $file ) || confess("Can't find file $file");
+ open( IN, $file ) || warn("Can't find file $file");
  my $skip = <IN>;
  while ( my $ln = <IN> ) {
   last if $ln =~ /^##FASTA/;
@@ -107,6 +107,6 @@ sub get_gff_delimiter() {
   }
  }
  close IN;
- confess "I don't know what delimiter to use for $file" if !$delimiter;
+ warn "I don't know what delimiter to use for $file" if !$delimiter;
  return $delimiter;
 }
