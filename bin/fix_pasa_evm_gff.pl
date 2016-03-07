@@ -49,6 +49,7 @@ sub process_webapollo_gff(){
 	my (@gene_data); 
 
 	foreach my $ln (@$ref){
+		next if $ln=~/^#\s/; #PASA comments
 		last if $ln=~/^##FASTA/;
 	        if ($ln=~/^###/ || $ln=~/^\s*$/){
 			&process_gene_data(@gene_data);
@@ -65,9 +66,6 @@ sub process_webapollo_gff(){
 
 sub process_gene_data(){
 	my @gene_data = @_;
-#	for (my $i=0;$i<@gene_data;$i++){
-#		$gene_data[$i] = &pre_process_webapollo($gene_data[$i]);
-#	}
 
 	return if (!$gene_data[0] || !$gene_data[1]);
 
@@ -86,7 +84,11 @@ sub process_gene_data(){
 	# more checks
 	if ($gene_data[0]=~/ID=([^;]+)/){$gene_id = $1;}
 	die "FATAL: No Gene ID" unless $gene_id;
-	die "FATAL: Gene not unique: $gene_id (".$unique_id{$gene_id}.")\n".$gene_data[0]."\n" if $unique_id{$gene_id};
+
+	if ($unique_id{$gene_id}){
+		warn "DANGEROUS: SKIPPING gene not unique: $gene_id (".$unique_id{$gene_id}.")\n".$gene_data[0]."\n";
+		return;
+	}
 
 	if ($gene_data[0]=~/Name=([^;]+)/){$gene_name = $1;}
 	unless ($gene_name){ 
@@ -162,62 +164,3 @@ sub process_gene_data(){
 }
 
 
-##########
-sub pre_process_webapollo(){
-	my (%seen_names,$death);
-	my ($last_gene_name,$last_gene_id,$last_transcript_name);
-	my $line = shift;
-	next if ($line=~/^\s*$/ || $line=~/^#/);
-	my @data=split("\t",$line);
-	next unless $data[8];
-			next if ($data[3] <= 0 || $data[4] <= 0);
-			next if $data[2] eq 'non_canonical_five_prime_splice_site';
-	        	$data[1] = 'WebApollo' if $data[1] eq '.';
-	        	$data[2] = 'mRNA' if ($data[2] && $data[2] eq 'transcript');
-        	        $data[8]=~s/Name=ID=/ID=/;
-			if ($data[8]=~/Name=([^;]+)/){
-				my $name = $1;
-				if ($name=~s/\s+/_/g){
-					$data[8]=~s/Name=[^;]+/Name=$name/;
-				}
-			}
-		
-
-			chomp($data[8]);
-			if ($data[2] eq 'mRNA' || $data[2] eq 'gene'){
-        	           if ($data[8]=~/Name=([^;]+)/){
-				$data[8].= ';Alias='.$1 if $do_alias;
-				$last_gene_name = $1 if $data[2] eq 'gene';
-	                   }elsif ($data[8]=~/ID=([^;]+)/){
-				$data[8].= ';Alias='.$1 if $do_alias;
-				$last_gene_name = '' if $data[2] eq 'gene';
-	                   }else{
-				$last_gene_name = '' if $data[2] eq 'gene';
-			   }
-			}
-			if ($data[2] eq 'gene'){
-				$death.= "This user provided name already exists: $last_gene_name\n" if ($seen_names{$last_gene_name});
-				$seen_names{$last_gene_name}++;
-				$data[8] =~s/ID=[^;]+/ID=$last_gene_name/;
-			}elsif ($data[2] eq 'mRNA'){
-				$data[8] =~s/Parent=[^;]+/Parent=$last_gene_name/;
-          	                $data[8]=~/Name=([^;]+)/;
-                                $last_transcript_name=$1;
-				#$death.= "This user provided name already exists: $last_transcript_name\n" if ($seen_names{$last_transcript_name});
-				while ($seen_names{$last_transcript_name}){
-					$last_transcript_name.='_';
-	          	                $data[8]=~s/Name=[^;]+/Name=$last_transcript_name/;
-				}
-				$seen_names{$last_transcript_name}++;
-				$data[8] =~s/ID=[^;]+/ID=$last_transcript_name/;				
-			}else{
-				$data[8] =~s/Parent=[^;]+/Parent=$last_transcript_name/;
-
-
-			}
-	
-#wa bug fixed			$data[4]--; 			# && ($data[2] eq 'mRNA' || $data[2] eq 'gene' ||$data[2] eq 'exon' || $data[2] eq 'CDS'));
-			$data[8] = encode_entities($data[8]);
-	die "ERROR:\n".$death if $death;
-	return @data;
-}
