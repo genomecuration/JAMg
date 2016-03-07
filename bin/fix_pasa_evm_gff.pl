@@ -138,7 +138,7 @@ sub process_gene_data(){
 		push (@mrna_data,$gene_data[0]) unless $unique_id{$gene_id};
 
 		if ($old_transcript_id){ # has been renamed
-			$gene_data[$i]=~s/ID=$old_transcript_id\b/ID=$transcript_id/;
+			$gene_data[$i]=~s/ID=$old_transcript_id([;\s])/ID=$transcript_id$1/;
 		}
 
 		push (@mrna_data,$gene_data[$i]);
@@ -146,11 +146,11 @@ sub process_gene_data(){
 		for (my $k=$i+1;$k<@gene_data;$k++){
 			my @d = split("\t",$gene_data[$k]);
 			next unless $d[2] eq 'exon' || $d[2] eq 'CDS';
-			if ($old_transcript_id && $d[8]=~/Parent=$old_transcript_id\b/){ # has been renamed
-				$d[8]=~s/=$old_transcript_id\b/=$transcript_id/g;
-
+			if ($old_transcript_id && $d[8]=~/=$old_transcript_id([\.;\s])/){ # has been renamed
+				$d[8]=~s/=$old_transcript_id([\.;\s])/=$transcript_id$1/g;
+				$gene_data[$k] = join("\t",@d);
 			}
-			push(@mrna_data,$gene_data[$k]) if $d[8]=~/Parent=$transcript_id[;\n]/;
+			push(@mrna_data,$gene_data[$k]) if $d[8]=~/Parent=$transcript_id[;\s]/;
 		}
 		# now store in GFF
 		my $fh = $file_handles{$state};
