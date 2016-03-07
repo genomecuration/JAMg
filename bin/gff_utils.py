@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 import re, argparse, sys, os, urllib
 import copy
 
