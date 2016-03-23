@@ -358,11 +358,13 @@ sub align_unpaired_files() {
   my $group_id;
   if ( $split_input && $base =~ /\.\d+$/ ) {
    $base =~ s/$pattern1.+(\.0\d\d)$/$1/;
+   if (!$base){$base = $pattern1; chop($base);}
    $group_id = $base;
    $group_id =~ s/\.0\d\d$//;
   }
   else {
    $base =~ s/$pattern1.+//;
+   if (!$base){$base = $pattern1; chop($base);}
    $group_id = $base;
   }
   print "Processing $group_id ($file)\n";
@@ -436,11 +438,13 @@ sub align_paired_files() {
   my $group_id;
   if ( $split_input && $base =~ /\.\d+$/ ) {
    $base =~ s/$pattern1.+(\.0\d\d)$/$1/;
+   if (!$base){$base = $pattern1; chop($base);}
    $group_id = $base;
    $group_id =~ s/\.0\d\d$//;
   }
   else {
    $base =~ s/$pattern1.+//;
+   if (!$base){$base = $pattern1; chop($base);}
    $group_id = $base;
   }
   print "Processing $group_id ($file)\n";

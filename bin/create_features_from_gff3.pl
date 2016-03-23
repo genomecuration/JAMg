@@ -19,6 +19,7 @@ Provide a GFF3 file and a genome FASTA file to phase and create sequence feature
   -lettername      Use -R[two letters] notation for alternative transcript instead of .[digits]  
   -verbose         Print progress and debug info
   -skip_delete     Skip Status=Delete mRNAs
+  -one_isoform     Process only one isoform per gene
  
 NB: -name means that the common name has no spaces and is unique (will be checked). Useful for WebApollo
  
@@ -40,8 +41,9 @@ use GTF_utils;
 $|=1;
 our $SEE;
 my $minorf = 3;    #minimum orf size in bp
-my ( $gfffile, $genome, $change_name,$lettername,$verbose );
+my ( $gfffile, $genome, $change_name,$lettername,$verbose, $one_iso );
 pod2usage $! unless &GetOptions(
+	    'one_isoform'      => \$one_iso,
             'gff|infile:s'     => \$gfffile,
             'genome|fasta:s'   => \$genome,
             'name|change_name' => \$change_name,
@@ -103,7 +105,19 @@ sub gff3_process() {
    chomp $gene_seq;
    print GENE ">$gene_id type:gene\n$gene_seq\n";
 
-   foreach my $isoform ( $gene_obj_ref, $gene_obj_ref->get_additional_isoforms() )   {
+   # sort longest CDS first.
+   my (@isoforms,%cdslength_hash);
+
+   foreach my $iso ( $gene_obj_ref, $gene_obj_ref->get_additional_isoforms() ){
+	$cdslength_hash{$iso} = length($iso->get_CDS_sequence());
+	if ($one_iso){
+		$isoforms[0] = $iso if !$isoforms[0] || $cdslength_hash{$iso} > $cdslength_hash{$isoforms[0]};
+	}else{
+		push(@isoforms,$iso); # all data
+	}
+   }
+
+   foreach my $isoform ( @isoforms )   {
     my $isoform_id  = $isoform->{Model_feat_name};
     print "\rprocessing gene $gene_id isoform $isoform_id                                              " if $verbose;
     next unless $isoform->has_CDS() || !$isoform->get_CDS_span();

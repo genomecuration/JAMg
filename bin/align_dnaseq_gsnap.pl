@@ -163,7 +163,7 @@ else {
 $align_cmd .= " --nofails "                  if $nofails;
 $align_cmd .= " --pairmax-dna=$pe_distance " if !$notpaired;
 $align_cmd .= " --sam-use-0M " if $piccard_0m;
-$align_cmd .= " -o RF " if $matepair;
+$align_cmd .= " --orientation=RF " if $matepair;
 
 system($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
 die "Failed to build genome ($genome.fai and $gmap_dir/$genome_dbname) " unless -s "$genome.fai" && -d "$gmap_dir/$genome_dbname";
@@ -337,6 +337,7 @@ sub align_unpaired_files() {
   $qual_prot = $qual_prot eq 'fasta' ? '' : ' --quality-protocol='.$qual_prot;
   my $base = basename($file);
   $base =~ s/$pattern1.+//;
+  if (!$base){$base = $pattern1; chop($base);}
   my $group_id = $base;
   $base .= "_vs_$genome_dbname";
   if ( -s "gsnap.$base.log" ) {
@@ -408,6 +409,7 @@ sub align_paired_files() {
   }
   my $base = basename($file);
   $base =~ s/$pattern1.+//;
+  if (!$base){$base = $pattern1; chop($base);}
   my $group_id = $base;
   $base .= "_vs_$genome_dbname";
   if ( -s "gsnap.$base.log" ) {
