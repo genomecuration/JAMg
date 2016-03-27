@@ -148,7 +148,7 @@ die "No files found!\n" unless @files;
 print "Found these files:\n".join("\n",@files)."\n";
 my ( $build_cmd, $align_cmd );
 
-if ($suffix && !$build_only) {
+if ($suffix || $build_only) {
  $build_cmd =
 "$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 $genome >/dev/null && $samtools_exec faidx $genome";
  $align_cmd =
