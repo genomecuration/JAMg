@@ -28,8 +28,9 @@ Other options:
  -memory           s            Amount of memory for sorting. Use K/M/G for kilo/mega/giga-bytes (defaults to 5G)
  -min_jr_length    i		Minimum read length to use for junctions (def to 75)
  -min_jr_score     i		Minimum MAQ score to use for junctions (def to 34)
- -min_jr_reads     i            Minimum number of introns to use for print out "known" splice sites database (Augustus and GMAP). Not used for hints. Defaults to 30
+ -min_jr_reads     i            Minimum number of introns to use for print out "known" splice sites database (Augustus and GMAP). Not used for hints. Defaults to 15. Caution: this is after de-duplication for PCR duplicates and so this maybe too high if the 'bam_rmdupse_core' output is too high
  -min_intron       i            Minimum intron length (def 30)
+ -intron_db_only		Do enough work to produce an intron database and then stop (e.g for align_rnaseq)
 
 =head1 DESCRIPTION
 
@@ -67,7 +68,7 @@ use threads;
 use Thread_helper;
 
 #Options
-my ( @bamfiles, $genome, $help,$no_hints, $master_bamfile );
+my ( @bamfiles, $genome, $help,$no_hints, $master_bamfile,$intron_db_only );
 
 my $cpus = 4;
 my $sort_buffer = '5G';
@@ -80,7 +81,7 @@ my $min_jr_score        = 34;
 my $min_jr_length       = 75;
 my $strandness       = int(0);
 my $background_level = 4;
-my $intron_coverage_cutoff = 30;
+my $intron_coverage_cutoff = 15;
 my $min_intron_length = 30;
 
 pod2usage $! unless &GetOptions(
@@ -98,7 +99,8 @@ pod2usage $! unless &GetOptions(
 	    'min_jr_score:i'    => \$min_jr_score,
 	    'min_intron:i'      => \$min_intron_length,
 	    'min_jr_reads:i'    => \$intron_coverage_cutoff,
-	    'tmp:s'             => \$tmpdir
+	    'tmp:s'             => \$tmpdir,
+	    'intron_db_only'   => \$intron_db_only
 );
 
 my ( $samtools_exec, $bedtools_exec, $bed_to_aug_script ) = &check_program( 'samtools', 'bedtools','bed12_to_augustus_junction_hints.pl' );
@@ -292,6 +294,11 @@ sub intron_driven_fixes(){
  # fix strand of intron based on sequence
  # keep non-canonical ones (singletons purged later)
  my $intronic_file = &get_intron_orient($file);
+
+ if ($intron_db_only){
+	print "User stop requested. Intron database built\n";
+	exit(0);
+ }
 
  # group introns based on co-ords
  &merge_hints($intronic_file);
@@ -492,8 +499,8 @@ sub get_intron_orient(){
 			print SPLICE1 "$type1 $site1_seq\n" if $site1_seq;
 			print SPLICE1 "$type2 $site2_seq\n" if $site2_seq;
 			#gmap
-			my $intron_gsnap_txt = ($strand eq '-') ? ">intron.$printed_counter $ref:$end..$start\n" : ">intron.$printed_counter $ref:$start..$end\n";
-			print SPLICE2 $intron_gsnap_txt;
+			my $intron_gmap_txt = ($strand eq '-') ? ">intron.$printed_counter $ref:$end..$start\n" : ">intron.$printed_counter $ref:$start..$end\n";
+			print SPLICE2 $intron_gmap_txt;
 			$intron_printed{"$ref:$start..$end"}++;
 			$printed_counter++;
 		}

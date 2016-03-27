@@ -34,12 +34,15 @@ Optional:
  -split_input    :i  Split the input FASTQ files to these many subfiles. Good for running large RNASeq datasets. Needs -commands_only above
  -notpaired          Data are single end. Don't look for pairs (use -pattern1 to glob files)
  -intron_db      :s  GMAP intron or splice database (iit_store). Automatically found and used if it exists as a single *.iit in maps/ directory.
- -intron_hard        If -intron_db, we will now be conservative handling junction reads and eliminate all soft-clipping (--ambig-splice-noclip --trim-mismatch-score=0)
+ -intron_hard        If -intron_db, conservative handling of junction reads and eliminate soft-clipping (--ambig-splice-noclip --trim-mismatch-score=0)
  -intron_size    :i  Maximum intron length (def. 70,000)
  -memory             Memory for samtools sorting, use suffix G M b (def '35G')
  -verbose
  -piccard_0m         Ask gsnap to add 0M between insertions (only for piccard compatibility, issues with most other software)
  -filetype       :s  Only process files ending with this text
+
+Note: For new genomes, it is possible to run this program once and use the output to build an -intron_db. Use the script augustus_RNAseq_hints.pl
+ and pay attention to -min_jr_reads and maybe -intron_db_only. Make sure you use the same -genome FASTA. The output will be *junctions.all.hints.splice.gmap
 
 =head1 AUTHORS
 
