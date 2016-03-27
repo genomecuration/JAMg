@@ -28,6 +28,7 @@ Optional:
  -pattern2           Pattern for automatching right pair (defaults to '_2_')
  -nofail             Don't print out failures (I/O friendlyness if sparse hits expected). Otherwise captured as FASTQ
  -suffix             Build/use suffix array (fast, downweights SNPs, use for non-polymorphic genomes)
+ -build_only         Build genome (with suffix array) but don't do any alignments. Useful for building genome to be used many times
  -path_number        Maximum number of hits for the read pair. If more that these many hits, then nothing is returned (defaults to 10)
  -commands_only  :s  Don't run commands, instead write them out into a file as specified by the option. Useful for preparing jobs for ParaFly
  -split_input    :i  Split the input FASTQ files to these many subfiles. Good for running large RNASeq datasets. Needs -commands_only above
@@ -74,7 +75,7 @@ my (
      $input_dir,               $pattern2,      $debug, $piccard_0m,
      $genome,                  $genome_dbname, $nofails, $intron_hard,
      $suffix,                  $help,          $intron_splice_db,
-     $just_write_out_commands, $split_input,   $notpaired, $verbose
+     $just_write_out_commands, $split_input,   $notpaired, $verbose, $build_only
 );
 my $cwd = `pwd`;
 chomp($cwd);
@@ -107,6 +108,7 @@ my $filetype = '';
              'notpaired'       => \$notpaired,
              'piccard_0m'      => \$piccard_0m,
 	     'filetype:s'      => \$filetype,
+             'build_only'      => \$build_only
 );
 
 pod2usage if $help;
@@ -155,20 +157,28 @@ die "No files found!\n" unless @files;
 print "Found these files:\n".join("\n",@files)."\n";
 
 my ( $build_cmd, $align_cmd );
-if ($suffix) {
+if ($suffix && !$build_only) {
  warn "WARNING: Using -suffix with RNA-Seq gapped alignments is not recommended... it seems to be much (order of magnitude) slower in my tests\n";sleep(3);
  $build_cmd =
-"$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 $genome >/dev/null ; $samtools_exec faidx $genome";
+"$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 $genome >/dev/null && $samtools_exec faidx $genome";
  $align_cmd =
 "$gsnap_exec -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam ";
 }
 else {
  $build_cmd =
-"$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 --build-sarray=0 $genome >/dev/null ; $samtools_exec faidx $genome";
+"$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 --build-sarray=0 $genome >/dev/null && $samtools_exec faidx $genome";
  $align_cmd =
 "$gsnap_exec --use-sarray=0 -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam ";
 }
 
+
+system($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
+die "Failed to build genome ($genome.fai and $gmap_dir/$genome_dbname) " unless -s "$genome.fai" && -d "$gmap_dir/$genome_dbname";
+
+if ($build_only){
+	print "Build complete. User stop requested\n";
+	exit(0);
+}
 
 if (!$intron_splice_db){
  my @checks = glob("$gmap_dir/$genome_dbname/$genome_dbname.maps/*iit");
@@ -179,8 +189,6 @@ if (!$intron_splice_db){
  }
 }
 
-system($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
-die "Failed to build genome ($genome.fai and $gmap_dir/$genome_dbname) " unless -s "$genome.fai" && -d "$gmap_dir/$genome_dbname";
 
 $align_cmd .= " --nofails "                    if $nofails;
 $align_cmd .= " -s $intron_splice_db "         if $intron_splice_db;
@@ -206,7 +214,7 @@ sub process_cmd {
  print &mytime . "CMD: $cmd\n" if $debug || $verbose;
  undef($dir) if $dir && $dir eq '.';
  if ($just_write_out_commands) {
-  print CMD "cd $dir ; $cmd ; cd $cwd;  " if $dir;
+  print CMD "cd $dir && $cmd && cd $cwd;  " if $dir;
   print CMD "$cmd; "                      if !$dir;
  }
  else {
