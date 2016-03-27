@@ -28,13 +28,13 @@ Optional:
  -pattern2           Pattern for automatching right pair (defaults to '_2_')
  -nofail             Don't print out failures (I/O friendlyness if sparse hits expected). Otherwise captured as FASTQ
  -suffix             Build/use suffix array (fast, downweights SNPs, use for non-polymorphic genomes)
- -build_only         Build genome (with suffix array) but don't do any alignments. Useful for building genome to be used many times
+ -build_only         Build genome (with suffix array) but exit, don't do any alignments. Useful for building genome to be used many times
  -path_number        Maximum number of hits for the read pair. If more that these many hits, then nothing is returned (defaults to 50)
  -commands_only  :s  Don't run commands, instead write them out into a file as specified by the option. Useful for preparing jobs for ParaFly
  -split_input    :i  Split the input FASTQ files to these many subfiles. Good for running large RNASeq datasets. Needs -commands_only above. Not used when FASTQ files are compressed (.bz2 .gz)
  -notpaired          Data are single end. Don't look for pairs (use -pattern1 to glob files)
  -matepair           Data are paired as circularized inserts RF
- -distance :i        Paired end distance (def 10000)
+ -distance :s        Paired end distance (def 'adaptive', i.e. estimate using median + 30 % from up to 10,000 reads, 1% slower )
  -memory             Memory for samtools sorting, use suffix G M b (def '35G')
  -verbose
  -piccard_0m         Ask gsnap to add 0M between insertions (only for piccard compatibility, issues with most other software)
@@ -60,6 +60,7 @@ use strict;
 use warnings;
 use Carp;
 use Data::Dumper;
+use Statistics::Descriptive;
 use Pod::Usage;
 use Getopt::Long;
 use Time::localtime;
@@ -80,7 +81,8 @@ my $repeat_path_number = 50;
 my $cpus               = 6;
 my $memory             = '35G';
 my $pattern1            = '_1_';
-my $pe_distance        = 10000;
+#my $pe_distance        = 10000;
+my $pe_distance        = 'adaptive';
 my $filetype = '';
 
 &GetOptions(
@@ -94,7 +96,7 @@ my $filetype = '';
              'pattern1:s'      => \$pattern1,
              'pattern2:s'      => \$pattern2,
              'nofail'          => \$nofails,
-             'distance:i'      => \$pe_distance,
+             'distance:s'      => \$pe_distance,
              'suffix'          => \$suffix,
              'path_number:i'   => \$repeat_path_number,
              'commands_only:s' => \$just_write_out_commands,
@@ -171,9 +173,10 @@ if ($build_only){
 }
 
 $align_cmd .= " --nofails "                  if $nofails;
-$align_cmd .= " --pairmax-dna=$pe_distance " if !$notpaired;
+$align_cmd .= " --pairmax-dna=$pe_distance " if !$notpaired && $pe_distance=~/^\d+$/;
 $align_cmd .= " --sam-use-0M " if $piccard_0m;
 $align_cmd .= " --orientation=RF " if $matepair;
+
 
 
 open( CMD, ">$just_write_out_commands" ) if $just_write_out_commands;
@@ -426,20 +429,51 @@ sub align_paired_files() {
    close LOG;
    next if $log[-1] && $log[-1] =~ /^GSNAP Completed/;
   }
-  open( LOG, ">gsnap.$base.log" );
+
   my $base_out_filename = $notpaired ? "gsnap.$base.unpaired"  : "gsnap.$base.concordant";
   my $out_halfmapped = "gsnap.$base.halfmapping_uniq";
-  my $file_align_cmd = $align_cmd;
 
-  $file_align_cmd .= ' --bunzip2 ' if $file =~ /\.bz2$/; 
-  $file_align_cmd .= ' --gunzip ' if $file =~ /\.gz$/; 
-  $file_align_cmd .= $qual_prot if $qual_prot;
-
-  $file_align_cmd .= " --split-output=gsnap.$base --read-group-id=$base $file $pair ";
-  &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
-    unless (    -s "$base_out_filename"."_uniq"
-             || -s "$base_out_filename"."_uniq.bam" );
   unless ( -s "$base_out_filename"."_uniq.bam" || $just_write_out_commands) {
+    open( LOG, ">gsnap.$base.log" );
+    my $file_align_cmd = $align_cmd;
+    $file_align_cmd .= ' --bunzip2 ' if $file =~ /\.bz2$/; 
+    $file_align_cmd .= ' --gunzip ' if $file =~ /\.gz$/; 
+    $file_align_cmd .= $qual_prot if $qual_prot;
+
+    if (!$pe_distance || $pe_distance!~/^\d+$/ || $pe_distance < 2){
+	#align 10000 reads picked from subset and get pe_distance
+	my $test_cmd = $file_align_cmd . ' --part=1/100 --pairmax-dna=100000 ';
+        unless (-s "gsnap.test.$base.concordant_uniq.sizes"){
+		print "Finding out what the right PE distance is\n\n";
+		&process_cmd($test_cmd." --split-output=gsnap.test.$base $file $pair >/dev/null 2> /dev/null",'.', "gsnap.test.$base*");
+		die "Could not produce test alignment for gsnap.test.$base.concordant_uniq" unless -s "gsnap.test.$base.concordant_uniq";
+		#get the mate distance (negative to ensure we are not getting @lines, shuffle it, get 10000 
+        	&process_cmd("cut -s -f 9 gsnap.test.$base.concordant_uniq|grep '^-'|shuf|head -n 10000 > gsnap.test.$base.concordant_uniq.sizes");
+		my @delete = glob("./gsnap.test.$base.*");
+		foreach my $del (@delete){
+			unlink($del) unless $del eq "./gsnap.test.$base.concordant_uniq.sizes";
+		}
+		die "Could not produce test distance data for gsnap.test.$base" unless -s "gsnap.test.$base.concordant_uniq.sizes";
+	}
+        open (SIZ,"gsnap.test.$base.concordant_uniq.sizes");
+	my @size_data;
+	while (my $ln=<SIZ>){
+		chomp($ln);
+		next unless $ln;
+		$ln=~s/^-//;
+		push(@size_data,$ln) if $ln;
+	}
+	close SIZ;
+	my $datapoints = scalar(@size_data);
+	die "No data available from test alignment" unless $datapoints > 0;
+	my $median = &median(\@size_data);
+	$pe_distance = int($median + 0.30 * $median) +1; #round up
+	print "Maximum PE distance allowed was estimated as $pe_distance from $datapoints datapoints (median $median + 30%)\n\n";
+        $file_align_cmd .= " --pairmax-dna=$pe_distance ";
+    } 
+    $file_align_cmd .= " --split-output=gsnap.$base --read-group-id=$base $file $pair ";
+    &process_cmd( $file_align_cmd, '.', "gsnap.$base*" );
+
    &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename"."_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_uniq.bam -");
    &process_cmd("$samtools_exec index $base_out_filename"."_uniq.bam");
 
@@ -514,5 +548,15 @@ sub check_fastq_format() {
   last if $counter >= $max_seqs;
  }
  return 'sanger';
+}
+
+
+
+sub median() {
+ my $array_ref = shift;
+ my @sorted = sort { $a <=> $b } @{$array_ref};
+ my $median = $sorted[ int( @sorted / 2 ) ];
+ return $array_ref->[0] if !$median;
+ return $median;
 }
 
