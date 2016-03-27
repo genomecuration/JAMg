@@ -158,7 +158,7 @@ print "Found these files:\n".join("\n",@files)."\n";
 
 my ( $build_cmd, $align_cmd );
 if ($suffix || $build_only) {
- warn "WARNING: Using -suffix with RNA-Seq gapped alignments is not recommended... it seems to be much (order of magnitude) slower in my tests\n";sleep(3);
+ warn "\n\nWARNING: Using -suffix with RNA-Seq gapped alignments is not recommended... it seems to be much (order of magnitude) slower in my tests\n\n\n" unless $build_only;
  $build_cmd =
 "$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 $genome >/dev/null && $samtools_exec faidx $genome";
  $align_cmd =
