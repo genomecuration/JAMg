@@ -53,7 +53,6 @@ clean:
 	cd 3rd_party/cdbtools/cdbfasta && $(MAKE) clean
 	cd 3rd_party/parafly && $(MAKE) clean
 	cd 3rd_party/snap && $(MAKE) clean
-	cd 3rd_party/TransDecoder && $(MAKE) clean
 	cd 3rd_party/RepeatMasker && rm -f trf Libraries/taxonomy.dat Libraries/Dfam.hmm 
 	cd 3rd_party/augustus && $(MAKE) clean
 	cd 3rd_party/geneid && $(MAKE) clean
