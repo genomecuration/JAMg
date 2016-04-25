@@ -1,2 +1,2 @@
 #!/bin/bash
-rm *trim* *zip errors -f
+rm *trim* *zip errors *fastq *log *unpaired* *fastqc.html -f

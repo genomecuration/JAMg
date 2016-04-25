@@ -11,10 +11,10 @@ See the http://sourceforge.net/projects/justpreprocessmyreads/files/preprocess_r
 
 == Dependencies ==
 
-Uses pbzip2, bowtie2, fastx_toolkit, samtools, fastqc, Trimmomatic (optional)
+Uses pbzip2 (optional)
 On Ubuntu you can install most of these software:
 
-	sudo apt-get install pbzip2 bowtie2 fastx_toolkit samtools 
+	sudo apt-get install pbzip2 
 
 See 3rd_party directory for the others.
 
@@ -48,22 +48,7 @@ or code within
  Debian/Ubuntu:
  apt-get install pbzip2
 
-=== samtools ===
- Heng Li
- http://samtools.sourceforge.net
- Debian/Ubuntu:
- apt-get install samtools
-
 === fastqc ===
  simon.andrews@babraham.ac.uk
  http://www.bioinformatics.bbsrc.ac.uk
 
-=== fastx_toolkit ===
- gordon at cshl dot edu
- http://hannonlab.cshl.edu/fastx_toolkit/download.html
- apt-get install fastx_toolkit
-
-=== bowtie2 ===
- Ben Langmead (blangmea@jhsph.edu)
- http://bowtie-bio.sourceforge.net/bowtie2/index.shtml
- apt-get install bowtie2
