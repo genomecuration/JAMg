@@ -3,6 +3,7 @@ SHELL := /bin/bash
 all:
 	cd 3rd_party && unzip fastqc_v*.zip && unzip Trimmomatic-*.zip && unzip allpaths.zip && chmod +x FastQC/fastqc allpaths/* 
 	cd 3rd_party && unzip blue_113.zip && cd blue_113 && find . -name "*sh" -exec /bin/bash '{}' \; && chmod +x *.exe
+	ln -fs `pwd`/3rd_party/FastQC/fastqc .
 
 clean:
 	cd 3rd_party && rm -rf FastQC Trimmomatic-0.33 allpaths && cd ../test && ./cleanme.sh
