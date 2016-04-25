@@ -1,0 +1,117 @@
+#%Module1.0
+
+set version 21Apr16
+
+proc ModulesHelp { } {
+	global dotversion
+ 	puts stderr "\tJust_Annotate_My_genome (Apr2016)
+Gives access also to these software
+\taatpackage
+\tAEGeAn
+\taragorn1.2.36
+\taugustus-3.2.1
+\tbedtools-2.17.0
+\tblat
+\tBUSCO_v1.1b1
+\tcdbtools
+\tEMBOSS-6.6.0
+\teval-2.2.8
+\tEVidenceModeler-1.1.1
+\texonerate-2.2.0-x86_64
+\tfasta-36.3.8c
+\tfastqc-0.11.5
+\tgeneid
+\tGlimmerHMM
+\tgmap-2015-09-29
+\tgenometools 1.5.7
+\thhsuite-2.0.16-linux-x86_64
+\thmmer-3.1b2-linux-intel-x86_64
+\tjustpreprocessmyreads
+\tlibpng-1.6.19
+\tmauve_2.3.1
+\tmira_4.9.5_2_linux-gnu_x86_64_static
+\tmysql-5.7.9-linux-glibc2.5-x86_64
+\tncbi-blast-2.2.28+
+\tparafly-r2013-01-21
+\tPASApipeline-2.0.2
+\tRECON-1.08
+\tRepeatMasker-open-4-0-6
+\tRepeatModeler-open-1.0.8
+\tRepeatScout-1.0.5
+\tsamtools-1.3
+\ttransdecoder
+\ttrinityrnaseq-2.2.0
+\ttRNAscan-SE-1.3.1
+\tzlib-1.2.8
+"
+}
+
+module-whatis "Just_Annotate_My_genome (Apr2016).
+Gives access also to these software
+\taatpackage
+\tAEGeAn
+\taragorn1.2.36
+\taugustus-3.2.1
+\tbedtools-2.17.0
+\tblat
+\tBUSCO_v1.1b1
+\tcdbtools
+\tEMBOSS-6.6.0
+\teval-2.2.8
+\tEVidenceModeler-1.1.1
+\texonerate-2.2.0-x86_64
+\tfasta-36.3.8c
+\tgeneid
+\tGlimmerHMM
+\tgmap-2015-09-29
+\tgenometools 1.5.7
+\thhsuite-2.0.16-linux-x86_64
+\thmmer-3.1b2-linux-intel-x86_64
+\tjustpreprocessmyreads
+\tlibpng-1.6.19
+\tmauve_2.3.1
+\tmira_4.9.5_2_linux-gnu_x86_64_static
+\tmysql-5.7.9-linux-glibc2.5-x86_64
+\tncbi-blast-2.2.28+
+\tparafly-r2013-01-21
+\tPASApipeline-2.0.2
+\tRECON-1.08
+\tRepeatMasker-open-4-0-6
+\tRepeatModeler-open-1.0.8
+\tRepeatScout-1.0.5
+\tsamtools-1.3
+\ttransdecoder
+\ttrinityrnaseq-2.2.0
+\ttRNAscan-SE-1.3.1
+\tzlib-1.2.8
+"
+
+conflict JAMg
+prepend-path PATH /data_storage/sysadmin/packages/jamg-21apr16/bin
+prepend-path PATH /data_storage/sysadmin/packages/jamg-21apr16/3rd_party/bin
+setenv JAMG_PATH /data_storage/sysadmin/packages/jamg-21apr16
+
+setenv LOCAL_CPUS 20
+setenv MAX_MEMORY_G 150
+
+setenv AUGUSTUS_CONFIG_PATH /data_storage/sysadmin/packages/jamg-21apr16/3rd_party/augustus/config
+prepend-path LD_LIBRARY_PATH /data_storage/sysadmin/packages/jamg-21apr16/3rd_party/lib
+prepend-path LD_LIBRARY_PATH /data_storage/sysadmin/packages/jamg-21apr16/3rd_party/lib64
+prepend-path LD_LIBRARY_PATH /data_storage/sysadmin/packages/jamg-21apr16/3rd_party/mysql/lib
+prepend-path LD_LIBRARY_PATH /data_storage/sysadmin/packages/jamg-21apr16/3rd_party/lib
+prepend-path LD_LIBRARY_PATH /data_storage/sysadmin/packages/jamg-21apr16/3rd_party/lib64
+prepend-path LD_LIBRARY_PATH /data_storage/sysadmin/packages/jamg-21apr16/3rd_party/mysql/lib
+
+prepend-path LIBRARY_PATH /data_storage/sysadmin/packages/jamg-21apr16/3rd_party/lib
+prepend-path LIBRARY_PATH /data_storage/sysadmin/packages/jamg-21apr16/3rd_party/lib64
+prepend-path LIBRARY_PATH /data_storage/sysadmin/packages/jamg-21apr16/3rd_party/mysql/lib
+prepend-path LIBRARY_PATH /data_storage/sysadmin/packages/jamg-21apr16/3rd_party/lib
+prepend-path LIBRARY_PATH /data_storage/sysadmin/packages/jamg-21apr16/3rd_party/lib64
+prepend-path LIBRARY_PATH /data_storage/sysadmin/packages/jamg-21apr16/3rd_party/mysql/lib
+
+prepend-path PERL5LIB /data_storage/sysadmin/packages/jamg-21apr16/PerlLib
+
+if [ module-info mode load ] {
+        ModulesHelp
+}
+
