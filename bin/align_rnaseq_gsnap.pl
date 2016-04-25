@@ -185,7 +185,7 @@ if ($build_only){
 
 if (!$intron_splice_db){
  my @checks = glob("$gmap_dir/$genome_dbname/$genome_dbname.maps/*iit");
- if (@checks && length(@checks) == 1){
+ if (@checks && length(scalar(@checks)) == 1){
   $intron_splice_db = $checks[0];
   print "Will use the splice file $intron_splice_db\n";
   sleep(1);
