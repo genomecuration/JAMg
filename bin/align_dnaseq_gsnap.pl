@@ -23,6 +23,7 @@ Optional:
  -input_dir      :s  Directory with read files (defaults to current working directory)
  -gmap_dir       :s  Where the GMAP databases are meant to live (def. JAMG_PATH/databases/gmap)
  -cpus           :i  Number of CPUs/threads (def. 6). I don't recommend more than 6 in a system that has 12 CPUs
+ -do_parallel    :i  Run these many alignments in parallel. Number of CPUs per alignment is -cpus divided by -do_parallel. Note, memory is not divided.
  -help
  -pattern1           Pattern for automatching left pair files with *'pattern1'*.fastq (defaults to '_1_')
  -pattern2           Pattern for automatching right pair (defaults to '_2_')
@@ -72,7 +73,7 @@ $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 my ( $gmap_build_exec, $gsnap_exec, $samtools_exec,$bunzip2_exec,$bedtools_exec ) =
   &check_program( "gmap_build", "gsnap", "samtools",'bunzip2','bedtools' );
 &samtools_version_check($samtools_exec);
-my ( $input_dir, $pattern2, $debug, $genome, $genome_dbname, $nofails, $suffix,$piccard_0m,
+my ( $input_dir, $pattern2, $debug, $genome, $genome_dbname, $nofails, $suffix,$piccard_0m,$do_parallel,
      $help, $just_write_out_commands, $split_input, $notpaired, $verbose, $matepair, $build_only );
 my $cwd = `pwd`;
 chomp($cwd);
@@ -86,7 +87,9 @@ my $pe_distance        = 'adaptive';
 my $filetype = '';
 
 &GetOptions(
-             'debug'           => \$debug,'verbose'=>\$verbose,
+             'do_parallel:i'   => \$do_parallel,
+             'debug'           => \$debug,
+	     'verbose'=>\$verbose,
              'fasta:s'         => \$genome,
              'dbname:s'        => \$genome_dbname,
              'gmap_dir:s'      => \$gmap_dir,
@@ -115,6 +118,11 @@ pod2usage "No GMAP genome database name\n" unless $genome_dbname;
 pod2usage "GMAP database does not exist: $gmap_dir\n" unless -d $gmap_dir;
 pod2usage "You only provided pattern1 or more than 1 input file but didn't specify -notpaired\n" if $pattern1 && !$notpaired && !$pattern2 && $ARGV[1];
 $input_dir = $cwd unless $input_dir;
+$do_parallel = 1 if $do_parallel && $do_parallel < 1;
+if ($do_parallel && $do_parallel > 1){
+        $cpus = int($cpus / $do_parallel);
+}
+
 my $samtools_sort_CPUs = int( $cpus / 2 ) > 2 ? int( $cpus / 2 ) : 2;
 my $suff = "";
 if ( $memory =~ s/([A-Z])$// ) {
@@ -182,11 +190,31 @@ $align_cmd .= " --orientation=RF " if $matepair;
 open( CMD, ">$just_write_out_commands" ) if $just_write_out_commands;
 if ($notpaired) {
  my @files_to_do = &checked_unpaired_files(@files);
- &align_unpaired_files(@files_to_do);
+ if ($do_parallel && $do_parallel > 1){
+        my $thread_helper = new Thread_helper($do_parallel);
+        foreach my $f (@files_to_do){
+                my $thread        = threads->create('align_unpaired_files',($f));
+                $thread_helper->add_thread($thread);
+                sleep(10);
+        }
+        $thread_helper->wait_for_all_threads_to_complete();
+ }else{
+        &align_unpaired_files(@files_to_do);
+ }
 }
 else {
  my @files_to_do = &checked_paired_files(@files);
- &align_paired_files(@files_to_do);
+ if ($do_parallel && $do_parallel > 1){
+        my $thread_helper = new Thread_helper($do_parallel);
+        foreach my $f (@files_to_do){
+                my $thread        = threads->create('align_paired_files',($f));
+                $thread_helper->add_thread($thread);
+                sleep(10);
+        }
+        $thread_helper->wait_for_all_threads_to_complete();
+ }else{
+        &align_paired_files(@files_to_do);
+ }
 }
 
 close(CMD) if $just_write_out_commands;
