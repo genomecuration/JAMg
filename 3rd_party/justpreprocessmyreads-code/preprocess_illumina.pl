@@ -95,7 +95,7 @@ my $slide_window  = 8 ;
 my $slide_quality  = 8 ; 
 
 # edit these if you use it often with the same variables
-my $trimmomatic_exec = $RealBin . "/3rd_party/Trimmomatic-0.33/trimmomatic-0.33.jar";
+my $trimmomatic_exec = $RealBin . "/3rd_party/Trimmomatic-0.36/trimmomatic-0.36.jar";
 my $rDNA_db          = $RealBin . '/dbs/' . 'rDNA_nt_inv.fsa_nr';      #bowtie2
 my $contam_db = $RealBin . '/dbs/' . 'ecoli_pseudomonas.fsa.masked.nr'; #bowtie2
 my $human_db  = $RealBin . '/dbs/' . 'human_genome.fasta';              #bowtie2
