@@ -306,7 +306,7 @@ print "Stage 1 completed\n";
 
 ##########################
 foreach my $file (@files){
-  my $fastqc_basename = $file;$fastqc_basename=~s/\.[^\.\-\_]+$//;$fastqc_basename.='_fastqc'; # probably
+  my $fastqc_basename = $file;$fastqc_basename.='_fastqc'; # probably
   push( @threads, &create_fork("$fastqc_exec --noextract --nogroup -q $file") )
     unless -s $fastqc_basename . ".zip" || !$fastqc_exec;
   $files_to_delete_master{$fastqc_basename.".html"} = 1;
