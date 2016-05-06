@@ -43,10 +43,11 @@
     -deduplicate :s  => Perform deduplication. There are two approaches. Native and Allpaths. For Native provide an integer to use as the length of the 5' seed (give '1' to use default of 16 for short reads and 32 for long reads). To use Allpaths provide a read name prefix this will overwrite the original readname. Allpaths used 16 bp as the 5' seed. Both approaches need lots of memory.
 
  These happen after any adaptor trimming (in this order)
-    -trim_5      :i  => Trim these many bases from the 5'. Happens before quality trimming but after adaptor trimming (def 0)
-    -max_keep    :i  => After any -trim5 then trim 3' end so that it is no longer than these many bases. Have seen erroneous 251th base in 250 bp sequencing (def automatic to closest whole 10 b.p decrement - 100, 150, 170 etc - if not user specified)
-    -qtrim       :i  => Trim 3' so that mean quality is that much in the phred scale (def. 5)
-    -min_length  :i  => Discard sequences shorter than this (after quality trimming). Defaults to 32. Increase to 50-80 if you plan to use if it for alignments
+    -trim_5      :i     => Trim these many bases from the 5'. Happens before quality trimming but after adaptor trimming (def 0)
+    -max_keep    :i     => After any -trim5 then trim 3' end so that it is no longer than these many bases. Have seen erroneous 251th base in 250 bp sequencing (def automatic to closest whole 10 b.p decrement - 100, 150, 170 etc - if not user specified)
+    -min_length  :i     => Discard sequences shorter than this (after quality trimming). Defaults to 32. Increase to 50-80 if you plan to use if it for alignments
+    -qtrim       :i     => Trim 3' so that mean quality is that much in the phred scale (def. 5)
+    -no_average_quality => Do not do any average quality trimming, just -trim_5, -max_keep and -min_length
     
 
  Quality is auto-calculated based on the minimum number found but
@@ -83,7 +84,8 @@ my (
      $is_casava,      @user_labels,  @user_bowties, $noconvert_fastq,
      $is_paired,   $trim_5,       $stop_qc,      $no_screen,
      $backup_bz2,  $debug,        $is_gdna,      $nohuman, 
-     $noadaptors, $max_keep_3, $no_qc, $mate_pair,$do_deduplicate, $max_length
+     $noadaptors, $max_keep_3, $no_qc, $mate_pair,$do_deduplicate, $max_length,
+     $no_av_quality
 );
 my $cwd = `pwd`;
 chomp($cwd);
@@ -137,6 +139,7 @@ GetOptions(
             'min_length:i'       => \$min_length,
 	    'slide_quality:i'    => \$slide_quality,
 	    'slide_window:i'    => \$slide_window,
+            'no_average_quality' => \$no_av_quality,
 	    'mate_pair'=> \$mate_pair,
 	    'deduplicate:s' => \$do_deduplicate
 ) || pod2usage();
@@ -256,7 +259,7 @@ if ( $is_paired && $trimmomatic_exec) {
  $cmd .= " ILLUMINACLIP:$adapters_db:2:40:15 " if $adapters_db ;
  $cmd .= " HEADCROP:$trim_5 " if $trim_5;
  $cmd .= " CROP:$max_keep_3 " if $max_keep_3 && $max_keep_3 >0;
- $cmd .= " LEADING:4 TRAILING:$qtrim SLIDINGWINDOW:$slide_window:$slide_quality ";
+ $cmd .= " LEADING:4 TRAILING:$qtrim SLIDINGWINDOW:$slide_window:$slide_quality " unless $no_av_quality;
  if ( $check1 eq $check2 && ( $check1 eq 'illumina' ) ) {
   $cmd =~ s/phred33/phred64/;
   $cmd .= " TOPHRED33 ";
@@ -280,7 +283,7 @@ if ( $is_paired && $trimmomatic_exec) {
   $cmd .= " ILLUMINACLIP:$adapters_db:2:40:15 " if  $adapters_db;
   $cmd .= " HEADCROP:$trim_5 " if $trim_5;
   $cmd .= " CROP:$max_keep_3 " if $max_keep_3 && $max_keep_3 >0;
-  $cmd .= " LEADING:4 TRAILING:$qtrim SLIDINGWINDOW:$slide_window:$slide_quality ";
+  $cmd .= " LEADING:4 TRAILING:$qtrim SLIDINGWINDOW:$slide_window:$slide_quality " unless $no_av_quality;
 
   if ( $check && $check eq 'illumina' ) {
    $cmd =~ s/phred33/phred64/;
