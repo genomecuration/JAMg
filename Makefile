@@ -13,7 +13,7 @@ all:
 	export CFLAGS="$(CFLAGS) -I$(PWD)/3rd_party/include -I$(PWD)/3rd_party/mysql/include -fPIC"
 	cd 3rd_party && tar xzf zlib-1.2.8.tar.gz && cd zlib-1.2.8 && ./configure --prefix=`pwd`/../ --64 && $(MAKE) && $(MAKE) install
 	cd 3rd_party && tar xzf libpng-1.6.19.tar.gz && cd libpng-1.6.19 && ./configure --prefix=`pwd`/../ --with-zlib-prefix=`pwd`/../ && $(MAKE) && $(MAKE) install
-	cd 3rd_party/mysql && find . -name "*bz2" -exec bunzip2 '{}' \; 
+	cd 3rd_party/mysql && find . -name "*bz2" -exec bunzip2 '{}' \;
 	cd 3rd_party/EMBOSS && if [[ ! -e emboss/data/TAXONOMY/division.dmp ]]; then bunzip2 -k emboss/data/TAXONOMY/*bz2; fi && ./configure --prefix=`pwd`/../ --without-mysql --without-x --without-java --without-hpdf --without-auth --without-axis2c --without-postgresql --without-pngdriver && $(MAKE) -j3 && $(MAKE) install
 	cd 3rd_party/hhsuite && cp lib64/libffindex.so.0.1 ../lib64/
 	cd 3rd_party/ncbi-blast/bin && ln -fs `pwd`/* ../../bin/
@@ -30,6 +30,7 @@ all:
 	cd 3rd_party && tar -xjf mira_4.9.5_2_linux-gnu_x86_64_static.tar.bz2 && ln -s mira_4.9.5_2_linux-gnu_x86_64_static mira
 	cd 3rd_party/augustus && $(MAKE) && cp bin/* ../bin/ && cp scripts/gff2gbSmallDNA.pl scripts/filterGenes.pl ../bin/ 
 	cd 3rd_party/geneid && $(MAKE)
+	cd 3rd_party/hmmer &&  ./configure --prefix=`pwd`/../ && $(MAKE) && $(MAKE) install
 	cd 3rd_party/GlimmerHMM/sources && $(MAKE) && cd ../train && $(MAKE)
 	cd 3rd_party/snap && $(MAKE) && cp fathom ../bin/
 	cd 3rd_party/gmap && ./configure --prefix=`pwd`/../ --with-gmapdb=`pwd`/../../databases/gmap/ && $(MAKE) -j3 && $(MAKE) check && $(MAKE) install
