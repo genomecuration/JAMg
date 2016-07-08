@@ -182,9 +182,9 @@ print "\nDone.\n";
 #################################################################
 sub run_search(){
 	my $file = shift;
-	my $outfile = $file."_vs_swissprot";
+	my $outfile = $file."_vs_uniref50";
 	my $check = &check_blast_out($outfile);
-	system("$blastp_exec -db $RealBin/../databases/blastdb/uniprot_sprot -evalue 1e-30 -query $file -out $outfile -parse_deflines -num_threads 2 -outfmt 5 -max_target_seqs 50") unless $check == 1;
+	system("$blastp_exec -db $RealBin/../databases/blastdb/uniref50 -evalue 1e-30 -query $file -out $outfile -parse_deflines -num_threads 2 -outfmt 5 -max_target_seqs 50") unless $check == 1;
 	system("$blast_taxonomy_summary_exec -xml -top 10 -in $outfile >/dev/null 2>/dev/null");
 }
 
