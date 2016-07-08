@@ -186,7 +186,7 @@ sub run_search(){
 	my $check = &check_blast_out($outfile);
 	return if $check == 1; # don't reprocess
 #	print "BLAST for $file...\n";
-	system("$blastp_exec -db $RealBin/../databases/blastdb/uniref100 -evalue 1e-30 -query $file -out $outfile -parse_deflines -num_threads 2 -outfmt 5 -max_target_seqs 50");
+	system("$blastp_exec -db $RealBin/../databases/blastdb/uniprot_sprot -evalue 1e-30 -query $file -out $outfile -parse_deflines -num_threads 2 -outfmt 5 -max_target_seqs 50");
 	system("$blast_taxonomy_summary_exec -xml -top 10 -in $outfile >/dev/null 2>/dev/null");
 }
 
