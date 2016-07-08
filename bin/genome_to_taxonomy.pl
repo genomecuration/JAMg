@@ -174,10 +174,9 @@ foreach my $file (@pep_files){
 	print "Processed file $i of $total        \r";
 }
 $thread_helper->wait_for_all_threads_to_complete() if $i && $i>0;
-
-
-
 chdir("../");
+
+print "\nDone.\n";
 
 #################################################################
 sub run_search(){
