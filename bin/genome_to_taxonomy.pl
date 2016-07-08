@@ -49,7 +49,9 @@ my $cpus = 6;
 my $fasta;
 
 GetOptions(
-        'in|fasta=s'=>\$fasta,
+	'cpus|threads=i' => \$cpus,
+	'fasta|in=s'=>\$fasta
+
 );
 
 $fasta = shift if !$fasta;
