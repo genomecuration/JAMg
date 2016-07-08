@@ -41,6 +41,7 @@ use Pod::Usage;
 use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
 use Thread_helper;
+use Bio::LITE::Taxonomy::NCBI::Gi2taxid;
 
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/:$RealBin/../3rd_party/augustus/bin/";
 
@@ -183,9 +184,7 @@ sub run_search(){
 	my $file = shift;
 	my $outfile = $file."_vs_swissprot";
 	my $check = &check_blast_out($outfile);
-	return if $check == 1; # don't reprocess
-#	print "BLAST for $file...\n";
-	system("$blastp_exec -db $RealBin/../databases/blastdb/uniprot_sprot -evalue 1e-30 -query $file -out $outfile -parse_deflines -num_threads 2 -outfmt 5 -max_target_seqs 50");
+	system("$blastp_exec -db $RealBin/../databases/blastdb/uniprot_sprot -evalue 1e-30 -query $file -out $outfile -parse_deflines -num_threads 2 -outfmt 5 -max_target_seqs 50") unless $check == 1;
 	system("$blast_taxonomy_summary_exec -xml -top 10 -in $outfile >/dev/null 2>/dev/null");
 }
 
