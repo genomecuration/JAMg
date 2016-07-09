@@ -27,7 +27,8 @@ is prohibited under the current license.
 
 =head1 BUGS & LIMITATIONS
 
-None known so far.
+ BioPerl Bio/DB/Taxonomy/flatfile.pm has an issue in the last few lines, where the DESTROY command
+ deletes the indexes. You will need to comment out these unlink commands
 
 =cut
 
@@ -59,19 +60,11 @@ $in=shift||warn ("Give a BLAST output file from UniProt\n") && pod2usage unless 
 pod2usage " -ncbi must protein or nucleotide\n" unless (!$is_ncbi || $is_ncbi=~/prot/i || $is_ncbi=~/nuc/i);
 my $taxondb = Bio::DB::Taxonomy->new(-source => 'entrez');
 if ($flatfile_dir && -d $flatfile_dir && -s $flatfile_dir.'/nodes.dmp' && -s $flatfile_dir.'/names.dmp'){
+   system("$RealBin/prepare_blast_taxonomy.pl -d  $flatfile_dir");
+
    warn "Using $flatfile_dir as NCBI TaxDB directory\n" if $verbose;
-   $taxondb = Bio::DB::Taxonomy->new(-source => 'flatfile',-nodesfile => $flatfile_dir.'/nodes.dmp',-namesfile => $flatfile_dir.'/names.dmp',-directory => $flatfile_dir);
+   $taxondb = Bio::DB::Taxonomy->new(-source => 'flatfile', -directory => $flatfile_dir, -force => 0);
    if ($is_ncbi){
-   	if ($is_ncbi=~/prot/i && !-s "$flatfile_dir/gi_taxid_prot.bin" && -s "$flatfile_dir/gi_taxid_prot.dmp"){
-		print "Building protein binaries\n";
-        	use Bio::LITE::Taxonomy::NCBI::Gi2taxid qw/new_dict/;
-		new_dict (in => "$flatfile_dir/gi_taxid_prot.dmp", out => "$flatfile_dir/gi_taxid_prot.bin");
-	   }
-	if ($is_ncbi=~/nuc/i && !-s "$flatfile_dir/gi_taxid_nucl.bin" && -s "$flatfile_dir/gi_taxid_nucl.dmp"){
-		print "Building nucleotide binaries\n";
-        	use Bio::LITE::Taxonomy::NCBI::Gi2taxid qw/new_dict/;
-		new_dict (in => "$flatfile_dir/gi_taxid_nucl.dmp", out => "$flatfile_dir/gi_taxid_nucl.bin");
-	}
 	$ncbi_dictionary = Bio::LITE::Taxonomy::NCBI::Gi2taxid->new(dict=>"$flatfile_dir/gi_taxid_prot.bin") if  $is_ncbi=~/prot/i;
         $ncbi_dictionary = Bio::LITE::Taxonomy::NCBI::Gi2taxid->new(dict=>"$flatfile_dir/gi_taxid_nucl.bin") if  $is_ncbi=~/nuc/i;
    }
