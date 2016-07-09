@@ -60,7 +60,7 @@ $in=shift||warn ("Give a BLAST output file from UniProt\n") && pod2usage unless 
 pod2usage " -ncbi must protein or nucleotide\n" unless (!$is_ncbi || $is_ncbi=~/prot/i || $is_ncbi=~/nuc/i);
 my $taxondb = Bio::DB::Taxonomy->new(-source => 'entrez');
 if ($flatfile_dir && -d $flatfile_dir && -s $flatfile_dir.'/nodes.dmp' && -s $flatfile_dir.'/names.dmp'){
-   system("$RealBin/prepare_blast_taxonomy.pl -d  $flatfile_dir");
+   system("$RealBin/prepare_blast_taxonomy.pl -d  $flatfile_dir") if !-s $flatfile_dir.'/nodes';
 
    warn "Using $flatfile_dir as NCBI TaxDB directory\n" if $verbose;
    $taxondb = Bio::DB::Taxonomy->new(-source => 'flatfile', -directory => $flatfile_dir, -force => 0);
