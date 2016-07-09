@@ -70,9 +70,9 @@ use Time::localtime;
 use File::Basename;
 use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
-$ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 use threads;
 use Thread_helper;
+$ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 
 my ( $gmap_build_exec, $gsnap_exec, $samtools_exec,$bunzip2_exec,$bedtools_exec ) =
   &check_program( "gmap_build", "gsnap", "samtools",'bunzip2','bedtools' );
@@ -172,20 +172,19 @@ print "Found these files:\n".join("\n",@files)."\n";
 my ( $build_cmd, $align_cmd );
 if ($suffix || $build_only) {
  warn "\n\nWARNING: Using -suffix with RNA-Seq gapped alignments is not recommended... it seems to be much (order of magnitude) slower in my tests\n\n\n" unless $build_only;
- $build_cmd =
-"$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 $genome >/dev/null && $samtools_exec faidx $genome";
+ $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 $genome >/dev/null";
  $align_cmd =
 "$gsnap_exec -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam ";
 }
 else {
- $build_cmd =
-"$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 --build-sarray=0 $genome >/dev/null && $samtools_exec faidx $genome";
+ $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 --build-sarray=0 $genome >/dev/null";
  $align_cmd =
 "$gsnap_exec --use-sarray=0 -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus  --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam ";
 }
 
 
 system($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
+system("$samtools_exec faidx $genome") unless -s "$genome.fai";
 die "Failed to build genome ($genome.fai and $gmap_dir/$genome_dbname) " unless -s "$genome.fai" && -d "$gmap_dir/$genome_dbname";
 
 if ($build_only){
