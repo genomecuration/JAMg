@@ -29,6 +29,10 @@ Copyright 2015 the Western Sydney University
 See LICENSE file for license info
 It is provided "as is" without warranty of any kind.
 
+=head1 BUGS & LIMITATIONS
+
+ BioPerl Bio/DB/Taxonomy/flatfile.pm has an issue in the last few lines, where the DESTROY command
+ deletes the indexes. You will need to comment out these unlink commands
 
 =cut
 
