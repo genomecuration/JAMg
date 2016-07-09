@@ -38,7 +38,7 @@ use Data::Dumper;
 use Pod::Usage;
 use Bio::Taxon;
 use Bio::DB::Taxonomy;
-use Bio::LITE::Taxonomy::NCBI::Gi2taxid;
+use Bio::LITE::Taxonomy::NCBI::Gi2taxid qw/new_dict/;
 use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
 my $force = int(0);
@@ -52,14 +52,11 @@ my $taxondb = Bio::DB::Taxonomy->new(-source => 'entrez');
 if ($flatfile_dir && -d $flatfile_dir && -s $flatfile_dir.'/nodes.dmp' && -s $flatfile_dir.'/names.dmp'){
    print "Using $flatfile_dir as NCBI TaxDB directory\n";
    $taxondb = Bio::DB::Taxonomy->new(-source => 'flatfile', -nodesfile => $flatfile_dir.'/nodes.dmp',
-     -namesfile => $flatfile_dir.'/names.dmp', -directory => $flatfile_dir, -force => $force);
+     -namesfile => $flatfile_dir.'/names.dmp', -directory => $flatfile_dir, -force => $force) if !-s $flatfile_dir.'/nodes' || $force;
    print "Building protein binaries\n";
-   use Bio::LITE::Taxonomy::NCBI::Gi2taxid qw/new_dict/;
-   new_dict (in => "$flatfile_dir/gi_taxid_prot.dmp", out => "$flatfile_dir/gi_taxid_prot.bin");
+   new_dict (in => "$flatfile_dir/gi_taxid_prot.dmp", out => "$flatfile_dir/gi_taxid_prot.bin") if !-s "$flatfile_dir/gi_taxid_prot.bin" || $force;
    print "Building nucleotide binaries\n";
-   new_dict (in => "$flatfile_dir/gi_taxid_nucl.dmp", out => "$flatfile_dir/gi_taxid_nucl.bin");
-   my $ncbi_dictionary = Bio::LITE::Taxonomy::NCBI::Gi2taxid->new(dict=>"$flatfile_dir/gi_taxid_prot.bin");
-   $ncbi_dictionary = Bio::LITE::Taxonomy::NCBI::Gi2taxid->new(dict=>"$flatfile_dir/gi_taxid_nucl.bin");
+   new_dict (in => "$flatfile_dir/gi_taxid_nucl.dmp", out => "$flatfile_dir/gi_taxid_nucl.bin") if !-s "$flatfile_dir/gi_taxid_nucl.bin" || $force;
    print "Done!\n";
 }else{
    die "Cannot find correct taxonomy at $flatfile_dir\n";

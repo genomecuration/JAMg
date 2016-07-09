@@ -140,6 +140,7 @@ foreach my $file (@aug_files){
 close MASTERGFF unless $switch;
 
 my @pep_files = glob("*.pep");
+system("$RealBin/prepare_blast_taxonomy.pl -d $RealBin/../databases/ncbi_taxonomy/") if !-s "$RealBin/../databases/ncbi_taxonomy/nodes";
 my $thread_helper = new Thread_helper(int($cpus/2));
 $i=0;
 $total = scalar(@pep_files);
