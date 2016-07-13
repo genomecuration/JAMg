@@ -243,8 +243,8 @@ my ($scaffold_seq_hashref,$scaffold_seq_length) = &read_fasta($genome_sequence_f
 
 unlink("$genome_sequence_file.cidx");
 &process_cmd("$cdbfasta_exec $genome_sequence_file");
-#my $uppercase_genome_files = &split_fasta( $genome_file, $genome_dir, 1 );
-my $aat_uppercase_genome_files = &split_fasta_multi( $genome_file, $genome_dir);
+#my $uppercase_genome_files = &split_fasta( $genome_file, $genome_dir, 1, 1 );
+my $aat_uppercase_genome_files = &split_fasta_multi( $genome_file, $genome_dir, 1);
 
 # We now have the option to use exonerate or another method.
 # It turns out that exonerate is very good at getting rid of the false positives
@@ -1498,7 +1498,7 @@ sub order_fasta() {
  my $gff   = shift || die;
  confess "Cannot find $fasta " . $! unless -s $fasta;
  confess "Cannot find $gff " . $!   unless -s $gff;
- my $fasta_hashref = &read_fasta($fasta);
+ my ($fasta_hashref,$fasta_length_hashref) = &read_fasta($fasta);
 
  my @order = `cut -f 1 $gff|uniq `;
  open( OUT, ">$gff.fasta" );
@@ -2079,6 +2079,7 @@ sub split_fasta() {
  my $how_many_in_a_file = shift;
  my $pattern            = shift;
  my $shuffle            = shift;
+ my $min_seq_size = shift;
 
  return unless $file2split && -s $file2split && $outdir && $how_many_in_a_file;
  return if -d $outdir;
@@ -2104,7 +2105,7 @@ sub split_fasta() {
   $seq =~ s/\s+//g;
   $seq =~ s/\*$//;    # for protein stop codons
   # we will only search those that are big enough.
-  next unless $seq && length($seq)>5000;
+  next unless $seq && length($seq)>=$min_seq_size;
   $seqcount++;
 
   if (   !$filecount
@@ -2445,7 +2446,7 @@ sub prepare_pasa_output() {
  # will sort and remove overlapping genes. returns valid genes
  my $allowed_data_hashref = &parse_genome_gff( $pasa_genome_gff, 'PASA' );
  print "Indexing PASA assembly file...\n";
- my $contig_seq_hashref = &read_fasta($pasa_assembly_file);
+ my ($contig_seq_hashref,$contig_length_hashref) = &read_fasta($pasa_assembly_file);
  my $index_file = "$pasa_gff.inx";
  my $gene_obj_indexer = new Gene_obj_indexer( { "create" => $index_file } );
  my $asmbl_id_to_gene_list_href = &GFF3_utils::index_GFF3_gene_objs( $pasa_gff, $gene_obj_indexer );
@@ -2594,6 +2595,7 @@ sub run_exonerate() {
     &process_cmd( 'run_exonerate.pl' . $exonerate_options );
     die "Exonerate run failed for some reason....\n" if ( !-d basename($peptide_file) . "_queries" );
     my @files_to_cat = glob(basename($peptide_file)."_queries/*exonerate_results");
+    die "No *exonerate_results files found!" unless @files_to_cat && $files_to_cat[0];
     foreach my $f (@files_to_cat){
 	 system("cat $f >> $exonerate_file");
     }
@@ -2603,7 +2605,7 @@ sub run_exonerate() {
    }
    else {
 
-    # we have pasa data
+    # we have pasa data. no peptide file
     my $fasta_contigs = &prepare_pasa_output();
     if ( !$same_species ) {
      &run_aat( $fasta_contigs, 'nucl' );
@@ -2625,7 +2627,8 @@ sub run_exonerate() {
     &process_cmd( 'run_exonerate.pl' . $exonerate_options );
     die "Exonerate run failed for some reason....\n"
       if ( !-d basename($fasta_contigs) . "_queries" );
-    my @files_to_cat = glob(basename($peptide_file)."_queries/*exonerate_results");
+    my @files_to_cat = glob(basename($fasta_contigs)."_queries/*exonerate_results");
+    die "No *exonerate_results files found!" unless @files_to_cat && $files_to_cat[0];
     foreach my $f (@files_to_cat){
 	 system("cat $f >> $exonerate_file");
     }
@@ -2693,24 +2696,22 @@ sub run_aligner() {
  print "$aligner: Preparing input sequences\n";
  my $seq_count = &count_seq($fasta_in);
  my $splits    = ceil( $seq_count / $threads );
-
  my $output_directory = "$fasta_in.$aligner";
 
  if ( -d $output_directory ) {
   warn
 "$fasta_in.$aligner already exists. Will NOT overwrite and will skip existing output. Stop, delete it and restart otherwise\n";
-
-  #sleep(3);
+  sleep(1);
  }
  else {
   print "$aligner: Running alignment\n";
   if (    ( $pasa_cds && $fasta_in eq $pasa_cds )
        || ( $pasa_peptides && $fasta_in eq $pasa_peptides ) )
   {
-   &split_fasta( $fasta_in, $output_directory, $splits, 'type:complete', 1 );
+   &split_fasta( $fasta_in, $output_directory, $splits, 'type:complete', 1, 500 );
   }
   else {
-   &split_fasta( $fasta_in, $output_directory, $splits, undef, 1 );
+   &split_fasta( $fasta_in, $output_directory, $splits, undef, 1, 500 );
   }
  }
  my @fastas = glob("$output_directory/*");
@@ -3015,8 +3016,8 @@ sub create_golden_gffs_from_gff() {
 
  my ( %tocheck, %accepted );
  my ( $counter, $failed_cutoff ) = ( int(0), int(0), int(0) );
- my $gene_seqs_hashref = &read_fasta( $gff_file . '.gene' );
- my $pep_seqs_hashref  = &read_fasta( $gff_file . '.pep' );
+ my ($gene_seqs_hashref,$gene_length_hashref) = &read_fasta( $gff_file . '.gene' );
+ my ($pep_seqs_hashref,$pep_length_hashref)  = &read_fasta( $gff_file . '.pep' );
 
  $/ = $delimiter;
 
@@ -3065,7 +3066,6 @@ GENE: while ( my $record = <GFF> ) {
     next;
    }
   }
-
   my $gene_seq = $gene_seqs_hashref->{$mrna_id};
   my $pep_seq  = $pep_seqs_hashref->{$mrna_id};
   unless ( $gene_seq && $pep_seq ) {
@@ -3076,12 +3076,14 @@ GENE: while ( my $record = <GFF> ) {
   }
 
   if ( $pep_seq !~ /^M/ ) {
-   print LOG "$mrna_id rejected: query does not start with M.\n";
+   print LOG "$mrna_id rejected: pep query does not start with M:"
+   . substr( $pep_seq, 0, 1 ) . "\n";;
    $failed_cutoff++;
    next;
   }
   if ( $pep_seq !~ /\*$/ ) {
-   print LOG "$mrna_id rejected: query does not start with M.\n";
+   print LOG "$mrna_id rejected: pep query does not end with a star (stop codon): "
+   . substr( $pep_seq, -1, 1 ) . "\n";;
    $failed_cutoff++;
    next;
   }
@@ -3484,7 +3486,7 @@ sub bed_to_gff3(){
 
 
 sub split_fasta_multi(){
-	my ($file,$outdir) = @_;
+	my ($file,$outdir,$min_seq_size) = @_;
 	if (-d $outdir){
 		my @files = glob("$outdir/*seq");	
 		return \@files;
@@ -3509,7 +3511,7 @@ sub split_fasta_multi(){
 		my $seq = join("",@lines);
 		$seq=~s/\s+//g;
 		# we will only search those that are big enough.
-		next unless $seq && length($seq)>5000;
+		next unless $seq && length($seq)>$min_seq_size;
 		if (length($seq) <= $size_bp){
 			my $outfile = $outdir.'/'.$label.$suffix;
 			open (OUT,">$outfile") || die $!;
