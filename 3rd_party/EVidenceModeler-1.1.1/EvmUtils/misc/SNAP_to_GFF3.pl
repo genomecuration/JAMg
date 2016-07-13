@@ -10,9 +10,9 @@ use Gene_obj;
 
 my $model_type = "SNAP";
 
-my $usage = "usage: $0 SNAP.output\n\n";
+my $usage = "usage: $0 SNAP.output reference_file.fasta\n\n";
 
-my $input_file = $ARGV[0] or die $usage;
+my $input_file  = $ARGV[0] or die $usage;
 
 main: {
 	my %data;
@@ -27,7 +27,7 @@ main: {
 		
 		my @x = split(/\s+/);
 		next unless $x[2];
-		if ($x[2] eq 'CDS') {
+		if ($x[2] =~/^E/) {
 			my $scaffold = $x[0];
 			my $orient = $x[6];
 			my $lend = $x[3];
@@ -35,9 +35,7 @@ main: {
 			
 			my ($end5, $end3) = ($orient eq '+') ? ($lend, $rend) : ($rend, $lend);
 
-			my $info = $x[7];
-			$info =~ /Name=(\S+)/;
-			my $model = $1 or die "Error, cannot parse model from $info";
+			my $model = $x[8] or die;
 			
 			$data{$scaffold}->{$model}->{$end5} = $end3;
 		}
@@ -48,7 +46,7 @@ main: {
 
 	## Generate gff3 output
 	foreach my $scaffold (keys %data) {
-		
+	
 		my $models_href = $data{$scaffold};
 
 		foreach my $model (keys %$models_href) {
