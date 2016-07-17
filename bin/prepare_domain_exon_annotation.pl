@@ -12,7 +12,7 @@ prepare_domain_exon_annotation.pl
 Mandatory
 
  -fasta|genome|in :s   => FASTA file of genome
- -engine          :s   => How to run hhblits: none, local, localmpi, PBS or cluster (def. localmpi)
+ -engine          :s   => How to run hhblits: none, local, localmpi, PBS or cluster (def. local)
  -transposon_db   :s   => HHblits transposon database (provided)
  -uniprot_db      :s   => HHblits Uniprot database (see ftp://toolkit.genzentrum.lmu.de/pub/HH-suite/databases/hhsuite_dbs)
  -hosts           :s   => Only for -engine mpi: a definition for which hosts to use in the format hostname1:number_of_cpus-hostname2:number_of_cpus, e.g. localhost:5-remote:5
@@ -86,9 +86,9 @@ my $engine        = 'local';
 my $transposon_db = $RealBin. "/../databases/hhblits/transposons";
 my $uniprot_db =  $RealBin . "/../databases/hhblits/refseq_plant";
 my $min_exons_before_reporting = 2;
-
+my $gc_cutoff = 0.4;
 my ( $getorf_exec, $repeatmasker_exec ) = &check_program( 'getorf', 'RepeatMasker' );
-my ( $hhblits_exec, $ffindex_apply_exec,, $ffindex_from_fasta_exec ) = &check_program( 'hhblits', 'ffindex_apply', 'ffindex_from_fasta' );
+my ( $hhblits_exec, $ffindex_apply_exec,, $ffindex_from_fasta_exec, $segmasker_exec ) = &check_program( 'hhblits', 'ffindex_apply', 'ffindex_from_fasta', 'segmasker' );
 
 GetOptions(
             'fasta|genome|in:s' => \$genome,
@@ -107,8 +107,9 @@ GetOptions(
             'no_uniprot'        => \$no_uniprot_search,
             'no_transposon'     => \$no_transposon_search,
             'only_repeat'       => \$only_repeat,
-            'only_parse:s'       => \$only_parse,
-            'min_exons_hints:i' =>\$min_exons_before_reporting
+            'only_parse:s'      => \$only_parse,
+            'min_exons_hints:i' => \$min_exons_before_reporting,
+	    'gc_cutoff:f'       => \$gc_cutoff,
 );
 
 pod2usage( -verbose => 2 ) if $help;
@@ -158,20 +159,16 @@ my $exons = basename($genome).".exons";
 my $getorf_options .= $circular ? '-circular' : '';
 
 &process_cmd(
-       #"$getorf_exec -sequence $genome -outseq $exons.aa -minsize 150 -find 0 ")
        "$getorf_exec -sequence $genome -outseq $exons.aa -minsize 200 -find 0 ") # nucleotide length
   unless -s $exons . '.aa';
-&process_cmd(
-       #"$getorf_exec -sequence $genome -outseq $exons.nt -minsize 150 -find 2 ")
-       "$getorf_exec -sequence $genome -outseq $exons.nt -minsize 200 -find 2 ")
-  unless -s $exons . '.nt';
-die "No exon file could be produced.\n"
-  unless -s $exons . '.aa' && -s $exons . '.nt';
+#&process_cmd(       "$getorf_exec -sequence $genome -outseq $exons.nt -minsize 200 -find 2 ")  unless -s $exons . '.nt';
 
-unless ( -s $exons . '.aa.trim' && $exons . '.nt.trim' ) {
+unless ( -s $exons . '.aa.trim'  ) {
  print "Post-processing...\n";
- my $hash_to_keep = &trim_X("$exons.aa");
- &trim_id( "$exons.nt", $hash_to_keep );
+ &process_cmd("$segmasker_exec -outfmt fasta -in $exons.aa -out $exons.aa.seg") unless -s "$exons.aa.seg";
+ my $hash_to_keep = &trim_X("$exons.aa.seg");
+ rename("$exons.aa.seg.trim","$exons.aa.trim");
+ #&trim_id( "$exons.nt", $hash_to_keep );
 }
 if ( $engine =~ /none/ ) {
  print "Engine is $engine. No HHblits related files prepared. Exiting\n";
@@ -278,6 +275,7 @@ sub trim_X($) {
   my $seq   = join( '', @lines );
   $seq =~ s/\s*//g;
   next if length($seq) < $minaa;
+  $seq =~ s/[a-z]/X/g;
   my $seq_temp = $seq;
   my $xs = ( $seq_temp =~ tr/X// );
 
