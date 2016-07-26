@@ -161,11 +161,11 @@ my $intron_size              = 70000;
 my $training_set_size        = 4000;
 my $aug_optimization_geneset = 450;
 my $augustus_flank_region    = 3000;
-my $identical_fraction       = 95;
 my $minorf                   = 290;     #minimum orf size in bp
-my $similar_fraction         = 98;
-my $threads                  = 4;
+my $identical_fraction_cutoff       = 95;
+my $similar_fraction_cutoff         = 98;
 my $mismatch_cutoff          = 10;
+my $threads                  = 4;
 
 #globals
 my $failed_cutoff = int(0);
@@ -188,8 +188,8 @@ pod2usage $! unless &GetOptions(
             'cdna'               => \$is_cdna,
             'training:i'         => \$training_set_size,
             'flanks:i'           => \$augustus_flank_region,
-            'identical:i'        => \$identical_fraction,
-            'similar:i'          => \$similar_fraction,
+            'identical:i'        => \$identical_fraction_cutoff,
+            'similar:i'          => \$similar_fraction_cutoff,
             'overwrite'          => \$overwrite,
             'intron:i'           => \$intron_size,
             'threads|cpus:i'     => \$threads,
@@ -210,6 +210,23 @@ pod2usage $! unless &GetOptions(
             'extra_gff:s'        => \$extra_gff_file,
 	    'liberal'            => \$liberal_cutoffs
 );
+
+if ($liberal_cutoffs){
+ print "Liberal cut-offs requested\n";
+ $identical_fraction_cutoff = 40 if $identical_fraction_cutoff == 95;
+ $similar_fraction_cutoff = 50 if $similar_fraction_cutoff == 98;
+ $mismatch_cutoff         = 50 if $mismatch_cutoff == 10;
+ print "Methionine, stop codons, splice sites and overlapping genes will not be imposed\n";
+}else{
+  print "Methionine and * in protein sequence; Start codon and stop codon in genome; No overlapping genes; Splice sites (GT..AG or GC..AG)\n";
+}
+print "These cutoffs will be used:
+ -identical_fraction : $identical_fraction_cutoff
+ -similar_fraction   : $similar_fraction_cutoff
+ -mismatch           : $mismatch_cutoff
+\n";
+sleep(3);
+
 
 my ( $makeblastdb_exec, $tblastn_exec, $tblastx_exec ) =
   &check_program( 'makeblastdb', 'tblastn', 'tblastx' );
@@ -352,8 +369,8 @@ else {
 #################################################################################################################
 sub correct_exonerate_gff() {
  my $exonerate_file = shift;
- print "Processing $exonerate_file using these cut-offs: identical:$identical_fraction similar:$similar_fraction;  No more than $mismatch_cutoff mismatches in total; Methionine and * in protein sequence; Start codon and stop codon in genome; No overlapping genes; Splice sites (GT..AG or GC..AG)\n" unless $liberal_cutoffs;
- print "Processing $exonerate_file using few cut-offs (liberal): identical:$identical_fraction similar:$similar_fraction;  No more than $mismatch_cutoff mismatches in total\n" unless $liberal_cutoffs;
+ print "Processing $exonerate_file using these cut-offs: identical:$identical_fraction_cutoff similar:$similar_fraction_cutoff;  No more than $mismatch_cutoff mismatches in total; Methionine and * in protein sequence; Start codon and stop codon in genome; No overlapping genes; Splice sites (GT..AG or GC..AG)\n" unless $liberal_cutoffs;
+ print "Processing $exonerate_file using few cut-offs (liberal): identical:$identical_fraction_cutoff similar:$similar_fraction_cutoff;  No more than $mismatch_cutoff mismatches in total\n" unless $liberal_cutoffs;
 
  #pod2usage unless $exonerate_file && -s $exonerate_file;
  # IF WE NEED TO GET WHOLE SCAFFOLD SEQUENCE:
@@ -776,17 +793,17 @@ sub create_golden_gffs_from_exonerate() {
    next;
   }
   unless (
-        $details_hashref->{$query_id}{'identical_frac'} >= $identical_fraction )
+        $details_hashref->{$query_id}{'identical_frac'} >= $identical_fraction_cutoff )
   {
    print LOG
-     "$query_id rejected: identical_frac less than $identical_fraction: "
+     "$query_id rejected: identical_frac less than $identical_fraction_cutoff: "
      . $details_hashref->{$query_id}{'identical_frac'} . "\n";
    $failed_cutoff++;
    next;
   }
-  unless ( $details_hashref->{$query_id}{'similar_frac'} >= $similar_fraction )
+  unless ( $details_hashref->{$query_id}{'similar_frac'} >= $similar_fraction_cutoff )
   {
-   print LOG "$query_id rejected: similar_frac less than $similar_fraction: "
+   print LOG "$query_id rejected: similar_frac less than $similar_fraction_cutoff: "
      . $details_hashref->{$query_id}{'similar_frac'} . "\n";
    $failed_cutoff++;
    next;
@@ -2556,7 +2573,6 @@ sub run_exonerate() {
    );
  unless ($no_rerun_exonerate) {
   print "Finding rough co-ordinates...\n";
-  &run_aat() if !$same_species;
   if (
    -s $exonerate_command_file
    && ( !-s $exonerate_command_file . '.completed'
@@ -2581,7 +2597,10 @@ sub run_exonerate() {
     }
     print "Finding accurate co-ordinates using exonerate...\n";
     unlink($exonerate_file);
-    my $exonerate_options =" -minorf $minorf -protein -in $peptide_file -separate -filter $genome_dir/*filter -threads $threads -intron_max $intron_size  $same_species ";
+    my @filter_files = glob("$genome_dir/*filter");
+    die "No filter files found" unless @filter_files;
+    my $exonerate_options =" -minorf $minorf -protein -in $peptide_file -separate -filter ".join(" ",@filter_files)." -threads $threads "
+	."-intron_max $intron_size  $same_species ";
     $exonerate_options .= " -softmask -ref $softmasked_genome "
       if ($softmasked_genome);
     $exonerate_options .= " -ref $genome_file "
@@ -2648,9 +2667,8 @@ sub run_exonerate() {
    && -s $exonerate_command_file
    && -s $exonerate_command_file . '.completed'
    && (
-    -s $exonerate_command_file == -s $exonerate_command_file . '.completed' ) );
- die
-"Have not completed with the current exonerate run. Rerun this program once more. If it still fails, you can force this message to be ignored with -norerun \n"
+    -s $exonerate_command_file != -s $exonerate_command_file . '.completed' ) );
+ die"Have not completed with the current exonerate run. Rerun this program once more. If it still fails, you can force this message to be ignored with -norerun \n"
    unless $no_rerun_exonerate;
  print "Completed processing exonerate file as $exonerate_file\n";
 
@@ -2761,7 +2779,7 @@ sub do_gmap_cmd() {
 
  my $gmap_opt =
    "$gmap_exec -D $genome_sequence_file_dir -d $genome_sequence_file_base.gmap";
- my $identical_fraction_prop = sprintf( "%.2f", $identical_fraction / 100 );
+ my $identical_fraction_prop = sprintf( "%.2f", $identical_fraction_cutoff / 100 );
  $gmap_opt .=
 " -n 0 -p 3 --nofails -B 3 -t 1 -f gff3_gene --split-output=$fasta.gmap --min-trimmed-coverage=0.95 --min-identity=$identical_fraction_prop ";
  &process_cmd("$gmap_opt $fasta 2>/dev/null") unless -s "$fasta.gmap.uniq";
@@ -2924,7 +2942,7 @@ sub run_aat() {
 
  # check if it already has be processed
  #debug &recombine_split_aat_multi($genome_dir);
- return  if ( -s $aat_command_file && ( -s $aat_command_file == -s $aat_command_file . '.completed' ) );
+ return  if ( -s $aat_command_file && ( -s $aat_command_file == -s $aat_command_file . '.completed' ) && glob("$genome_dir/*filter"));
  if (
       -s $aat_command_file && !-s $aat_command_file . '.completed'
       || (    -s $aat_command_file
@@ -2965,8 +2983,8 @@ sub run_aat() {
   }
   else {
    my $aat_score = $same_species ? 200 : 50;
-   my $aat_o     = $similar_fraction - 20;
-   my $aat_p     = $identical_fraction - 20;
+   my $aat_o     = $similar_fraction_cutoff - 20;
+   my $aat_p     = $identical_fraction_cutoff - 20;
    print "Preparing/running AAT...\n";
    foreach my $genome_file (@$aat_uppercase_genome_files) {
     next if $genome_file =~ /\.aat\./ || -d $genome_file;
@@ -3005,7 +3023,7 @@ sub create_golden_gffs_from_gff() {
  # if thomas changes the gmap format:
  # $mismatch_cutoff
  #DONE:
- # $identical_fraction
+ # $identical_fraction_cutoff
  # mrna: coverage=100.0;identity=100.0
  # pep: M and *
  # genome my $number_of_ns = $scaffold_subseq =~ tr/N/N/; (40%)
@@ -3059,9 +3077,9 @@ GENE: while ( my $record = <GFF> ) {
   }
   if ( $mrna_line =~ /identity=([\d\.]+)/ ) {
    my $identity = $1;
-   if ( $identity < $identical_fraction ) {
+   if ( $identity < $identical_fraction_cutoff ) {
     print LOG
-      "$mrna_id rejected: identity ($identity) below $identical_fraction.\n";
+      "$mrna_id rejected: identity ($identity) below $identical_fraction_cutoff.\n";
     $failed_cutoff++;
     next;
    }

@@ -319,7 +319,7 @@ sub check_prediction_finished(){
 	if ($check !~/^# total time/){
 		unlink($file);
 		foreach my $todelete (@todeletes){
-			warn "File $todelete had not finished. Deleting\n"; 
+			warn "File $todelete had not finished. Deleting\n" if -s $todelete; 
 			unlink($todelete);
 		}
 	}
@@ -474,7 +474,7 @@ sub check_options() {
  
  $output_directory = fileparse($extrinsic, (".cfg")); # "tmp_opt_extrinsic_$species";
  mkdir($output_directory) unless -d $output_directory;
- die unless -d $output_directory;
+ die "Cannot create $output_directory" unless -d $output_directory;
 
 }
 

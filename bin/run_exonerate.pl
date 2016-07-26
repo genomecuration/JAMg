@@ -200,7 +200,7 @@ print "Will exclude " . scalar( keys %exclude_ids ) . " queries"
   if %exclude_ids;
 
 print "Searching $fasta_file vs $reference_file\n";
-if (@aat_filter_files) {
+if (@aat_filter_files && $aat_filter_files[0] && -s $aat_filter_files[0]) {
  print "Temporary output from dps. Using it...\n";
   &parse_aat_filter(\@aat_filter_files);
 }
@@ -343,6 +343,7 @@ if ( !$is_protein ) {
 }
 else {
  #is protein, add stop codon at the end
+ # remove invalid amino accids
  #min aa = $minaa
  foreach my $id ( keys %queries ) {
   if ( $queries{$id}{'length'} < $minaa ) {
@@ -355,6 +356,8 @@ else {
     unless !$queries{$id}{'seq'} || $queries{$id}{'seq'} =~ /\*$/;
   # convert U to X
   $queries{$id}{'seq'} =~ tr/U/X/;
+  # convert O to X
+  $queries{$id}{'seq'} =~ tr/O/X/;
  }
 }
 #exonerate efficiency
