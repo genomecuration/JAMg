@@ -144,7 +144,7 @@ use Carp;
 
 #options
 my (
-     $debug,              $contig_file,           $exonerate_file,
+     $debug, $verbose,    $contig_file,           $exonerate_file,
      $genome_file,        $is_cdna,               $no_single_exon,
      $overwrite,          $only_complete,         $peptide_file,
      $stop_after_golden,  $pasa_gff,              $pasa_cds,
@@ -174,7 +174,8 @@ my ( %get_id_seq_from_fasta_hash, $augustus_dir );
 
 pod2usage $! unless &GetOptions(
             'help'               => \$show_help,
-            'debug|verbose'      => \$debug,
+            'debug' => \$debug,
+            'verbose'      => \$verbose,
             'exonerate:s'        => \$exonerate_file,
             'genome:s'           => \$genome_file,
             'softmasked:s'       => \$softmasked_genome,
@@ -211,6 +212,19 @@ pod2usage $! unless &GetOptions(
 	    'liberal'            => \$liberal_cutoffs
 );
 
+my ( $makeblastdb_exec, $tblastn_exec, $tblastx_exec ) =
+  &check_program( 'makeblastdb', 'tblastn', 'tblastx' );
+my ( $gmap_build_exec, $gmap_exec ) = &check_program( 'gmap_build', 'gmap' );
+
+my ( $gff2gb_exec, $fathom_exec, $augustus_exec, $augustus_train_exec,
+     $augustus_filterGenes_exec )
+  = &check_program_optional(
+                             'gff2gbSmallDNA.pl', 'fathom',
+                             'augustus',          'etraining',
+                             'filterGenes.pl'
+  );
+&check_for_options();
+
 if ($liberal_cutoffs){
  print "Liberal cut-offs requested\n";
  $identical_fraction_cutoff = 40 if $identical_fraction_cutoff == 95;
@@ -227,19 +241,6 @@ print "These cutoffs will be used:
 \n";
 sleep(3);
 
-
-my ( $makeblastdb_exec, $tblastn_exec, $tblastx_exec ) =
-  &check_program( 'makeblastdb', 'tblastn', 'tblastx' );
-my ( $gmap_build_exec, $gmap_exec ) = &check_program( 'gmap_build', 'gmap' );
-
-my ( $gff2gb_exec, $fathom_exec, $augustus_exec, $augustus_train_exec,
-     $augustus_filterGenes_exec )
-  = &check_program_optional(
-                             'gff2gbSmallDNA.pl', 'fathom',
-                             'augustus',          'etraining',
-                             'filterGenes.pl'
-  );
-&check_for_options();
 
 my $genome_sequence_file =
     $softmasked_genome
@@ -2211,7 +2212,7 @@ sub gff2hints() {
 
 sub process_cmd {
  my ($cmd) = @_;
- print "CMD: $cmd\n" if $debug;
+ print "CMD: $cmd\n" if $verbose;
  my $ret = system($cmd);
  if ( $ret && $ret != 256 ) {
   die "Error, cmd died with ret $ret\n";
@@ -2942,7 +2943,8 @@ sub run_aat() {
  my $aat_command_file = "./" . basename($genome_dir) . ".commands";
 
  # check if it already has be processed
- #debug &recombine_split_aat_multi($genome_dir);
+ #debug 
+  &recombine_split_aat_multi($genome_dir) if $debug;
  return  if ( -s $aat_command_file && ( -s $aat_command_file == -s $aat_command_file . '.completed' ) && glob("$genome_dir/*filter"));
  if (
       -s $aat_command_file && !-s $aat_command_file . '.completed'
@@ -3587,7 +3589,7 @@ sub recombine_split_aat_multi(){
 	}
 	$thread_helper->wait_for_all_threads_to_complete();
 	undef($thread_helper);
-	my $thread_helper2 = new Thread_helper($threads,1);
+	#my $thread_helper2 = new Thread_helper($threads,1);
 	my @all_files = glob($indir."/*$suffix");
 	$counter = int(0);
 	print "Post-processing results from ".scalar(@all_files)." files...\n";
@@ -3597,12 +3599,13 @@ sub recombine_split_aat_multi(){
 			print "$counter       \r" if $counter % 100 == 0;
 			my $b = $1;
 			next if -s "$b.aat.filter" || !-s $file || -s $file < 50;
-			my $thread = threads->create( 'fix_aat2',$file,$suffix,$indir );
-			$thread_helper2->add_thread($thread,int(0));
-			#OR	&fix_aat2($file,$suffix,$indir);
+			#my $thread = threads->create( 'fix_aat2',$file,$suffix,$indir );
+			#$thread_helper2->add_thread($thread,int(0));
+			#OR
+			&fix_aat2($file,$suffix,$indir);
 		}
 	}
-        $thread_helper2->wait_for_all_threads_to_complete();
+        #$thread_helper2->wait_for_all_threads_to_complete();
 	print "Post-processing done\n";
 }
 
