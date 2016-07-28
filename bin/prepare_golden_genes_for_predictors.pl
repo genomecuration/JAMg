@@ -2600,7 +2600,7 @@ sub run_exonerate() {
     unlink($exonerate_file);
     my @filter_files = glob("$genome_dir/*filter");
     die "No filter files found" unless @filter_files;
-    my $exonerate_options =" -minorf $minorf -protein -in $peptide_file -separate -filter ".join(" ",@filter_files)." -threads $threads "
+    my $exonerate_options =" -minorf $minorf -protein -in $peptide_file -separate -aat_dir $genome_dir -aat_suffix filter -threads $threads "
 	."-intron_max $intron_size  $same_species ";
     $exonerate_options .= " -softmask -ref $softmasked_genome "
       if ($softmasked_genome);
@@ -2633,7 +2633,7 @@ sub run_exonerate() {
     }
     unlink($exonerate_file);
     print "Finding accurate co-ordinates using exonerate...\n";
-    my $exonerate_options =" -minorf $minorf -annotation $fasta_contigs.annotations -in $fasta_contigs -separate -filter $genome_dir/*filter "
+    my $exonerate_options =" -minorf $minorf -annotation $fasta_contigs.annotations -in $fasta_contigs -separate -aat_dir $genome_dir -aat_suffix .filter "
       . " -threads $threads -intron_max $intron_size $same_species ";
     $exonerate_options .= " -softmask -ref $softmasked_genome "
       if ($softmasked_genome);

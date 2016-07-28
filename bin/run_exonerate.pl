@@ -25,7 +25,6 @@ Run exonerate
   -bit_cutoff:i  => Bit score cutoff for BLAST (def 100 for protein tblastn, 500 for nucleotide megablast)
   -prep_only:i   => Set to 1 or more. Do BLAST and prepare commands only. If number >1 is given, then split cmds to that many subfiles (e.g. to run with Parafly)
   -norefine      => Don't refine region in exonerate. Prevents segmentation faults in some searches
-  -aat:s         => AAT FILTER output files (one or more). Do not use blast hash
   -score_dps:i   => Minimum DDS/DPS score (def 100)
   -intron_max    => Def 70000
   -same_species  => FASTA file is from same species as referene genome
@@ -33,16 +32,19 @@ Run exonerate
   -local_protein => Don't run an exhaustive global alignment for the protein (use it for those that crash)
   -separate      => Only run exonerate on part of the assembly, padded with -padding. Very fast!
   -padding       => genome padding for exonerate alignment (2000)
+  -aat_dir    :s => AAT FILTER output directory. Do not use blast hash
+  -aat_suffix :s => AAT FILTER output suffix of files (def. '.filter')
+
 
  @ Stage 2:
   -postprocess:s{,}' => The result files of exonerate if run with -separate in orted to reconstruct co-ordinates of the GFF (and only the GFF)
   -postscore:i  => require at least this score before reporting in post-processing (def. 500) 
  
  Example cmd with existing AAT filter output:
-  $ run_exonerate.pl -in arab.pep -ref arab.genomicSeq -thread 4 -same -protein -aat *filter -separ
+  $ run_exonerate.pl -in arab.pep -ref arab.genomicSeq -thread 4 -same -protein -aat_dir DIR -aat_suffix .filter -separ
   # this will run it locally with 4 threads. Use -prep_only to just create the command file but not run it.
  NB: Protein exhaustive alignments sometimes fail. So re-run with local alignment (good output is not overwritten).
-  $ run_exonerate.pl -in arab.pep -ref arab.genomicSeq -thread 4 -same -protein -aat *filter -separ -local_protein
+  $ run_exonerate.pl -in arab.pep -ref arab.genomicSeq -thread 4 -same -protein -aat_dir DIR -separ -local_protein
   # post-process results to correct co-ordinates.
   $ run_exonerate.pl -postprocess arab.pep_queries/*results > exonerate.result
 
@@ -96,7 +98,7 @@ my (
      $blast_file,                    $coding_only,
      $help,                          $exclude_file,
      $is_protein,                    $prep_only,
-     $no_refine,                     @aat_filter_files,
+     $no_refine,                     $aat_filter_dir,
      $same_species,                  $softmasked,
      @post_process_similarity_files, $separate,
      @post_process_result_files,     $not_exhaustive, $verbose,
@@ -104,6 +106,7 @@ my (
 );
 
 #variables
+my $aat_filter_suffix = '.filter';
 my $minorf              = 290;       #minimum orf size in bp
 my $threads             = 4;
 my $exonerate_postscore = 500;
@@ -137,7 +140,8 @@ pod2usage $! unless &GetOptions(
          'bit_cutoff:i'     => \$bit_cut,
          'prep_only:i'      => \$prep_only,
          'norefine'         => \$no_refine,
-         'aat|filter:s{,}'  => \@aat_filter_files,
+         'aat_dir:s'  => \$aat_filter_dir,
+         'aat_suffix:s'  => \$aat_filter_suffix,
          'score_dps:i'      => \$dps_min_score,
          'intron_max:i'     => \$max_intron,
          'same_species'     => \$same_species,
@@ -200,6 +204,7 @@ print "Will exclude " . scalar( keys %exclude_ids ) . " queries"
   if %exclude_ids;
 
 print "Searching $fasta_file vs $reference_file\n";
+my @aat_filter_files = glob($aat_filter_dir."/*".$aat_filter_suffix);
 if (@aat_filter_files && $aat_filter_files[0] && -s $aat_filter_files[0]) {
  print "Temporary output from dps. Using it...\n";
   &parse_aat_filter(\@aat_filter_files);
@@ -433,7 +438,7 @@ print "Starting exonerate with $threads runs versus "
 &process_cmd(
 "$parafly_exec -shuffle -CPU $threads -c run_exonerate_commands.cmd -failed_cmds run_exonerate_commands.cmd.failed -v"
 ) if -s "run_exonerate_commands.cmd";
-print "Finished!\n" if -s "run_exonerate_commands.cmd";
+print "\n" if -s "run_exonerate_commands.cmd";
 print "Something went wrong or no exonerates jobs to run run...\n"
   if !-s "run_exonerate_commands.cmd";
 ######################################3
