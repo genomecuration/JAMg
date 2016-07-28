@@ -15,7 +15,7 @@ IoWF='0.05'                              # Initial Weigth First     value 0.30
 doWF='0.05'                             # Delta Weigth First       value 0.05
 FoWF='0.70'                              # Final Weigth First       value 0.70
 
-export PATH=$JAMG_PATH/bin:$JAMG_PATH/3rd_party/geneid/bin/:$JAMG_PATH/3rd_party/geneid/Evaluation/bin/:$PATH
+#export PATH=$JAMG_PATH/bin:$JAMG_PATH/3rd_party/geneid/bin/:$JAMG_PATH/3rd_party/geneid/Evaluation/bin/:$PATH
 
 PARAM=$1     # Param file for geneid
 SEQFILE=$2
@@ -54,7 +54,7 @@ do
         while [ $ef -ne 0 ]
         do
 
-echo "gawk '{if (NR==27)  {print 1-$IoWF+0.2, 1-$IoWF-0.1, 1-$IoWF-0.1, 1-$IoWF+0.2;} else if (NR==30)  {print $IoWF, $IoWF, $IoWF, $IoWF;} else if (NR==36) {print $IeWF, $IeWF, $IeWF, $IeWF;} else  print}' $PARAM > /tmp/$USER/tmp.$$.$IoWF.$IeWF   ;   geneid -GP /tmp/$USER/tmp.$$.$IoWF.$IeWF $SEQFILE |egrep -v 'exon|^#' | gawk '{if (NR==1) ant=\$1; if (\$1!=ant) {print \"#\$\";ant=\$1}; print }' > /tmp/$USER/Predictions.$$.$IoWF.$IeWF.gff; purge.geneid.real.gff.pl $CDSFILE /tmp/$USER/Predictions.$$.$IoWF.$IeWF.gff  ;  evaluation -sta /tmp/$USER/Predictions.$$.$IoWF.$IeWF.gff /tmp/$USER/Predictions.$$.$IoWF.$IeWF.gff.valid | tail -2 | head -1 |  gawk '{printf \"%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f\\n\", $IoWF, $IeWF, \$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$12, \$13}' > "$PREFIX"_result_$IoWF.$IeWF.txt ;   rm -f  /tmp/$USER/Predictions.$$.$IoWF.$IeWF.gff* "
+echo "gawk '{if (NR==27)  {print 1-$IoWF+0.2, 1-$IoWF-0.1, 1-$IoWF-0.1, 1-$IoWF+0.2;} else if (NR==30)  {print $IoWF, $IoWF, $IoWF, $IoWF;} else if (NR==36) {print $IeWF, $IeWF, $IeWF, $IeWF;} else  print}' $PARAM > /tmp/$USER/tmp.$$.$IoWF.$IeWF   ;   $JAMG_PATH/3rd_party/geneid/bin/geneid -GP /tmp/$USER/tmp.$$.$IoWF.$IeWF $SEQFILE |egrep -v 'exon|^#' | gawk '{if (NR==1) ant=\$1; if (\$1!=ant) {print \"#\$\";ant=\$1}; print }' > /tmp/$USER/Predictions.$$.$IoWF.$IeWF.gff; $JAMG_PATH/bin/purge.geneid.real.gff.pl $CDSFILE /tmp/$USER/Predictions.$$.$IoWF.$IeWF.gff  ;  $JAMG_PATH/3rd_party/geneid/bin/evaluation -sta /tmp/$USER/Predictions.$$.$IoWF.$IeWF.gff /tmp/$USER/Predictions.$$.$IoWF.$IeWF.gff.valid | tail -2 | head -1 |  gawk '{printf \"%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f\\n\", $IoWF, $IeWF, \$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$12, \$13}' > "$PREFIX"_result_$IoWF.$IeWF.txt ;   rm -f  /tmp/$USER/Predictions.$$.$IoWF.$IeWF.gff* "
 
           IeWF=$(echo $IeWF + $deWF|bc)
           ef=`gawk "BEGIN{print ($IeWF <= $FeWF) ? 1 : 0}"`

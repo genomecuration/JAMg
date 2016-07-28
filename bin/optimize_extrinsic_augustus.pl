@@ -370,7 +370,7 @@ sub run_evaluation {
    return $accuracy;
   }
   else {
-   warn "Augustus failed to produce $pred_out\n.";
+   warn "Augustus failed to produce $pred_out\n";
   }
  }
 }

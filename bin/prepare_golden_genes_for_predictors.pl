@@ -215,7 +215,7 @@ if ($liberal_cutoffs){
  print "Liberal cut-offs requested\n";
  $identical_fraction_cutoff = 40 if $identical_fraction_cutoff == 95;
  $similar_fraction_cutoff = 50 if $similar_fraction_cutoff == 98;
- $mismatch_cutoff         = 50 if $mismatch_cutoff == 10;
+ $mismatch_cutoff         = 1000 if $mismatch_cutoff == 10;
  print "Methionine, stop codons, splice sites and overlapping genes will not be imposed\n";
 }else{
   print "Methionine and * in protein sequence; Start codon and stop codon in genome; No overlapping genes; Splice sites (GT..AG or GC..AG)\n";
@@ -2621,6 +2621,7 @@ sub run_exonerate() {
    }
    elsif ($mrna_file) {
     die "Not implemented yet - see GMAP output\n";
+	#TODO &do_gmap_cmd()
    }
    else {
 
