@@ -38,6 +38,7 @@ echo "
 export JAMG_PATH=$JAMG_PATH
 export LOCAL_CPUS=$LOCAL_CPUS
 export MAX_MEMORY_G=$MAX_MEMORY_G
+export HHLIB=$JAMG_PATH/3rd_party/hhsuite/lib/hh/
 
 # species specific (can edit these)
 export GENOME_NAME=$GENOME_NAME

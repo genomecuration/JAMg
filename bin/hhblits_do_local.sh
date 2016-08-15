@@ -1,7 +1,8 @@
 #!/bin/bash
 
 PROTEIN_FILE=$1
-DBDIR=$HOME/databases/hhsearch/
+DBDIR=$JAMG_PATH/databases/hhblits/swissprot70
+# choose either uniprot or swissprot70 (quicker)
 
 sed -i '~s/\*$//' $PROTEIN_FILE
 ffindex_from_fasta $PROTEIN_FILE.db $PROTEIN_FILE.db.idx $PROTEIN_FILE
