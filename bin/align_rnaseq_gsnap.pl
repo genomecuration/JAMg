@@ -40,7 +40,7 @@ Optional:
  -memory             Memory for samtools sorting, use suffix G M b (def '35G')
  -verbose
  -piccard_0m         Ask gsnap to add 0M between insertions (only for piccard compatibility, issues with most other software)
- -filetype       :s  Only process files ending with this text
+ -filetype       :s  Only process files ending with this text. Do NOT use a wildcard (e.g no *fastq, just fastq)
 
 Note: For new genomes, it is possible to run this program once and use the output to build an -intron_db. Use the script augustus_RNAseq_hints.pl
  and pay attention to -min_jr_reads and maybe -intron_db_only. Make sure you use the same -genome FASTA. The output will be *junctions.all.hints.splice.gmap
