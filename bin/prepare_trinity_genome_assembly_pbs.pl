@@ -98,6 +98,7 @@ if (!$read_files[0]){
 		print "Converting BAMs:\n".join(" ",@user_provided_bam_files)."\n";
 		$delete_sam = 1;
 		my $user_provided_sam_file = 'RNASeq_TGG_input.sam';
+		system("rm -f $user_provided_sam_file.*.sam");
 		if (scalar(@user_provided_bam_files > 1 )){
 			&process_cmd("$samtools_exec merge - ".join(" ",@user_provided_bam_files)." |$samtools_exec view -@ $cpus -F4 - > $user_provided_sam_file " ) unless -s $user_provided_sam_file;
 		}else{
@@ -316,12 +317,12 @@ sub split_scaffold_sam(){
 			push(@scaff_id_lines,$scaff_id);
 		}else{
 			$fh = $fh_hash{$scaff_id};
-			if ($scaff_id ne $previous_scaff_id){
-				my $old_fh =  $fh_hash{$previous_scaff_id};
-				close $old_fh;
-			}
 		}
 		print $fh $ln;
+		if ($previous_scaff_id && $scaff_id ne $previous_scaff_id){
+			my $old_fh =  $fh_hash{$previous_scaff_id};
+			close $old_fh if $old_fh;
+		}
 		$previous_scaff_id = $scaff_id;
 	}
 
