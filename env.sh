@@ -1,6 +1,9 @@
 #!/bin/bash
-echo What is the PATH for JAMg? e.g. `pwd`
+echo What is the PATH for JAMg? e.g. `echo "$( dirname "${BASH_SOURCE[0]}" )"`
 read JAMG_PATH
+
+echo What directory to use for temporary files? e.g. /dev/shm /tmp `echo $TMPDIR`
+read TMPDIR
 
 echo How many CPUs would like to use for some of the multi-threaded scripts? e.g. 5
 read LOCAL_CPUS
@@ -30,6 +33,7 @@ CPPFLAGS="$CPPFLAGS -I$JAMG_PATH/3rd_party/include -I$JAMG_PATH/3rd_party/mysql/
 CFLAGS="$CFLAGS -I$JAMG_PATH/3rd_party/include -I$JAMG_PATH/3rd_party/mysql/include -fPIC -I$JAMG_PATH/3rd_party/include -I$JAMG_PATH/3rd_party/mysql/include -fPIC"
 PATH=$JAMG_PATH/bin:$JAMG_PATH/3rd_party/bin:$PATH
 PERL5LIB=$JAMG_PATH/PerlLib:$PERL5LIB
+TMPDIR=$TMPDIR
 
 echo " 
 #!/bin/bash
@@ -39,6 +43,7 @@ export JAMG_PATH=$JAMG_PATH
 export LOCAL_CPUS=$LOCAL_CPUS
 export MAX_MEMORY_G=$MAX_MEMORY_G
 export HHLIB=$JAMG_PATH/3rd_party/hhsuite/lib/hh/
+export TMPDIR=$TMPDIR
 
 # species specific (can edit these)
 export GENOME_NAME=$GENOME_NAME

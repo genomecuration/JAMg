@@ -301,6 +301,7 @@ sub split_scaffold_sam(){
 	die "No file $sam_file\n" unless $sam_file && -s $sam_file;
 	my %fh_hash;
 	my @scaff_id_lines;
+	my $previous_scaff_id;
 	open (SAM,$sam_file);
 	while (my $ln=<SAM>){
 		my @data = split("\t",$ln);
@@ -309,14 +310,19 @@ sub split_scaffold_sam(){
 		my $sam_file = "$sam_file.$scaff_id.sam";
 		my $fh;
 		if (!$fh_hash{$scaff_id}){
-			open (my $fh1,">$sam_file") || die $!;
+			open (my $fh1,">>$sam_file") || die $!;
 			$fh_hash{$scaff_id} = $fh1;
 			$fh = $fh1;
 			push(@scaff_id_lines,$scaff_id);
 		}else{
 			$fh = $fh_hash{$scaff_id};
+			if ($scaff_id ne $previous_scaff_id){
+				my $old_fh =  $fh_hash{$previous_scaff_id};
+				close $old_fh;
+			}
 		}
 		print $fh $ln;
+		$previous_scaff_id = $scaff_id;
 	}
 
 	my @scaff_sams;
