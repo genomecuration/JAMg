@@ -69,7 +69,7 @@ pod2usage "Cannot find the BAM or genome FASTA file\n"
    && $fasta_file
    && ( -s $fasta_file);
 
-print "Acquiring reference data\n";
+print STDERR "Acquiring reference data\n";
 my (%ref_data);
 my $orig_sep = $/;
 $/ =">"; 
@@ -90,17 +90,14 @@ while (my $record=<FASTA>){
 }
 close FASTA;
 $/ = $orig_sep;
-print "Found $total_count values\n\n";
+print STDERR "Found $total_count values\n\n";
 # ==> master_bamfile2.bam.rnaseq.hints <==
 #Herato0101      RNASeq  exonpart        436     469     21      .       .       src=RCOV;pri=4
 $|=1;
 
 
-open (OUT,">$fasta_file.hints");
-
-
 foreach my $hint_file (@hintfiles){
-	print "Parsing hints file $hint_file\n";
+	print STDERR "Parsing hints file $hint_file\n";
 	my $line_max = `wc -l < $hint_file`;chomp($line_max);
 	my $line_count = int(0);
 	open (IN,$hint_file);
@@ -130,20 +127,19 @@ foreach my $hint_file (@hintfiles){
 						$opt_data[0] = $ref."_$gene_start"."-$gene_stop";
 						$opt_data[3] = $opt_hint_start;
 						$opt_data[4] = $opt_hint_stop;
-						print OUT join("\t",@opt_data);
+						print join("\t",@opt_data);
 					}
 				}
 			}
 		}
 		my $prog = int(($line_count / $line_max) * 100);
-		print "$prog %  \r" if $line_count % 10000 == 0;
+		print STDERR "$prog %  \r" if $line_count % 10000 == 0;
 	}
 	close IN;
-	print "100 % \n";
+	print STDERR "100 % \n";
 }
 $|=0;
 
-close OUT;
 
 ######################################
 sub check_sort_version(){
@@ -179,7 +175,7 @@ sub check_program() {
 ###
 sub process_cmd {
  my ($cmd) = @_;
- print "CMD: $cmd\n";
+ print STDERR "CMD: $cmd\n";
  my $ret = system($cmd);
  if ( $ret && $ret != 256 ) {
   die "Error, cmd died with ret $ret\n";
