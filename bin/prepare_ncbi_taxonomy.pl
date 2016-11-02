@@ -48,15 +48,18 @@ GetOptions(
 	'force' => \$force,
 );
 
-my $taxondb = Bio::DB::Taxonomy->new(-source => 'entrez');
 if ($flatfile_dir && -d $flatfile_dir && -s $flatfile_dir.'/nodes.dmp' && -s $flatfile_dir.'/names.dmp'){
    print "Using $flatfile_dir as NCBI TaxDB directory\n";
-   $taxondb = Bio::DB::Taxonomy->new(-source => 'flatfile', -nodesfile => $flatfile_dir.'/nodes.dmp',
+   my $taxondb = Bio::DB::Taxonomy->new(-source => 'flatfile', -nodesfile => $flatfile_dir.'/nodes.dmp',
      -namesfile => $flatfile_dir.'/names.dmp', -directory => $flatfile_dir, -force => $force) if !-s $flatfile_dir.'/nodes' || $force;
-   print "Building protein binaries\n";
-   new_dict (in => "$flatfile_dir/gi_taxid_prot.dmp", out => "$flatfile_dir/gi_taxid_prot.bin") if !-s "$flatfile_dir/gi_taxid_prot.bin" || $force;
-   print "Building nucleotide binaries\n";
-   new_dict (in => "$flatfile_dir/gi_taxid_nucl.dmp", out => "$flatfile_dir/gi_taxid_nucl.bin") if !-s "$flatfile_dir/gi_taxid_nucl.bin" || $force;
+   if (-s "$flatfile_dir/gi_taxid_prot.dmp"){
+	   print "Building protein binaries\n";
+	   new_dict (in => "$flatfile_dir/gi_taxid_prot.dmp", out => "$flatfile_dir/gi_taxid_prot.bin") if !-s "$flatfile_dir/gi_taxid_prot.bin" || $force;
+   }
+   if (-s "$flatfile_dir/gi_taxid_nucl.dmp"){
+	   print "Building nucleotide binaries\n";
+	   new_dict (in => "$flatfile_dir/gi_taxid_nucl.dmp", out => "$flatfile_dir/gi_taxid_nucl.bin") if !-s "$flatfile_dir/gi_taxid_nucl.bin" || $force;
+   }
    print "Done!\n";
 }else{
    die "Cannot find correct taxonomy at $flatfile_dir\n";

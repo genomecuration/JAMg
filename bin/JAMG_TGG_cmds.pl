@@ -54,7 +54,7 @@ while (<$fh>) {
     
     my $file = pop @x;
     
-    my $cmd = "$trinity_exec --seqType fa --single \"$file\" --max_memory 2G --CPU 4 --inchworm_cpu 4 --output \"$file.out\" --full_cleanup ";
+    my $cmd = "$trinity_exec --seqType fa --single \"$file\" --max_memory 2G --CPU 4 --inchworm_cpu 4 --no_bowtie --output \"$file.out\" --full_cleanup ";
     $cmd .= " --run_as_paired " if $paired_flag;
     $cmd .= " --SS_lib_type F " if $SS_flag;
     $cmd .= " --jaccard_clip " if $jaccard_clip;

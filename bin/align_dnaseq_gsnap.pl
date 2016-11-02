@@ -16,30 +16,38 @@ Mandatory:
 
  -fasta          :s  FASTA of genome
  -dbname         :s  Name of database for GMAP. Will create if it doesn't exist.
- 
- 
-Optional:
- 
+
+ Input:
  -input_dir      :s  Directory with read files (defaults to current working directory)
  -gmap_dir       :s  Where the GMAP databases are meant to live (def. JAMG_PATH/databases/gmap)
- -cpus           :i  Number of CPUs/threads (def. 6). I don't recommend more than 6 in a system that has 12 CPUs
- -do_parallel    :i  Run these many alignments in parallel. Number of CPUs per alignment is -cpus divided by -do_parallel. Note, memory is not divided.
- -help
  -pattern1           Pattern for automatching left pair files with *'pattern1'*.fastq (defaults to '_1_')
  -pattern2           Pattern for automatching right pair (defaults to '_2_')
- -nofail             Don't print out failures (I/O friendlyness if sparse hits expected). Otherwise captured as FASTQ
- -suffix             Build/use suffix array (fast, downweights SNPs, use for non-polymorphic genomes)
- -build_only         Build genome (with suffix array) but exit, don't do any alignments. Useful for building genome to be used many times
- -path_number        Maximum number of hits for the read pair. If more that these many hits, then nothing is returned (defaults to 50)
+ -piccard_0m         Ask gsnap to add 0M between insertions (only for piccard compatibility, issues with most other software)
+ -filetype       :s  Only process files ending with this text. Do NOT use a wildcard (e.g no *fastq, just fastq)
+ -do_parallel    :i  Run these many alignments (if multiple input files) in parallel. Number of CPUs per alignment is -cpus divided by -do_parallel. Note, memory is no$
+ -split_input    :i  Split the input FASTQ files to these many subfiles (good for a single large readset). Needs -commands_only
  -commands_only  :s  Don't run commands, instead write them out into a file as specified by the option. Useful for preparing jobs for ParaFly
- -split_input    :i  Split the input FASTQ files to these many subfiles. Good for running large RNASeq datasets. Needs -commands_only above. Not used when FASTQ files are compressed (.bz2 .gz)
  -notpaired          Data are single end. Don't look for pairs (use -pattern1 to glob files)
+
+ Library:
  -matepair           Data are paired as circularized inserts RF
  -distance :s        Paired end distance (def 'adaptive', i.e. estimate using median + 30 % from up to 10,000 reads, 1% slower )
+
+ Speed:
+ -cpus           :i  Number of CPUs/threads (def. 6). I don't recommend more than 6 in a system that has 12 CPUs
  -memory             Memory for samtools sorting, use suffix G M b (def '35G')
+ -suffix             Build/use suffix array (fast, downweights SNPs, use for non-polymorphic genomes). Not suggested for RNAseq
+ -build_only         Build genome (with suffix array) but don't do any alignments. Useful for building genome to be used many times
+ -path_number        Maximum number of hits for the read pair. If more that these many hits, then nothing is returned (defaults to 10)
+ -do_proportion  :i  Only process one sequence every this many reads (e.g. 1000). Good for doing a subset to build an intron DB.
+
+ Output:
+ -nofail             Don't print out failures (I/O friendlyness if sparse hits expected). Otherwise captured as FASTQ
+
+ Other:
  -verbose
- -piccard_0m         Ask gsnap to add 0M between insertions (only for piccard compatibility, issues with most other software)
- -filetype       :s  Only process files ending with this text
+ -help
+ -large_genome       You have a very large genome (~ 4+ Gb). Use this option.
 
 =head1 AUTHORS
 
@@ -87,6 +95,8 @@ my $pattern1            = '_1_';
 #my $pe_distance        = 10000;
 my $pe_distance        = 'adaptive';
 my $filetype = '';
+my $do_proportion;
+my $do_large_genome;
 
 &GetOptions(
              'do_parallel:i'   => \$do_parallel,
@@ -111,7 +121,9 @@ my $filetype = '';
              'piccard_0m'      => \$piccard_0m,
 	     'input_dir:s'     => \$input_dir,
 	     'filetype:s'      => \$filetype,
-             'build_only'      => \$build_only
+             'build_only'      => \$build_only,
+	     'do_proportion:i' => \$do_proportion,
+	     'large_genome'    => \$do_large_genome,
 );
 
 pod2usage if $help;
@@ -124,6 +136,8 @@ $do_parallel = 1 if $do_parallel && $do_parallel < 1;
 if ($do_parallel && $do_parallel > 1){
         $cpus = int($cpus / $do_parallel);
 }
+
+( $gsnap_exec ) = &check_program( "gsnapl" ) if $do_large_genome;
 
 my $samtools_sort_CPUs = int( $cpus / 2 ) > 2 ? int( $cpus / 2 ) : 2;
 my $suff = "";
@@ -156,7 +170,7 @@ for ( my $i = 0 ; $i < @files ; $i++ ) {
  }
 }
 @files = sort keys %verified_files;
-die "No files found!\n" unless @files;
+die "No files found!\n" unless @files || $build_only;
 print "Found these files:\n".join("\n",@files)."\n";
 my ( $build_cmd, $align_cmd );
 
@@ -187,8 +201,7 @@ $align_cmd .= " --nofails "                  if $nofails;
 $align_cmd .= " --pairmax-dna=$pe_distance " if !$notpaired && $pe_distance=~/^\d+$/;
 $align_cmd .= " --sam-use-0M " if $piccard_0m;
 $align_cmd .= " --orientation=RF " if $matepair;
-
-
+$align_cmd .= " --part=1/$do_proportion " if $do_proportion;
 
 open( CMD, ">$just_write_out_commands" ) if $just_write_out_commands;
 if ($notpaired) {

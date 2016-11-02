@@ -20,27 +20,38 @@ Mandatory:
  
 Optional:
 
+ Input:
  -input_dir      :s  Directory with read files (defaults to current working directory)
  -gmap_dir       :s  Where the GMAP databases are meant to live (def. JAMG_PATH/databases/gmap)
- -cpus           :i  Number of CPUs/threads (def. 6). I don't recommend more than 6 in a system that has 12 CPUs
- -do_parallel    :i  Run these many alignments in parallel. Number of CPUs per alignment is -cpus divided by -do_parallel. Note, memory is not divided.
- -help
  -pattern1           Pattern for automatching left pair files with *'pattern1'*.fastq (defaults to '_1_')
  -pattern2           Pattern for automatching right pair (defaults to '_2_')
- -nofail             Don't print out failures (I/O friendlyness if sparse hits expected). Otherwise captured as FASTQ
- -suffix             Build/use suffix array (fast, downweights SNPs, use for non-polymorphic genomes)
+ -piccard_0m         Ask gsnap to add 0M between insertions (only for piccard compatibility, issues with most other software)
+ -filetype       :s  Only process files ending with this text. Do NOT use a wildcard (e.g no *fastq, just fastq)
+ -do_parallel    :i  Run these many alignments (if multiple input files) in parallel. Number of CPUs per alignment is -cpus divided by -do_parallel. Note, memory is not divided.
+ -split_input    :i  Split the input FASTQ files to these many subfiles (good for a single large readset). Needs -commands_only
+ -commands_only  :s  Don't run commands, instead write them out into a file as specified by the option. Useful for preparing jobs for ParaFly
+ -notpaired          Data are single end. Don't look for pairs (use -pattern1 to glob files)
+
+ Speed:
+ -cpus           :i  Number of CPUs/threads (def. 6). I don't recommend more than 6 in a system that has 12 CPUs
+ -memory             Memory for samtools sorting, use suffix G M b (def '35G')
+ -suffix             Build/use suffix array (fast, downweights SNPs, use for non-polymorphic genomes). Not suggested for RNAseq
  -build_only         Build genome (with suffix array) but don't do any alignments. Useful for building genome to be used many times
  -path_number        Maximum number of hits for the read pair. If more that these many hits, then nothing is returned (defaults to 10)
- -commands_only  :s  Don't run commands, instead write them out into a file as specified by the option. Useful for preparing jobs for ParaFly
- -split_input    :i  Split the input FASTQ files to these many subfiles. Good for running large RNASeq datasets. Needs -commands_only above
- -notpaired          Data are single end. Don't look for pairs (use -pattern1 to glob files)
+ -do_proportion  :i  Only process one sequence every this many reads (e.g. 1000). Good for doing a subset to build an intron DB.
+
+ Output:
+ -nofail             Don't print out failures (I/O friendlyness if sparse hits expected). Otherwise captured as FASTQ
+
+ Introns:
  -intron_db      :s  GMAP intron or splice database (iit_store). Automatically found and used if it exists as a single *.iit in maps/ directory.
  -intron_hard        If -intron_db, conservative handling of junction reads and eliminate soft-clipping (--ambig-splice-noclip --trim-mismatch-score=0)
  -intron_size    :i  Maximum intron length (def. 70,000)
- -memory             Memory for samtools sorting, use suffix G M b (def '35G')
+
+ Other:
  -verbose
- -piccard_0m         Ask gsnap to add 0M between insertions (only for piccard compatibility, issues with most other software)
- -filetype       :s  Only process files ending with this text. Do NOT use a wildcard (e.g no *fastq, just fastq)
+ -help
+ -large_genome       You have a very large genome (~ 4+ Gb). Use this option.
 
 Note: For new genomes, it is possible to run this program once and use the output to build an -intron_db. Use the script augustus_RNAseq_hints.pl
  and pay attention to -min_jr_reads and maybe -intron_db_only. Make sure you use the same -genome FASTA. The output will be *junctions.all.hints.splice.gmap
@@ -92,6 +103,8 @@ my $cpus               = 6;
 my $memory             = '35G';
 my $pattern1            = '_1_';
 my $filetype = '';
+my $do_proportion;
+my $do_large_genome;
 &GetOptions(
 	     'do_parallel:i'   => \$do_parallel,
              'debug'           => \$debug,
@@ -116,9 +129,10 @@ my $filetype = '';
              'notpaired'       => \$notpaired,
              'piccard_0m'      => \$piccard_0m,
 	     'filetype:s'      => \$filetype,
-             'build_only'      => \$build_only
+             'build_only'      => \$build_only,
+	     'do_proportion:i' => \$do_proportion,
+	     'large_genome'    => \$do_large_genome,
 );
-
 pod2usage if $help;
 pod2usage "No genome FASTA\n" unless $genome && -s $genome;
 pod2usage "No GMAP genome database name\n" unless $genome_dbname;
@@ -133,6 +147,9 @@ $do_parallel = 1 if $do_parallel && $do_parallel < 1;
 if ($do_parallel && $do_parallel > 1){
 	$cpus = int($cpus / $do_parallel);
 }
+
+( $gsnap_exec ) = &check_program( "gsnapl" ) if $do_large_genome;
+
 
 my $samtools_sort_CPUs = int( $cpus / 2 ) > 2 ? int( $cpus / 2 ) : 2;
 my $suff = "";
@@ -166,7 +183,7 @@ for ( my $i = 0 ; $i < @files ; $i++ ) {
  }
 }
 @files = sort keys %verified_files;
-die "No files found!\n" unless @files;
+die "No files found!\n" unless @files || $build_only;
 print "Found these files:\n".join("\n",@files)."\n";
 
 my ( $build_cmd, $align_cmd );
@@ -181,7 +198,6 @@ else {
  $align_cmd =
 "$gsnap_exec --use-sarray=0 -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus  --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam ";
 }
-
 
 system($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
 system("$samtools_exec faidx $genome") unless -s "$genome.fai";
@@ -207,6 +223,7 @@ $align_cmd .= " -s $intron_splice_db "         if $intron_splice_db;
 $align_cmd .= " --ambig-splice-noclip --trim-mismatch-score=0 " if $intron_splice_db && $intron_hard;
 $align_cmd .= " --pairmax-rna=$intron_length " if !$notpaired;
 $align_cmd .= " --sam-use-0M " if $piccard_0m;
+$align_cmd .= " --part=1/$do_proportion " if $do_proportion;
 
 open( CMD, ">$just_write_out_commands" ) if $just_write_out_commands;
 
