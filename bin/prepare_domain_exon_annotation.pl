@@ -11,19 +11,20 @@ prepare_domain_exon_annotation.pl
 
 Mandatory
 
- -fasta|genome|in :s   => FASTA file of genome
+ -fasta|genome|in :s   => FASTA file of genome. If the file GENOMEFASTA.masked is present, then RepeatMasker is not run
  -engine          :s   => How to run hhblits: none, local, localmpi, PBS or cluster (def. local)
  -transposon_db   :s   => HHblits transposon database (provided)
  -uniprot_db      :s   => HHblits Uniprot database (see ftp://toolkit.genzentrum.lmu.de/pub/HH-suite/databases/hhsuite_dbs)
  -hosts           :s   => Only for -engine mpi: a definition for which hosts to use in the format hostname1:number_of_cpus-hostname2:number_of_cpus, e.g. localhost:5-remote:5
- 
+ -repeat_taxon    :s   => A species category for RepeatMasker such as insecta, primates, plants, vertebrates etc 
+
 Optional
 
  -minsize         :i   => Minimum number of nucleotides without a stop codon to define an exon (def. 100bp)
  -circular             => If genome is a circular molecule (bacteria, mtDNA etc)
- -repeatoptions        => Any options to pass on to repeatmasker using key=value notation. Pass multiple options delimited by :colon: (e.g. -repeatoptions species=vertebrates:nopost:frag=1000000)
+ -repeatoptions        => Any options to pass on to /all/ of the RepeatMasker runs using key=value notation. Pass multiple options delimited by :colon: (e.g. -repeatoptions nopost:frag=1000000)
  
- -repthreads      :i   => Number of CPUs to use for Repeatmasking (def. 2)
+ -rep_cpus        :i   => Number of CPUs to use for /each/ of the 5 Repeatmasking steps in parallel (def. 2, i.e. 10 CPUs across five steps)
  -mpi_cpus        :i   => Number of MPI threads (or CPUs for local and nodes for cluster) to use (if applicable; def to 2). Careful of memory usage if local!
  -scratch         :s   => If engine is MPI, a 'local' scratch directory to copy databases to each node, e.g. /dev/shm if there is enough space
  -no_uniprot           => Don't search for Uniprot hits. Useful if you want to conduct the transposon search separately from the Uniprot (e.g. different engine/computing environment)
@@ -77,24 +78,25 @@ my (
      $scratch_dir,     $no_uniprot_search,
      $no_transposon_search, $only_parse
 );
+my $repeat_taxon;
 my $mpi_host_string = '';
 my $repeatmasker_options = '';
 my $minsize       = 100;
-my $cpus          = 2;
+my $repeatcpus          = 2;
 my $hhblits_cpus  = 10;
 my $engine        = 'local';
 my $transposon_db = $RealBin. "/../databases/hhblits/transposons";
 my $uniprot_db =  $RealBin . "/../databases/hhblits/refseq_plant";
 my $min_exons_before_reporting = 2;
 my $gc_cutoff = 0.4;
-my ( $getorf_exec, $repeatmasker_exec ) = &check_program( 'getorf', 'RepeatMasker' );
+my ( $getorf_exec, $repeatmasker_exec, $bedtools_exec ) = &check_program( 'getorf', 'RepeatMasker', 'bedtools' );
 my ( $hhblits_exec, $ffindex_apply_exec,, $ffindex_from_fasta_exec, $segmasker_exec ) = &check_program( 'hhblits', 'ffindex_apply', 'ffindex_from_fasta', 'segmasker' );
 
 GetOptions(
             'fasta|genome|in:s' => \$genome,
             'minsize:i'         => \$minsize,
             'circular'          => \$circular,
-            'repthreads:i'      => \$cpus,
+            'rep_cpus:i'      => \$repeatcpus,
             'repeatoptions:s'   => \$repeatmasker_options,
             'engine:s'          => \$engine,
             'mpi_cpus:i'        => \$hhblits_cpus,
@@ -110,13 +112,16 @@ GetOptions(
             'only_parse:s'      => \$only_parse,
             'min_exons_hints:i' => \$min_exons_before_reporting,
 	    'gc_cutoff:f'       => \$gc_cutoff,
+	    'repeat_taxon:s'    => \$repeat_taxon
 );
 
 pod2usage( -verbose => 2 ) if $help;
 
+die pod2usage "No genome FASTA provided\n" unless $genome && -s $genome;
+
 unless ($only_repeat){
-	die "The Transposon DB (eg. -transposon_db or $transposon_db) has not been prepared. See ".$RealBin . "/../databases/hhblits/README\n" unless $no_transposon_search || -s $transposon_db."_hhm_db";
-	die "The UniProt DB (e.g. -uniprot_db or $uniprot_db) has not been prepared. See ".$RealBin . "/../databases/hhblits/README\n" unless $no_uniprot_search || -s $uniprot_db."_hhm_db";
+	die "The Transposon DB (eg. -transposon_db or $transposon_db) has not been prepared. See ".$RealBin . "/../databases/hhblits/README\n" unless $no_transposon_search || -s $transposon_db."_hhm_db" || -s $transposon_db."_hhm.ffdata";
+	die "The UniProt DB (e.g. -uniprot_db or $uniprot_db) has not been prepared. See ".$RealBin . "/../databases/hhblits/README\n" unless $no_uniprot_search || -s $uniprot_db."_hhm_db" || -s $uniprot_db."_hhm.ffdata";
 }
 
 if ($only_parse){
@@ -127,7 +132,6 @@ if ($only_parse){
 }
 
 die "-mpi_cpus needs to be larger than 1 (not $hhblits_cpus)\n" if $hhblits_cpus < 2;
-die pod2usage "No genome FASTA provided\n" unless $genome && -s $genome;
 $engine = lc($engine);
 die pod2usage "Engine must be local, localmpi or PBS\n"
   unless (    $engine =~ /local/
@@ -135,6 +139,14 @@ die pod2usage "Engine must be local, localmpi or PBS\n"
            || $engine =~ /pbs/
            || $engine =~ /none/
            || $engine =~ /cluster/ );
+
+die pod2usage "-repeat_taxon is mandatory\n\n" unless $repeat_taxon;
+
+my $genome_name = basename($genome);
+$genome_name=~s/[^\w\.\-]+//g;
+print "Using $genome_name as the name for $genome\n";
+&check_for_iupac_violation($genome);
+
 
 if (-s $genome.'.hardmasked' && !-s $genome . '.masked'){
 	print "Found $genome.hardmasked. Using it as a masked file\n";
@@ -621,11 +633,12 @@ sub prepare_local() {
 sub just_run_my_commands_helper(){
 	my ($cmd,$failed_filehandle,$completed_filehandle) = @_;
 	chomp($cmd);
+	print "CMD: $cmd\n";
 	my $ret = system($cmd);
 	if ($ret && $ret != 256 ){
-		print $failed_filehandle $cmd."\n";
+		print $failed_filehandle $cmd."\n" if $failed_filehandle;
 	}else{
-		print $completed_filehandle $cmd."\n";
+		print $completed_filehandle $cmd."\n" if $completed_filehandle;
 	}
 }
 
@@ -957,8 +970,13 @@ sub parse_hhr() {
 
 
 sub do_repeat_masking(){
+  # we run them separately
+  # we combine to make a redundant GFF and fasta
+
+  # these options are run in every step.
   my $repeatmasker_options = shift;
-  print "Masking repeats with $cpus CPUs (cf $genome.repeatmasking.log)..\n";
+  my $frag;#=5000000;
+  print "Masking repeats with $repeatcpus CPUs (cf $genome.repeatmasking.log)..\n";
   if ($repeatmasker_options){
     my @option_array = split(":",$repeatmasker_options);
     $repeatmasker_options = '';
@@ -966,11 +984,70 @@ sub do_repeat_masking(){
       my @key_value = split("=",$option);
       $repeatmasker_options.=' -'.$key_value[0].' '.$key_value[1] if $key_value[1];
       $repeatmasker_options.=' -'.$key_value[0] if !$key_value[1];
+      $frag = $key_value[1] if $key_value[0] eq 'frag';
     }
-    print "Repeat options: $repeatmasker_options\n";
+    print "Will use RepeatMasker options: $repeatmasker_options\n";
   } 
-  &process_cmd("$repeatmasker_exec $repeatmasker_options -e ncbi -frag 5000000 -gff -pa $cpus -qq $genome 2>&1 > $genome.repeatmasking.log");
+  $frag=5000000 if !$frag;
+  mkdir("simple-only") unless -d "simple-only";
+  mkdir("rna-specific") unless -d "rna-specific";
+  mkdir("species-specific") unless -d "species-specific";
+  mkdir("general") unless -d "general";
+  mkdir("contamination-check") unless -d "contamination-check";
+
+  my $thread_helper = new Thread_helper(5);
+  my $cmd = "$repeatmasker_exec $repeatmasker_options -e ncbi -gff -pa $repeatcpus -qq -s -excln -xsmall -gccalc -frag $frag ";
+  #1 "contamination-check"
+	my $local_cmd1 = "cd contamination-check && ln -s $genome genome.fasta && $cmd -is_only -species $repeat_taxon genome.fasta 2>&1 > repeatmasking.log";
+  	my $thread1 = threads->create('just_run_my_commands_helper', $local_cmd1, undef, undef) unless -s "contamination-check/genome.fasta.cat.gz";
+        $thread_helper->add_thread($thread1);
+  sleep(10);
+
+  #2 "simple-only"
+	my $local_cmd2 = "cd simple-only && ln -s $genome genome.fasta && $cmd -species $repeat_taxon -no_is -noint -norna genome.fasta 2>&1 > repeatmasking.log" ;
+  	my $thread2 = threads->create('just_run_my_commands_helper', $local_cmd2, undef, undef) unless -s "simple-only/genome.fasta.cat.gz";
+        $thread_helper->add_thread($thread2);
+  sleep(10);
+
+  #3 "general"
+	my $local_cmd3 = "cd general && ln -s $genome genome.fasta && $cmd -species $repeat_taxon -no_is -nolow genome.fasta 2>&1 > repeatmasking.log";
+  	my $thread3 = threads->create('just_run_my_commands_helper', $local_cmd3, undef, undef) unless -s "general/genome.fasta.cat.gz";
+        $thread_helper->add_thread($thread3);
+  sleep(10);
+
+  #4 "rna-specific"
+	my $local_cmd4 = "cd rna-specific && ln -s $genome genome.fasta && $cmd -no_is -nolow -lib $RealBin/../databases/repeats/rnammer-SILVA.classified.nr95.renamed.fasta genome.fasta 2>&1 > repeatmasking.log";
+  	my $thread4 = threads->create('just_run_my_commands_helper', $local_cmd4, undef, undef) unless -s "rna-specific/genome.fasta.cat.gz";
+        $thread_helper->add_thread($thread4);
+  sleep(10);
+
+  #5 RepeatModeller for "species-specific"
+	chdir("species-specific")||die($!);
+  	&process_cmd($RealBin."/../3rd_party/RepeatModeler/BuildDatabase -name $genome_name.rm -engine ncbi $genome >/dev/null") unless -s "$genome_name.rm.nal";
+	chdir("../")||die($!);
+	my $local_cmd5 = "cd species-specific && ln -s $genome genome.fasta && $RealBin/../3rd_party/RepeatModeler/RepeatModeler -engine ncbi -database $genome_name.rm -pa repeatcpus 2>&1 > repeatmodelling.log";
+  	my $thread5 = threads->create('just_run_my_commands_helper', $local_cmd5, undef, undef) unless -s "species-specific/genome.fasta.cat.gz";
+        $thread_helper->add_thread($thread5);
+  sleep(600);
+
+   # wait	
+   	$thread_helper->wait_for_all_threads_to_complete();
+die;
+   # "species-specific"
+	chdir("species-specific");
+	my @rmod_files = glob("./*consensi.fa.classified RM*/*consensi.fa.classified");
+	if (!-s $rmod_files[0]){ warn "RepeatModeller failed!";}
+	else{
+		link($rmod_files[0],"$genome.repclassified.fsa");
+		&process_cmd($cmd." -no_is -nolow -lib $genome.repclassified.fsa genome.fasta 2>&1 > repeatmasking.log")  unless -s "species-specific/genome.fasta.cat.gz";
+	}
+	chdir("../");
+
+
+  # final file
   my $repeat_gff_file = $genome.".out.gff";
+  &process_cmd("cat simple-only/genome.fasta.out.gff rna-specific/genome.fasta.out.gff species-specific/genome.fasta.out.gff general/genome.fasta.out.gff contamination-check/genome.fasta.out.gff | sort -nk1,5|uniq > $repeat_gff_file");
+
   die "Repeatmasking failed to produce $repeat_gff_file\n" unless -s $repeat_gff_file;
   my $repeat_hints_file = $repeat_gff_file;
   $repeat_hints_file =~s/.out.gff$/.repeatmasked.hints/;
@@ -985,5 +1062,32 @@ sub do_repeat_masking(){
   }
   close OUT;
   close IN;
+
+  #produce $genome.masked
+  &process_cmd("$bedtools_exec maskfasta -fi $genome -fo $genome.softmasked -bed $repeat_gff_file -soft");
+  &process_cmd("$bedtools_exec maskfasta -fi $genome -fo $genome.hardmasked -bed $repeat_gff_file");
+  symlink("$genome.hardmasked","$genome.masked");
+
   print "RepeatMasking completed and hints file produced ($repeat_gff_file)\n";
+  return $repeat_gff_file;
+}
+
+
+sub check_for_iupac_violation(){
+	my $fasta = shift;
+return;
+	print "Checking FASTA $fasta for non ATCGN characters...\n";
+	my $orig_sep = $/;
+	$/ = ">";
+	open (IN,$fasta);
+	while (my $rec = <IN>){
+		chomp($rec); next unless $rec;
+		my @lines = split("\n",$rec);
+		my $id = shift(@lines);
+		my $seq = join('',@lines);
+		$seq=~s/\s+//g;
+		die "FASTA file $fasta has non-ATCGN bases\n" if $seq=~/[^ATCGN]/;
+	}
+	close IN;
+	print "None found :-)\n";
 }

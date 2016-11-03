@@ -35,8 +35,7 @@ PATH=$JAMG_PATH/bin:$JAMG_PATH/3rd_party/bin:$PATH
 PERL5LIB=$JAMG_PATH/PerlLib:$PERL5LIB
 TMPDIR=$TMPDIR
 
-echo " 
-#!/bin/bash
+echo "#!/bin/bash
 
 # system speficic
 export JAMG_PATH=$JAMG_PATH

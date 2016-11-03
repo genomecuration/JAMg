@@ -23,7 +23,7 @@ Other options:
  -min_coverage     i	  	Minimum coverage for parsing coverage (defaults to 20)
  -window           i  		Window size for coverage graph (defaults to 50)
  -background_fold  i  		Background (defaults to 4), see perldoc
- -no_hints            		Don't create hints file for Augustus, just process junction reads
+ -no_hints            		Don't create hints file for Augustus and no intron database for GMAP, just process junction reads. Why would you want that though?
  -cpus             i		Number of CPUs for sorting (defaults to 4)
  -memory           s            Amount of memory for sorting. Use K/M/G for kilo/mega/giga-bytes (defaults to 5G)
  -min_jr_length    i		Minimum read length to use for junctions (def to 75)
@@ -68,7 +68,7 @@ use threads;
 use Thread_helper;
 
 #Options
-my ( @bamfiles, $genome, $help,$no_hints, $master_bamfile,$intron_db_only );
+my ( @bamfiles, $genome, $help,$no_hints, $master_bamfile,$intron_db_only, $do_it_faster );
 
 my $cpus = 4;
 my $sort_buffer = '5G';
@@ -100,11 +100,14 @@ pod2usage $! unless &GetOptions(
 	    'min_intron:i'      => \$min_intron_length,
 	    'min_jr_reads:i'    => \$intron_coverage_cutoff,
 	    'tmp:s'             => \$tmpdir,
-	    'intron_db_only'   => \$intron_db_only
+	    'intron_db_only'   => \$intron_db_only,
+	    'faster'           => \$do_it_faster
 );
 
 my ( $samtools_exec, $bedtools_exec, $bed_to_aug_script ) = &check_program( 'samtools', 'bedtools','bed12_to_augustus_junction_hints.pl' );
 my $sort_exec = &check_sort_version;
+
+die "If you want the intron DB then you cannot set -nohints\n" if $no_hints && $intron_db_only;
 
 pod2usage if $help;
 
@@ -180,8 +183,8 @@ if (    -e "$master_bamfile.junctions.completed"
      && -e "$master_bamfile.coverage.hints.completed" ){
  unless (-e "$master_bamfile.rnaseq.completed"){
    &process_cmd("cat $master_bamfile.junctions.hints $master_bamfile.coverage.hints"
-	."|$sort_exec -n -k 4,4 | $sort_exec -s -n -k 5,5 | $sort_exec -s -n -k 3,3 | $sort_exec -s -k 1,1 -o $master_bamfile.rnaseq.hints" );
-   &merge_hints("$master_bamfile.rnaseq.hints");
+	."|$sort_exec -n -k 4,4 | $sort_exec -s -n -k 5,5 | $sort_exec -s -n -k 3,3 | $sort_exec -s -k 1,1 -o $master_bamfile.rnaseq.hints" ) if -s "$master_bamfile.junctions.hints";
+   &merge_hints("$master_bamfile.rnaseq.hints") if -s "$master_bamfile.rnaseq.hints";
    &touch("$master_bamfile.rnaseq.completed");
  }
 
@@ -540,8 +543,10 @@ sub grab_intronic_bam(){
 	# without \t at end, allows for double introns (cf bed12_to_augustus_junction_hints.pl )
 	&process_cmd("$samtools_exec view -@ $cpus -q $min_jr_score -m $min_jr_length $file |grep -P '[0-9]{2,}M[0-9]{2,}N[0-9]{2,}M'|"
 		." samtools view -T $genome -@ $cpus -b -o $outfile -");
-	my $thread        = threads->create('remove_dups',$outfile);
-	$thread_helper->add_thread($thread);
+	unless ($do_it_faster){
+		my $thread        = threads->create('remove_dups',$outfile);
+		$thread_helper->add_thread($thread);
+	}
 	return $outfile;
 }
 
