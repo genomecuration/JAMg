@@ -998,25 +998,25 @@ sub do_repeat_masking(){
   my $thread_helper = new Thread_helper(5);
   my $cmd = "$repeatmasker_exec $repeatmasker_options -e ncbi -gff -pa $repeatcpus -qq -s -excln -xsmall -gccalc -frag $frag ";
   #1 "contamination-check"
-	my $local_cmd1 = "cd contamination-check && ln -s $genome genome.fasta && $cmd -is_only -species $repeat_taxon genome.fasta 2>&1 > repeatmasking.log";
+	my $local_cmd1 = "cd contamination-check && rm -f genome.fasta && ln -s $genome genome.fasta && $cmd -is_only -species $repeat_taxon genome.fasta 2>&1 > repeatmasking.log";
   	my $thread1 = threads->create('just_run_my_commands_helper', $local_cmd1, undef, undef) unless -s "contamination-check/genome.fasta.cat.gz";
         $thread_helper->add_thread($thread1);
   sleep(10);
 
   #2 "simple-only"
-	my $local_cmd2 = "cd simple-only && ln -s $genome genome.fasta && $cmd -species $repeat_taxon -no_is -noint -norna genome.fasta 2>&1 > repeatmasking.log" ;
+	my $local_cmd2 = "cd simple-only && rm -f genome.fasta && ln -s $genome genome.fasta && $cmd -species $repeat_taxon -no_is -noint -norna genome.fasta 2>&1 > repeatmasking.log" ;
   	my $thread2 = threads->create('just_run_my_commands_helper', $local_cmd2, undef, undef) unless -s "simple-only/genome.fasta.cat.gz";
         $thread_helper->add_thread($thread2);
   sleep(10);
 
   #3 "general"
-	my $local_cmd3 = "cd general && ln -s $genome genome.fasta && $cmd -species $repeat_taxon -no_is -nolow genome.fasta 2>&1 > repeatmasking.log";
+	my $local_cmd3 = "cd general && rm -f genome.fasta && ln -s $genome genome.fasta && $cmd -species $repeat_taxon -no_is -nolow genome.fasta 2>&1 > repeatmasking.log";
   	my $thread3 = threads->create('just_run_my_commands_helper', $local_cmd3, undef, undef) unless -s "general/genome.fasta.cat.gz";
         $thread_helper->add_thread($thread3);
   sleep(10);
 
   #4 "rna-specific"
-	my $local_cmd4 = "cd rna-specific && ln -s $genome genome.fasta && $cmd -no_is -nolow -lib $RealBin/../databases/repeats/rnammer-SILVA.classified.nr95.renamed.fasta genome.fasta 2>&1 > repeatmasking.log";
+	my $local_cmd4 = "cd rna-specific && rm -f genome.fasta && ln -s $genome genome.fasta && $cmd -no_is -nolow -lib $RealBin/../databases/repeats/rnammer-SILVA.classified.nr95.renamed.fasta genome.fasta 2>&1 > repeatmasking.log";
   	my $thread4 = threads->create('just_run_my_commands_helper', $local_cmd4, undef, undef) unless -s "rna-specific/genome.fasta.cat.gz";
         $thread_helper->add_thread($thread4);
   sleep(10);
@@ -1025,7 +1025,7 @@ sub do_repeat_masking(){
 	chdir("species-specific")||die($!);
   	&process_cmd($RealBin."/../3rd_party/RepeatModeler/BuildDatabase -name $genome_name.rm -engine ncbi $genome >/dev/null") unless -s "$genome_name.rm.nal";
 	chdir("../")||die($!);
-	my $local_cmd5 = "cd species-specific && ln -s $genome genome.fasta && $RealBin/../3rd_party/RepeatModeler/RepeatModeler -engine ncbi -database $genome_name.rm -pa repeatcpus 2>&1 > repeatmodelling.log";
+	my $local_cmd5 = "cd species-specific && rm -f genome.fasta && ln -s $genome genome.fasta && $RealBin/../3rd_party/RepeatModeler/RepeatModeler -engine ncbi -database $genome_name.rm -pa $repeatcpus 2>&1 > repeatmodelling.log";
   	my $thread5 = threads->create('just_run_my_commands_helper', $local_cmd5, undef, undef) unless -s "species-specific/genome.fasta.cat.gz";
         $thread_helper->add_thread($thread5);
   sleep(600);

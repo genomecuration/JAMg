@@ -24,7 +24,6 @@ Mandatory:
  -pattern2           Pattern for automatching right pair (defaults to '_2_')
  -piccard_0m         Ask gsnap to add 0M between insertions (only for piccard compatibility, issues with most other software)
  -filetype       :s  Only process files ending with this text. Do NOT use a wildcard (e.g no *fastq, just fastq)
- -do_parallel    :i  Run these many alignments (if multiple input files) in parallel. Number of CPUs per alignment is -cpus divided by -do_parallel. Note, memory is no$
  -split_input    :i  Split the input FASTQ files to these many subfiles (good for a single large readset). Needs -commands_only
  -commands_only  :s  Don't run commands, instead write them out into a file as specified by the option. Useful for preparing jobs for ParaFly
  -notpaired          Data are single end. Don't look for pairs (use -pattern1 to glob files)
@@ -36,6 +35,7 @@ Mandatory:
  Speed:
  -cpus           :i  Number of CPUs/threads (def. 6). I don't recommend more than 6 in a system that has 12 CPUs
  -memory             Memory for samtools sorting, use suffix G M b (def '35G')
+ -do_parallel    :i  Run these many alignments (if multiple input files) in parallel. Number of CPUs per alignment is -cpus divided by -do_parallel. Note, memory is no$
  -suffix             Build/use suffix array (fast, downweights SNPs, use for non-polymorphic genomes). Not suggested for RNAseq
  -build_only         Build genome (with suffix array) but don't do any alignments. Useful for building genome to be used many times
  -path_number        Maximum number of hits for the read pair. If more that these many hits, then nothing is returned (defaults to 10)
@@ -274,8 +274,9 @@ sub mytime() {
 
 ###
 sub check_program() {
+ my @progs = @_;
  my @paths;
- foreach my $prog (@_) {
+ foreach my $prog (@progs) {
   my $path = `which $prog`;
   pod2usage "Error, path to a required program ($prog) cannot be found\n\n"
     unless $path =~ /^\//;
