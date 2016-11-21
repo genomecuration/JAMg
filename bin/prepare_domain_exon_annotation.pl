@@ -119,6 +119,8 @@ pod2usage( -verbose => 2 ) if $help;
 
 die pod2usage "No genome FASTA provided\n" unless $genome && -s $genome;
 
+die "-genome must be a full path\n" unless $genome=~/^\//;
+
 unless ($only_repeat){
 	die "The Transposon DB (eg. -transposon_db or $transposon_db) has not been prepared. See ".$RealBin . "/../databases/hhblits/README\n" unless $no_transposon_search || -s $transposon_db."_hhm_db" || -s $transposon_db."_hhm.ffdata";
 	die "The UniProt DB (e.g. -uniprot_db or $uniprot_db) has not been prepared. See ".$RealBin . "/../databases/hhblits/README\n" unless $no_uniprot_search || -s $uniprot_db."_hhm_db" || -s $uniprot_db."_hhm.ffdata";
@@ -1000,7 +1002,7 @@ sub do_repeat_masking(){
   my $cmd = "$repeatmasker_exec $repeatmasker_options -e ncbi -gff -pa $repeatcpus -qq -s -excln -xsmall -gccalc -frag $frag ";
   #1 "contamination-check"
 	unless (-s "contamination-check/genome.fasta.cat.gz"){
-		my $local_cmd = "cd contamination-check && rm -f genome.fasta && ln -s $genome genome.fasta && $cmd -is_only -species $repeat_taxon genome.fasta 2>&1 > repeatmasking.log";
+		my $local_cmd = "cd contamination-check && rm -f genome.fasta && ln -s $genome genome.fasta && $cmd -is_only -species $repeat_taxon genome.fasta 2>&1 > repeatmasking.log && cd ..";
   		my $thread = threads->create('just_run_my_commands_helper', $local_cmd, undef, undef);
 	        $thread_helper->add_thread($thread);
 		push(@threads_submitted,$thread);
@@ -1009,7 +1011,7 @@ sub do_repeat_masking(){
 
   #2 "simple-only"
 	 unless (-s "simple-only/genome.fasta.cat.gz"){
-		my $local_cmd = "cd simple-only && rm -f genome.fasta && ln -s $genome genome.fasta && $cmd -species $repeat_taxon -no_is -noint -norna genome.fasta 2>&1 > repeatmasking.log" ;
+		my $local_cmd = "cd simple-only && rm -f genome.fasta && ln -s $genome genome.fasta && $cmd -species $repeat_taxon -no_is -noint -norna genome.fasta 2>&1 > repeatmasking.log && cd .." ;
 	  	my $thread = threads->create('just_run_my_commands_helper', $local_cmd, undef, undef);
         	$thread_helper->add_thread($thread);
 		push(@threads_submitted,$thread);
@@ -1018,7 +1020,7 @@ sub do_repeat_masking(){
 
   #3 "general"
 	unless (-s "general/genome.fasta.cat.gz"){
-		my $local_cmd = "cd general && rm -f genome.fasta && ln -s $genome genome.fasta && $cmd -species $repeat_taxon -no_is -nolow genome.fasta 2>&1 > repeatmasking.log";
+		my $local_cmd = "cd general && rm -f genome.fasta && ln -s $genome genome.fasta && $cmd -species $repeat_taxon -no_is -nolow genome.fasta 2>&1 > repeatmasking.log && cd ..";
  	 	my $thread = threads->create('just_run_my_commands_helper', $local_cmd, undef, undef);
         	$thread_helper->add_thread($thread);
 		push(@threads_submitted,$thread);
@@ -1027,7 +1029,7 @@ sub do_repeat_masking(){
 
   #4 "rna-specific"
 	unless (-s "rna-specific/genome.fasta.cat.gz"){
-		my $local_cmd = "cd rna-specific && rm -f genome.fasta && ln -s $genome genome.fasta && $cmd -no_is -nolow -lib $RealBin/../databases/repeats/rnammer-SILVA.classified.nr95.renamed.fasta genome.fasta 2>&1 > repeatmasking.log";
+		my $local_cmd = "cd rna-specific && rm -f genome.fasta && ln -s $genome genome.fasta && $cmd -no_is -nolow -lib $RealBin/../databases/repeats/rnammer-SILVA.classified.nr95.renamed.fasta genome.fasta 2>&1 > repeatmasking.log && cd ..";
  	 	my $thread = threads->create('just_run_my_commands_helper', $local_cmd, undef, undef);
         	$thread_helper->add_thread($thread);
 		push(@threads_submitted,$thread);
@@ -1037,12 +1039,11 @@ sub do_repeat_masking(){
   #5 RepeatModeller for "species-specific"
 	unless (-s "species-specific/$genome_name.rm.nal"){
 		chdir("species-specific")||die($!);
-	  	&process_cmd($RealBin."/../3rd_party/RepeatModeler/BuildDatabase -name $genome_name.rm -engine ncbi $genome >/dev/null");
-		chdir("../")||die($!);
+	  	&process_cmd($RealBin."/../3rd_party/RepeatModeler/BuildDatabase -name $genome_name.rm -engine ncbi $genome >/dev/null && cd ..");
 		sleep(1);
 	}
-	unless (-s "species-specific/genome.fasta.cat.gz"){
-		my $local_cmd = "cd species-specific && rm -f genome.fasta && ln -s $genome genome.fasta && $RealBin/../3rd_party/RepeatModeler/RepeatModeler -engine ncbi -database $genome_name.rm -pa $repeatcpus 2>&1 > repeatmodelling.log";
+	unless (-s "$genome.consensi.fa.classified"){
+		my $local_cmd = "cd species-specific && rm -rf RM_* genome.fasta && ln -s $genome genome.fasta && $RealBin/../3rd_party/RepeatModeler/RepeatModeler -engine ncbi -database $genome_name.rm -pa $repeatcpus 2>&1 > repeatmodelling.log && ln -s RM_*/consensi.fa.classified $genome.consensi.fa.classified && cd ..";
   		my $thread = threads->create('just_run_my_commands_helper', $local_cmd, undef, undef);
 	        $thread_helper->add_thread($thread);
 		push(@threads_submitted,$thread);
@@ -1050,7 +1051,6 @@ sub do_repeat_masking(){
 	}
 
   sleep(600);
-
    # wait for all to finish
 	while (@threads_submitted && scalar(@threads_submitted)>0){
    	   for (my $i=0;$i<(@threads_submitted);$i++){
@@ -1061,7 +1061,6 @@ sub do_repeat_masking(){
 			$thread->join();
 		        warn "GOOD: thread $thread_id completed\n";
 			splice(@threads_submitted,$i,1)
-			#delete ($threads_submitted[$i]);
 		}
 	        if (my $error = $thread->error()) {
 		        warn "ERROR: thread $thread_id exited with error $error\n";
@@ -1070,14 +1069,11 @@ sub do_repeat_masking(){
   	   sleep(600);
 	}
    # "species-specific"
-	chdir("species-specific");
-	my @rmod_files = glob("./*consensi.fa.classified RM*/*consensi.fa.classified");
-	if (!-s $rmod_files[0]){ warn "RepeatModeller failed!";}
-	else{
-		link($rmod_files[0],"$genome.repclassified.fsa");
-		&process_cmd($cmd." -no_is -nolow -lib $genome.repclassified.fsa genome.fasta 2>&1 > repeatmasking.log")  unless -s "species-specific/genome.fasta.cat.gz";
+	if (!-s "$genome.consensi.fa.classified"){
+		warn "RepeatModeller failed!";
+	}else{
+		&process_cmd("cd species-specific && $cmd -no_is -nolow -lib $genome.consensi.fa.classified genome.fasta 2>&1 > repeatmasking.log && cd ..") unless -s "species-specific/genome.fasta.cat.gz";
 	}
-	chdir("../");
 
 
   # final file
