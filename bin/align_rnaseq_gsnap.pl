@@ -270,7 +270,7 @@ sub process_cmd {
   my $ret = system($cmd);
   if ( $ret && $ret != 256 ) {
    chdir($cwd) if $dir;
-   &process_cmd_delete_fails( $dir, $delete_pattern ) if $delete_pattern;
+   &process_cmd_delete_fails($cwd, $dir, $delete_pattern ) if $delete_pattern;
    die "Error, cmd died with ret $ret\n";
    chdir($cwd) if $dir;
   }
@@ -321,8 +321,10 @@ sub samtools_version_check() {
 }
 
 sub process_cmd_delete_fails {
+ my $cwd     = shift;
  my $dir     = shift;
  my $pattern = shift;
+ $dir = $cwd if !$dir;
  my @delete  = glob( $dir . "/" . $pattern );
  foreach (@delete) { unlink $_; }
  die

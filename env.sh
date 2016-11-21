@@ -41,7 +41,7 @@ echo "#!/bin/bash
 export JAMG_PATH=$JAMG_PATH
 export LOCAL_CPUS=$LOCAL_CPUS
 export MAX_MEMORY_G=$MAX_MEMORY_G
-export HHLIB=$JAMG_PATH/3rd_party/hhsuite/lib/hh/
+export HHLIB=$JAMG_PATH/3rd_party/hhsuite
 export TMPDIR=$TMPDIR
 
 # species specific (can edit these)

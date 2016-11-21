@@ -68,9 +68,8 @@ use lib ("$RealBin/../PerlLib");
 use Fasta_reader;
 use Thread_helper;
 use Data::Dumper;
-
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/:$RealBin:$RealBin/../3rd_party/RepeatMasker:$RealBin/../3rd_party/hhsuite/bin";
-$ENV{HHLIB} =  "$RealBin/../3rd_party/hhsuite/lib/hh";
+$ENV{HHLIB} =  "$RealBin/../3rd_party/hhsuite";
 
 my (
      $genome,          $circular,          
@@ -90,7 +89,8 @@ my $uniprot_db =  $RealBin . "/../databases/hhblits/refseq_plant";
 my $min_exons_before_reporting = 2;
 my $gc_cutoff = 0.4;
 my ( $getorf_exec, $repeatmasker_exec, $bedtools_exec ) = &check_program( 'getorf', 'RepeatMasker', 'bedtools' );
-my ( $hhblits_exec, $ffindex_apply_exec,, $ffindex_from_fasta_exec, $segmasker_exec ) = &check_program( 'hhblits', 'ffindex_apply', 'ffindex_from_fasta', 'segmasker' );
+my ( $hhblits_exec, $ffindex_apply_exec, $ffindex_from_fasta_exec, $segmasker_exec, $ffindex_get_exec ) = &check_program( 'hhblits', 'ffindex_apply', 'ffindex_from_fasta', 'segmasker', 'ffindex_get' ); 
+
 
 GetOptions(
             'fasta|genome|in:s' => \$genome,
@@ -419,6 +419,7 @@ sub prepare_localmpi() {
   &process_cmd("$ffindex_from_fasta_exec -s $exons.aa.trim.db $exons.aa.trim.db.idx $exons.aa.trim") if !-s "$exons.aa.trim.db";
   my $number_of_entries = `wc -l < $exons.aa.trim.db.idx`;
   chomp($number_of_entries);
+  unlink("mpi_err.log");
   print "Processing $number_of_entries entries with $hhblits_cpus threads...\n";
   my $transposon_cmd ="$mpirun_exec -n $hhblits_cpus $ffindex_apply_mpi_exec -d $exons.aa.trim.db.transposon.db -i $exons.aa.trim.db.transposon.db.idx $exons.aa.trim.db $exons.aa.trim.db.idx  \\
  -- $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 2>mpi_err.log
@@ -434,6 +435,7 @@ sub prepare_localmpi() {
   ) if !-s "$noreps_fasta.db";
   my $number_of_entries = `wc -l < $noreps_fasta.db.idx`;
   chomp($number_of_entries);
+  unlink("mpi_err.log");
   print
 "Processing $number_of_entries entries with $hhblits_cpus threads for uniprot...\n";
   my $uniprot_cmd =
@@ -500,6 +502,7 @@ sub prepare_mpi() {
   ) if !-s "$exons.aa.trim.db";
   my $number_of_entries = `wc -l < $exons.aa.trim.db.idx`;
   chomp($number_of_entries);
+  unlink("mpi_errors.log");
   print "Processing $number_of_entries entries with $hhblits_cpus threads for transposons...\n";
   &process_cmd("$mpirun_exec -machinefile $workers_file -n $hhblits_cpus $ffindex_apply_mpi_exec -d $exons.aa.trim.db.transposon.db -i $exons.aa.trim.db.transposon.db.idx $exons.aa.trim.db $exons.aa.trim.db.idx  \\
  -- $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 2>> mpi_errors.log
@@ -516,12 +519,12 @@ sub prepare_mpi() {
   ) if !-s "$noreps_fasta.db";
   my $number_of_entries = `wc -l < $noreps_fasta.db.idx`;
   chomp($number_of_entries);
-  print
-"Processing $number_of_entries entries with $hhblits_cpus threads for uniprot...\n";
+  unlink("mpi_errors.log");
+  print "Processing $number_of_entries entries with $hhblits_cpus threads for uniprot...\n";
 
   &process_cmd(
 "$mpirun_exec -machinefile $workers_file -n $hhblits_cpus $ffindex_apply_mpi_exec -d $noreps_fasta.db.uniprot.db -i $noreps_fasta.db.uniprot.db.idx $noreps_fasta.db $noreps_fasta.db.idx  \\
- -- $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 2>>mpi_errors.log
+ -- $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 2>> mpi_errors.log
  "
   ) unless $number_of_entries == 0 || -s "$noreps_fasta.db.uniprot.db";
   &parse_hhr( "$noreps_fasta.db.uniprot.db", 70, 1e-3, 1e-6, 100, 50, 30 ) unless -s "hhr.$noreps_fasta.uniprot.db";
@@ -587,18 +590,17 @@ sub remove_zero_bytes() {
 }
 
 sub prepare_local() {
- my ( $ffindex_get_exec) = &check_program( 'ffindex_get');
  &cleanup_threaded_exit();
  my $fasta = "$exons.aa.trim";
  &process_cmd("$ffindex_from_fasta_exec -s $fasta.db $fasta.db.idx $fasta")  unless -s "$fasta.db";
  my $number_of_entries = `wc -l < $fasta.db.idx`;
+ unlink("local_errors.log");
  chomp($number_of_entries);
-
  # transposons
  unless ( -s "$fasta.hhblits.transposon.cmds" || -s "hhr.$exons.aa.trim.transposon.db" || $no_transposon_search || $number_of_entries == 0 ) {
    open( CMD, ">$fasta.hhblits.transposon.cmds" );
    for ( my $i = 1 ; $i <= $number_of_entries ; $i++ ) {
-    print CMD "$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0  >> $fasta.transposons.hhr 2>>mpi_errors.log\n"; 
+    print CMD "$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 3 -d $transposon_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0  >> $fasta.transposons.hhr 2>> local_errors.log\n"; 
    }
    close CMD;
   }
@@ -613,12 +615,13 @@ sub prepare_local() {
   &process_cmd("$ffindex_from_fasta_exec -s $fasta.db $fasta.db.idx $fasta")  unless -s "$fasta.db";
   $number_of_entries = `wc -l < $fasta.db.idx`;
   chomp($number_of_entries);
+  unlink("local_errors.log");
 
   # uniprot
   unless ( -s "$fasta.hhblits.uniprot.cmds" || -s "hhr.$exons.aa.trim.uniprot.db" || $no_uniprot_search || $number_of_entries == 0) {
    open( CMD, ">$fasta.hhblits.uniprot.cmds" );
    for ( my $i = 1 ; $i <= $number_of_entries ; $i++ ) {
-    print CMD "$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 >> $fasta.uniprot.hhr 2>>mpi_errors.log\n";
+    print CMD "$ffindex_get_exec -n $fasta.db $fasta.db.idx $i | $hhblits_exec -maxmem 5 -d $uniprot_db -n 1 -mact 0.5 -cpu 1 -i stdin -o stdout -e 1E-5 -E 1E-5 -id 80 -p 80 -z 0 -b 0 -B 3 -Z 3 -v 0 >> $fasta.uniprot.hhr 2>> local_errors.log\n";
    }
    close CMD;
   }
@@ -633,7 +636,7 @@ sub prepare_local() {
 sub just_run_my_commands_helper(){
 	my ($cmd,$failed_filehandle,$completed_filehandle) = @_;
 	chomp($cmd);
-	print "CMD: $cmd\n";
+	print "CMD: $cmd\n" if $verbose;
 	my $ret = system($cmd);
 	if ($ret && $ret != 256 ){
 		print $failed_filehandle $cmd."\n" if $failed_filehandle;
@@ -665,7 +668,6 @@ sub just_run_my_commands(){
  }
  close CMDS;
  return unless $number_commands && $number_commands > 0;
-
  print "Processing with $hhblits_cpus CPUs...\n";
  my $thread_helper = new Thread_helper($hhblits_cpus);
  open (CMDS,$cmd_file);
@@ -679,8 +681,8 @@ sub just_run_my_commands(){
         sleep(1) if ($cmd_count % 100 == 0);
         print "\r $cmd_count / $number_commands                 " if $verbose;
  }
- $thread_helper->wait_for_all_threads_to_complete();
  close CMDS;
+ $thread_helper->wait_for_all_threads_to_complete();
  close $failed_fh;
  close $completed_fh;
  my @failed_threads = $thread_helper->get_failed_threads();
@@ -693,7 +695,6 @@ sub just_run_my_commands(){
 sub prepare_cluster() {
 
 # to be honest, I don't know what this should produce/ currently it produces commands like local but with a twist on number of CPUs.
- my ($ffindex_get_exec) = &check_program('ffindex_get');
  my $workdir = 'exons_hhsearch';
  if ( -d $workdir ) {
   warn
@@ -994,45 +995,80 @@ sub do_repeat_masking(){
   mkdir("species-specific") unless -d "species-specific";
   mkdir("general") unless -d "general";
   mkdir("contamination-check") unless -d "contamination-check";
-
+  my (@threads_submitted);
   my $thread_helper = new Thread_helper(5);
   my $cmd = "$repeatmasker_exec $repeatmasker_options -e ncbi -gff -pa $repeatcpus -qq -s -excln -xsmall -gccalc -frag $frag ";
   #1 "contamination-check"
-	my $local_cmd1 = "cd contamination-check && rm -f genome.fasta && ln -s $genome genome.fasta && $cmd -is_only -species $repeat_taxon genome.fasta 2>&1 > repeatmasking.log";
-  	my $thread1 = threads->create('just_run_my_commands_helper', $local_cmd1, undef, undef) unless -s "contamination-check/genome.fasta.cat.gz";
-        $thread_helper->add_thread($thread1);
-  sleep(10);
+	unless (-s "contamination-check/genome.fasta.cat.gz"){
+		my $local_cmd = "cd contamination-check && rm -f genome.fasta && ln -s $genome genome.fasta && $cmd -is_only -species $repeat_taxon genome.fasta 2>&1 > repeatmasking.log";
+  		my $thread = threads->create('just_run_my_commands_helper', $local_cmd, undef, undef);
+	        $thread_helper->add_thread($thread);
+		push(@threads_submitted,$thread);
+		sleep(10);
+	}
 
   #2 "simple-only"
-	my $local_cmd2 = "cd simple-only && rm -f genome.fasta && ln -s $genome genome.fasta && $cmd -species $repeat_taxon -no_is -noint -norna genome.fasta 2>&1 > repeatmasking.log" ;
-  	my $thread2 = threads->create('just_run_my_commands_helper', $local_cmd2, undef, undef) unless -s "simple-only/genome.fasta.cat.gz";
-        $thread_helper->add_thread($thread2);
-  sleep(10);
+	 unless (-s "simple-only/genome.fasta.cat.gz"){
+		my $local_cmd = "cd simple-only && rm -f genome.fasta && ln -s $genome genome.fasta && $cmd -species $repeat_taxon -no_is -noint -norna genome.fasta 2>&1 > repeatmasking.log" ;
+	  	my $thread = threads->create('just_run_my_commands_helper', $local_cmd, undef, undef);
+        	$thread_helper->add_thread($thread);
+		push(@threads_submitted,$thread);
+		sleep(10);
+	}
 
   #3 "general"
-	my $local_cmd3 = "cd general && rm -f genome.fasta && ln -s $genome genome.fasta && $cmd -species $repeat_taxon -no_is -nolow genome.fasta 2>&1 > repeatmasking.log";
-  	my $thread3 = threads->create('just_run_my_commands_helper', $local_cmd3, undef, undef) unless -s "general/genome.fasta.cat.gz";
-        $thread_helper->add_thread($thread3);
-  sleep(10);
+	unless (-s "general/genome.fasta.cat.gz"){
+		my $local_cmd = "cd general && rm -f genome.fasta && ln -s $genome genome.fasta && $cmd -species $repeat_taxon -no_is -nolow genome.fasta 2>&1 > repeatmasking.log";
+ 	 	my $thread = threads->create('just_run_my_commands_helper', $local_cmd, undef, undef);
+        	$thread_helper->add_thread($thread);
+		push(@threads_submitted,$thread);
+		sleep(10);
+	}
 
   #4 "rna-specific"
-	my $local_cmd4 = "cd rna-specific && rm -f genome.fasta && ln -s $genome genome.fasta && $cmd -no_is -nolow -lib $RealBin/../databases/repeats/rnammer-SILVA.classified.nr95.renamed.fasta genome.fasta 2>&1 > repeatmasking.log";
-  	my $thread4 = threads->create('just_run_my_commands_helper', $local_cmd4, undef, undef) unless -s "rna-specific/genome.fasta.cat.gz";
-        $thread_helper->add_thread($thread4);
-  sleep(10);
+	unless (-s "rna-specific/genome.fasta.cat.gz"){
+		my $local_cmd = "cd rna-specific && rm -f genome.fasta && ln -s $genome genome.fasta && $cmd -no_is -nolow -lib $RealBin/../databases/repeats/rnammer-SILVA.classified.nr95.renamed.fasta genome.fasta 2>&1 > repeatmasking.log";
+ 	 	my $thread = threads->create('just_run_my_commands_helper', $local_cmd, undef, undef);
+        	$thread_helper->add_thread($thread);
+		push(@threads_submitted,$thread);
+ 		sleep(10);
+	}
 
   #5 RepeatModeller for "species-specific"
-	chdir("species-specific")||die($!);
-  	&process_cmd($RealBin."/../3rd_party/RepeatModeler/BuildDatabase -name $genome_name.rm -engine ncbi $genome >/dev/null") unless -s "$genome_name.rm.nal";
-	chdir("../")||die($!);
-	my $local_cmd5 = "cd species-specific && rm -f genome.fasta && ln -s $genome genome.fasta && $RealBin/../3rd_party/RepeatModeler/RepeatModeler -engine ncbi -database $genome_name.rm -pa $repeatcpus 2>&1 > repeatmodelling.log";
-  	my $thread5 = threads->create('just_run_my_commands_helper', $local_cmd5, undef, undef) unless -s "species-specific/genome.fasta.cat.gz";
-        $thread_helper->add_thread($thread5);
+	unless (-s "species-specific/$genome_name.rm.nal"){
+		chdir("species-specific")||die($!);
+	  	&process_cmd($RealBin."/../3rd_party/RepeatModeler/BuildDatabase -name $genome_name.rm -engine ncbi $genome >/dev/null");
+		chdir("../")||die($!);
+		sleep(1);
+	}
+	unless (-s "species-specific/genome.fasta.cat.gz"){
+		my $local_cmd = "cd species-specific && rm -f genome.fasta && ln -s $genome genome.fasta && $RealBin/../3rd_party/RepeatModeler/RepeatModeler -engine ncbi -database $genome_name.rm -pa $repeatcpus 2>&1 > repeatmodelling.log";
+  		my $thread = threads->create('just_run_my_commands_helper', $local_cmd, undef, undef);
+	        $thread_helper->add_thread($thread);
+		push(@threads_submitted,$thread);
+ 		sleep(10);
+	}
+
   sleep(600);
 
-   # wait	
-   	$thread_helper->wait_for_all_threads_to_complete();
-die;
+   # wait for all to finish
+	while (@threads_submitted && scalar(@threads_submitted)>0){
+   	   for (my $i=0;$i<(@threads_submitted);$i++){
+		my $thread = $threads_submitted[$i] || next;
+	        next if ($thread->is_running);
+       		my $thread_id = $thread->tid;
+		if ($thread->is_joinable){
+			$thread->join();
+		        warn "GOOD: thread $thread_id completed\n";
+			splice(@threads_submitted,$i,1)
+			#delete ($threads_submitted[$i]);
+		}
+	        if (my $error = $thread->error()) {
+		        warn "ERROR: thread $thread_id exited with error $error\n";
+		}
+    	   }
+  	   sleep(600);
+	}
    # "species-specific"
 	chdir("species-specific");
 	my @rmod_files = glob("./*consensi.fa.classified RM*/*consensi.fa.classified");
@@ -1075,7 +1111,7 @@ die;
 
 sub check_for_iupac_violation(){
 	my $fasta = shift;
-return;
+	return if -f $fasta.'.checked';
 	print "Checking FASTA $fasta for non ATCGN characters...\n";
 	my $orig_sep = $/;
 	$/ = ">";
@@ -1090,4 +1126,7 @@ return;
 	}
 	close IN;
 	print "None found :-)\n";
+	open(T,">$fasta.checked");
+	print T "Checked\n";
+	close T;
 }

@@ -299,6 +299,7 @@ sub intron_driven_fixes(){
  my $intronic_file = &get_intron_orient($file);
 
  if ($intron_db_only){
+	$thread_helper->wait_for_all_threads_to_complete();
 	print "User stop requested. Intron database built\n";
 	exit(0);
  }
