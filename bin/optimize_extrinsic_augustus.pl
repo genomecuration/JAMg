@@ -249,7 +249,7 @@ sub parse_best_predictions(){
  while (my $ln=<IN>){
  	chomp($ln);
 	next if $ln=~/^\s*$/;
-	my @log_files = split("\t",$ln);
+	my @log_files = split(/\s+/,$ln);
 	my $source_evidence = shift(@log_files);
 	my $top_accuracy = int(0);
  	my $top_accuracy_file;
