@@ -83,10 +83,11 @@ main: {
     if ((! $no_chimera_flag) && $num_gmap_top_hits == 1) {
         $num_gmap_top_hits = 0; # reports two hits if chimera with this setting.
     }
-    
+
+    my $gmap_exec = (-s $genome > 5306887543) ? 'gmapl' : 'gmap';
     my $format = ($SAM_flag) ? "samse" : "3";
 
-	my $cmd = "gmap -D $genomeBaseDir -d $genomeDir $transcriptDB -f $format -n $num_gmap_top_hits -x 50 -t $CPU -B 5 ";
+	my $cmd = "$gmap_exec -D $genomeBaseDir -d $genomeDir $transcriptDB -f $format -n $num_gmap_top_hits -x 50 -t $CPU -B 5 ";
 	if ($max_intron) {
 		$cmd .= " --max-intronlength-middle=$max_intron --max-intronlength-ends=$max_intron ";
 	}

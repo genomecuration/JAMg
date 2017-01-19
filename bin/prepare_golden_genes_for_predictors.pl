@@ -216,6 +216,8 @@ my ( $makeblastdb_exec, $tblastn_exec, $tblastx_exec ) =
   &check_program( 'makeblastdb', 'tblastn', 'tblastx' );
 my ( $gmap_build_exec, $gmap_exec ) = &check_program( 'gmap_build', 'gmap' );
 
+if ($genome_file && -s $genome_file > 4306887543){ $gmap_exec = &check_program( 'gmapl');}
+
 my ( $gff2gb_exec, $fathom_exec, $augustus_exec, $augustus_train_exec,
      $augustus_filterGenes_exec )
   = &check_program_optional(

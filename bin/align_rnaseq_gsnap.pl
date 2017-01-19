@@ -85,9 +85,6 @@ use threads;
 use Thread_helper;
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 
-my ( $gmap_build_exec, $gsnap_exec, $samtools_exec,$bunzip2_exec,$bedtools_exec ) =
-  &check_program( "gmap_build", "gsnap", "samtools",'bunzip2','bedtools' );
-&samtools_version_check($samtools_exec);
 my (
      $input_dir,               $pattern2,      $debug, $piccard_0m, $do_parallel,
      $genome,                  $genome_dbname, $nofails, $intron_hard,
@@ -148,7 +145,12 @@ if ($do_parallel && $do_parallel > 1){
 	$cpus = int($cpus / $do_parallel);
 }
 
-( $gsnap_exec ) = &check_program( "gsnapl" ) if $do_large_genome;
+
+my ( $gmap_build_exec, $gsnap_exec, $samtools_exec,$bunzip2_exec,$bedtools_exec ) =
+  &check_program( "gmap_build", "gsnap", "samtools",'bunzip2','bedtools' );
+&samtools_version_check($samtools_exec);
+
+( $gsnap_exec ) = &check_program( "gsnapl" ) if $do_large_genome || (-s $genome > 4306887543);
 
 
 my $samtools_sort_CPUs = int( $cpus / 2 ) > 2 ? int( $cpus / 2 ) : 2;
