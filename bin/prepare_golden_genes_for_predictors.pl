@@ -216,7 +216,7 @@ my ( $makeblastdb_exec, $tblastn_exec, $tblastx_exec ) =
   &check_program( 'makeblastdb', 'tblastn', 'tblastx' );
 my ( $gmap_build_exec, $gmap_exec ) = &check_program( 'gmap_build', 'gmap' );
 
-if ($genome_file && -s $genome_file > 4306887543){ $gmap_exec = &check_program( 'gmapl');}
+if ($genome_file && -s $genome_file > 4306887543){ ($gmap_exec) = &check_program( 'gmapl');}
 
 my ( $gff2gb_exec, $fathom_exec, $augustus_exec, $augustus_train_exec,
      $augustus_filterGenes_exec )
@@ -228,13 +228,13 @@ my ( $gff2gb_exec, $fathom_exec, $augustus_exec, $augustus_train_exec,
 &check_for_options();
 
 if ($liberal_cutoffs){
- print "Liberal cut-offs requested\n";
+ print "\nLiberal cut-offs requested\n";
  $identical_fraction_cutoff = 40 if $identical_fraction_cutoff == 95;
  $similar_fraction_cutoff = 50 if $similar_fraction_cutoff == 98;
  $mismatch_cutoff         = 1000 if $mismatch_cutoff == 10;
- print "Methionine, stop codons, splice sites and overlapping genes will not be imposed\n";
+ print "\nMethionine, stop codons, splice sites and overlapping genes will not be imposed\n";
 }else{
-  print "Methionine and * in protein sequence; Start codon and stop codon in genome; No overlapping genes; Splice sites (GT..AG or GC..AG)\n";
+  print "\nMethionine and * in protein sequence; Start codon and stop codon in genome; No overlapping genes; Splice sites (GT..AG or GC..AG)\n";
 }
 print "These cutoffs will be used:
  -identical_fraction : $identical_fraction_cutoff
@@ -256,10 +256,10 @@ my ($scaffold_seq_hashref,$scaffold_seq_length) = &read_fasta($genome_sequence_f
 
 &process_cmd(
 "$makeblastdb_exec -in $genome_sequence_file -out $genome_sequence_file -hash_index -parse_seqids -dbtype nucl"
-) unless -s "$genome_sequence_file.nin";
+) unless (-s "$genome_sequence_file.nin" || -s "$genome_sequence_file.nal");
 &process_cmd(
 "$gmap_build_exec --build-sarray=0 -e 0 -D $genome_sequence_file_dir -d $genome_sequence_file_base.gmap $genome_file"
-) unless -d "$genome_sequence_file_dir/$genome_sequence_file_base.gmap" || $peptide_file;
+) unless (-d "$genome_sequence_file_dir/$genome_sequence_file_base.gmap" || $peptide_file);
 
 unlink("$genome_sequence_file.cidx");
 &process_cmd("$cdbfasta_exec $genome_sequence_file");
