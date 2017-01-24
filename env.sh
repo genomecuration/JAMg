@@ -26,16 +26,20 @@ read SPECIES
 echo "What is a species classification for RepeatMasker (e.g. Insecta, fungi, Viridiplantae, human, primates)?"
 read SPECIES_CATEGORY
 
+echo "What directory is Genemark-HMM installed (needs a licence key; free for academics)? e.g. $HOME/software/gm_et_linux_64/gmes_petap/"
+read GENEMARK_DIR
+
 #system variables
 LD_LIBRARY_PATH=$JAMG_PATH/3rd_party/lib:$JAMG_PATH/3rd_party/lib64:$JAMG_PATH/3rd_party/mysql/lib:$JAMG_PATH/3rd_party/lib:$JAMG_PATH/3rd_party/lib64:$JAMG_PATH/3rd_party/mysql/lib:$LD_LIBRARY_PATH
 LDFLAGS="$LDFLAGS -L$JAMG_PATH/3rd_party/lib -L$JAMG_PATH/3rd_party/lib64 -L$JAMG_PATH/3rd_party/mysql/lib -L$JAMG_PATH/3rd_party/lib -L$JAMG_PATH/3rd_party/lib64 -L$JAMG_PATH/3rd_party/mysql/lib"
 CPPFLAGS="$CPPFLAGS -I$JAMG_PATH/3rd_party/include -I$JAMG_PATH/3rd_party/mysql/include -fPIC -I$JAMG_PATH/3rd_party/include -I$JAMG_PATH/3rd_party/mysql/include -fPIC"
 CFLAGS="$CFLAGS -I$JAMG_PATH/3rd_party/include -I$JAMG_PATH/3rd_party/mysql/include -fPIC -I$JAMG_PATH/3rd_party/include -I$JAMG_PATH/3rd_party/mysql/include -fPIC"
-PATH=$JAMG_PATH/bin:$JAMG_PATH/3rd_party/bin:$PATH
+PATH=$JAMG_PATH/bin:$JAMG_PATH/3rd_party/bin:$GENEMARK_DIR/:$PATH
 PERL5LIB=$JAMG_PATH/PerlLib:$PERL5LIB
 TMPDIR=$TMPDIR
 
-echo "#!/bin/bash
+echo "
+#!/bin/bash
 
 # system speficic
 export JAMG_PATH=$JAMG_PATH
@@ -43,6 +47,7 @@ export LOCAL_CPUS=$LOCAL_CPUS
 export MAX_MEMORY_G=$MAX_MEMORY_G
 export HHLIB=$JAMG_PATH/3rd_party/hhsuite
 export TMPDIR=$TMPDIR
+export GENEMARK_DIR=$GENEMARK_DIR
 
 # species specific (can edit these)
 export GENOME_NAME=$GENOME_NAME
