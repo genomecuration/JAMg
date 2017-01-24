@@ -1038,7 +1038,7 @@ sub do_repeat_masking(){
 	}
 
   #5 RepeatModeller for "species-specific"
-	unless (-s "species-specific/$genome_name.rm.nal"){
+	unless (-s "$cwd/species-specific/$genome_name.rm.nal" || -s "$cwd/species-specific/$genome_name.rm.nin"){
 	  	&process_cmd("cd $cwd/species-specific && $RealBin/../3rd_party/RepeatModeler/BuildDatabase -name $genome_name.rm -engine ncbi $genome >/dev/null && cd $cwd");
 		sleep(10);
 	}
@@ -1050,9 +1050,9 @@ sub do_repeat_masking(){
  		sleep(10);
 	}
 
-  sleep(600);
    # wait for all to finish
 	while (@threads_submitted && scalar(@threads_submitted)>0){
+	   sleep(600);
    	   for (my $i=0;$i<(@threads_submitted);$i++){
 		my $thread = $threads_submitted[$i] || next;
 	        next if ($thread->is_running);
@@ -1066,13 +1066,13 @@ sub do_repeat_masking(){
 		        warn "ERROR: thread $thread_id exited with error $error\n";
 		}
     	   }
-  	   sleep(600);
 	}
    # "species-specific"
+	my $local_cmd = "cd $cwd/species-specific && $cmd -no_is -nolow -lib $genome.consensi.fa.classified genome.fasta 2>&1 > repeatmasking.log && cd ..";
 	if (!-s "$genome.consensi.fa.classified"){
 		warn "RepeatModeller failed!";
 	}else{
-		&process_cmd("cd species-specific && $cmd -no_is -nolow -lib $genome.consensi.fa.classified genome.fasta 2>&1 > repeatmasking.log && cd ..") unless -s "species-specific/genome.fasta.cat.gz";
+		&process_cmd($local_cmd) unless -s "species-specific/genome.fasta.cat.gz";
 	}
 
 
