@@ -33,6 +33,10 @@ my $trinity_exec = "$RealBin/../3rd_party/trinityrnaseq/Trinity";
 
 my $reads_file;
 my ($paired_flag,$SS_flag,$jaccard_clip,$normalize,$bfly_opts,$help_flag);
+my $threads = 4;
+my $inch_cpus = 4;
+my $memory = '2G';
+
 
 pod2usage $! unless &GetOptions (
              'reads_list_file:s' => \$reads_file,
@@ -40,7 +44,10 @@ pod2usage $! unless &GetOptions (
              'SS' => \$SS_flag,
              'jaccard_clip' => \$jaccard_clip,
              'bfly_opts:s' => \$bfly_opts,
-	     'normalize' => \$normalize,             
+	     'normalize' => \$normalize,
+	     'threads:i' => \$threads,
+	     'inch_cpus:i' => \$inch_cpus,
+	     'memoryg:s' => \$memory,
              'help' => \$help_flag,
              );
 pod2usage if ($help_flag);
@@ -54,13 +61,13 @@ while (<$fh>) {
     
     my $file = pop @x;
     
-    my $cmd = "$trinity_exec --seqType fa --single \"$file\" --max_memory 2G --CPU 4 --inchworm_cpu 4 --no_bowtie --output \"$file.out\" --full_cleanup ";
+    my $cmd = "$trinity_exec --seqType fa --single \"$file\" --max_memory $memory --CPU $threads --inchworm_cpu $inch_cpus --no_bowtie --output \"$file.out\" --full_cleanup ";
     $cmd .= " --run_as_paired " if $paired_flag;
     $cmd .= " --SS_lib_type F " if $SS_flag;
     $cmd .= " --jaccard_clip " if $jaccard_clip;
-    $cmd .= " --normalize_reads --normalize_max_read_cov 100 " if ($normalize);
+    $cmd .= " --normalize_reads --normalize_max_read_cov 100 " if $normalize;
     $cmd .= " --bfly_opts \"$bfly_opts\" " if $bfly_opts;
-    print "$cmd\n";
+    print "$cmd  >/dev/null\n";
 }
 
 exit(0);
