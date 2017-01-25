@@ -63,7 +63,7 @@ my $sort_exec = &check_sort_version;
 
 pod2usage if $help;
 
-pod2usage "Cannot find the BAM or genome FASTA file\n"
+pod2usage "Cannot find the hints or genome FASTA file\n"
   unless $hintfiles[0]
    && -s $hintfiles[0]
    && $fasta_file
