@@ -41,9 +41,18 @@ The following perl modules are required.
 * threads and threads::shared
 * Carp
 
+For GeneMark:
+* Logger::Simple
+* Parallel::ForkManager
+* Hash::Merge
+
+
 You can install via CPAN:
 $ cpan Pod::Usage Data::Dumper Getopt::Long List::Util Digest::MD5 DBI DBD::mysql \
   IO::File LWP::Simple Statistics::Descriptive Storable threads Carp threads::shared
+
+For GeneMark:
+$ cpan Logger::Simple Parallel::ForkManager Hash::Merge
 
 Note that you don't have to this as the system administrator: you can use cpan as a normal user
  just make sure it is setup correctly (run cpan by itself and follow the prompts)
