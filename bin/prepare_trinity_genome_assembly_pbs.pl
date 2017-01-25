@@ -185,13 +185,16 @@ close LARGE;
 system( "rm -f small_trinity_GG.cmds* medium_trinity_GG.cmds* large_trinity_GG.cmds*");
 my $TGG_exec_cmd = "$TGG_exec";
 $TGG_exec_cmd .= " -paired " if !$single_end;
-system("$TGG_exec_cmd -reads_list_file stilltodo.list.k > small_trinity_GG.cmds") if -s "stilltodo.list.k";
+system("$TGG_exec_cmd -reads_list_file stilltodo.list.k -threads 2 > small_trinity_GG.cmds") if -s "stilltodo.list.k";
+
+
 # large readsets with Paired end data need to make use of jaccard
 $TGG_exec_cmd .= " -jaccard_clip " if !$single_end;
-system("$TGG_exec_cmd -reads_list_file stilltodo.list.m > medium_trinity_GG.cmds") if -s "stilltodo.list.m";
+system("$TGG_exec_cmd -reads_list_file stilltodo.list.m -memory 4G -threads 2 > medium_trinity_GG.cmds") if -s "stilltodo.list.m";
+
 # huge datasets need normalizing
 $TGG_exec_cmd .= " -normalize ";
-system("$TGG_exec_cmd -reads_list_file stilltodo.list.g  > large_trinity_GG.cmds") if -s "stilltodo.list.g";
+system("$TGG_exec_cmd -reads_list_file stilltodo.list.g  -memory 4G -threads 6 > large_trinity_GG.cmds") if -s "stilltodo.list.g";
 
 unlink("stilltodo.list");
 unlink("stilltodo.list.k");
@@ -200,13 +203,7 @@ unlink("stilltodo.list.g");
 
 if ( -s "small_trinity_GG.cmds" ) {
  open( IN, "small_trinity_GG.cmds" );
- my @array;
- while ( my $ln = <IN> ) {
-  $ln =~ s/max_memory 2G --CPU 4/max_memory 2G --CPU 2/;
-  chomp($ln);
-  $ln .= " >/dev/null\n";
-  push( @array, $ln );
- }
+ my @array = <IN>;
  close IN;
  open( OUT, ">small_trinity_GG.cmds." );
  print OUT shuffle(@array);
@@ -218,13 +215,7 @@ if ( -s "small_trinity_GG.cmds" ) {
 
 if ( -s "medium_trinity_GG.cmds" ) {
  open( IN, "medium_trinity_GG.cmds" );
- my @array;
- while ( my $ln = <IN> ) {
-  $ln =~ s/max_memory 2G --CPU 4/max_memory 4G --CPU 2 --no_bowtie/;
-  chomp($ln);
-  $ln .= " >/dev/null\n";
-  push( @array, $ln );
- }
+ my @array = <IN>;
  close IN;
  open( OUT, ">medium_trinity_GG.cmds." );
  print OUT shuffle(@array);
@@ -236,14 +227,10 @@ if ( -s "medium_trinity_GG.cmds" ) {
 
 if ( -s "large_trinity_GG.cmds" ) {
  open( IN,  "large_trinity_GG.cmds" );
- open( OUT, ">large_trinity_GG.cmds." );
- while ( my $ln = <IN> ) {
-  $ln =~ s/max_memory 2G --CPU 4/max_memory 4G --CPU 6 --no_bowtie/;
-  chomp($ln);
-  $ln .= " >/dev/null\n";
-  print OUT $ln;
- }
+ my @array = <IN>;
  close IN;
+ open( OUT, ">large_trinity_GG.cmds." );
+ print OUT shuffle(@array);
  close OUT;
  rename( "large_trinity_GG.cmds.", "large_trinity_GG.cmds" );
  system("split -d -a 3 -l 1 large_trinity_GG.cmds large_trinity_GG.cmds.");
