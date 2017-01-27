@@ -132,6 +132,8 @@ if ($only_parse){
  print "Completed, see $parse_results\n";
  exit(0);
 }
+mkdir($scratch_dir) if $scratch_dir && !-s $scratch_dir && !-d $scratch_dir;
+$ENV{'TMPDIR'} = $scratch_dir if $scratch_dir && -d $scratch_dir;
 
 die "-mpi_cpus needs to be larger than 1 (not $hhblits_cpus)\n" if $hhblits_cpus < 2;
 $engine = lc($engine);

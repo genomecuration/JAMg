@@ -25,7 +25,7 @@ Important optional parameters:
 
 Useful optional parameters:
 
- --rounds                 The number of rounds to run the optimization for (default: 5)
+ --rounds                 The number of rounds to run the optimization for (default: 3)
  --onlytrain              an optional genbank file that is used in addition to train.gb but only for etrain not for intermediate evaluation of accuracy. These genes may e.g. be incomplete.
  --kfold                  Make a k-fold cross validation (default: 8)
  --config_path            Specify the config directory d if not set as environment variable
@@ -93,7 +93,7 @@ my (
      $onlytrain_gb
 );
 
-$rounds      = 5;
+$rounds      = 3;
 $kfold       = 8;
 $pstep       = 5;
 $cpus        = 2;
