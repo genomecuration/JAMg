@@ -5,10 +5,10 @@
 
 =head1 USAGE
 
-	*  'i|fa|fasta=s'	=> \$file2split,
-  	   'depth=i'		=> \$depth,
-	   'suffix=s'		=> \$suffix,
-	   'dir=s'		=> \$splitfiledir
+	*  'i|fa|fasta=s'	=> File to split
+  	   'depth=i'		=> How many sequences per file
+	   'suffix=s'		=> Suffix of file
+	   'dir=s'		=> Where to put result files
 
 =cut
 

@@ -54,7 +54,7 @@
     -sanger          => Force sanger Quality scores for fastq (otherwise autodetect)
     -illumina        => Force Illumina 1.3-1.7 qual scores (autodetect)
     -casava18        => Force input as Fastq from Casava 1.8 (autodetect)
-    -noconvert_fastq => Don't convert to Sanger FASTQ flavour if Illumina 1.3 format is detected
+    -convert_fastq   => Convert to Sanger FASTQ flavour if Illumina 1.3 format is detected
     -dofasta         => Create FASTA file
 
 Alexie tip: For RNA-Seq,            I check the FASTQC report of the processed data but do not trim the beginning low complexity regions (hexamer priming) as some tests with TrinityRNAseq did not show improvement (the opposite in fact).
@@ -81,7 +81,7 @@ my ( $pbzip_exec, $fastqc_exec,$java_exec ) = &check_program( 'pbzip2', 'fastqc'
 my (
      $is_sanger,   $do_fasta,     $genome_size,  $use_meryl,
      $is_illumina, $delete_fastb, $is_cdna,      $no_preprocess,
-     $is_casava,      @user_labels,  @user_bowties, $noconvert_fastq,
+     $is_casava,      @user_labels,  @user_bowties, $convert_fastq,
      $is_paired,   $trim_5,       $stop_qc,      $no_screen,
      $backup_bz2,  $debug,        $is_gdna,      $nohuman, 
      $noadaptors, $max_keep_3, $no_qc, $mate_pair,$do_deduplicate, $max_length,
@@ -127,7 +127,7 @@ GetOptions(
             'casava18'           => \$is_casava,
             'user_bowtie:s{,}'   => \@user_bowties,
             'user_label:s{,}'    => \@user_labels,
-            'noconvert_fastq'    => \$noconvert_fastq,
+            'convert_fastq'      => \$convert_fastq,
             'paired'             => \$is_paired,
             'trim_5:i'           => \$trim_5,
             'max_keep:i'         => \$max_keep_3,
@@ -224,9 +224,9 @@ for ( my $i = 0 ; $i < @files ; $i++ ) {
   if ($file_is_casava) {
    $file_is_sanger = 1;
    undef($file_is_illumina);
-   print "Converting from CASAVA 1.8 to Sanger header format\n";
+   print "Converting from CASAVA 1.8 to Sanger header format\n"  if $convert_fastq;
    &process_cmd(
-             'sed --in-place \'s/^@\([^ ]*\) \([0-9]\).*/@\1\/\2/\' ' . $file );
+             'sed --in-place \'s/^@\([^ ]*\) \([0-9]\).*/@\1\/\2/\' ' . $file ) if $convert_fastq;
   }
   $files_to_delete_master{$file} = 1;
   my $fastqc_basename = $file;$fastqc_basename=~s/\.[^\.\-\_]+$//;$fastqc_basename.='_fastqc'; # probably
