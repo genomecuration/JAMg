@@ -39,11 +39,11 @@
 
  Screening:
     -adapters        => Illumina adapters FASTA (default provided)
-    -noadaptor       => Do not search for adaptors
+    -noadapter       => Do not search for adapters
     -deduplicate :s  => Perform deduplication. There are two approaches. Native and Allpaths. For Native provide an integer to use as the length of the 5' seed (give '1' to use default of 16 for short reads and 32 for long reads). To use Allpaths provide a read name prefix this will overwrite the original readname. Allpaths used 16 bp as the 5' seed. Both approaches need lots of memory.
 
- These happen after any adaptor trimming (in this order)
-    -trim_5      :i     => Trim these many bases from the 5'. Happens before quality trimming but after adaptor trimming (def 0)
+ These happen after any adapter trimming (in this order)
+    -trim_5      :i     => Trim these many bases from the 5'. Happens before quality trimming but after adapter trimming (def 0)
     -max_keep    :i     => After any -trim5 then trim 3' end so that it is no longer than these many bases. Have seen erroneous 251th base in 250 bp sequencing (def automatic to closest whole 10 b.p decrement - 100, 150, 170 etc - if not user specified)
     -min_length  :i     => Discard sequences shorter than this (after quality trimming). Defaults to 32. Increase to 50-80 if you plan to use if it for alignments
     -qtrim       :i     => Trim 3' so that mean quality is that much in the phred scale (def. 5)
@@ -84,7 +84,7 @@ my (
      $is_casava,      @user_labels,  @user_bowties, $convert_fastq,
      $is_paired,   $trim_5,       $stop_qc,      $no_screen,
      $backup_bz2,  $debug,        $is_gdna,      $nohuman, 
-     $noadaptors, $max_keep_3, $no_qc, $mate_pair,$do_deduplicate, $max_length,
+     $noadapters, $max_keep_3, $no_qc, $mate_pair,$do_deduplicate, $max_length,
      $no_av_quality
 );
 my $cwd = `pwd`;
@@ -110,7 +110,7 @@ GetOptions(
             'contam:s'           => \$contam_db,
             'human:s'            => \$human_db,
             'nohuman'            => \$nohuman,
-            'adapters:s'         => \$adapters_db,
+            'adaptors|adapters:s' => \$adapters_db,
             'noscreen|no_screen' => \$no_screen,
             'noqc|no_qc' => \$no_qc,
             'sanger'             => \$is_sanger,
@@ -135,7 +135,7 @@ GetOptions(
             'qtrim:i'            => \$qtrim,
             'backup'             => \$backup_bz2,
             'trimmomatic:s'      => \$trimmomatic_exec,
-            'noadaptors'         => \$noadaptors,
+            'noadapters'         => \$noadapters,
             'min_length:i'       => \$min_length,
 	    'slide_quality:i'    => \$slide_quality,
 	    'slide_window:i'    => \$slide_window,
@@ -167,7 +167,7 @@ pod2usage "No files given\n" unless @files;
 
 print "Running in DEBUG mode\n" if $debug;
 
-undef($adapters_db) if $noadaptors;
+undef($adapters_db) if $noadapters;
 
 #setrlimit( RLIMIT_VMEM, $kmer_ram * 1000 * 1000 , $kmer_ram * 1024 * 1024 )  if $kmer_ram;
 
