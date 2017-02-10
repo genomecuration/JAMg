@@ -30,7 +30,6 @@
  Needs pbzip2
     
     -debug           => Verbose output. Prints out commands before they are run. Tracks memory for native deduplication
-    -threads     :i  => Number of CPUs to use. NB: The program also uses 2-4 threads for parallel stats creation & compressing/backup of files 
 
  Options
     -paired          => If 2 files have been provided, then treat them as a pair.
@@ -68,7 +67,6 @@ Alexie tip: For RNA-Seq,            I check the FASTQC report of the processed d
 use strict;
 use warnings;
 use Data::Dumper;
-use threads;
 use Getopt::Long;
 use Pod::Usage;
 use Digest::MD5 qw/md5/;
@@ -117,7 +115,6 @@ GetOptions(
             'dofasta'            => \$do_fasta,
             'genome_size:s'      => \$genome_size,
             'kmer_ram:i'         => \$kmer_ram,
-            'cpu|threads:i'      => \$cpus,
             'meryl'              => \$use_meryl,
             'illumina'           => \$is_illumina,
             'delete_fastb'       => \$delete_fastb,
@@ -165,13 +162,11 @@ for ( my $i = 0 ; $i < scalar(@user_bowties) ; $i++ ) {
 }
 pod2usage "No files given\n" unless @files;
 
-print "Running in DEBUG mode\n" if $debug;
-
 undef($adapters_db) if $noadapters;
 
 #setrlimit( RLIMIT_VMEM, $kmer_ram * 1000 * 1000 , $kmer_ram * 1024 * 1024 )  if $kmer_ram;
 
-my ( @threads, %files_to_delete_master );
+my ( %files_to_delete_master );
 
 for ( my $i = 0 ; $i < @files ; $i++ ) {
 
@@ -231,16 +226,12 @@ for ( my $i = 0 ; $i < @files ; $i++ ) {
   $files_to_delete_master{$file} = 1;
   my $fastqc_basename = $file;$fastqc_basename=~s/\.[^\.\-\_]+$//;$fastqc_basename.='_fastqc'; # probably
   unless (-s $fastqc_basename . ".zip" || !$fastqc_exec || $no_qc){
-  push( @threads, &create_fork("$fastqc_exec --noextract --nogroup -q $file") );
-   $files_to_delete_master{$fastqc_basename.".html"} = 1;
+    system("$fastqc_exec --noextract --nogroup -q $file");
   }
  }
 }
 
 if ($stop_qc) {
- foreach my $thread (@threads) {
-  $thread->join() if $thread->is_joinable();
- }
  print "User asked to stop after QC\n";
  exit(0);
 }
@@ -297,9 +288,8 @@ if ( $is_paired && $trimmomatic_exec) {
  }
 }
 }
-foreach my $thread (@threads) { $thread->join() if $thread->is_joinable();}
 
-print "Stage 1 completed\n";
+print "Stage 1 completed (".$files[0].")\n";
 ##########################
 
 &remove_dodgy_reads($files[0],$files[1]) if $is_paired && $do_deduplicate;
@@ -307,11 +297,9 @@ print "Stage 1 completed\n";
 ##########################
 foreach my $file (@files){
   my $fastqc_basename = $file;$fastqc_basename.='_fastqc'; # probably
-  push( @threads, &create_fork("$fastqc_exec --noextract --nogroup -q $file") )
-    unless -s $fastqc_basename . ".zip" || !$fastqc_exec;
+  system("$fastqc_exec --noextract --nogroup -q $file") unless -s $fastqc_basename . ".zip" || !$fastqc_exec;
   $files_to_delete_master{$fastqc_basename.".html"} = 1;
 }
-foreach my $thread (@threads) { $thread->join() if $thread->is_joinable(); }
 
 ##########################
 
@@ -324,8 +312,6 @@ for ( my $i = 0 ; $i < @files ; $i++ ) {
 }
 
 print "Completed. Compressing/cleaning up...\n";
-foreach my $thread (@threads) { sleep (10) while $thread->is_running();}
-foreach my $thread (@threads) { $thread->join() if $thread->is_joinable();}
 
 &process_cmd(   "$pbzip_exec -fvp$cpus "
               . join( " ", ( keys %files_to_delete_master ) )
@@ -405,20 +391,11 @@ sub process_cmd {
  chdir($dir) if $dir;
  my $ret = system($cmd);
  if ( $ret && $ret != 256 ) {
-  foreach my $thread (@threads) {
-   $thread->join();
-  }
   die "Error, cmd died with ret $ret\n";
  }
  chdir($cwd) if $dir;
+ print "COMPLETED: $cmd ($ret)\n" if $debug;
  return;
-}
-
-sub create_fork() {
- my $cmd = shift;
- my $thread = threads->create( 'process_cmd', $cmd );
- sleep(1);
- return $thread;
 }
 
 sub illumina2sanger() {
