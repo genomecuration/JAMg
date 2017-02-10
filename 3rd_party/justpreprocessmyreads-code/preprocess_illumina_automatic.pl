@@ -23,6 +23,7 @@ my @files;
 @files = glob("*_1_sequence.fastq*") if $is_seqcenter1;
 @files = glob("*R1_*.fastq*") if $is_seqcenter2;
 
+print "\nWill process these files:\n\t".join("\n\t",@files)."\n\n";
 
 foreach my $f (sort @files){
 	my $cmd = "$RealBin/preprocess_illumina.pl ";

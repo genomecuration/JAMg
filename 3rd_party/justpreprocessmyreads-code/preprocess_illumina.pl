@@ -255,7 +255,7 @@ if ( $is_paired && $trimmomatic_exec) {
  print "Pre-processing $file1 and $file2\n";
  my $check1 = &check_fastq_format($file1);
  my $check2 = &check_fastq_format($file2);
- my $cmd = "java -jar $trimmomatic_exec PE -threads $cpus -phred33 $file1 $file2 $file1.trimmomatic $file1.trim.unpaired $file2.trimmomatic $file2.trim.unpaired MINLEN:32 ";
+ my $cmd = "java -jar $trimmomatic_exec PE -threads $cpus -phred33 $file1 $file2 $file1.trimmomatic $file1.trimmomatic.unpaired $file2.trimmomatic $file2.trimmomatic.unpaired MINLEN:32 ";
  $cmd .= " ILLUMINACLIP:$adapters_db:2:40:15 " if $adapters_db ;
  $cmd .= " HEADCROP:$trim_5 " if $trim_5;
  $cmd .= " CROP:$max_keep_3 " if $max_keep_3 && $max_keep_3 >0;
@@ -268,9 +268,9 @@ if ( $is_paired && $trimmomatic_exec) {
  &process_cmd($cmd) unless -s "$file1.trimmomatic" && -s "$file2.trimmomatic";
  die "Something bad happened... one of the files are empty/missing...\n" unless -s "$file1.trimmomatic" && -s "$file2.trimmomatic";
  $files_to_delete_master{$file1}                 = 1;
- $files_to_delete_master{ $file1 . '.trim.unpaired' } = 1;
+ $files_to_delete_master{ $file1 . '.trimmomatic.unpaired' } = 1;
  $files_to_delete_master{$file2}                 = 1;
- $files_to_delete_master{ $file2 . '.trim.unpaired' } = 1;
+ $files_to_delete_master{ $file2 . '.trimmomatic.unpaired' } = 1;
 
  $files[0] .= '.trimmomatic';
  $files[1] .= '.trimmomatic';
