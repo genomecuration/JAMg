@@ -60,14 +60,15 @@ $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 
 my ( $query, $query_text, $molecule,$species_latin,$ncbi_taxid,$taxonomy,$outfile );
 my $format     = "fasta";
-
+my $debug;
 pod2usage $! unless &GetOptions(
 	'outfile:s'  => \$outfile,
 	'format:s'  => \$format,
 	'query:s'    => \$query,
 	'molecule:s' => \$molecule,
 	'species:s'	=> \$species_latin,
-	'taxonomy:s'	=> \$taxonomy
+	'taxonomy:s'	=> \$taxonomy,
+	'verbose|debug' => \$debug,
 );
 
 # Sanity checks
@@ -80,7 +81,7 @@ elsif ($species_latin){
 if (!$outfile && $taxonomy){$outfile="$taxonomy.$molecule.$format";}
 elsif (!$outfile && $ncbi_taxid){$outfile="$ncbi_taxid.$molecule.$format";}
 
-my $service_request= 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?';
+my $service_request= 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?';
 my $database;
 
 if ($molecule && $molecule =~ /protein/i){
@@ -107,7 +108,7 @@ if ($query_text){
 }
 print "Making this query: $query_text from NCBI's $database\n";
 $service_request.=$query_text;
-
+print "Fetching $service_request\n" if $debug;
 #http://www.ncbi.nlm.nih.gov/books/NBK25498/#chapter3.Application_3_Retrieving_large
 #post the esearch URL
 my $output = get($service_request);
@@ -126,7 +127,9 @@ open(OUT, ">$outfile") || die "Can't write to file $outfile!\n";
 
 #retrieve data in batches of 500
 my $retmax = 500;
-my $efetch_url = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=$database&WebEnv=$web&query_key=$key&retmax=$retmax&rettype=$format&retmode=text&";
+my $efetch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=$database&WebEnv=$web&query_key=$key&retmax=$retmax&rettype=$format&retmode=text&";
+print "Fetching using efetch: $efetch_url\n" if $debug;
+
 $|=1;
 for (my $retstart = int(0); $retstart < $count; $retstart += $retmax) {
 	print "Retrieved $retstart / $count     \r";
@@ -145,16 +148,18 @@ sub get_ncbitaxid ($){
         my $ncbi_taxid;
         if ($species=~/^\d+$/){$ncbi_taxid=$species;}
         elsif ( $species =~ /^([A-Za-z]{2})[a-z]+\s/ ) {
-                system("wget -q \'http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?lvl=0&name=\%22$species\%22\' -O t"
+		my $url = "https://www.ncbi.nlm.nih.gov/taxonomy/?term=\%22$species\%22\&report=taxid&format=text";
+		print "Fetching $url\n" if $debug;
+                system("wget -q \'$url' -O species.query"
                 );
-                open( SPECIES, "t" );
+                open( SPECIES, "species.query" );
                 while ( my $line = <SPECIES> ) {
-                        if ( $line =~ /^\<em\>Taxonomy\sID\:\s*<\/em>(\d+)\</ ) {
+                        if ( $line =~ /^<pre>(\d+)/ ) {
                                 $ncbi_taxid = $1;
                         }
                 }
                 close(SPECIES);
-                unlink("t");
+                unlink("species.query") unless $debug;
         }
         return $ncbi_taxid;
 } 
