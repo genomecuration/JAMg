@@ -43,6 +43,7 @@ Mandatory:
 
  Output:
  -nofail             Don't print out failures (I/O friendlyness if sparse hits expected). Otherwise captured as FASTQ
+ -merge_mult         Merge the concordant_uniq and concordant_mult (required for DEW)
 
  Other:
  -verbose
@@ -80,6 +81,9 @@ use threads;
 use Thread_helper;
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 
+my ( $gmap_build_exec, $gsnap_exec, $samtools_exec,$bunzip2_exec,$bedtools_exec ) =
+  &check_program( "gmap_build", "gsnap", "samtools",'bunzip2','bedtools' );
+&samtools_version_check($samtools_exec);
 my ( $input_dir, $pattern2, $debug, $genome, $genome_dbname, $nofails, $suffix,$piccard_0m,$do_parallel,
      $help, $just_write_out_commands, $split_input, $notpaired, $verbose, $matepair, $build_only );
 my $cwd = `pwd`;
@@ -94,8 +98,10 @@ my $pe_distance        = 'adaptive';
 my $filetype = '';
 my $do_proportion;
 my $do_large_genome;
+my $do_merge_mult;
 
 &GetOptions(
+             'merge_mult' => \$do_merge_mult,
              'do_parallel:i'   => \$do_parallel,
              'debug'           => \$debug,
 	     'verbose'=>\$verbose,
@@ -134,11 +140,7 @@ if ($do_parallel && $do_parallel > 1){
         $cpus = int($cpus / $do_parallel);
 }
 
-my ( $gmap_build_exec, $gsnap_exec, $samtools_exec,$bunzip2_exec,$bedtools_exec ) =
-  &check_program( "gmap_build", "gsnap", "samtools",'bunzip2','bedtools' );
-&samtools_version_check($samtools_exec);
-
-( $gsnap_exec ) = &check_program( "gsnapl" ) if $do_large_genome || (-s $genome > 4306887543);
+( $gsnap_exec ) = &check_program( "gsnapl" ) if $do_large_genome;
 
 my $samtools_sort_CPUs = int( $cpus / 2 ) > 2 ? int( $cpus / 2 ) : 2;
 my $suff = "";
@@ -440,13 +442,14 @@ sub align_unpaired_files() {
    );
    unlink("$base_out_filename"."_mult");
   }
+
 # decided to remove as it was a resource hog
-#  unless ( -s $base_out_filename."_uniq_mult.bam" ) {
-#   &process_cmd("$samtools_exec merge -@ $cpus -l 9 $base_out_filename"."_uniq_mult.bam $base_out_filename"."_uniq.bam $base_out_filename"."_mult.bam");
-#   &process_cmd("$samtools_exec index $base_out_filename"."_uniq_mult.bam");
-#   print LOG "\n$base_out_filename"."_uniq_mult.bam:\n";
-#   &process_cmd("$samtools_exec flagstat $base_out_filename"."_uniq_mult.bam >> gsnap.$base.log" );
-#  }
+  if ($do_merge_mult && !-s $base_out_filename."_uniq_mult.bam" ) {
+   &process_cmd("$samtools_exec merge -@ $cpus -l 9 $base_out_filename"."_uniq_mult.bam $base_out_filename"."_uniq.bam $base_out_filename"."_mult.bam");
+   &process_cmd("$samtools_exec index $base_out_filename"."_uniq_mult.bam");
+   print LOG "\n$base_out_filename"."_uniq_mult.bam:\n";
+   &process_cmd("$samtools_exec flagstat $base_out_filename"."_uniq_mult.bam >> gsnap.$base.log" );
+  }
 
   print LOG "\nGSNAP Completed!\n" unless $just_write_out_commands;
   close LOG;
@@ -550,12 +553,12 @@ sub align_paired_files() {
   }
 
 # decided to remove as it was a resource hog
-#  unless ( -s "$base_out_filename"."_uniq_mult.bam" ) {
-#   &process_cmd("$samtools_exec merge -@ $cpus  -l 9 $base_out_filename"."_uniq_mult.bam $base_out_filename"."_uniq.bam $base_out_filename"."_mult.bam"   );
-#   &process_cmd("$samtools_exec index $base_out_filename"."_uniq_mult.bam");
-#   print LOG "\n$base_out_filename"."_uniq_mult.bam:\n";
-#   &process_cmd("$samtools_exec flagstat $base_out_filename"."_uniq_mult.bam >> gsnap.$base.log"   );
-#  }
+  if ($do_merge_mult && !-s "$base_out_filename"."_uniq_mult.bam" ) {
+   &process_cmd("$samtools_exec merge -@ $cpus  -l 9 $base_out_filename"."_uniq_mult.bam $base_out_filename"."_uniq.bam $base_out_filename"."_mult.bam"   );
+   &process_cmd("$samtools_exec index $base_out_filename"."_uniq_mult.bam");
+   print LOG "\n$base_out_filename"."_uniq_mult.bam:\n";
+   &process_cmd("$samtools_exec flagstat $base_out_filename"."_uniq_mult.bam >> gsnap.$base.log"   );
+  }
 
   print LOG "\nGSNAP Completed!\n" unless $just_write_out_commands;
   close LOG;
