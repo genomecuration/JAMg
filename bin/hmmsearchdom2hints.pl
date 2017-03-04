@@ -61,7 +61,7 @@ while (my $ln=<IN>){
 	."\t$score\t$strand\t.\tID=$hit;Name=$name\n";
 
 	print HINTS "$id\thmmsearch\tCDSpart\t".$start_end
-	."\t$score\t$strand\t.\tsrc=HU;grp=$hit;prio=5\n";
+	."\t$score\t$strand\t.\tsrc=HU;grp=$hit;prio=2\n";
 }
 close IN;
 close GFF3;
