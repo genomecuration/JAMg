@@ -21,13 +21,13 @@ my %retrotransposon_IDS = (
 
 
 
-my $tablefile = shift;
+my $domainfile = shift;
 my $exonfile = shift;
 
 my $score_cutoff = 10.0;
 
 
-die "Please provide the TABLE output of HHMSEARCH\n" unless $tablefile && -s $tablefile;
+die "Please provide the domain output of HHMSEARCH\n" unless $domainfile && -s $domainfile;
 die "Please provide the input to HHMSEARCH\n" unless $exonfile && -s $exonfile;
 
 my %hash;
@@ -47,23 +47,26 @@ while (my $ln = <EXON>){
 }
 close EXON;
 
-print "Processing TABLE HMMSEARCH file $tablefile\n";
-open (IN, $tablefile)||die $!;
+print "Processing domain HMMSEARCH file $domainfile\n";
+open (IN, $domainfile)||die $!;
 
 
-open (GFF3,">$tablefile.gff3") ||die;
-open (HINTS,">$tablefile.hints") ||die;
+open (GFF3,">$domainfile.gff3") ||die;
+open (HINTS,">$domainfile.hints") ||die;
 
 
 while (my $ln=<IN>){
 	next if $ln=~/^#/;
-	die "Wrong file format for hhmsearch output ($tablefile)\n" if $ln=~/^>/;
+	die "Wrong file format for hhmsearch output ($domainfile)\n" if $ln=~/^>/;
 	chomp($ln);
 	my @data = split(/\s+/,$ln);
-	next unless $data[5];
-	next unless $data[5] >= $score_cutoff;
+	next unless $data[13];
+	my $score = $data[7];
+	next unless $score >= $score_cutoff;
 	my $name = $data[0];
-
+	my $desc = $data[-1];
+	next if $name=~/transcriptase/i;
+	next if $desc=~/transcriptase/i;
 	my $hit = $data[1];
 	$hit = $name if $hit eq '-';
 	my $check = $hit;
@@ -72,8 +75,7 @@ while (my $ln=<IN>){
 		next if $retrotransposon_IDS{$check};
 	}
 
-	my $score = $data[5];
-	my $id = $data[2] || next;
+	my $id = $data[3] || next;
 	my $start_end = $hash{$id} || next;
 	my $strand;
 	if ($start_end=~s/^(\S)\s//){
@@ -81,10 +83,15 @@ while (my $ln=<IN>){
 	}else{next;}
 	$id =~s/_\d+$//;
 
-	print GFF3 "$id\thmmsearch\tprotein_match\t".$start_end
+	my ($start,$seqend) = split("\t",$start_end);
+	$start+=$data[19];
+	my $end = $start + ($data[20] - $data[19]);
+	next if $end > $seqend;
+
+	print GFF3 "$id\thmmsearch\tprotein_match\t".$start."\t$end"
 	."\t$score\t$strand\t.\tID=$hit;Name=$name\n";
 
-	print HINTS "$id\thmmsearch\tCDSpart\t".$start_end
+	print HINTS "$id\thmmsearch\tCDSpart\t"     .$start."\t$end"
 	."\t$score\t$strand\t.\tsrc=HU;grp=$hit;prio=2\n";
 }
 close IN;
