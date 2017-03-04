@@ -174,7 +174,7 @@ unlink("$output_directory/track_evidence_lines.txt") if -s "$output_directory/tr
 warn Dumper \%sources_that_need_to_be_checked;
 
 #NB we really expect one line of evidence to be checked at a time...!
-foreach my $src ( keys %sources_that_need_to_be_checked ) {
+foreach my $src (sort keys %sources_that_need_to_be_checked ) {
  print "\nProcessing $src\n";
  open (my $track_fh,">$output_directory/track_evidence_lines.$src.txt");
  $file_handles{$src} = $track_fh;
