@@ -21,12 +21,12 @@ print "Building lookup from $exonfile\n";
 
 while (my $ln = <EXON>){
 	next unless $ln=~/^>/;
-	my $rev = $ln=~/REVERSE SENSE/ ? 1 : 0;
+	my $strand = $ln=~/REVERSE SENSE/ ? '-' : '+';
 	if ($ln=~/^>(\S+)\s\[(\d+)\s\-\s(\d+)\]/){
 		my $id = $1;
-		my $start = $rev ? $2 : $3;
-		my $end = $rev ? $3 : $2;
-		$hash{$id} = $start."\t".$end;
+		my $start = ($strand eq '+') ? $2 : $3;
+		my $end = ($strand eq '+') ? $3 : $2;
+		$hash{$id} = "$strand ".$start."\t".$end;
 	}
 }
 close EXON;
@@ -35,7 +35,8 @@ print "Processing TABLE HMMSEARCH file $tablefile\n";
 open (IN, $tablefile)||die $!;
 
 
-open (OUT,">$tablefile.gff3") ||die;
+open (GFF3,">$tablefile.gff3") ||die;
+open (HINTS,">$tablefile.hints") ||die;
 
 
 while (my $ln=<IN>){
@@ -50,10 +51,18 @@ while (my $ln=<IN>){
 	my $score = $data[5];
 	my $id = $data[2] || next;
 	my $start_end = $hash{$id} || next;
+	my $strand;
+	if ($start_end=~s/^(\S)\s//){
+		$strand = $1;
+	}else{next;}
 	$id =~s/_\d+$//;
 
-	print OUT "$id\thmmsearch\tprotein_match\t".$start_end
-	."\t$score\t.\t.\tID=$hit;Name=$name\n";
+	print GFF3 "$id\thmmsearch\tprotein_match\t".$start_end
+	."\t$score\t$strand\t.\tID=$hit;Name=$name\n";
+
+	print HINTS "$id\thmmsearch\tCDSpart\t".$start_end
+	."\t$score\t$strand\t.\tsrc=HU;grp=$hit;prio=5\n";
 }
 close IN;
-close OUT;
+close GFF3;
+close HINTS;
