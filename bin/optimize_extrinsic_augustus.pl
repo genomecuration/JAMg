@@ -438,6 +438,9 @@ sub printmetavalues {
 }
 
 sub check_options() {
+ die "-onlytrain file not found\n" if $training_set && !-s $training_set;
+ die "-opt file not found\n" if $optimize_gb && !-s $optimize_gb; 
+
  $exec_dir = "$RealBin/../3rd_party/augustus/bin/" if !$exec_dir;
  $exec_dir.='/' if $exec_dir!~/\/$/;
  $ENV{'PATH'} .= ':' . $exec_dir if $exec_dir && -d $exec_dir;
