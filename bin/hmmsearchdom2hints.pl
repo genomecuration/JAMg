@@ -4,6 +4,22 @@ use strict;
 use warnings;
 use Data::Dumper;
 
+my %retrotransposon_IDS = (
+'PF14529'=>1,
+'PF11474'=>1,
+'PF00078'=>1,
+'PF07727'=>1,
+'PF07727'=>1,
+'PF13456'=>1,
+'PF06815'=>1,
+'PF13655'=>1,
+'PF06817'=>1,
+'PF13966'=>1,
+'PF02495'=>1,
+'PF08475'=>1
+);
+
+
 
 my $tablefile = shift;
 my $exonfile = shift;
@@ -41,13 +57,21 @@ open (HINTS,">$tablefile.hints") ||die;
 
 while (my $ln=<IN>){
 	next if $ln=~/^#/;
+	die "Wrong file format for hhmsearch output ($tablefile)\n" if $ln=~/^>/;
 	chomp($ln);
 	my @data = split(/\s+/,$ln);
 	next unless $data[5];
 	next unless $data[5] >= $score_cutoff;
 	my $name = $data[0];
+
 	my $hit = $data[1];
 	$hit = $name if $hit eq '-';
+	my $check = $hit;
+	if ($check=~/^PF/){
+		$check=~s/\.\d+$//;
+		next if $retrotransposon_IDS{$check};
+	}
+
 	my $score = $data[5];
 	my $id = $data[2] || next;
 	my $start_end = $hash{$id} || next;
