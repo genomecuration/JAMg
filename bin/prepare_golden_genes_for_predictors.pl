@@ -166,16 +166,17 @@ my $identical_fraction_cutoff       = 95;
 my $similar_fraction_cutoff         = 98;
 my $mismatch_cutoff          = 10;
 my $threads                  = 4;
-
+my $cwd = `pwd`;chomp($cwd);$cwd.='/';
 #globals
 my $failed_cutoff = int(0);
 my ( $cdbfasta_exec, $cdbyank_exec ) = &check_program( 'cdbfasta', 'cdbyank' );
-my ( %get_id_seq_from_fasta_hash, $augustus_dir );
+my ( %get_id_seq_from_fasta_hash, $augustus_dir, $force_blast );
 
 pod2usage $! unless &GetOptions(
-            'help'               => \$show_help,
-            'debug' => \$debug,
-            'verbose'      => \$verbose,
+	    'force_blast'       => \$force_blast,
+            'help'              => \$show_help,
+            'debug' 		=> \$debug,
+            'verbose'      	=> \$verbose,
             'exonerate:s'        => \$exonerate_file,
             'genome:s'           => \$genome_file,
             'softmasked:s'       => \$softmasked_genome,
@@ -2071,16 +2072,30 @@ sub shuffle_fasta() {
  # in roughly equal time per thread
  my $fasta    = shift;
  my $orig_sep = $/;
- $/ = '>';
- open( IN, $fasta );
 
  my %sequence_data;
+ open( IN, $fasta );
+ #stupid files with > in description line
+ if ( $orig_sep){
+	$/ = '>';
+	my $record =<IN>;$record =<IN>;chomp($record);
+  	my @data = split( "\n", $record );
+	my $id = shift @data;
+	if ($id && $id=~/^(\S+)/){
+	  	$sequence_data{$1} = join( '', @data );
+	}
+ }
+
+ $/ = "\n>";
+
  while ( my $record = <IN> ) {
   chomp($record);
   my @data = split( "\n", $record );
   next unless $record;
   my $id = shift @data;
-  $sequence_data{$id} = join( '', @data );
+	if ($id && $id=~/^(\S+)/){
+	  $sequence_data{$1} = join( '', @data );
+	}
  }
 
  open( OUT, ">$fasta.shuff" );
@@ -2100,27 +2115,66 @@ sub split_fasta() {
  my $pattern            = shift;
  my $shuffle            = shift;
  my $min_seq_size = shift;
-
  return unless $file2split && -s $file2split && $outdir && $how_many_in_a_file;
  return if -d $outdir;
 
  mkdir($outdir) unless -d $outdir;
  my $filecount;
  my $seqcount = int(0);
+ undef ($shuffle) if -s $file2split > 1e8;
  my $shuffled_file = $shuffle ? &shuffle_fasta($file2split) : $file2split;
  open( FILE, $shuffled_file ) || die;
  my $orig_sep = $/;
- $/ = ">";
+ # the issue is that uniref has > characters in the description line which is 
+ # breaking the parser
 
- while ( my $record = <FILE> ) {
+ # we have two choices. skip the first sequence or assume
+ # it doesn't break the parser. we do latter
+ if ($orig_sep){
+  $/ = ">";
+  my $record = <FILE>;$record = <FILE>; # first empty >
+  chomp($record);
+  my @lines = split( "\n", $record );
+  my $id = shift @lines;
+  if ((!$pattern || $id =~ /$pattern/) && $id =~ /^(\S+)/){
+  	$id = $1;
+  }
+  my $seq = join( '', @lines );
+  $seq =~ s/\s+//g;
+  $seq =~ s/\*$//;    # for protein stop codons
+  # we will only search those that are big enough.
+  if ($id && $seq && length($seq)>=$min_seq_size){
+	  $seqcount++;
+	  if (   !$filecount
+	       || $how_many_in_a_file == 1
+	       || $seqcount > $how_many_in_a_file )
+	  {
+	   $seqcount = int(0);
+	   $filecount++;
+	   my $outfile = $how_many_in_a_file == 1 ? $id : $file2split . "_" . $filecount;
+	   $outfile = $outdir . '/' . basename($outfile);
+	   close(OUT);
+	   open( OUT, ">$outfile" ) || die("Cannot open $outfile");
+	   push( @files, $outfile );
+	  }
+	  print OUT ">$id\n" . &wrap_text($seq);
+  }
+ }
+
+
+ $/ = "\n>";
+
+ while (my $record = <FILE> ) {
   chomp($record);
   next unless $record;
   my @lines = split( "\n", $record );
   my $id = shift @lines;
   next if ( $pattern && $id !~ /$pattern/ );
-  $id =~ /^(\S+)/;
-  $id = $1 || die "Cannot find ID for a sequence in $file2split";
-  chomp(@lines);
+  if ($id =~ /^(\S+)/){
+  	$id = $1;
+  }else{
+	die "Cannot find ID for a sequence in $file2split ($id)\n$record";
+  }
   my $seq = join( '', @lines );
   $seq =~ s/\s+//g;
   $seq =~ s/\*$//;    # for protein stop codons
@@ -2136,12 +2190,12 @@ sub split_fasta() {
    $filecount++;
    my $outfile =
      $how_many_in_a_file == 1 ? $id : $file2split . "_" . $filecount;
-   $outfile = $outdir . '/' . $outfile;
+   $outfile = $outdir . '/' . basename($outfile);
    close(OUT);
    open( OUT, ">$outfile" ) || die("Cannot open $outfile");
    push( @files, $outfile );
   }
-  print OUT $/ . $id . "\n" . &wrap_text($seq);
+  print OUT ">$id\n" . &wrap_text($seq);
  }
  close(FILE);
  close(OUT);
@@ -2591,9 +2645,9 @@ sub run_exonerate() {
    #TODO mrna_file only?
    if ($peptide_file) {
 
-    if ($same_species) {
+    if ($same_species || $force_blast) {
      $is_blast = 1;
-     &run_blast( $peptide_file, 'protein' );
+     my $blast_output = &run_blast( $peptide_file, 'protein' );	 # we just want the .filter files
     }
     else {
      &run_aat( $peptide_file, 'protein' );
@@ -2602,7 +2656,7 @@ sub run_exonerate() {
     unlink($exonerate_file);
     my @filter_files = glob("$genome_dir/*filter");
     die "No filter files found" unless @filter_files;
-    my $exonerate_options =" -minorf $minorf -protein -in $peptide_file -separate -aat_dir $genome_dir -aat_suffix filter -threads $threads "
+    my $exonerate_options = " -minorf $minorf -protein -in $peptide_file -separate -aat_dir $genome_dir -aat_suffix filter -threads $threads "
 	."-intron_max $intron_size  $same_species ";
     $exonerate_options .= " -softmask -ref $softmasked_genome "
       if ($softmasked_genome);
@@ -2718,26 +2772,26 @@ sub run_aligner() {
  print "$aligner: Preparing input sequences\n";
  my $seq_count = &count_seq($fasta_in);
  my $splits    = ceil( $seq_count / $threads );
- my $output_directory = "$fasta_in.$aligner";
-
+ my $output_directory = $cwd.basename($genome_file).".vs.".basename($fasta_in).".".$aligner."_dir";
+ 
  if ( -d $output_directory ) {
   warn
 "$fasta_in.$aligner already exists. Will NOT overwrite and will skip existing output. Stop, delete it and restart otherwise\n";
   sleep(1);
  }
  else {
-  print "$aligner: Running alignment\n";
   if (    ( $pasa_cds && $fasta_in eq $pasa_cds )
        || ( $pasa_peptides && $fasta_in eq $pasa_peptides ) )
   {
-   &split_fasta( $fasta_in, $output_directory, $splits, 'type:complete', 1, 500 );
+   &split_fasta( $fasta_in, $output_directory, $splits, 'type:complete', 1, 300 );
   }
   else {
-   &split_fasta( $fasta_in, $output_directory, $splits, undef, 1, 500 );
+   &split_fasta( $fasta_in, $output_directory, $splits, undef, 1, 100 );
   }
  }
  my @fastas = glob("$output_directory/*");
  return unless @fastas && scalar(@fastas) > 0;
+ print "$aligner: Running ".scalar(@fastas)." alignments\n";
 
  my $thread_helper = new Thread_helper($threads);
 
@@ -2793,7 +2847,7 @@ sub do_gmap_cmd() {
 
 sub run_gmap() {
  my $fasta       = shift;
- my $gmap_output = $fasta . '_vs_genome.gmap.gff3';
+ my $gmap_output = $cwd.basename($genome_file).".vs.".basename($fasta).".gmap.gff3";
 
  my $output_files_ref = &run_aligner( $fasta, 'gmap', 'nuc' );
  my $orig_sep = $/;
@@ -2882,7 +2936,8 @@ sub run_gmap() {
 sub run_blast() {
  my $fasta        = shift;
  my $type         = shift;
- my $blast_output = $fasta . '_vs_genome.blast';
+
+ my $blast_output = $cwd.basename($genome_file).".vs.".basename($fasta).".blast.output";
 
  print "Preparing for BLAST...\n";
  if ( !-s $blast_output ) {
