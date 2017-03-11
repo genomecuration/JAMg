@@ -2769,9 +2769,9 @@ sub run_aligner() {
  my $fasta_in = shift;
  my $aligner  = shift;
  my $type     = shift;
- print "$aligner: Preparing input sequences\n";
  my $seq_count = &count_seq($fasta_in);
  my $splits    = ceil( $seq_count / $threads );
+ print "$aligner: Preparing input $seq_count sequences for up to $threads processes\n";
  my $output_directory = $cwd.basename($genome_file).".vs.".basename($fasta_in).".".$aligner."_dir";
  
  if ( -d $output_directory ) {

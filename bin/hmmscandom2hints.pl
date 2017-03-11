@@ -1,8 +1,38 @@
 #!/usr/bin/env perl
 
+=pod
+
+=head1 NAME hmmscandom2hints
+
+=head1 USAGE
+
+	-exonfile 	:s	FASTA with input to hmmscan
+	-domains	:s{1,}	One or more DOMAIN output files from hmmscan
+	-output		:s	Basename for output files
+	-score_cut	:f	Cutoff BIT score for processing (defaults 10.0)
+
+=cut
+
 use strict;
 use warnings;
 use Data::Dumper;
+use Pod::Usage;
+use Getopt::Long;
+
+my $exonfile;
+my $base_output;
+my @domainfiles;
+my $score_cutoff = 10.0;
+
+
+&GetOptions(
+	'exonfile:s' => \$exonfile,
+	'output:s' => \$base_output,
+	'domains:s{1,}' => \@domainfiles,
+	'score_cut:f' => \$score_cutoff,
+);
+
+
 
 my %retrotransposon_IDS = (
 'PF14529'=>1,
@@ -19,16 +49,16 @@ my %retrotransposon_IDS = (
 'PF08475'=>1
 );
 
+if (@domainfiles && scalar(@domainfiles) == 1 && -d $domainfiles[0]){
+	@domainfiles = glob($domainfiles[0]."/*dom");
+}
 
+pod2usage "Please provide the exon FASTA input to HHMSEARCH\n" unless $exonfile && -s $exonfile;
+pod2usage "Please provide the files that have domain output of HHMSEARCH or a directory with .dom files\n" unless $domainfiles[0] && -s $domainfiles[0];
 
-my $domainfile = shift;
-my $exonfile = shift;
+$base_output = "$exonfile.domains" if !$base_output;
+pod2usage "Base output files already exist $base_output*\n" if -s "$base_output.gff3" || -s "$base_output.hints";
 
-my $score_cutoff = 10.0;
-
-
-die "Please provide the domain output of HHMSEARCH\n" unless $domainfile && -s $domainfile;
-die "Please provide the input to HHMSEARCH\n" unless $exonfile && -s $exonfile;
 
 my %hash;
 
@@ -47,15 +77,16 @@ while (my $ln = <EXON>){
 }
 close EXON;
 
-print "Processing domain HMMSEARCH file $domainfile\n";
-open (IN, $domainfile)||die $!;
 
+open (GFF3,">$base_output.gff3") ||die;
+open (HINTS,">$base_output.hints") ||die;
 
-open (GFF3,">$domainfile.gff3") ||die;
-open (HINTS,">$domainfile.hints") ||die;
+foreach my $domainfile (@domainfiles){
+	next unless -s $domainfile;
+	print "Processing domain HMMSEARCH file $domainfile\n";
+	open (IN, $domainfile)||die $!;
 
-
-while (my $ln=<IN>){
+  while (my $ln=<IN>){
 	next if $ln=~/^#/;
 	die "Wrong file format for hhmsearch output ($domainfile)\n" if $ln=~/^>/;
 	chomp($ln);
@@ -93,7 +124,10 @@ while (my $ln=<IN>){
 
 	print HINTS "$id\thmmsearch\tCDSpart\t"     .$start."\t$end"
 	."\t$score\t$strand\t.\tsrc=HU;grp=$hit;prio=2\n";
+  }
+  close IN;
 }
-close IN;
+
 close GFF3;
 close HINTS;
+print "Done, see $exonfile.domains* \n";
