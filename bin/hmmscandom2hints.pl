@@ -130,4 +130,4 @@ foreach my $domainfile (@domainfiles){
 
 close GFF3;
 close HINTS;
-print "Done, see $exonfile.domains* \n";
+print "Done, see $base_output.* \n";
