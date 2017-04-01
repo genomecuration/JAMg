@@ -72,6 +72,9 @@ my $total = scalar(keys %gff_hash);
 foreach my $ref_id (keys %gff_hash){
 	$gff_hash{$ref_id}=~s/\s+$//;
 	die "Cannot find reference sequence $ref_id in FASTA\n" unless $seq_hash{$ref_id};
+	open (FSA,">$gff_file.dir/$ref_id.fsa");
+	print FSA ">$ref_id\n".$seq_hash{$ref_id};
+	close FSA;
 	open (OUT,">$gff_file.dir/$ref_id.gff3");
 	print OUT "##gff-version 3\n".$gff_hash{$ref_id}."\n##FASTA\n>$ref_id\n".$seq_hash{$ref_id};
 	close OUT;
@@ -81,6 +84,9 @@ foreach my $ref_id (keys %gff_hash){
 	$counter++;
 	print "COMPLETED $counter / $total    \r" if $counter %10 == 0;
 }
+system("cat $gff_file.dir/*gb > $gff_file.gb");
+print "\nDone!\n";
+
 
 #############################
 sub check_program() {

@@ -41,12 +41,16 @@ use Bio::DB::Taxonomy;
 use Bio::LITE::Taxonomy::NCBI::Gi2taxid qw/new_dict/;
 use FindBin qw($RealBin);
 use lib ("$RealBin/../PerlLib");
+my $do_help;
 my $force = int(0);
 my $flatfile_dir=$RealBin.'/../databases/ncbi_taxonomy/';
 GetOptions(
  	'd|flatfile_dir:s' => \$flatfile_dir,
 	'force' => \$force,
+	'help' => \$do_help
 );
+
+pod2usage if $do_help;
 
 if ($flatfile_dir && -d $flatfile_dir && -s $flatfile_dir.'/nodes.dmp' && -s $flatfile_dir.'/names.dmp'){
    print "Using $flatfile_dir as NCBI TaxDB directory\n";
@@ -62,6 +66,6 @@ if ($flatfile_dir && -d $flatfile_dir && -s $flatfile_dir.'/nodes.dmp' && -s $fl
    }
    print "Done!\n";
 }else{
-   die "Cannot find correct taxonomy at $flatfile_dir\n";
+   die "Cannot find correct taxonomy at $flatfile_dir\nYou can see the options with -help or you can download from \nftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/\n\n";
 }
 

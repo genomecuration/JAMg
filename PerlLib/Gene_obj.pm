@@ -3769,8 +3769,8 @@ sub to_GFF3_format_extended {
     }
 
     # print intron
-    my ( $intron_start, $intron_stop ) = @{ $introns[ $exon_counter - 1 ] }
-      if $introns[ $exon_counter - 1 ];
+    my ( $intron_start, $intron_stop ) = @{ $introns[ $exon_counter - 1 ] } if $introns[ $exon_counter - 1 ];
+
     if ( $sequence_ref && $intron_start && $intron_stop ) {
      my (
           $donor_start,   $donor_stop, $acceptor_start,
@@ -3798,6 +3798,14 @@ sub to_GFF3_format_extended {
      }
      my $intron_id_string = $exon_ID_string;
      $intron_id_string =~ s/\.exon/.intron/;
+
+     # For GFF3, we need to make sure the co-ordinates are small->big even in - strand
+      if ($strand eq '-' ){
+        ( $intron_start, $intron_stop ) = ( $intron_stop, $intron_start );
+	( $donor_start, $donor_stop ) = ($donor_stop, $donor_start );
+        ( $acceptor_start, $acceptor_stop ) = ( $acceptor_stop, $acceptor_start ); 
+      }
+
      $gff3_text .=
 "$reference_id\t$source\tfive_prime_cis_splice_site\t$donor_start\t$donor_stop\t.\t$strand\t.\tID=$intron_id_string.donor;Parent=$model_id;donor_site=$donor_site\n"
        if $donor_start;
