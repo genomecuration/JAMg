@@ -23,6 +23,7 @@ Provide a GFF3 file and a genome FASTA file to phase and create sequence feature
   -rename             Rename the IDs with a new JAMg IDs, up to 32 characters (needed for hhblits). Don't use with -name
   -strip_name         Remove Name tag
   -change_source  :s  Change GFF Source to this value
+  -simple             Don't add introns and splice sites in GFF
  
 NB: -name means that the common name has no spaces and is unique (will be checked). Useful for WebApollo
  
@@ -44,7 +45,7 @@ use GTF_utils;
 $|=1;
 our $SEE;
 my $minorf = 3;    #minimum orf size in bp
-my ( $gfffile, $genome, $change_name,$lettername,$verbose, $one_iso, $do_rename, $change_source, $strip_name );
+my ($simple_gff3, $gfffile, $genome, $change_name,$lettername,$verbose, $one_iso, $do_rename, $change_source, $strip_name );
 pod2usage $! unless &GetOptions(
 	          'one_isoform'      => \$one_iso,
             'gff|infile:s'     => \$gfffile,
@@ -56,6 +57,7 @@ pod2usage $! unless &GetOptions(
             'change_source'    => \$change_source,
       	    'rename'	    	   => \$do_rename,
             'strip_name'       => \$strip_name,
+	    'simple' => \$simple_gff3
 );
 $gfffile = shift if !$gfffile;
 $genome  = shift if !$genome;
@@ -75,7 +77,7 @@ sub gff3_process() {
  my $gff3_file = shift;
  open( IN, $gff3_file ) || confess( "Cannot find $gff3_file " . $! );
  my $index_file = "$gff3_file.inx";
- my $gene_obj_indexer = new Gene_obj_indexer( { "create" => $index_file } );
+ my $gene_obj_indexer = (!-s $index_file) ? new Gene_obj_indexer( { "create" => $index_file } ) : new Gene_obj_indexer({"use" => $index_file});
  my $genome_id_to_gene_list_href =
    &GFF3_utils::index_GFF3_gene_objs( $gff3_file, $gene_obj_indexer );
  open( GFF3, ">$gff3_file.gff3" );
@@ -104,6 +106,7 @@ sub gff3_process() {
   foreach my $gene_id (@gene_ids) {
     
    my (%params,%preferences);
+   $preferences{'fromGFF3'} = 1; # don't flip phases because we get them from a GFF
    $preferences{'sequence_ref'} = \$genome_seq;
    $preferences{'source'}  = $change_source if $change_source;
    $params{unspliced_transcript} = 1;    # highlights introns
@@ -237,17 +240,18 @@ sub gff3_process() {
     $seq = $isoform->get_cDNA_sequence();
     $seq =~ s/(\S{80})/$1\n/g;
     chomp $seq;
-    print MRNA
-      ">$transcript_main_id ".$alt_name."type:mRNA gene:$gene_id$description\n".uc($seq)."\n";
-
-   die "OK, this is unexpected: there is a stop codon inside the ORF for transcript $transcript_main_id!\n" if $seq=~/\*\S/;
+    print MRNA ">$transcript_main_id ".$alt_name."type:mRNA gene:$gene_id$description\n".uc($seq)."\n";
+    die "OK, this is unexpected: there is a stop codon inside the ORF for transcript $transcript_main_id!\n" if $seq=~/\*\S/;
 
     eval { $isoform->set_CDS_phases( \$genome_seq ); };
-
    }
 
    # GFF3
-   print GFF3 $gene_obj_ref->to_GFF3_format_extended(%preferences) . "\n";
+   if ($simple_gff3){
+        print GFF3 $gene_obj_ref->to_GFF3_format(%preferences) . "\n";
+   }else{
+   	print GFF3 $gene_obj_ref->to_GFF3_format_extended(%preferences) . "\n";
+   }
    $gene_count++;
   }
  }
@@ -259,7 +263,6 @@ sub gff3_process() {
  close TRACK;
 
  &sort_gff3("$gff3_file.gff3");
- unlink $index_file;
  unlink("$gff3_file.track") if !-s "$gff3_file.track";
  # rename( "$gff3_file.gff3", $gff3_file );
  print "\nDone!\n";

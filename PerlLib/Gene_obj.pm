@@ -3516,24 +3516,23 @@ sub to_GFF3_format {
     else {
      $exon_ID_string = "$model_id.exon$exon_counter";
     }
-    $gff3_text .=
-"$asmbl_id\t$source\texon\t$exon_lend\t$exon_rend\t.\t$strand\t.\tID=${exon_ID_string};Parent=$model_id\n";
+    $gff3_text .= "$asmbl_id\t$source\texon\t$exon_lend\t$exon_rend\t.\t$strand\t.\tID=${exon_ID_string};Parent=$model_id\n";
 
     if ( my $cds_obj = $exon->get_CDS_obj() ) {
      my ( $cds_lend, $cds_rend ) = sort { $a <=> $b } $cds_obj->get_coords();
      my $phase = $cds_obj->{phase};
      if ( defined($phase) ) {
-      ## use GFF3 definition of phase, which is how many bases to trim before encountering first base of start
-      if ( $phase == 2 ) {
-       $phase = 1;
-      }
-      elsif ( $phase == 1 ) {
-       $phase = 2;
-      }
-
-      # phase 0 remains 0
-     }
-     else {
+      unless ($preferences{'fromGFF3'}){
+	      ## use GFF3 definition of phase, which is how many bases to trim before encountering first base of start
+	      if ( $phase == 2 ) {
+	       $phase = 1;
+	      }
+	      elsif ( $phase == 1 ) {
+	       $phase = 2;
+	      }
+	      # phase 0 remains 0
+       }
+      }else {
       $phase = ".";    #use phase info if avail
      }
 
@@ -3651,7 +3650,6 @@ sub to_GFF3_format_extended {
    $gff3_text .= "\n";
 
  if ( $gene_obj->{gene_type} eq "protein-coding" ) {
-
   my $gene_obj_ref = $gene_obj;
 
   foreach
@@ -3725,13 +3723,13 @@ sub to_GFF3_format_extended {
     else {
      $exon_ID_string = "$model_id.exon$exon_counter";
     }
-    $gff3_text .=
-"$reference_id\t$source\texon\t$exon_lend\t$exon_rend\t.\t$strand\t.\tID=${exon_ID_string};Parent=$model_id\n";
+    $gff3_text .= "$reference_id\t$source\texon\t$exon_lend\t$exon_rend\t.\t$strand\t.\tID=${exon_ID_string};Parent=$model_id\n";
 
     if ( my $cds_obj = $exon->get_CDS_obj() ) {
      my ( $cds_lend, $cds_rend ) = sort { $a <=> $b } $cds_obj->get_coords();
      my $phase = $cds_obj->{phase};
      if ( defined($phase) ) {
+      unless ($preferences{'fromGFF3'}){
       ## use GFF3 definition of phase, which is how many bases to trim before encountering first base of start
       if ( $phase == 2 ) {
        $phase = 1;
@@ -3741,11 +3739,10 @@ sub to_GFF3_format_extended {
       }
 
       # phase 0 remains 0
-     }
-     else {
+      }
+     } else {
       $phase = ".";    #use phase info if avail
      }
-
      my $cds_ID_string = "cds.$model_id";
 
 # according to the GFF3 spec, CDS segments from the same coding region should have the same identifier.
@@ -3764,8 +3761,7 @@ sub to_GFF3_format_extended {
       $partial_text .= "; 3_prime_partial=true";
      }
 
-     $gff3_text .=
-"$reference_id\t$source\tCDS\t$cds_lend\t$cds_rend\t.\t$strand\t$phase\tID=${cds_ID_string};Parent=$model_id$partial_text\n";
+     $gff3_text .="$reference_id\t$source\tCDS\t$cds_lend\t$cds_rend\t.\t$strand\t$phase\tID=${cds_ID_string};Parent=$model_id$partial_text\n";
     }
 
     # print intron
