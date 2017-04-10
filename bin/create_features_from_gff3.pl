@@ -75,11 +75,18 @@ my %unique_names_check;
 #########################################################################
 sub gff3_process() {
  my $gff3_file = shift;
- open( IN, $gff3_file ) || confess( "Cannot find $gff3_file " . $! );
+ confess "Cannot find $gff3_file\n" unless -s $gff3_file;
  my $index_file = "$gff3_file.inx";
- my $gene_obj_indexer = (!-s $index_file) ? new Gene_obj_indexer( { "create" => $index_file } ) : new Gene_obj_indexer({"use" => $index_file});
- my $genome_id_to_gene_list_href =
-   &GFF3_utils::index_GFF3_gene_objs( $gff3_file, $gene_obj_indexer );
+ my $gene_obj_indexer;
+ if (-s $index_file){
+	$gene_obj_indexer = new Gene_obj_indexer({"use" => $index_file});
+ }else{
+	$gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
+ }
+ confess "Cannot index with $index_file\n" unless $gene_obj_indexer && -s $index_file;
+ my $genome_id_to_gene_list_href = &GFF3_utils::index_GFF3_gene_objs( $gff3_file, $gene_obj_indexer );
+
+ open( IN, $gff3_file ) || confess( "Cannot find $gff3_file " . $! );
  open( GFF3, ">$gff3_file.gff3" );
  open( PEP,  ">$gff3_file.pep" );
  open( CDS,  ">$gff3_file.cds" );
@@ -89,7 +96,7 @@ sub gff3_process() {
  print "Indexing complete\n";
  my $gene_count = 1;
  foreach my $genome_id (sort {
-	($a =~ /(\d+)$/)[0] <=> ($b =~ /(\d+)$/)[0] || $a cmp $b
+	($a =~ /(\d*)$/)[0] cmp ($b =~ /(\d*)$/)[0] || $a cmp $b
   } keys %$genome_id_to_gene_list_href ) {
 
   my $genome_seq = $scaffold_seq_hashref->{$genome_id};
@@ -99,14 +106,13 @@ sub gff3_process() {
   }
 
   my @gene_ids = sort {
-    ($a =~ /(\d+)$/)[0] <=> ($b =~ /(\d+)$/)[0] || $a cmp $b
+    ($a =~ /(\d*)$/)[0] cmp ($b =~ /(\d*)$/)[0] || $a cmp $b
     } @{ $genome_id_to_gene_list_href->{$genome_id} };
 
   print "\nProcessing scaffold $genome_id\n" if $verbose;
   foreach my $gene_id (@gene_ids) {
     
    my (%params,%preferences);
-   $preferences{'fromGFF3'} = 1; # don't flip phases because we get them from a GFF
    $preferences{'sequence_ref'} = \$genome_seq;
    $preferences{'source'}  = $change_source if $change_source;
    $params{unspliced_transcript} = 1;    # highlights introns
@@ -146,13 +152,24 @@ sub gff3_process() {
    }
    my $isoform_count;
    foreach my $isoform ( @isoforms )   {
-    
     my $isoform_id  = $isoform->{Model_feat_name};
-    print "\rprocessing gene $gene_id isoform $isoform_id                                              " if $verbose;
+    # these creep in from PASA
+    if ($isoform_id =~/temp_model/){
+	next;
+    }
     next unless $isoform->has_CDS() || !$isoform->get_CDS_span();
     my @model_span  = $isoform->get_CDS_span();
     next if ( abs( $model_span[0] - $model_span[1] ) < 3 );
     
+   # there is a real issue here. Most times EVM and PASA are ok with phasing
+   # but sometimes there are issues.
+   # and these issues happen both ways (with and without rephasing). 
+   # so i decided to do rephasing always unless it is a single CDS gene on the negative side.
+   # unfortunately this has to happen across the entire gene
+   if ($isoform->{'num_exons'} == 1){
+	$preferences{'norephase'} = 1;
+   }
+    print "\rprocessing gene $gene_id isoform $isoform_id                                       " if $verbose;
     $isoform_count++;
     my $common_name = $isoform->{transcript_name} || $isoform->{com_name};
     my $description = '';
@@ -242,10 +259,9 @@ sub gff3_process() {
     chomp $seq;
     print MRNA ">$transcript_main_id ".$alt_name."type:mRNA gene:$gene_id$description\n".uc($seq)."\n";
     die "OK, this is unexpected: there is a stop codon inside the ORF for transcript $transcript_main_id!\n" if $seq=~/\*\S/;
+    eval { $isoform->set_CDS_phases( \$genome_seq ); } unless $preferences{'norephase'};
 
-    eval { $isoform->set_CDS_phases( \$genome_seq ); };
    }
-
    # GFF3
    if ($simple_gff3){
         print GFF3 $gene_obj_ref->to_GFF3_format(%preferences) . "\n";

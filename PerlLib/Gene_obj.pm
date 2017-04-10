@@ -3486,6 +3486,8 @@ sub to_GFF3_format {
      last;
     }
    }
+   undef(@exons);
+
 
    my $prime5_partial = $gene_obj->is_5prime_partial();
    my $prime3_partial = $gene_obj->is_3prime_partial();
@@ -3499,14 +3501,15 @@ sub to_GFF3_format {
       my ( $lend, $rend ) = sort { $a <=> $b } @$coordset;
       $utr_count++;
       my $utr_id = "$model_id.utr5p$utr_count";
-      $gff3_text .=
-"$asmbl_id\t$source\tfive_prime_utr\t$lend\t$rend\t.\t$strand\t.\tID=$utr_id;Parent=$model_id\n";
+      $gff3_text .= "$asmbl_id\t$source\tfive_prime_utr\t$lend\t$rend\t.\t$strand\t.\tID=$utr_id;Parent=$model_id\n";
      }
     }
    }
 
    my $exon_counter = 0;
-   foreach my $exon ( $gene_obj->get_exons() ) {
+   @exons = $gene_obj->get_exons();
+
+   foreach my $exon ( @exons ) {
     $exon_counter++;
     my ( $exon_lend, $exon_rend ) = sort { $a <=> $b } $exon->get_coords();
     my $exon_ID_string = "";
@@ -3522,7 +3525,7 @@ sub to_GFF3_format {
      my ( $cds_lend, $cds_rend ) = sort { $a <=> $b } $cds_obj->get_coords();
      my $phase = $cds_obj->{phase};
      if ( defined($phase) ) {
-      unless ($preferences{'fromGFF3'}){
+      unless ($preferences{'norephase'}){
 	      ## use GFF3 definition of phase, which is how many bases to trim before encountering first base of start
 	      if ( $phase == 2 ) {
 	       $phase = 1;
@@ -3591,6 +3594,7 @@ sub to_GFF3_format {
 
 }
 
+## ALEXIE
 sub to_GFF3_format_extended {
  my ( $gene_obj, %preferences ) = @_;
  my $gene_id = $gene_obj->{TU_feat_name};
@@ -3728,15 +3732,17 @@ sub to_GFF3_format_extended {
     if ( my $cds_obj = $exon->get_CDS_obj() ) {
      my ( $cds_lend, $cds_rend ) = sort { $a <=> $b } $cds_obj->get_coords();
      my $phase = $cds_obj->{phase};
-     if ( defined($phase) ) {
-      unless ($preferences{'fromGFF3'}){
       ## use GFF3 definition of phase, which is how many bases to trim before encountering first base of start
-      if ( $phase == 2 ) {
-       $phase = 1;
-      }
-      elsif ( $phase == 1 ) {
-       $phase = 2;
-      }
+     if ( defined($phase) ) {
+	## there is an issue with single CDS genes and their phases processed wrongly when strand is negative 
+
+      unless ($preferences{'norephase'} ){
+	if ( $phase == 2 ) {
+	       $phase = 1;
+      	}
+	elsif ( $phase == 1 ) {
+       		$phase = 2;
+      	}
 
       # phase 0 remains 0
       }
@@ -4645,7 +4651,6 @@ sub set_CDS_phases {
 
   my $cds_sequence = $self->get_CDS_sequence();
   my $protein_seq  = $self->get_protein_sequence();
-
   ## first, clear the partial attributes:
   $self->set_5prime_partial(0);
   $self->set_3prime_partial(0);
@@ -4660,10 +4665,9 @@ sub set_CDS_phases {
    # lacks stop codon
    $self->set_3prime_partial(1);
   }
-
+  # this is frame, not phase
   $start_pos = $self->_get_cds_start_pos($cds_sequence);
  }
-
  my $first_phase = $start_pos - 1;
 
  my @exons = $self->get_exons();
@@ -4677,6 +4681,7 @@ sub set_CDS_phases {
 
  my $cds_obj = shift @cds_objs;
  $cds_obj->{phase} = $first_phase;
+
  my $cds_length = abs( $cds_obj->{end3} - $cds_obj->{end5} ) + 1;
  $cds_length -= $first_phase;
 
@@ -4689,7 +4694,6 @@ sub set_CDS_phases {
  foreach my $isoform ( $self->get_additional_isoforms() ) {
   $isoform->set_CDS_phases($genomic_seq_ref);
  }
-
  return;
 
 }
@@ -4733,17 +4737,18 @@ sub _get_cds_start_pos {
  }
 
  my $bestOrfPos;
+ my %lengths;
  my @allOrfs = $new_orfFinder->orfs();
-
  for my $orfIndex ( 0 .. 2 ) {
   my $orf = $allOrfs[$orfIndex];
   if ($orf) {
    my $start   = $orf->{start};
    my $length  = $orf->{length};
    my $protein = $orf->{protein};
-   if ( $length > $cds_length - 3 && $start <= 3 && $protein =~ /\*$/ ) {
-     $bestOrfPos = $start unless $bestOrfPos;
+   if ( $length > $cds_length - 3 && $start <= 3 && ($protein =~ /\*$/ || $protein =~ /^M/)) {
+     $bestOrfPos = $start unless ($bestOrfPos && $length < $lengths{$bestOrfPos});
    }
+   $lengths{$start} = $length;
   }
  }
 
@@ -4756,7 +4761,7 @@ sub _get_cds_start_pos {
     . $self->toString();
  }
  $codon_start = $orfPos;
-
+ # this is frame, not phase
  return ($codon_start);
 }
 
