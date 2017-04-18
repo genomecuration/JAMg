@@ -4665,23 +4665,40 @@ sub set_CDS_phases {
    # lacks stop codon
    $self->set_3prime_partial(1);
   }
-  # this is frame, not phase
   $start_pos = $self->_get_cds_start_pos($cds_sequence);
  }
+  # this is frame, not phase
  my $first_phase = $start_pos - 1;
+
 
  my @exons = $self->get_exons();
  my @cds_objs;
  foreach my $exon (@exons) {
   my $cds = $exon->get_CDS_obj();
   if ( ref $cds ) {
+      #first phase can't be not 0...?
+     if ($first_phase >0){
+	 #first CDS
+      if (!$cds_objs[0]){
+		if ($cds->{strand} eq '+'){
+			# might have utr so only if no utr
+			$exon->{end5}+=$start_pos if $exon->{end5} == $cds->{end5};
+			$cds->{end5}+=$start_pos;
+		}else{
+			$exon->{end5}-=$start_pos if $exon->{end5} == $cds->{end5};
+			$cds->{end5}-=$start_pos;
+		}
+		$start_pos = int(1);
+		$first_phase = int(0);
+ 	}
+     }
    push( @cds_objs, $cds );
   }
  }
 
  my $cds_obj = shift @cds_objs;
- $cds_obj->{phase} = $first_phase;
 
+ $cds_obj->{phase} = $first_phase;
  my $cds_length = abs( $cds_obj->{end3} - $cds_obj->{end5} ) + 1;
  $cds_length -= $first_phase;
 

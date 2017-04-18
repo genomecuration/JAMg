@@ -45,7 +45,7 @@ use GTF_utils;
 $|=1;
 our $SEE;
 my $minorf = 3;    #minimum orf size in bp
-my ($simple_gff3, $gfffile, $genome, $change_name,$lettername,$verbose, $one_iso, $do_rename, $change_source, $strip_name );
+my ($simple_gff3, $gfffile, $genome, $change_name,$lettername,$verbose, $one_iso, $do_rename, $change_source, $strip_name, $split_single );
 pod2usage $! unless &GetOptions(
 	          'one_isoform'      => \$one_iso,
             'gff|infile:s'     => \$gfffile,
@@ -57,7 +57,8 @@ pod2usage $! unless &GetOptions(
             'change_source'    => \$change_source,
       	    'rename'	    	   => \$do_rename,
             'strip_name'       => \$strip_name,
-	    'simple' => \$simple_gff3
+	    'simple' => \$simple_gff3,
+	    'split_single' => \$split_single,
 );
 $gfffile = shift if !$gfffile;
 $genome  = shift if !$genome;
@@ -88,6 +89,7 @@ sub gff3_process() {
 
  open( IN, $gff3_file ) || confess( "Cannot find $gff3_file " . $! );
  open( GFF3, ">$gff3_file.gff3" );
+ open( GFF3_SINGLE, ">$gff3_file.gff3.single" ) if $split_single;
  open( PEP,  ">$gff3_file.pep" );
  open( CDS,  ">$gff3_file.cds" );
  open( GENE, ">$gff3_file.gene" );
@@ -110,39 +112,40 @@ sub gff3_process() {
     } @{ $genome_id_to_gene_list_href->{$genome_id} };
 
   print "\nProcessing scaffold $genome_id\n" if $verbose;
-  foreach my $gene_id (@gene_ids) {
+
+ foreach my $gene_id (@gene_ids) {
     
-   my (%params,%preferences);
+   my (%params,%preferences,$is_single_exon);
    $preferences{'sequence_ref'} = \$genome_seq;
    $preferences{'source'}  = $change_source if $change_source;
    $params{unspliced_transcript} = 1;    # highlights introns
 
    my $gene_obj_ref = $gene_obj_indexer->get_gene($gene_id);
+   next if ($gene_id=~/temp_model/  
+	|| ($gene_obj_ref->{gene_name} && $gene_obj_ref->{gene_name}=~/temp_model/) 
+	|| ($gene_obj_ref->{TU_feat_name} && $gene_obj_ref->{TU_feat_name}=~/temp_model/)
+	);
+
    $gene_obj_ref->{TU_feat_name} = $gene_id if !$gene_obj_ref->{TU_feat_name};
 
    my $jamg_id_gene  = "JAMg_model_".$gene_count;
 
-   if ($do_rename){
-     print TRACK "GENE\t$gene_id\t$jamg_id_gene\n";
-     $gene_id = $jamg_id_gene;
-     $gene_obj_ref->{gene_name} = $gene_id;
-     $gene_obj_ref->{TU_feat_name} = $gene_id;
-   }
 
-   print "\rprocessing gene $gene_id"
-     . "                                                  "
-     if $verbose;
    $gene_obj_ref->create_all_sequence_types( \$genome_seq, %params );
    my $gene_seq = $gene_obj_ref->get_gene_sequence();
    next if !$gene_seq;
    $gene_seq =~ s/(\S{80})/$1\n/g;
    chomp $gene_seq;
-   print GENE ">$gene_id type:gene\n$gene_seq\n";
 
    # sort longest CDS first.
    my (@isoforms,%cdslength_hash);
 
    foreach my $iso ( $gene_obj_ref, $gene_obj_ref->get_additional_isoforms() ){
+	   if ($iso->{Model_feat_name} =~/temp_model/ || $iso->{transcript_name}=~/temp_model/){
+      
+      next;
+     }
+
 	$cdslength_hash{$iso} = length($iso->get_CDS_sequence());
 	if ($one_iso){
 		$isoforms[0] = $iso if !$isoforms[0] || $cdslength_hash{$iso} > $cdslength_hash{$isoforms[0]};
@@ -150,13 +153,24 @@ sub gff3_process() {
 		push(@isoforms,$iso); # all data
 	}
    }
+
+   next unless $isoforms[0];
+
+   if ($do_rename){
+     print TRACK "GENE\t$gene_id\t$jamg_id_gene\n";
+     $gene_id = $jamg_id_gene;
+     $gene_obj_ref->{gene_name} = $gene_id;
+     $gene_obj_ref->{TU_feat_name} = $gene_id;
+   }
+   print GENE ">$gene_id type:gene\n$gene_seq\n";
+   print "\rprocessing gene $gene_id"
+     . "                                                  "
+     if $verbose;
+
    my $isoform_count;
    foreach my $isoform ( @isoforms )   {
     my $isoform_id  = $isoform->{Model_feat_name};
-    # these creep in from PASA
-    if ($isoform_id =~/temp_model/){
-	next;
-    }
+
     next unless $isoform->has_CDS() || !$isoform->get_CDS_span();
     my @model_span  = $isoform->get_CDS_span();
     next if ( abs( $model_span[0] - $model_span[1] ) < 3 );
@@ -166,8 +180,9 @@ sub gff3_process() {
    # and these issues happen both ways (with and without rephasing). 
    # so i decided to do rephasing always unless it is a single CDS gene on the negative side.
    # unfortunately this has to happen across the entire gene
+# this is now solved within the library via set_CDS (basically first CDS is reset to have phase = 0 (frame = 1)
    if ($isoform->{'num_exons'} == 1){
-	$preferences{'norephase'} = 1;
+	$is_single_exon++;
    }
     print "\rprocessing gene $gene_id isoform $isoform_id                                       " if $verbose;
     $isoform_count++;
@@ -260,18 +275,26 @@ sub gff3_process() {
     print MRNA ">$transcript_main_id ".$alt_name."type:mRNA gene:$gene_id$description\n".uc($seq)."\n";
     die "OK, this is unexpected: there is a stop codon inside the ORF for transcript $transcript_main_id!\n" if $seq=~/\*\S/;
     eval { $isoform->set_CDS_phases( \$genome_seq ); } unless $preferences{'norephase'};
-
    }
    # GFF3
    if ($simple_gff3){
-        print GFF3 $gene_obj_ref->to_GFF3_format(%preferences) . "\n";
+	if ($is_single_exon && $split_single){
+	        print GFF3_SINGLE $gene_obj_ref->to_GFF3_format(%preferences) . "\n";
+	}else{
+	        print GFF3 $gene_obj_ref->to_GFF3_format(%preferences) . "\n";
+	}
    }else{
-   	print GFF3 $gene_obj_ref->to_GFF3_format_extended(%preferences) . "\n";
+	if ($is_single_exon && $split_single){
+	   	print GFF3_SINGLE $gene_obj_ref->to_GFF3_format_extended(%preferences) . "\n";
+	}else{
+	   	print GFF3 $gene_obj_ref->to_GFF3_format_extended(%preferences) . "\n";
+	}
    }
    $gene_count++;
   }
  }
  close GFF3;
+ close GFF3_SINGLE;
  close PEP;
  close CDS;
  close MRNA;
@@ -280,6 +303,9 @@ sub gff3_process() {
 
  &sort_gff3("$gff3_file.gff3");
  unlink("$gff3_file.track") if !-s "$gff3_file.track";
+
+ unlink("$gff3_file.gff3.single") unless -s "$gff3_file.gff3.single";
+ &sort_gff3("$gff3_file.gff3.single") if -s "$gff3_file.gff3.single";
  # rename( "$gff3_file.gff3", $gff3_file );
  print "\nDone!\n";
 
@@ -367,4 +393,31 @@ sub get_gff_delimiter() {
  close IN;
  confess "I don't know what delimiter to use for $file" if !$delimiter;
  return $delimiter;
+}
+
+
+sub fix_single_exon_phase(){
+	my $obj = shift;
+	my $strand = $obj->get_orientation();
+	 foreach my $exon ( $obj->get_exons() ) {
+	  if ( my $cds = $exon->get_CDS_exon_obj() ) {
+		my $phase = $cds->get_phase();
+		next if !$phase || $phase == 0;
+		#delete this many from beginning
+		if ($strand eq '+'){
+			$exon->{end5}+= $phase;
+			$cds->{end5}+= $phase;
+			$cds->{phase}= 0;			
+		}else{
+			# i think
+			$exon->{end5}-= $phase;
+			$cds->{end5}-= $phase;
+			$cds->{phase}= 0;	
+		}
+
+	  }
+	 }
+
+	return $obj;
+
 }
