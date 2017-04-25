@@ -45,6 +45,7 @@ use GTF_utils;
 $|=1;
 our $SEE;
 my $minorf = 3;    #minimum orf size in bp
+my $to_bed_exec = "$RealBin/../3rd_party/PASA/misc_utilities/gene_gff3_to_bed.pl";
 my ($simple_gff3, $gfffile, $genome, $change_name,$lettername,$verbose, $one_iso, $do_rename, $change_source, $strip_name, $split_single );
 pod2usage $! unless &GetOptions(
 	          'one_isoform'      => \$one_iso,
@@ -54,7 +55,7 @@ pod2usage $! unless &GetOptions(
             'debug'            => \$SEE,
             'verbose'          => \$verbose,
             'lettername'       => \$lettername,
-            'change_source'    => \$change_source,
+            'change_source:s'    => \$change_source,
       	    'rename'	    	   => \$do_rename,
             'strip_name'       => \$strip_name,
 	    'simple' => \$simple_gff3,
@@ -89,6 +90,7 @@ sub gff3_process() {
 
  open( IN, $gff3_file ) || confess( "Cannot find $gff3_file " . $! );
  open( GFF3, ">$gff3_file.gff3" );
+ open( GFF3_ERR, ">$gff3_file.gff3.err" );
  open( GFF3_SINGLE, ">$gff3_file.gff3.single" ) if $split_single;
  open( PEP,  ">$gff3_file.pep" );
  open( CDS,  ">$gff3_file.cds" );
@@ -137,30 +139,47 @@ sub gff3_process() {
    $gene_seq =~ s/(\S{80})/$1\n/g;
    chomp $gene_seq;
 
-   # sort longest CDS first.
-   my (@isoforms,%cdslength_hash);
+   if ($do_rename){
+     $gene_id = $jamg_id_gene;
+     $gene_obj_ref->{gene_name} = $gene_id;
+     $gene_obj_ref->{TU_feat_name} = $gene_id;
+   }
 
+
+   # check each isoformt.
+   my (@isoforms,%peplength_hash);
    foreach my $iso ( $gene_obj_ref, $gene_obj_ref->get_additional_isoforms() ){
-	   if ($iso->{Model_feat_name} =~/temp_model/ || $iso->{transcript_name}=~/temp_model/){
-      
-      next;
-     }
-
-	$cdslength_hash{$iso} = length($iso->get_CDS_sequence());
+	next unless $iso;
+	next if (
+		($iso->{Model_feat_name} && $iso->{Model_feat_name} =~/temp_model/) 
+		|| ( $iso->{transcript_name} && $iso->{transcript_name}=~/temp_model/)
+	);
+        my $transcript_main_id = $iso->{Model_feat_name} || confess;
+        my $pep_seq = $iso->get_protein_sequence();
+	$peplength_hash{$transcript_main_id} = length($pep_seq);
+    	if ( $pep_seq && length($pep_seq) < int($minorf/3) ) {
+		warn "SKIP: Transcript $transcript_main_id has no coding sequence or it is shorter than $minorf base pairs.\n";
+		next;
+	}
+	if ($pep_seq=~/\*\S/){
+	        warn "WARNING: Stop codon inside ORF: $transcript_main_id\n" if $pep_seq=~/\*\S/;
+		print GFF3_ERR $iso->to_GFF3_format(%preferences) . "\n";
+		next;
+	}
+	# if we have survived this far:
 	if ($one_iso){
-		$isoforms[0] = $iso if !$isoforms[0] || $cdslength_hash{$iso} > $cdslength_hash{$isoforms[0]};
+		#pick longest
+		$isoforms[0] = $iso if !$isoforms[0] || $peplength_hash{$transcript_main_id} > $peplength_hash{$isoforms[0]->{Model_feat_name}};
 	}else{
 		push(@isoforms,$iso); # all data
 	}
    }
 
+
    next unless $isoforms[0];
 
    if ($do_rename){
      print TRACK "GENE\t$gene_id\t$jamg_id_gene\n";
-     $gene_id = $jamg_id_gene;
-     $gene_obj_ref->{gene_name} = $gene_id;
-     $gene_obj_ref->{TU_feat_name} = $gene_id;
    }
    print GENE ">$gene_id type:gene\n$gene_seq\n";
    print "\rprocessing gene $gene_id"
@@ -178,9 +197,11 @@ sub gff3_process() {
    # there is a real issue here. Most times EVM and PASA are ok with phasing
    # but sometimes there are issues.
    # and these issues happen both ways (with and without rephasing). 
-   # so i decided to do rephasing always unless it is a single CDS gene on the negative side.
+   # so i decided to do rephasing always 
    # unfortunately this has to happen across the entire gene
-# this is now solved within the library via set_CDS (basically first CDS is reset to have phase = 0 (frame = 1)
+   # and there are 2-3 genes (out of 20000) that have issues.
+   # The second issue was start CDSs that had phase !=0 
+   # this is now solved within the library via set_CDS (basically first CDS is reset to have phase = 0 (frame = 1)
    if ($isoform->{'num_exons'} == 1){
 	$is_single_exon++;
    }
@@ -245,37 +266,30 @@ sub gff3_process() {
       $isoform->{com_name} = $transcript_main_id;
     }
 
+    #reset the phases based on the longest CDS within the ORF. #doesn't change much
+    eval { $isoform->set_CDS_phases( \$genome_seq ); } unless $preferences{'norephase'};
+
     # get sequences
-    # CDS
-    my $seq = $isoform->get_CDS_sequence();
-    $seq =~ s/(\S{80})/$1\n/g if $seq;
-    chomp $seq if $seq;
-    if ( $seq && length($seq) >= $minorf ) {
-     print CDS
-       ">$transcript_main_id ".$alt_name."type:CDS  gene:$gene_id$description\n".uc($seq)."\n";
-    }
-    else {
-     warn "Transcript $transcript_main_id has no coding sequence. Will not process and will skip it\n";
-     next;
-    }
-
     # proteins
-    $seq = $isoform->get_protein_sequence();
-    $seq =~ s/(\S{80})/$1\n/g;
-    chomp $seq;
+    my $pep_seq = $isoform->get_protein_sequence();
+    $pep_seq =~ s/(\S{80})/$1\n/g;
+    chomp $pep_seq if $pep_seq;
+    print PEP ">$transcript_main_id ".$alt_name."type:polypeptide  gene:$gene_id$description\n".uc($pep_seq)."\n";
 
-
-    print PEP
-      ">$transcript_main_id ".$alt_name."type:polypeptide  gene:$gene_id$description\n".uc($seq)."\n";
+    # CDS
+    my $cds_seq = $isoform->get_CDS_sequence();
+    $cds_seq =~ s/(\S{80})/$1\n/g if $cds_seq;
+    chomp $cds_seq if $cds_seq;
+    print CDS ">$transcript_main_id ".$alt_name."type:CDS  gene:$gene_id$description\n".uc($cds_seq)."\n";
 
     # mRNA (all exons)
-    $seq = $isoform->get_cDNA_sequence();
-    $seq =~ s/(\S{80})/$1\n/g;
-    chomp $seq;
-    print MRNA ">$transcript_main_id ".$alt_name."type:mRNA gene:$gene_id$description\n".uc($seq)."\n";
-    die "OK, this is unexpected: there is a stop codon inside the ORF for transcript $transcript_main_id!\n" if $seq=~/\*\S/;
-    eval { $isoform->set_CDS_phases( \$genome_seq ); } unless $preferences{'norephase'};
+    my $mrna_seq = $isoform->get_cDNA_sequence();
+    $mrna_seq =~ s/(\S{80})/$1\n/g;
+    chomp $mrna_seq;
+    print MRNA ">$transcript_main_id ".$alt_name."type:mRNA gene:$gene_id$description\n".uc($mrna_seq)."\n";
+
    }
+
    # GFF3
    if ($simple_gff3){
 	if ($is_single_exon && $split_single){
@@ -294,6 +308,8 @@ sub gff3_process() {
   }
  }
  close GFF3;
+ close GFF3_ERR;
+ unlink("$gff3_file.gff3.err") if !-s "$gff3_file.gff3.err";
  close GFF3_SINGLE;
  close PEP;
  close CDS;
@@ -302,11 +318,15 @@ sub gff3_process() {
  close TRACK;
 
  &sort_gff3("$gff3_file.gff3");
- unlink("$gff3_file.track") if !-s "$gff3_file.track";
+ unlink("$gff3_file.track") unless -s "$gff3_file.track";
 
  unlink("$gff3_file.gff3.single") unless -s "$gff3_file.gff3.single";
  &sort_gff3("$gff3_file.gff3.single") if -s "$gff3_file.gff3.single";
- # rename( "$gff3_file.gff3", $gff3_file );
+
+ if ($to_bed_exec && -x $to_bed_exec){
+	system("$to_bed_exec $gff3_file.gff3 | sed -r  '~s/;\S+//' | sed '~s/ID=//' > $gff3_file.bed");
+ }
+
  print "\nDone!\n";
 
  return;

@@ -44,6 +44,7 @@ Mandatory:
  Output:
  -nofail             Don't print out failures (I/O friendlyness if sparse hits expected). Otherwise captured as FASTQ
  -merge_mult         Merge the concordant_uniq and concordant_mult (required for DEW)
+ -no_split           Don't split output in different files for each type of alignment
 
  Other:
  -verbose
@@ -85,7 +86,7 @@ my ( $gmap_build_exec, $gsnap_exec, $samtools_exec,$bunzip2_exec,$bedtools_exec 
   &check_program( "gmap_build", "gsnap", "samtools",'bunzip2','bedtools' );
 &samtools_version_check($samtools_exec);
 my ( $input_dir, $pattern2, $debug, $genome, $genome_dbname, $nofails, $suffix,$piccard_0m,$do_parallel,
-     $help, $just_write_out_commands, $split_input, $notpaired, $verbose, $matepair, $build_only );
+     $help, $just_write_out_commands, $split_input, $notpaired, $verbose, $matepair, $build_only, $no_split );
 my $cwd = `pwd`;
 chomp($cwd);
 my $gmap_dir           = "$RealBin/../databases/gmap/";
@@ -127,6 +128,7 @@ my $do_merge_mult;
              'build_only'      => \$build_only,
 	     'do_proportion:i' => \$do_proportion,
 	     'large_genome'    => \$do_large_genome,
+	     'no_split'        => \$no_split
 );
 
 pod2usage if $help;
@@ -413,11 +415,15 @@ sub align_unpaired_files() {
   $file_align_cmd .= ' --bunzip2 ' if $file =~ /\.bz2$/; 
   $file_align_cmd .= ' --gunzip ' if $file =~ /\.gz$/; 
   $file_align_cmd .= $qual_prot if $qual_prot;
-  $file_align_cmd .=
-    " --split-output=gsnap.$base --read-group-id=$base $file ";
-  &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
-    unless (    -s $base_out_filename."_uniq"
-             || -s $base_out_filename."_uniq.bam" );
+  $file_align_cmd .= $no_split ? " --output-file=$base_out_filename " : " --split-output=gsnap.$base ";
+  $file_align_cmd .= " --read-group-id=$base $file ";
+
+  if ($no_split){
+   &process_cmd( $file_align_cmd) unless -s $base_out_filename || -s "$base_out_filename.bam";
+   &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename.bam -");
+   &process_cmd("$samtools_exec index $base_out_filename.bam");
+  }else{
+  &process_cmd( $file_align_cmd, '.', "gsnap.$base*" ) unless (    -s $base_out_filename."_uniq" || -s $base_out_filename."_uniq.bam" );
   unless ( -s $base_out_filename."_uniq.bam" || $just_write_out_commands) {
    &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename"."_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_uniq.bam -"   );
    &process_cmd("$samtools_exec index $base_out_filename"."_uniq.bam");
@@ -443,14 +449,14 @@ sub align_unpaired_files() {
    unlink("$base_out_filename"."_mult");
   }
 
-# decided to remove as it was a resource hog
+# decided to remove as it was a resource hog; keep just for rnaseq
   if ($do_merge_mult && !-s $base_out_filename."_uniq_mult.bam" ) {
    &process_cmd("$samtools_exec merge -@ $cpus -l 9 $base_out_filename"."_uniq_mult.bam $base_out_filename"."_uniq.bam $base_out_filename"."_mult.bam");
    &process_cmd("$samtools_exec index $base_out_filename"."_uniq_mult.bam");
    print LOG "\n$base_out_filename"."_uniq_mult.bam:\n";
    &process_cmd("$samtools_exec flagstat $base_out_filename"."_uniq_mult.bam >> gsnap.$base.log" );
   }
-
+ }
   print LOG "\nGSNAP Completed!\n" unless $just_write_out_commands;
   close LOG;
   print CMD "\n" if $just_write_out_commands;
@@ -522,9 +528,15 @@ sub align_paired_files() {
 	print "Maximum PE distance allowed was estimated as $pe_distance from $datapoints datapoints (median $median + 30%)\n\n";
         $file_align_cmd .= " --pairmax-dna=$pe_distance ";
     } 
-    $file_align_cmd .= " --split-output=gsnap.$base --read-group-id=$base $file $pair ";
-    &process_cmd( $file_align_cmd, '.', "gsnap.$base*" );
 
+   $file_align_cmd .= $no_split ? " --output-file=$base_out_filename " : " --split-output=gsnap.$base ";
+   $file_align_cmd .= " --read-group-id=$base $file $pair ";
+
+  if ($no_split){
+   &process_cmd( $file_align_cmd) unless -s $base_out_filename || -s "$base_out_filename.bam";
+   &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename.bam -");
+   &process_cmd("$samtools_exec index $base_out_filename.bam");
+  }else{
    &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename"."_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_uniq.bam -");
    &process_cmd("$samtools_exec index $base_out_filename"."_uniq.bam");
 
@@ -539,27 +551,27 @@ sub align_paired_files() {
    );
    unlink("$base_out_filename"."_uniq");
   }
-  unless ( -s "$base_out_filename"."_mult.bam" || $just_write_out_commands) {
+  unless ($no_split || -s "$base_out_filename"."_mult.bam" || $just_write_out_commands) {
    &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename"."_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_mult.bam -");
    &process_cmd("$samtools_exec index $base_out_filename"."_mult.bam");
    print LOG "\n$base_out_filename"."_mult.bam:\n";
    &process_cmd( "$samtools_exec flagstat $base_out_filename"."_mult.bam >> gsnap.$base.log" );
    unlink("$base_out_filename"."_mult");
   }
-  if (!$just_write_out_commands && ( -s $out_halfmapped && !-s "$out_halfmapped.bam")){
+  if (!$no_split || (!$just_write_out_commands && ( -s $out_halfmapped && !-s "$out_halfmapped.bam"))){
     &process_cmd("$samtools_exec view -h -u -T $genome $out_halfmapped | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $out_halfmapped.bam -");
     &process_cmd("$samtools_exec index $out_halfmapped.bam");
     unlink($out_halfmapped) if -s "$out_halfmapped.bam";
   }
 
 # decided to remove as it was a resource hog
-  if ($do_merge_mult && !-s "$base_out_filename"."_uniq_mult.bam" ) {
+  if (!$no_split && $do_merge_mult && !-s "$base_out_filename"."_uniq_mult.bam" ) {
    &process_cmd("$samtools_exec merge -@ $cpus  -l 9 $base_out_filename"."_uniq_mult.bam $base_out_filename"."_uniq.bam $base_out_filename"."_mult.bam"   );
    &process_cmd("$samtools_exec index $base_out_filename"."_uniq_mult.bam");
    print LOG "\n$base_out_filename"."_uniq_mult.bam:\n";
    &process_cmd("$samtools_exec flagstat $base_out_filename"."_uniq_mult.bam >> gsnap.$base.log"   );
   }
-
+ }
   print LOG "\nGSNAP Completed!\n" unless $just_write_out_commands;
   close LOG;
   print CMD "\n" if $just_write_out_commands;
