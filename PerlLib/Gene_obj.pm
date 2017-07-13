@@ -2405,6 +2405,7 @@ sub trim_UTRs {
  $self->{mRNA_exon_objs} = 0;              #clear current gene structure
  $self->{mRNA_exon_objs} = \@new_exons;    #replace gene structure
  $self->refine_gene_object();              #update
+
  return ($self);
 }
 
@@ -3447,31 +3448,60 @@ sub to_GFF3_format {
    ? "gene"
    : $gene_obj->{gene_type};
 
- my $gff3_text =
-"$asmbl_id\t$source\t$feat_type\t$gene_lend\t$gene_rend\t.\t$strand\t.\tID=$gene_id;Name=$com_name;$gene_alias\n"
-   ; ## note, non-coding gene features are currently represented by a simple single coordinate pair.
+ my $gff3_text = "$asmbl_id\t$source\t$feat_type\t$gene_lend\t$gene_rend\t.\t$strand\t.\tID=$gene_id"; 
+## note, non-coding gene features are currently represented by a simple single coordinate pair.
+ if ($gene_obj->{genbank_submission}){
+	$gff3_text .= ";locus_tag=".$gene_obj->{genbank_submission};
+	 if ($gene_obj->{gene_type} eq "pseudogene"){
+		$gff3_text .= ";pseudogene=unknown";
+	 }
+ }else{
+	$gff3_text .= ";Name=$com_name;$gene_alias";
+ }
+ $gff3_text .= "\n";
 
  if ( $gene_obj->{gene_type} eq "protein-coding" ) {
 
-  my $gene_obj_ref = $gene_obj;
-
   foreach
-    my $gene_obj ( $gene_obj_ref, $gene_obj_ref->get_additional_isoforms() )
+    my $isoform ( $gene_obj, $gene_obj->get_additional_isoforms() )
   {
 
-   my $model_id    = $gene_obj->{Model_feat_name};
+   my $model_id    = $isoform->{Model_feat_name};
    my $model_alias = "";
-   if ( my $model_locus = uri_escape($gene_obj->{Model_pub_locus}) ) {
+   if ( my $model_locus = uri_escape($isoform->{Model_pub_locus}) ) {
     $model_alias = "Alias=$model_locus;";
    }
+   my (@noteText_mrna);
+   push( @noteText_mrna, uri_escape($isoform->{pub_comment}) ) if $isoform->{pub_comment};
 
-   my ( $mrna_lend, $mrna_rend ) = $gene_obj->get_transcript_span();
+   my ( $mrna_lend, $mrna_rend ) = $isoform->get_transcript_span();
 
-   $gff3_text .=
-"$asmbl_id\t$source\tmRNA\t$mrna_lend\t$mrna_rend\t.\t$strand\t.\tID=$model_id;Parent=$gene_id;Name=$com_name;$model_alias\n";
+   $gff3_text .= "$asmbl_id\t$source\tmRNA\t$mrna_lend\t$mrna_rend\t.\t$strand\t.\tID=$model_id;Parent=$gene_id";
+   if (@noteText_mrna){
+	$gff3_text .= "Note=".join(";",@noteText_mrna);	
+   }
+   if ($gene_obj->{genbank_submission}){
+	$gff3_text .= "transcript_id=gnl|".$gene_obj->{genbank_submission}."|".$model_id;
+	if ($isoform->{internal_stop}){
+		$gff3_text .= ";pseudo=true";
+	}
+       if ($isoform->{experiment}){
+		$gff3_text .= ';experiment='.join(",",@{$isoform->{experiment}});
+	   }
+       if ($isoform->{inference}){
+		$gff3_text .= ';inference='.join(",",@{$isoform->{inference}});
+	   }
+   }else{
+	$gff3_text .= ";Name=$com_name;$model_alias";
+   }
+   if ($isoform->{Dbxref}){
+		$gff3_text .= ';Dbxref=' . join(",",@{$isoform->{Dbxref}});
+   }
+
+   $gff3_text .= "\n";
 
    ## mark the first and last CDS entries (for now, an unpleasant hack!)
-   my @exons = $gene_obj->get_exons();
+   my @exons = $isoform->get_exons();
    ## find the first cds
    foreach my $exon (@exons) {
     if ( my $cds = $exon->get_CDS_obj() ) {
@@ -3489,25 +3519,25 @@ sub to_GFF3_format {
    undef(@exons);
 
 
-   my $prime5_partial = $gene_obj->is_5prime_partial();
-   my $prime3_partial = $gene_obj->is_3prime_partial();
+   my $prime5_partial = $isoform->is_5prime_partial();
+   my $prime3_partial = $isoform->is_3prime_partial();
 
    ## annotate 5' utr
-   if ( $gene_obj->has_CDS() ) {
-    my @prime5_utr = $gene_obj->get_5prime_UTR_coords();
+   if ( $isoform->has_CDS() ) {
+    my @prime5_utr = $isoform->get_5prime_UTR_coords();
     if (@prime5_utr) {
      my $utr_count = 0;
      foreach my $coordset (@prime5_utr) {
       my ( $lend, $rend ) = sort { $a <=> $b } @$coordset;
       $utr_count++;
       my $utr_id = "$model_id.utr5p$utr_count";
-      $gff3_text .= "$asmbl_id\t$source\tfive_prime_utr\t$lend\t$rend\t.\t$strand\t.\tID=$utr_id;Parent=$model_id\n";
+      $gff3_text .= "$asmbl_id\t$source\tfive_prime_UTR\t$lend\t$rend\t.\t$strand\t.\tID=$utr_id;Parent=$model_id\n";
      }
     }
    }
 
    my $exon_counter = 0;
-   @exons = $gene_obj->get_exons();
+   @exons = $isoform->get_exons();
 
    foreach my $exon ( @exons ) {
     $exon_counter++;
@@ -3551,28 +3581,44 @@ sub to_GFF3_format {
 
      my $partial_text = "";
      if ( $prime5_partial && $cds_obj->{first_cds} ) {
-      $partial_text .= "; 5_prime_partial=true";
+      $partial_text .= ";5_prime_partial=true";
      }
      if ( $prime3_partial && $cds_obj->{last_cds} ) {
-      $partial_text .= "; 3_prime_partial=true";
+      $partial_text .= ";3_prime_partial=true";
      }
 
-     $gff3_text .=
-"$asmbl_id\t$source\tCDS\t$cds_lend\t$cds_rend\t.\t$strand\t$phase\tID=${cds_ID_string};Parent=$model_id$partial_text\n";
+     $gff3_text .= "$asmbl_id\t$source\tCDS\t$cds_lend\t$cds_rend\t.\t$strand\t$phase\tID=${cds_ID_string};Parent=$model_id$partial_text";
+
+     if ($gene_obj->{genbank_submission}){
+	$gff3_text .= "protein_id=gnl|".$gene_obj->{genbank_submission}."|".$model_id;
+	if ($isoform->{internal_stop}){
+		$gff3_text .= ";pseudo=true";
+	}
+	   if ($isoform->{experiment}){
+		$gff3_text .= ';experiment='.join(",",@{$isoform->{experiment}});
+	   }
+	   if ($isoform->{inference}){
+		$gff3_text .= ';inference='.join(",",@{$isoform->{inference}});
+	   }
+     }
+     if ($isoform->{Dbxref}){
+		$gff3_text .= ';Dbxref='.join(",",@{$isoform->{Dbxref}});
+     }
+     $gff3_text .= "\n";
+
     }
    }
 
    ## annotate 3' utr
-   if ( $gene_obj->has_CDS() ) {
-    my @prime3_utr = $gene_obj->get_3prime_UTR_coords();
+   if ( $isoform->has_CDS() ) {
+    my @prime3_utr = $isoform->get_3prime_UTR_coords();
     if (@prime3_utr) {
      my $utr_count = 0;
      foreach my $coordset (@prime3_utr) {
       my ( $lend, $rend ) = sort { $a <=> $b } @$coordset;
       $utr_count++;
       my $utr_id = "$model_id.utr3p$utr_count";
-      $gff3_text .=
-"$asmbl_id\t$source\tthree_prime_utr\t$lend\t$rend\t.\t$strand\t.\tID=$utr_id;Parent=$model_id\n";
+      $gff3_text .= "$asmbl_id\t$source\tthree_prime_UTR\t$lend\t$rend\t.\t$strand\t.\tID=$utr_id;Parent=$model_id\n";
      }
     }
 
@@ -3645,19 +3691,28 @@ sub to_GFF3_format_extended {
    ? "gene"
    : $gene_obj->{gene_type};
 
- my $gff3_text =
-"$reference_id\t$source\t$feat_type\t$gene_lend\t$gene_rend\t.\t$strand\t.\tID=$gene_id;Name=$com_name;$gene_alias"
-   ; ## note, non-coding gene features are currently represented by a simple single coordinate pair.
-   if (@noteText_gene){
-	$gff3_text .= "Note=".join(";",@noteText_gene).";";	
-   }
-   $gff3_text .= "\n";
+ ## note, non-coding gene features are currently represented by a simple single coordinate pair.
+ my $gff3_text = "$reference_id\t$source\t$feat_type\t$gene_lend\t$gene_rend\t.\t$strand\t.\tID=$gene_id";
+
+ if (@noteText_gene){
+	$gff3_text .= ";Note=".join(";",@noteText_gene);
+ }
+
+ if ($gene_obj->{genbank_submission}){
+	$gff3_text .= ";locus_tag=".$gene_obj->{genbank_submission};
+	 if ($gene_obj->{gene_type} eq "pseudogene"){
+		$gff3_text .= ";pseudogene=unknown";
+	 }
+ }else{
+	$gff3_text .= ";Name=$com_name;$gene_alias";
+ }
+
+ $gff3_text .= "\n";
 
  if ( $gene_obj->{gene_type} eq "protein-coding" ) {
-  my $gene_obj_ref = $gene_obj;
 
   foreach
-    my $isoform ( $gene_obj_ref, $gene_obj_ref->get_additional_isoforms() )
+    my $isoform ( $gene_obj, $gene_obj->get_additional_isoforms() )
   {
   # $isoform->delete_isoforms(); 
    my (@noteText_mrna);
@@ -3673,10 +3728,27 @@ sub to_GFF3_format_extended {
 
 
    $gff3_text .=
-"$reference_id\t$source\tmRNA\t$mrna_lend\t$mrna_rend\t.\t$strand\t.\tID=$model_id;Parent=$gene_id;Name=$transcript_common_name;$model_alias";
+"$reference_id\t$source\tmRNA\t$mrna_lend\t$mrna_rend\t.\t$strand\t.\tID=$model_id;Parent=$gene_id";
 
    if (@noteText_mrna){
-	$gff3_text .= "Note=".join(";",@noteText_mrna);	
+	$gff3_text .= ";Note=".join(";",@noteText_mrna);	
+   }
+   if ($gene_obj->{genbank_submission}){
+	$gff3_text .= ";transcript_id=gnl|".$gene_obj->{genbank_submission}."|".$model_id;
+	if ($isoform->{internal_stop}){
+		$gff3_text .= ";pseudo=true";
+	}
+	   if ($isoform->{experiment}){
+		$gff3_text .= ';experiment='.join(",",@{$isoform->{experiment}});
+	   }
+	   if ($isoform->{inference}){
+		$gff3_text .= ';inference='.join(",",@{$isoform->{inference}});
+	   }
+   }else{
+	$gff3_text .= ";Name=$transcript_common_name;$model_alias";
+   }
+   if ($isoform->{Dbxref}){
+		$gff3_text .= ';Dbxref=' . join(",",@{$isoform->{Dbxref}});
    }
    $gff3_text .= "\n";
 
@@ -3709,8 +3781,7 @@ sub to_GFF3_format_extended {
       my ( $lend, $rend ) = sort { $a <=> $b } @$coordset;
       $utr_count++;
       my $utr_id = "$model_id.utr5p$utr_count";
-      $gff3_text .=
-"$reference_id\t$source\tfive_prime_utr\t$lend\t$rend\t.\t$strand\t.\tID=$utr_id;Parent=$model_id\n";
+      $gff3_text .= "$reference_id\t$source\tfive_prime_UTR\t$lend\t$rend\t.\t$strand\t.\tID=$utr_id;Parent=$model_id\n";
      }
     }
    }
@@ -3761,13 +3832,31 @@ sub to_GFF3_format_extended {
 
      my $partial_text = "";
      if ( $prime5_partial && $cds_obj->{first_cds} ) {
-      $partial_text .= "; 5_prime_partial=true";
+      $partial_text .= ";5_prime_partial=true";
      }
      if ( $prime3_partial && $cds_obj->{last_cds} ) {
-      $partial_text .= "; 3_prime_partial=true";
+      $partial_text .= ";3_prime_partial=true";
      }
 
-     $gff3_text .="$reference_id\t$source\tCDS\t$cds_lend\t$cds_rend\t.\t$strand\t$phase\tID=${cds_ID_string};Parent=$model_id$partial_text\n";
+     $gff3_text .="$reference_id\t$source\tCDS\t$cds_lend\t$cds_rend\t.\t$strand\t$phase\tID=${cds_ID_string};Parent=$model_id$partial_text";
+
+     if ($gene_obj->{genbank_submission}){
+	$gff3_text .= "protein_id=gnl|".$gene_obj->{genbank_submission}."|".$model_id;
+	if ($isoform->{internal_stop}){
+		$gff3_text .= ";pseudo=true";
+	}
+	   if ($isoform->{experiment}){
+		$gff3_text .= ';experiment='.join(",",@{$isoform->{experiment}});
+	   }
+	   if ($isoform->{inference}){
+		$gff3_text .= ';inference='.join(",",@{$isoform->{inference}});
+	   }
+     }
+     if ($isoform->{Dbxref}){
+		$gff3_text .= ';Dbxref='.join(",",@{$isoform->{Dbxref}});
+     }
+
+     $gff3_text .= "\n";
     }
 
     # print intron
@@ -3831,7 +3920,7 @@ sub to_GFF3_format_extended {
       $utr_count++;
       my $utr_id = "$model_id.utr3p$utr_count";
       $gff3_text .=
-"$reference_id\t$source\tthree_prime_utr\t$lend\t$rend\t.\t$strand\t.\tID=$utr_id;Parent=$model_id\n";
+"$reference_id\t$source\tthree_prime_UTR\t$lend\t$rend\t.\t$strand\t.\tID=$utr_id;Parent=$model_id\n";
      }
     }
 
@@ -4303,8 +4392,7 @@ sub to_GTF2_format () {
     }
     $phase = &$frame_convert($phase);
 
-    $gtf2_text .=
-"$asmbl_id\t$source\tCDS\t$cds_lend\t$cds_rend\t.\t$strand\t$phase\tgene_id \"$gene_id\"; transcript_id \"$model_id\";\n";
+    $gtf2_text .= "$asmbl_id\t$source\tCDS\t$cds_lend\t$cds_rend\t.\t$strand\t$phase\tgene_id \"$gene_id\"; transcript_id \"$model_id\";\n";
    }
   }
 
