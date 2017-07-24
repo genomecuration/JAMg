@@ -2409,6 +2409,57 @@ sub trim_UTRs {
  return ($self);
 }
 
+sub trim_5UTR {
+ my $self = shift;
+
+ ## adjust exon coordinates to CDS coordinates.
+ ## if cds doesn't exist, rid exon:
+
+ my @new_exons;
+
+ my @exons = $self->get_exons();
+
+  if ( my $cds = $exons[0]->get_CDS_obj() ) {
+   my ( $exon_end5, $exon_end3 ) = $exons[0]->get_coords();
+   my ( $cds_end5,  $cds_end3 )  = $cds->get_coords();
+
+   if ( $exon_end5 != $cds_end5 || $exon_end3 != $cds_end3 ) {
+    $exons[0]->set_coords( $cds_end5, $cds_end3 );
+   }
+  }
+ $self->{mRNA_exon_objs} = 0;              #clear current gene structure
+ $self->{mRNA_exon_objs} = \@exons;    #replace gene structure
+ $self->refine_gene_object();              #update
+
+ return ($self);
+}
+
+sub trim_3UTR {
+ my $self = shift;
+
+ ## adjust exon coordinates to CDS coordinates.
+ ## if cds doesn't exist, rid exon:
+
+ my @new_exons;
+
+ my @exons = $self->get_exons();
+
+  if ( my $cds = $exons[-1]->get_CDS_obj() ) {
+   my ( $exon_end5, $exon_end3 ) = $exons[-1]->get_coords();
+   my ( $cds_end5,  $cds_end3 )  = $cds->get_coords();
+
+   if ( $exon_end5 != $cds_end5 || $exon_end3 != $cds_end3 ) {
+    $exons[-1]->set_coords( $cds_end5, $cds_end3 );
+   }
+  }
+ $self->{mRNA_exon_objs} = 0;              #clear current gene structure
+ $self->{mRNA_exon_objs} = \@exons;    #replace gene structure
+ $self->refine_gene_object();              #update
+
+ return ($self);
+}
+
+
 =over 4
     
 =item remove_CDS_exon()
@@ -3451,10 +3502,29 @@ sub to_GFF3_format {
  my $gff3_text = "$asmbl_id\t$source\t$feat_type\t$gene_lend\t$gene_rend\t.\t$strand\t.\tID=$gene_id"; 
 ## note, non-coding gene features are currently represented by a simple single coordinate pair.
  if ($gene_obj->{genbank_submission}){
-	$gff3_text .= ";locus_tag=".$gene_obj->{genbank_submission};
-	 if ($gene_obj->{gene_type} eq "pseudogene"){
+	my $locus_tag = $gene_obj->{genbank_submission}.'_';
+	my $g = $gene_id;
+	if ($g=~/(\d+)$/){
+		$g = $1;
+	}else{
+	        $g=~s/[^A-Za-z0-9]+//g;
+	}
+        $locus_tag .= $g;
+	$gff3_text .= ";locus_tag=$locus_tag";
+	if ($gene_obj->{gene_type} eq "pseudogene"){
 		$gff3_text .= ";pseudogene=unknown";
-	 }
+	}
+    
+	foreach my $isoform ( $gene_obj, $gene_obj->get_additional_isoforms() ){
+		if ($isoform->{internal_stop} ){
+        	        $gff3_text .= ";pseudo=true;Note=".uri_escape('stop codon found within coding sequence');
+			last;
+	        }
+		elsif ($isoform->{internal_gap} ){
+        	        $gff3_text .= ";Note=".uri_escape('gap found within coding sequence');
+			last;
+	        }
+	}
  }else{
 	$gff3_text .= ";Name=$com_name;$gene_alias";
  }
@@ -3475,16 +3545,20 @@ sub to_GFF3_format {
    push( @noteText_mrna, uri_escape($isoform->{pub_comment}) ) if $isoform->{pub_comment};
 
    my ( $mrna_lend, $mrna_rend ) = $isoform->get_transcript_span();
+   my $mRNA_type = 'mRNA';
+   $gff3_text .= "$asmbl_id\t$source\t$mRNA_type\t$mrna_lend\t$mrna_rend\t.\t$strand\t.\tID=$model_id;Parent=$gene_id";
 
-   $gff3_text .= "$asmbl_id\t$source\tmRNA\t$mrna_lend\t$mrna_rend\t.\t$strand\t.\tID=$model_id;Parent=$gene_id";
-   if (@noteText_mrna){
-	$gff3_text .= "Note=".join(";",@noteText_mrna);	
-   }
    if ($gene_obj->{genbank_submission}){
-	$gff3_text .= "transcript_id=gnl|".$gene_obj->{genbank_submission}."|".$model_id;
+	my $tmodel_id = $model_id;
+	$gff3_text .= ";transcript_id=gnl|".$gene_obj->{genbank_submission}."|mrna.".$tmodel_id;
+	#$gff3_text .= ";protein_id=gnl|".$gene_obj->{genbank_submission}."|".$tmodel_id;
 	if ($isoform->{internal_stop}){
 		$gff3_text .= ";pseudo=true";
+		push(@noteText_mrna,uri_escape('stop codon found within coding sequence'));
+        }elsif ($isoform->{internal_gap} ){
+		push(@noteText_mrna,uri_escape('gap found within coding sequence'));
 	}
+
        if ($isoform->{experiment}){
 		$gff3_text .= ';experiment='.join(",",@{$isoform->{experiment}});
 	   }
@@ -3496,6 +3570,10 @@ sub to_GFF3_format {
    }
    if ($isoform->{Dbxref}){
 		$gff3_text .= ';Dbxref=' . join(",",@{$isoform->{Dbxref}});
+   }
+
+   if (@noteText_mrna){
+	$gff3_text .= ";Note=".join(";",@noteText_mrna);
    }
 
    $gff3_text .= "\n";
@@ -3542,6 +3620,8 @@ sub to_GFF3_format {
    foreach my $exon ( @exons ) {
     $exon_counter++;
     my ( $exon_lend, $exon_rend ) = sort { $a <=> $b } $exon->get_coords();
+    my $exon_length = abs($exon_lend-$exon_rend)+1;
+    my $gff_extra_text;
     my $exon_ID_string = "";
     if ( my $exon_feat_name = $exon->{feat_name} ) {
      $exon_ID_string = "$exon_feat_name";
@@ -3549,7 +3629,13 @@ sub to_GFF3_format {
     else {
      $exon_ID_string = "$model_id.exon$exon_counter";
     }
-    $gff3_text .= "$asmbl_id\t$source\texon\t$exon_lend\t$exon_rend\t.\t$strand\t.\tID=${exon_ID_string};Parent=$model_id\n";
+    if ($gene_obj->{genbank_submission}){
+	$gff_extra_text .= 'Note='.uri_escape('short internal exon') if $exon_length < 50;
+    }
+
+    $gff3_text .= "$asmbl_id\t$source\texon\t$exon_lend\t$exon_rend\t.\t$strand\t.\tID=${exon_ID_string};Parent=$model_id";
+    $gff3_text .= ";$gff_extra_text" if $gff_extra_text;
+    $gff3_text .= "\n";
 
     if ( my $cds_obj = $exon->get_CDS_obj() ) {
      my ( $cds_lend, $cds_rend ) = sort { $a <=> $b } $cds_obj->get_coords();
@@ -3590,16 +3676,20 @@ sub to_GFF3_format {
      $gff3_text .= "$asmbl_id\t$source\tCDS\t$cds_lend\t$cds_rend\t.\t$strand\t$phase\tID=${cds_ID_string};Parent=$model_id$partial_text";
 
      if ($gene_obj->{genbank_submission}){
-	$gff3_text .= "protein_id=gnl|".$gene_obj->{genbank_submission}."|".$model_id;
+	my $tmodel_id = $model_id;
+#	$gff3_text .= ";transcript_id=gnl|".$gene_obj->{genbank_submission}."|mrna.".$tmodel_id;
+	$gff3_text .= ";protein_id=gnl|".$gene_obj->{genbank_submission}."|".$tmodel_id;
 	if ($isoform->{internal_stop}){
-		$gff3_text .= ";pseudo=true";
-	}
-	   if ($isoform->{experiment}){
+		$gff3_text .= ";pseudo=true;Note=".uri_escape('stop codon found within coding sequence');
+        }elsif ($isoform->{internal_gap}){
+		$gff3_text .= ";Note=".uri_escape('gap found within coding sequence');
+        }
+	if ($isoform->{experiment}){
 		$gff3_text .= ';experiment='.join(",",@{$isoform->{experiment}});
-	   }
-	   if ($isoform->{inference}){
+	}
+	if ($isoform->{inference}){
 		$gff3_text .= ';inference='.join(",",@{$isoform->{inference}});
-	   }
+	}
      }
      if ($isoform->{Dbxref}){
 		$gff3_text .= ';Dbxref='.join(",",@{$isoform->{Dbxref}});
@@ -3699,10 +3789,28 @@ sub to_GFF3_format_extended {
  }
 
  if ($gene_obj->{genbank_submission}){
-	$gff3_text .= ";locus_tag=".$gene_obj->{genbank_submission};
-	 if ($gene_obj->{gene_type} eq "pseudogene"){
+	my $locus_tag = $gene_obj->{genbank_submission}.'_';
+	my $g = $gene_id;
+	if ($g=~/(\d+)$/){
+		$g = $1;
+	}else{
+	        $g=~s/[^A-Za-z0-9]+//g;
+	}
+        $locus_tag .= $g;
+        $gff3_text .= ";locus_tag=$locus_tag";
+	if ($gene_obj->{gene_type} eq "pseudogene"){
 		$gff3_text .= ";pseudogene=unknown";
-	 }
+	}
+
+	foreach my $isoform ( $gene_obj, $gene_obj->get_additional_isoforms() ){
+		if ($isoform->{internal_stop}){
+        	        $gff3_text .= ";pseudo=true;Note=".uri_escape('stop codon found within coding sequence');
+			last;
+	        }elsif ($isoform->{internal_gap}){
+        	        $gff3_text .= ";Note=".uri_escape('gap found within coding sequence');
+			last;
+	        }
+	}
  }else{
 	$gff3_text .= ";Name=$com_name;$gene_alias";
  }
@@ -3726,22 +3834,25 @@ sub to_GFF3_format_extended {
 
    push( @noteText_mrna, uri_escape($isoform->{pub_comment}) ) if $isoform->{pub_comment};
 
+   my $mRNA_type = 'mRNA';
 
-   $gff3_text .=
-"$reference_id\t$source\tmRNA\t$mrna_lend\t$mrna_rend\t.\t$strand\t.\tID=$model_id;Parent=$gene_id";
+   $gff3_text .= "$reference_id\t$source\t$mRNA_type\t$mrna_lend\t$mrna_rend\t.\t$strand\t.\tID=$model_id;Parent=$gene_id";
 
-   if (@noteText_mrna){
-	$gff3_text .= ";Note=".join(";",@noteText_mrna);	
-   }
    if ($gene_obj->{genbank_submission}){
-	$gff3_text .= ";transcript_id=gnl|".$gene_obj->{genbank_submission}."|".$model_id;
+	my $tmodel_id = $model_id;
+	$gff3_text .= ";transcript_id=gnl|".$gene_obj->{genbank_submission}."|mrna.".$tmodel_id;
+#	$gff3_text .= ";protein_id=gnl|".$gene_obj->{genbank_submission}."|".$tmodel_id;
 	if ($isoform->{internal_stop}){
 		$gff3_text .= ";pseudo=true";
-	}
-	   if ($isoform->{experiment}){
+		push(@noteText_mrna,uri_escape('stop codon found within coding sequence'));
+        }elsif ($isoform->{internal_gap}){
+		push(@noteText_mrna,uri_escape('gap found within coding sequence'));
+        }
+
+	if ($isoform->{experiment}){
 		$gff3_text .= ';experiment='.join(",",@{$isoform->{experiment}});
 	   }
-	   if ($isoform->{inference}){
+	if ($isoform->{inference}){
 		$gff3_text .= ';inference='.join(",",@{$isoform->{inference}});
 	   }
    }else{
@@ -3750,6 +3861,11 @@ sub to_GFF3_format_extended {
    if ($isoform->{Dbxref}){
 		$gff3_text .= ';Dbxref=' . join(",",@{$isoform->{Dbxref}});
    }
+
+   if (@noteText_mrna){
+	$gff3_text .= ";Note=".join(";",@noteText_mrna);	
+   }
+
    $gff3_text .= "\n";
 
    ## mark the first and last CDS entries (for now, an unpleasant hack!)
@@ -3790,7 +3906,10 @@ sub to_GFF3_format_extended {
    my @introns      = $isoform->get_intron_coordinates();
    foreach my $exon ( $isoform->get_exons() ) {
     $exon_counter++;
+
     my ( $exon_lend, $exon_rend ) = sort { $a <=> $b } $exon->get_coords();
+    my $exon_length = abs($exon_lend-$exon_rend)+1;
+    my $gff_extra_text;
     my $exon_ID_string = "";
     if ( my $exon_feat_name = $exon->{feat_name} ) {
      $exon_ID_string = "$exon_feat_name";
@@ -3798,7 +3917,13 @@ sub to_GFF3_format_extended {
     else {
      $exon_ID_string = "$model_id.exon$exon_counter";
     }
-    $gff3_text .= "$reference_id\t$source\texon\t$exon_lend\t$exon_rend\t.\t$strand\t.\tID=${exon_ID_string};Parent=$model_id\n";
+    if ($gene_obj->{genbank_submission}){
+        $gff_extra_text .= 'Note='.uri_escape('short internal exon') if $exon_length < 50;
+
+    }
+    $gff3_text .= "$reference_id\t$source\texon\t$exon_lend\t$exon_rend\t.\t$strand\t.\tID=${exon_ID_string};Parent=$model_id";
+    $gff3_text .= ";$gff_extra_text" if $gff_extra_text;
+    $gff3_text .= "\n";
 
     if ( my $cds_obj = $exon->get_CDS_obj() ) {
      my ( $cds_lend, $cds_rend ) = sort { $a <=> $b } $cds_obj->get_coords();
@@ -3841,16 +3966,21 @@ sub to_GFF3_format_extended {
      $gff3_text .="$reference_id\t$source\tCDS\t$cds_lend\t$cds_rend\t.\t$strand\t$phase\tID=${cds_ID_string};Parent=$model_id$partial_text";
 
      if ($gene_obj->{genbank_submission}){
-	$gff3_text .= "protein_id=gnl|".$gene_obj->{genbank_submission}."|".$model_id;
+	my $tmodel_id = $model_id;
+#	$gff3_text .= ";transcript_id=gnl|".$gene_obj->{genbank_submission}."|mrna.".$tmodel_id;
+	$gff3_text .= ";protein_id=gnl|".$gene_obj->{genbank_submission}."|".$tmodel_id;
 	if ($isoform->{internal_stop}){
-		$gff3_text .= ";pseudo=true";
-	}
-	   if ($isoform->{experiment}){
+		$gff3_text .= ";pseudo=true;Note=".uri_escape('stop codon found within coding sequence');
+        }elsif ($isoform->{internal_gap}){
+		$gff3_text .= ";Note=".uri_escape('gap found within coding sequence');
+        }
+
+	if ($isoform->{experiment}){
 		$gff3_text .= ';experiment='.join(",",@{$isoform->{experiment}});
-	   }
-	   if ($isoform->{inference}){
+	}
+	if ($isoform->{inference}){
 		$gff3_text .= ';inference='.join(",",@{$isoform->{inference}});
-	   }
+	}
      }
      if ($isoform->{Dbxref}){
 		$gff3_text .= ';Dbxref='.join(",",@{$isoform->{Dbxref}});
@@ -4399,8 +4529,7 @@ sub to_GTF2_format () {
   foreach my $stop_codon (@stop_codon_objs) {
    my ( $stop_lend, $stop_rend ) = sort { $a <=> $b } $stop_codon->get_coords();
    my $phase = &$frame_convert( $stop_codon->{phase} );
-   $gtf2_text .=
-"$asmbl_id\t$source\tstop_codon\t$stop_lend\t$stop_rend\t.\t$strand\t$phase\tgene_id \"$gene_id\"; transcript_id \"$model_id\";\n";
+   $gtf2_text .= "$asmbl_id\t$source\tstop_codon\t$stop_lend\t$stop_rend\t.\t$strand\t$phase\tgene_id \"$gene_id\"; transcript_id \"$model_id\";\n";
   }
 
   foreach my $isoform ( $gene_obj->get_additional_isoforms() ) {

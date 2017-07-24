@@ -28,7 +28,7 @@ sub index_GFF3_gene_objs {
  ## note can use either a gene_obj_indexer or a hash reference.
 
  my %gene_coords;
- my %asmbl_id_to_gene_id_list;
+ my %id_to_id_list;
  my %transcript_names;    #common names for transcript eg -RA
  my %transcript_to_gene;
  my %cds_phases;
@@ -278,15 +278,15 @@ sub index_GFF3_gene_objs {
    print "GFF3_utils: stored $gene_id\n" if $SEE;
 
    # add to gene list for asmbl_id
-   my $gene_list_aref = $asmbl_id_to_gene_id_list{$asmbl_id};
+   my $gene_list_aref = $id_to_id_list{$asmbl_id};
    unless ( ref $gene_list_aref ) {
-    $gene_list_aref = $asmbl_id_to_gene_id_list{$asmbl_id} = [];
+    $gene_list_aref = $id_to_id_list{$asmbl_id} = [];
    }
    push( @$gene_list_aref, $gene_id );
   }
  }
  print STDERR "\n" if $SEE;
- return ( \%asmbl_id_to_gene_id_list );
+ return ( \%id_to_id_list );
 }
 
 1;    #EOM

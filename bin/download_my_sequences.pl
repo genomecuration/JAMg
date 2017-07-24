@@ -61,22 +61,23 @@ $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 my ( $query, $query_text, $molecule,$species_latin,$ncbi_taxid,$taxonomy,$outfile );
 my $format     = "fasta";
 my $debug;
-pod2usage $! unless &GetOptions(
+GetOptions(
 	'outfile:s'  => \$outfile,
 	'format:s'  => \$format,
 	'query:s'    => \$query,
 	'molecule:s' => \$molecule,
-	'species:s'	=> \$species_latin,
-	'taxonomy:s'	=> \$taxonomy,
+	'species:s' => \$species_latin,
+	'taxonomy:s' => \$taxonomy,
 	'verbose|debug' => \$debug,
 );
 
 # Sanity checks
 if ( !$query && ((!$species_latin || !$taxonomy) && !$molecule)) { pod2usage; }
 elsif ($taxonomy && $molecule!~/protein/i){die ("Taxonomy search is only possible with protein molecules...\n");}
-elsif ($species_latin){
+if ($species_latin){
 	$ncbi_taxid=&get_ncbitaxid($species_latin);
 	if (!$ncbi_taxid){die ("Failed to find NCBI taxid for $species_latin\n");}
+	print "Using NCBI TaxID $ncbi_taxid\n";
 }
 if (!$outfile && $taxonomy){$outfile="$taxonomy.$molecule.$format";}
 elsif (!$outfile && $ncbi_taxid){$outfile="$ncbi_taxid.$molecule.$format";}
@@ -84,18 +85,18 @@ elsif (!$outfile && $ncbi_taxid){$outfile="$ncbi_taxid.$molecule.$format";}
 my $service_request= 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?';
 my $database;
 
-if ($molecule && $molecule =~ /protein/i){
-	$database = 'protein';
-}elsif ($molecule=~/cdna/i){
-	$database = 'nucest';
-}elsif (!$molecule || $molecule =~ /nucleotide/i){
-	$database = 'nuccore';
+if ($molecule){
+	if ($molecule =~ /protein/i){
+		$database = 'protein';
+	}elsif ($molecule=~/cdna/i){
+		$database = 'nucest';
+	}elsif (!$molecule || $molecule =~ /nucleotide/i){
+		$database = 'nuccore';
+	}
+	$service_request .= "db=$database&usehistory=y&term=";
 }else{
-	 die "I don't know what to do!\n";
+	die "I need a -molecule: protein|cdna|nucleotide\n";
 }
-
-$service_request .= "db=$database&usehistory=y&term=";
-
 
 if ($query_text){
 	print "Using user-provided query\n$query_text\n";

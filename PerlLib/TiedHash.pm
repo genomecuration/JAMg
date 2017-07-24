@@ -109,7 +109,7 @@ sub use_index_file {
 
     my @keys = $self->get_keys();
     unless (@keys) {
-        confess "Error, tried using $filename db, but couldn't perform retrievals.\n";
+        confess "Error, tried using $filename db, but couldn't perform retrievals. Consider deleting $filename\n";
     }
     
     return;
