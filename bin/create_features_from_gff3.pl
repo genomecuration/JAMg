@@ -199,9 +199,9 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
    }
 
 
-   # check each isoformt.
-   my (@isoforms,%peplength_hash,$is_alt_spliced);
-   foreach my $isoform (sort $gene_obj_ref, $gene_obj_ref->get_additional_isoforms() ){
+   # check each isoform
+   my (@isoforms,%peplength_hash);
+   foreach my $isoform ($gene_obj_ref, $gene_obj_ref->get_additional_isoforms() ){
 	next unless $isoform;
 	next if (
 		($isoform->{Model_feat_name} && $isoform->{Model_feat_name} =~/temp_model/) 
@@ -243,6 +243,7 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
    	}
 
 	if ($do_recreate_seqs){
+		$isoform->refine_gene_object();
 		$isoform->create_all_sequence_types( \$genome_seq, %params );
 		$mrna_seq = $isoform->get_cDNA_sequence();
 		$cds_seq = $isoform->get_CDS_sequence();
@@ -278,13 +279,12 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 				}else{
 					$exons[$first_cds_exon_number]->set_coords( $exon_coord5 - $adjust_length,$exon_coord3 );# reversed coords...
 				}
-				my @exon_coords = $exons[$first_cds_exon_number]->get_coords();
-				$exons[$first_cds_exon_number]->{CDS_exon_obj}->set_coords(@exon_coords);
+				$exons[$last_cds_exon_number]->{CDS_exon_obj}->{end5} = $exons[$first_cds_exon_number]->{end5};
 			}
 
 			$isoform->{mRNA_exon_objs} = 0;
 		   	$isoform->{mRNA_exon_objs} = \@exons;
-			$isoform->refine_gene_object(); 
+			$isoform->refine_gene_object();
 			($first_cds_exon_number,$last_cds_exon_number) = &get_cds_ends($isoform);
 			$isoform->create_all_sequence_types( \$genome_seq, %params );
 			$mrna_seq = $isoform->get_cDNA_sequence();
@@ -311,8 +311,7 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 				}else{
 					$exons[$last_cds_exon_number]->set_coords( $exon_coord5 , $exon_coord3 + $adjust_length);# reversed coords...
 				}
-				my @exon_coords = $exons[$last_cds_exon_number]->get_coords();
-				$exons[$last_cds_exon_number]->{CDS_exon_obj}->set_coords(@exon_coords);
+				$exons[$last_cds_exon_number]->{CDS_exon_obj}->{end3} = $exons[$first_cds_exon_number]->{end3};
 			}
 			$isoform->{mRNA_exon_objs} = 0;
 		   	$isoform->{mRNA_exon_objs} = \@exons;
@@ -350,35 +349,61 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 	my @gene_span = $isoform->get_gene_span();
 
 	# EXTEND IF PARTIAL + 1-3 NUCS FROM END - no phase check after. 
-	if ($gene_span[0] < 4 && $gene_span[0] !=1){
-		warn "MANUAL FIX for GenBank: $error_name_text has partial CDS very near the 5' end of the genome sequence\n";
-#		my ($first_cds_exon_number,$last_cds_exon_number) = &get_cds_ends($isoform);
-#		my @exons = $isoform->get_exons();
-#		if ( $pep_seq!~/^M/ && $strand eq '+' ){
-#			#expand gene, first exon, its cds if there
-#		}elsif($pep_seq!~/\*$/ && $strand eq '-'){
-#			#expand gene, last exon, its cds if there
-#		}
-#		$isoform->create_all_sequence_types( \$genome_seq, %params );
-#		$mrna_seq = $isoform->get_cDNA_sequence();
-#		$cds_seq = $isoform->get_CDS_sequence();
-#		$gene_seq = $gene_obj_ref->get_gene_sequence();
-#		$pep_seq = $isoform->get_protein_sequence();
+	if ($gene_span[0] < 4 && $gene_span[0] != 1){
+		my @exons = $isoform->get_exons();
+		if ( $pep_seq!~/^M/ && $strand eq '+' ){
+			#expand gene, first exon, its cds if there
+			$exons[0]{'end5'} = 1;
+			if ( $exons[0]{'CDS_exon_obj'} && $exons[0]{'CDS_exon_obj'}{'end5'}){
+				$exons[0]{'CDS_exon_obj'}{'end5'} = $exons[0]{'end5'};
+			}
+		}elsif($pep_seq!~/\*$/ && $strand eq '-'){
+			#expand gene, last exon, its cds if there
+			$exons[-1]{'end5'} = 1;
+			if ( $exons[-1]{'CDS_exon_obj'} && $exons[-1]{'CDS_exon_obj'}{'end5'}){
+				$exons[-1]{'CDS_exon_obj'}{'end5'} = $exons[-1]{'end5'};
+			}
+		}else{
+			next;
+		}
+		warn "FIX for GenBank: $error_name_text has partial CDS very near the 5' end of the genome sequence\n";
+		$isoform->{mRNA_exon_objs} = 0;
+	   	$isoform->{mRNA_exon_objs} = \@exons;
+		$isoform->refine_gene_object(); 
+		$isoform->create_all_sequence_types( \$genome_seq, %params );
+		$mrna_seq = $isoform->get_cDNA_sequence();
+		$cds_seq = $isoform->get_CDS_sequence();
+		$gene_seq = $gene_obj_ref->get_gene_sequence();
+		$pep_seq = $isoform->get_protein_sequence();
+		@gene_span = $isoform->get_gene_span();
 	}
 	if ($gene_span[1] > length($genome_seq) - 4 && $gene_span[1] != length($genome_seq)){
-		warn "MANUAL FIX for GenBank: $error_name_text has partial CDS very near the 3' end of the genome sequence\n";
-#		my ($first_cds_exon_number,$last_cds_exon_number) = &get_cds_ends($isoform);
-#		my @exons = $isoform->get_exons();
-#		if ( $pep_seq!~/^M/ && $strand eq '-' ){
-#			#expand gene, first exon, its cds if there
-#		}elsif($pep_seq!~/\*$/ && $strand eq '+'){
-#			#expand gene, last exon, its cds if there
-#		}
-#		$isoform->create_all_sequence_types( \$genome_seq, %params );
-#		$mrna_seq = $isoform->get_cDNA_sequence();
-#		$cds_seq = $isoform->get_CDS_sequence();
-#		$gene_seq = $gene_obj_ref->get_gene_sequence();
-#		$pep_seq = $isoform->get_protein_sequence();
+		my @exons = $isoform->get_exons();
+		if ( $pep_seq!~/^M/ && $strand eq '-' ){
+			#expand gene, first exon, its cds if there
+			$exons[0]{'end3'} = length($genome_seq);
+			if ( $exons[0]{'CDS_exon_obj'} && $exons[0]{'CDS_exon_obj'}{'end3'}){
+				$exons[0]{'CDS_exon_obj'}{'end3'} = $exons[0]{'end3'};
+			}
+		}elsif($pep_seq!~/\*$/ && $strand eq '+'){
+			#expand gene to length($genome_seq), last exon, its cds if there
+			$exons[-1]{'end3'} = length($genome_seq);
+			if ( $exons[-1]{'CDS_exon_obj'} && $exons[-1]{'CDS_exon_obj'}{'end3'}){
+				$exons[-1]{'CDS_exon_obj'}{'end3'} = $exons[-1]{'end3'};
+			}
+		}else{
+			next;
+		}
+		warn "FIX for GenBank: $error_name_text has partial CDS very near the 3' end of the genome sequence\n";
+		$isoform->{mRNA_exon_objs} = 0;
+	   	$isoform->{mRNA_exon_objs} = \@exons;
+		$isoform->refine_gene_object(); 
+		$isoform->create_all_sequence_types(\$genome_seq, %params);
+		$mrna_seq = $isoform->get_cDNA_sequence();
+		$cds_seq = $isoform->get_CDS_sequence();
+		$gene_seq = $gene_obj_ref->get_gene_sequence();
+		$pep_seq = $isoform->get_protein_sequence();
+		@gene_span = $isoform->get_gene_span();
 	}
 
 
@@ -399,6 +424,7 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 	if ($one_iso){
 		#pick longest
 		$isoforms[0] = $isoform if !$isoforms[0] || $peplength_hash{$transcript_main_id} > $peplength_hash{$isoforms[0]->{Model_feat_name}};
+		
 	}else{
 		push(@isoforms,$isoform); # all data
 	}
@@ -407,16 +433,21 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 
    next unless $isoforms[0];
 
+   if ($one_iso){
+	$isoforms[0]->delete_isoforms();
+   }
+
    if (scalar(@isoforms)>1){
 	my @iso_check;
 	# now check if any isoforms are duplicates of each other. Duplicates are defined as same exon coords
 	for (my $i=0;$i<scalar ( @isoforms );$i++){
 		next if !$isoforms[$i];
 		my @exonsI = $isoforms[$i]->get_exons();
-		push(@iso_check,$isoforms[$i]);
 		for (my $k=1;$k<scalar ( @isoforms ) ;$k++){
 			next if $i==$k;
-			next if !$isoforms[$k];
+			if (!$isoforms[$k]){
+				next;
+			}
 			my $safe_flag;
 			my @exonsK = $isoforms[$k]->get_exons();
 			next if scalar(@exonsI) != scalar(@exonsK);
@@ -432,15 +463,15 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 				my $transcript_main_idI = $isoforms[$i]->{Model_feat_name};
 				my $transcript_main_idK = $isoforms[$k]->{Model_feat_name};
 				warn "Isoforms $transcript_main_idI and $transcript_main_idK of $old_gene_name ($gene_id new gene name) are identical. Deleting second one.\n";
-				delete($isoforms[$k]);
+				for (my $x=0;$x<scalar(@{$isoforms[$i]{additional_isoforms}});$x++){
+					delete ($isoforms[$i]{additional_isoforms}[$x]) if ($isoforms[$i]{additional_isoforms}[$x] && $isoforms[$i]{additional_isoforms}[$x]->{Model_feat_name} eq $transcript_main_idK);
+				}
+				delete($isoforms[$k]); # so we don't process it again
 			}
 		}
+		push(@iso_check,$isoforms[$i]);
 	}
 	@isoforms = @iso_check;
-   }
-
-   if (scalar(@isoforms)>1){
-	$is_alt_spliced = 1;
    }
 
    if ($do_rename){
@@ -529,14 +560,6 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
     if ($strip_name){
       $isoform->{transcript_name} = $transcript_main_id;
       $isoform->{com_name} = $transcript_main_id;
-    }
-
-    if ($is_alt_spliced){
-	if ($isoform->{pub_comment}){
-		$isoform->{pub_comment} .= ';alternatively spliced'; # consider deleting it because there is a uri_escape
-	}else{
-		$isoform->{pub_comment} = 'alternatively spliced';
-	}
     }
 
     # get sequences
@@ -784,6 +807,8 @@ sub check_phasing(){
 	if ($do_phasing){
 		eval { $isoform->set_CDS_phases( $genome_seq_ref ); }; #if ever needed: unless $preferences{'norephase'};
 	}
+
+	$isoform->refine_gene_object();
 	$isoform->create_all_sequence_types( $genome_seq_ref, %params );
 	return $isoform;
 }

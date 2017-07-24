@@ -2415,20 +2415,28 @@ sub trim_5UTR {
  ## adjust exon coordinates to CDS coordinates.
  ## if cds doesn't exist, rid exon:
 
- my @new_exons;
+ my (@new_exons,$flag);
 
  my @exons = $self->get_exons();
 
-  if ( my $cds = $exons[0]->get_CDS_obj() ) {
-   my ( $exon_end5, $exon_end3 ) = $exons[0]->get_coords();
+ for (my $i=0;$i<scalar(@exons);$i++){
+  if ( my $cds = $exons[$i]->get_CDS_obj() ) {
+   $flag++; # got exon with CDS, all other exons now need to be stored.
+   my ( $exon_end5, $exon_end3 ) = $exons[$i]->get_coords();
    my ( $cds_end5,  $cds_end3 )  = $cds->get_coords();
 
+   # due to strandness, check both
    if ( $exon_end5 != $cds_end5 || $exon_end3 != $cds_end3 ) {
-    $exons[0]->set_coords( $cds_end5, $cds_end3 );
+    $exons[$i]->set_coords( $cds_end5, $cds_end3 );
    }
+  }elsif(!$flag){
+	# no CDS, so delete it.
+	next;
   }
+   push( @new_exons, $exons[$i] );
+ }
  $self->{mRNA_exon_objs} = 0;              #clear current gene structure
- $self->{mRNA_exon_objs} = \@exons;    #replace gene structure
+ $self->{mRNA_exon_objs} = \@new_exons;    #replace gene structure
  $self->refine_gene_object();              #update
 
  return ($self);
@@ -2440,20 +2448,27 @@ sub trim_3UTR {
  ## adjust exon coordinates to CDS coordinates.
  ## if cds doesn't exist, rid exon:
 
- my @new_exons;
+ my (@new_exons,$flag);
 
  my @exons = $self->get_exons();
 
+ for (my $i=scalar(@exons)-1;$i<=0;$i--){
   if ( my $cds = $exons[-1]->get_CDS_obj() ) {
-   my ( $exon_end5, $exon_end3 ) = $exons[-1]->get_coords();
+   $flag++; # got exon with CDS, all other exons now need to be stored.
+   my ( $exon_end5, $exon_end3 ) = $exons[$i]->get_coords();
    my ( $cds_end5,  $cds_end3 )  = $cds->get_coords();
 
    if ( $exon_end5 != $cds_end5 || $exon_end3 != $cds_end3 ) {
-    $exons[-1]->set_coords( $cds_end5, $cds_end3 );
+    $exons[$i]->set_coords( $cds_end5, $cds_end3 );
    }
+  }elsif(!$flag){
+	# no CDS, so delete it.
+	next;
   }
+   push( @new_exons, $exons[$i] );
+ }
  $self->{mRNA_exon_objs} = 0;              #clear current gene structure
- $self->{mRNA_exon_objs} = \@exons;    #replace gene structure
+ $self->{mRNA_exon_objs} = \@new_exons;    #replace gene structure
  $self->refine_gene_object();              #update
 
  return ($self);
@@ -3552,6 +3567,9 @@ sub to_GFF3_format {
 	my $tmodel_id = $model_id;
 	$gff3_text .= ";transcript_id=gnl|".$gene_obj->{genbank_submission}."|mrna.".$tmodel_id;
 	#$gff3_text .= ";protein_id=gnl|".$gene_obj->{genbank_submission}."|".$tmodel_id;
+	if ($gene_obj->get_additional_isoforms()){
+		 push(@noteText_mrna,uri_escape('alternatively spliced'));
+	}
 	if ($isoform->{internal_stop}){
 		$gff3_text .= ";pseudo=true";
 		push(@noteText_mrna,uri_escape('stop codon found within coding sequence'));
@@ -3679,6 +3697,10 @@ sub to_GFF3_format {
 	my $tmodel_id = $model_id;
 #	$gff3_text .= ";transcript_id=gnl|".$gene_obj->{genbank_submission}."|mrna.".$tmodel_id;
 	$gff3_text .= ";protein_id=gnl|".$gene_obj->{genbank_submission}."|".$tmodel_id;
+
+	if ($gene_obj->get_additional_isoforms()){
+		 push(@noteText_mrna,uri_escape('alternatively spliced'));
+	}
 	if ($isoform->{internal_stop}){
 		$gff3_text .= ";pseudo=true;Note=".uri_escape('stop codon found within coding sequence');
         }elsif ($isoform->{internal_gap}){
@@ -3842,6 +3864,10 @@ sub to_GFF3_format_extended {
 	my $tmodel_id = $model_id;
 	$gff3_text .= ";transcript_id=gnl|".$gene_obj->{genbank_submission}."|mrna.".$tmodel_id;
 #	$gff3_text .= ";protein_id=gnl|".$gene_obj->{genbank_submission}."|".$tmodel_id;
+
+	if ($gene_obj->get_additional_isoforms()){
+		 push(@noteText_mrna,uri_escape('alternatively spliced'));
+	}
 	if ($isoform->{internal_stop}){
 		$gff3_text .= ";pseudo=true";
 		push(@noteText_mrna,uri_escape('stop codon found within coding sequence'));
@@ -3969,6 +3995,10 @@ sub to_GFF3_format_extended {
 	my $tmodel_id = $model_id;
 #	$gff3_text .= ";transcript_id=gnl|".$gene_obj->{genbank_submission}."|mrna.".$tmodel_id;
 	$gff3_text .= ";protein_id=gnl|".$gene_obj->{genbank_submission}."|".$tmodel_id;
+
+	if ($gene_obj->get_additional_isoforms()){
+		 push(@noteText_mrna,uri_escape('alternatively spliced'));
+	}
 	if ($isoform->{internal_stop}){
 		$gff3_text .= ";pseudo=true;Note=".uri_escape('stop codon found within coding sequence');
         }elsif ($isoform->{internal_gap}){
