@@ -166,7 +166,7 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 
   print "\nProcessing scaffold $genome_id\n" if $verbose;
 
- foreach my $gene_id (@gene_ids) {
+ foreach my $gene_id (sort @gene_ids) {
     
    my (%preferences,$is_single_exon);
    $preferences{'sequence_ref'} = \$genome_seq;
@@ -201,7 +201,7 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 
    # check each isoformt.
    my (@isoforms,%peplength_hash,$is_alt_spliced);
-   foreach my $isoform ( $gene_obj_ref, $gene_obj_ref->get_additional_isoforms() ){
+   foreach my $isoform (sort $gene_obj_ref, $gene_obj_ref->get_additional_isoforms() ){
 	next unless $isoform;
 	next if (
 		($isoform->{Model_feat_name} && $isoform->{Model_feat_name} =~/temp_model/) 
@@ -332,7 +332,7 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 			print GFF3_ERR $isoform->to_GFF3_format(%preferences) . "\n";
 			next;
 		}
-		warn "WARNING: $error_name_text has assembly gaps Ns ($cNs) in coding sequence. If a GenBank submission then tag as pseudo (i.e. broken assembly)\n";
+		warn "WARNING: $error_name_text has assembly gaps Ns ($cNs) in coding sequence.\n";
 		if (!$bioproject_locus_id){
 			print GFF3_ERR $isoform->to_GFF3_format(%preferences) . "\n";
 			next;
@@ -388,7 +388,7 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 		next;
 	}
 	if ($pep_seq=~/\*\S/){
-	        warn "WARNING: $error_name_text has stop codon inside ORF. If a GenBank submission, then tag as pseudo (i.e. broken assembly)\n";
+	        warn "WARNING: $error_name_text has stop codon inside ORF. If a GenBank submission, then then tagging as pseudo (broken assembly)\n";
 		$isoform->{internal_stop} = 1;
 		if (!$bioproject_locus_id){
 			print GFF3_ERR $isoform->to_GFF3_format(%preferences) . "\n";
@@ -782,7 +782,7 @@ sub check_phasing(){
 		}
 	}
 	if ($do_phasing){
-#		eval { $isoform->set_CDS_phases( $genome_seq_ref ); }; #if ever needed: unless $preferences{'norephase'};
+		eval { $isoform->set_CDS_phases( $genome_seq_ref ); }; #if ever needed: unless $preferences{'norephase'};
 	}
 	$isoform->create_all_sequence_types( $genome_seq_ref, %params );
 	return $isoform;
