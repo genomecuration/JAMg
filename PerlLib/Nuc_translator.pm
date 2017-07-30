@@ -236,22 +236,23 @@ sub use_specified_genetic_code {
     
     my ($special_code) = @_;
     print STDERR "using special genetic code $special_code\n" if $SEE;
+    return if $special_code =~/universal/i;
     unless ($SUPPORTED_GENETIC_CODES{$special_code}) {
         die "Sorry, $special_code is not currently supported or recognized.\n";
     }
     &$init_codon_table_subref(); ## Restore default universal code.  Others are variations on this.
     $currentCode = $special_code;
     
-    if ($special_code eq "Euplotes") {
+    if ($special_code =~/Euplotes/i) {
         $codon_table{UGA} = "C";
     } 
     
-    elsif ($special_code eq "Tetrahymena" || $special_code eq "Acetabularia") {
+    elsif ($special_code =~/Tetrahymena|Acetabularia/i) {
         $codon_table{UAA} = "Q";
         $codon_table{UAG} = "Q";
     }
     
-    elsif ($special_code eq "Candida") {
+    elsif ($special_code =~/Candida/i) {
         $codon_table{CUG} = "S";
     }
     
@@ -278,13 +279,13 @@ sub _set_mitochondrial_code {
     $codon_table{CAU} = $codon_table{CAG} = $codon_table{CAC} = $codon_table{CAA} = "L";
     
 
-    if ($code eq "Mitochondrial-Vertebrates") {
+    if ($code =~/Mitochondrial-Vertebrate/i) {
         $codon_table{UGA} = "W";
         $codon_table{AUA} = "M";
         $codon_table{AGA} = "*";
         $codon_table{AGG} = "*";
     }
-    elsif ($code eq "Mitochondrial-Arthropods") {
+    elsif ($code =~/Mitochondrial-Arthropod/i) {
         $codon_table{UGA} = "W";
         $codon_table{AUA} = "M";
         $codon_table{AGA} = "S";

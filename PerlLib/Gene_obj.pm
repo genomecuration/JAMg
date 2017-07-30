@@ -1362,11 +1362,9 @@ sub create_protein_sequence {
   }
   $cds_sequence = $self->create_CDS_sequence($seq_ref);
  }
- #AP: sometimes Augustus will predict a sequence with a gap or an inline
+ #AP (alexie): sometimes Augustus will predict a sequence with a gap or an inline
  # stop codon. Likewise if the gene is mtDNA but the translation table is universal
- # That is annoying but we should allow it to break the subroutine
- # so i'm forcing first frame for the translation-> doesn't seem to make a diff
- #my $protein = &Nuc_translator::get_protein($cds_sequence,1);
+ # we have the option to force the frame as the second argument (but wont use it now)
  my $protein = &Nuc_translator::get_protein($cds_sequence);
  $self->set_protein_sequence($protein);
  return ($protein);
@@ -2421,14 +2419,13 @@ sub trim_5UTR {
 
  for (my $i=0;$i<scalar(@exons);$i++){
   if ( my $cds = $exons[$i]->get_CDS_obj() ) {
-   $flag++; # got exon with CDS, all other exons now need to be stored.
    my ( $exon_end5, $exon_end3 ) = $exons[$i]->get_coords();
    my ( $cds_end5,  $cds_end3 )  = $cds->get_coords();
 
-   # due to strandness, check both
-   if ( $exon_end5 != $cds_end5 || $exon_end3 != $cds_end3 ) {
-    $exons[$i]->set_coords( $cds_end5, $cds_end3 );
+   if (!$flag && ($exon_end5 != $cds_end5 || $exon_end3 != $cds_end3 )) {
+    	$exons[$i]->set_coords( $cds_end5, $exon_end3 );
    }
+   $flag++; # got exon with CDS, all other exons now need to be stored.
   }elsif(!$flag){
 	# no CDS, so delete it.
 	next;
@@ -2452,15 +2449,14 @@ sub trim_3UTR {
 
  my @exons = $self->get_exons();
 
- for (my $i=scalar(@exons)-1;$i<=0;$i--){
-  if ( my $cds = $exons[-1]->get_CDS_obj() ) {
-   $flag++; # got exon with CDS, all other exons now need to be stored.
+ for (my $i=scalar(@exons)-1;$i>=0;$i--){
+  if ( my $cds = $exons[$i]->get_CDS_obj() ) {
    my ( $exon_end5, $exon_end3 ) = $exons[$i]->get_coords();
    my ( $cds_end5,  $cds_end3 )  = $cds->get_coords();
-
-   if ( $exon_end5 != $cds_end5 || $exon_end3 != $cds_end3 ) {
-    $exons[$i]->set_coords( $cds_end5, $cds_end3 );
+   if (!$flag && ( $exon_end5 != $cds_end5 || $exon_end3 != $cds_end3 )) {
+    	$exons[$i]->set_coords( $exon_end5, $cds_end3 );
    }
+   $flag++; # got exon with CDS, all other exons now need to be stored.
   }elsif(!$flag){
 	# no CDS, so delete it.
 	next;
@@ -3388,7 +3384,7 @@ landmark), - for minus strand, and . for features that are not
 stranded.  In addition, ? can be used for features whose strandedness
 is relevant, but unknown.
 
-Column 8: "phase"
+Column 8: "phase" for GTF
 
 For features of type "exon", the phase indicates where the feature
 begins with reference to the reading frame.  The phase is one of the
@@ -3397,6 +3393,10 @@ corresponds to the first, second or last base of the codon,
 respectively.  This is NOT to be confused with the frame, but relates
 to the relative position of the translational start in whatever strand
 the feature is in.
+
+For GFF3 Phase is different (1->2;2->1) because it is the number of 
+bases to remove to get the first codon in the right frame. It's also
+modulo the CDS length
 
 Column 9: "attributes"
 

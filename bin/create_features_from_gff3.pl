@@ -54,9 +54,11 @@ use Gene_obj;
 use Gene_obj_indexer;
 use GFF3_utils;
 use GTF_utils;
+use Nuc_translator;
 
 $|=1;
 our $SEE;
+my $codon_table = 'universal';
 my $minorf = 150;    #minimum orf size in bp
 my $to_bed_exec = "$RealBin/../3rd_party/PASA/misc_utilities/gene_gff3_to_bed.pl";
 my ($simple_gff3, $gfffile, $genome, $change_name,$lettername,$verbose, 
@@ -77,6 +79,7 @@ pod2usage $! unless &GetOptions(
 	    'delete_ns:i' => \$delete_ns,
 	    'genbank:s' => \$bioproject_locus_id,
 	    'go_file:s' =>\$go_file,
+	    'codon_table:s' => \$codon_table
 );
 $gfffile = shift if !$gfffile;
 $genome  = shift if !$genome;
@@ -84,6 +87,9 @@ pod2usage unless $gfffile && $genome;
 
 die "GFF file $gfffile does not exist\n"  unless -s $gfffile;
 die "Fasta file $genome does not exist\n" unless -s $genome;
+
+#global
+Nuc_translator::use_specified_genetic_code ($codon_table);
 
 if ($go_file){
 	open (GO,$go_file) || die "Cannot find $go_file";
@@ -208,27 +214,41 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 		|| ( $isoform->{transcript_name} && $isoform->{transcript_name}=~/temp_model/)
 	);
 
+	my $do_recreate_seqs;
         my $transcript_main_id = $isoform->{Model_feat_name} || confess;
 	my $error_name_text = "Transcript $transcript_main_id of $old_gene_name gene (new gene ID: $gene_id)";
-
-	$isoform = &check_phasing($isoform,$error_name_text,\$genome_seq,1);
-
-	my $do_recreate_seqs;
 	my $cds_seq = $isoform->get_CDS_sequence();
 	my $mrna_seq = $isoform->get_cDNA_sequence();
 	my $pep_seq = $isoform->get_protein_sequence();
 
+	$isoform = &check_phasing($isoform,$error_name_text,\$genome_seq,1) unless $pep_seq!~/^M/; # see subroutine comments on why;
+
+
 	if (!$pep_seq){
 		warn "SKIP: $error_name_text has no protein translation.\n";
+		next;
 	}
 
 	if ( $pep_seq!~/^M/ && $isoform->has_5prime_UTR()){
-		warn "FIXING: $error_name_text has 5'UTR but does not start with Methionine. Fixing\n";
+		warn "FIXING: $error_name_text has 5'UTR but does not start with Methionine. Removing 5' UTR\n";
+		$isoform->trim_5UTR();
+		$do_recreate_seqs++;
+		$isoform->{is_5prime_partial} = 1;
+	}
+
+	if ($pep_seq!~/\*$/ && $isoform->has_3prime_UTR()){
+		warn "FIXING: $error_name_text has 3'UTR but does not end with a stop codon. Removing 3' UTR\n";
+		$isoform->trim_3UTR();
+		$do_recreate_seqs++;
+		$isoform->{is_3prime_partial} = 1;
+	}
+	if ($mrna_seq=~/^N/ && $isoform->has_5prime_UTR()){
+		warn "FIXING: $error_name_text has 5'UTR endings in gaps. Removing 5' UTR\n";
 		$isoform->trim_5UTR();
 		$do_recreate_seqs++;
 	}
-	if ($pep_seq!~/\*$/ && $isoform->has_3prime_UTR()){
-		warn "FIXING: $error_name_text has 3'UTR but does not end with a stop codon. Fixing\n";
+	if ($mrna_seq=~/N$/ && $isoform->has_3prime_UTR()){
+		warn "FIXING: $error_name_text has 3'UTR endings in gaps. Removing 3' UTR\n";
 		$isoform->trim_3UTR();
 		$do_recreate_seqs++;
 	}
@@ -275,18 +295,20 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 			}else{
 				#then we have to trim it - 5'
 				if ($exons[$first_cds_exon_number]->{CDS_exon_obj}->{'strand'} eq '+'){
-					$exons[$first_cds_exon_number]->set_coords( $exon_coord5 + $adjust_length, $exon_coord3);
+					$exons[$first_cds_exon_number]->{end5} = $exon_coord5 + $adjust_length;
 				}else{
-					$exons[$first_cds_exon_number]->set_coords( $exon_coord5 - $adjust_length,$exon_coord3 );# reversed coords...
+					$exons[$first_cds_exon_number]->{end5} = $exon_coord5 - $adjust_length;# reversed coords...
 				}
-				$exons[$last_cds_exon_number]->{CDS_exon_obj}->{end5} = $exons[$first_cds_exon_number]->{end5};
+				$exons[$first_cds_exon_number]->{CDS_exon_obj}->{end5} = $exons[$first_cds_exon_number]->{end5};
+				#5' trim means new phase
+				$exons[$first_cds_exon_number]->{CDS_exon_obj}->{phase} = $adjust_length % 3  ;
+				#THIS wont work if partial: (length($cds_seq)-$adjust_length) % 3;
 			}
-
 			$isoform->{mRNA_exon_objs} = 0;
 		   	$isoform->{mRNA_exon_objs} = \@exons;
 			$isoform->refine_gene_object();
-			($first_cds_exon_number,$last_cds_exon_number) = &get_cds_ends($isoform);
 			$isoform->create_all_sequence_types( \$genome_seq, %params );
+			($first_cds_exon_number,$last_cds_exon_number) = &get_cds_ends($isoform);
 			$mrna_seq = $isoform->get_cDNA_sequence();
 			$cds_seq = $isoform->get_CDS_sequence();
 			$gene_seq = $gene_obj_ref->get_gene_sequence();
@@ -307,11 +329,11 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 			}else{
 				#then we have to trim it 3'
 				if ($exons[$last_cds_exon_number]->{CDS_exon_obj}->{'strand'} eq '+'){
-					$exons[$last_cds_exon_number]->set_coords( $exon_coord5 , $exon_coord3 - $adjust_length );
+					$exons[$last_cds_exon_number]->{end3} = $exon_coord3 - $adjust_length;
 				}else{
-					$exons[$last_cds_exon_number]->set_coords( $exon_coord5 , $exon_coord3 + $adjust_length);# reversed coords...
+					$exons[$last_cds_exon_number]->{end3} = $exon_coord3 + $adjust_length;# reversed coords...
 				}
-				$exons[$last_cds_exon_number]->{CDS_exon_obj}->{end3} = $exons[$first_cds_exon_number]->{end3};
+				$exons[$last_cds_exon_number]->{CDS_exon_obj}->{end3} = $exons[$last_cds_exon_number]->{end3};
 			}
 			$isoform->{mRNA_exon_objs} = 0;
 		   	$isoform->{mRNA_exon_objs} = \@exons;
@@ -325,6 +347,7 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 		}
 		$cNs = ($cds_seq =~ tr/N//);
 	}
+#warn Dumper (1,$isoform);
 	if ($cNs && $cNs > $delete_ns){
 		if ( ($cNs / length($cds_seq) >= 0.5) ){
 			warn "SKIP: $error_name_text has assembly gaps Ns ($cNs) in coding sequence that are more than 50%. Will print as error\n";
@@ -338,7 +361,9 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 		}
 		$isoform->{internal_gap} = 1;
 	}
-	$isoform = &check_phasing($isoform,$error_name_text,\$genome_seq,1);
+#warn Dumper (2,$isoform);
+	$isoform = &check_phasing($isoform,$error_name_text,\$genome_seq,1) unless $pep_seq!~/^M/;
+#warn Dumper (3,$isoform);
 
 	$mrna_seq = $isoform->get_cDNA_sequence();
 	$cds_seq = $isoform->get_CDS_sequence();
@@ -377,6 +402,7 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 		$pep_seq = $isoform->get_protein_sequence();
 		@gene_span = $isoform->get_gene_span();
 	}
+#warn Dumper (4,$isoform);
 	if ($gene_span[1] > length($genome_seq) - 4 && $gene_span[1] != length($genome_seq)){
 		my @exons = $isoform->get_exons();
 		if ( $pep_seq!~/^M/ && $strand eq '-' ){
@@ -405,7 +431,35 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 		$pep_seq = $isoform->get_protein_sequence();
 		@gene_span = $isoform->get_gene_span();
 	}
+#warn Dumper (5,$isoform);
 
+	# the following section MUST not be followed by a phase correction to 0
+ 	my ($first_cds_exon_number,$last_cds_exon_number) = &get_cds_ends($isoform);
+        my @exons = $isoform->get_exons();
+        my $first_phase = $exons[$first_cds_exon_number]->{CDS_exon_obj}->{phase};
+
+	if (length($cds_seq) % 3 != $first_phase && $pep_seq!~/\*$/){
+		warn "FIXING: $error_name_text has no stop codon, a CDS that is of suspicious length (".length($cds_seq)." with first CDS phase $first_phase). Scanning for a stop codon\n";
+		$isoform = &find_next_stop($isoform,$error_name_text,\$genome_seq,1);
+	}elsif($pep_seq!~/\*$/){
+		warn "FIXING: $error_name_text has no stop codon. Scanning for a stop codon\n";
+		$isoform = &find_next_stop($isoform,$error_name_text,\$genome_seq);
+	}
+#warn Dumper (6,$isoform);
+	if (length($cds_seq) % 3 != $first_phase && $pep_seq!~/^M/){
+		warn "FIXING: $error_name_text has no start codon, a CDS that is of suspicious length (".length($cds_seq)." with first CDS phase $first_phase). Scanning for a start codon\n";
+		$isoform = &find_next_start($isoform,$error_name_text,\$genome_seq,1);
+	}elsif ($pep_seq!~/^M/){
+		warn "FIXING: $error_name_text has no start codon. Scanning for a start codon\n";
+		$isoform = &find_next_start($isoform,$error_name_text,\$genome_seq);
+	}
+	# Do not do any more phase correction to 0
+#warn Dumper (7,$isoform);
+	$mrna_seq = $isoform->get_cDNA_sequence();
+	$cds_seq = $isoform->get_CDS_sequence();
+	$gene_seq = $gene_obj_ref->get_gene_sequence();
+	$pep_seq = $isoform->get_protein_sequence();
+	@gene_span = $isoform->get_gene_span();
 
 	$peplength_hash{$transcript_main_id} = length($pep_seq);
     	if ( length($pep_seq) < int($minorf/3) ) {
@@ -420,6 +474,8 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 			next;
 		}
 	}
+#warn Dumper (8,$isoform);
+
 	# if we have survived this far:
 	if ($one_iso){
 		#pick longest
@@ -473,6 +529,26 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 	}
 	@isoforms = @iso_check;
    }
+
+   # verify the gene span is not larger than any isoform span
+   my @gene_span = $gene_obj_ref->{gene_span};
+   my @new_gene_span;
+   
+
+   foreach my $isoform ( @isoforms )   {
+	my @exons = $isoform->get_exons();
+	foreach my $e (@exons){
+		my @coords = $e->get_coords();
+		if ($isoform->{strand} eq '+'){
+			$new_gene_span[0] = $coords[0] if (!$new_gene_span[0] || $new_gene_span[0] > $coords[0]);
+			$new_gene_span[1] = $coords[1] if (!$new_gene_span[1] || $new_gene_span[1] < $coords[1]);
+		}else{
+			$new_gene_span[0] = $coords[0] if (!$new_gene_span[0] || $new_gene_span[0] < $coords[0]);
+			$new_gene_span[1] = $coords[1] if (!$new_gene_span[1] || $new_gene_span[1] > $coords[1]);
+		}
+	}
+  }
+ $gene_obj_ref->{gene_span}   = [ $new_gene_span[0], $new_gene_span[1] ];
 
    if ($do_rename){
      print TRACK "GENE\t$gene_id\t$jamg_id_gene\n";
@@ -740,6 +816,217 @@ sub fix_single_exon_phase(){  # not used
 	return $obj;
 }
 #######################################
+sub find_next_stop(){
+	my ($isoform,$error_name_text,$genome_seq_ref,$change_phase) = @_;
+	my @stops = &Nuc_translator::get_stop_codons();
+	my %stop_codons; 
+	foreach my $s (@stops){$stop_codons{$s}++;}
+
+	my $strand = $isoform->{strand};
+	my @exons = $isoform->get_exons();
+	my ($first_cds_exon_number,$last_cds_exon_number) = &get_cds_ends($isoform);
+	my $first_phase = $exons[$first_cds_exon_number]->{CDS_exon_obj}->{phase};
+	my $cds_seq = $isoform->get_CDS_sequence();
+	my $cds_seq_length = length($cds_seq);
+	my $cds_modulo_gtf_phase = $cds_seq_length % 3;
+	# fun fun fun: GTF (and our libraries) work with a different definition
+	# of phase, where it is which codon base the first base corresponds to
+	# 0,1,2 for first, second, third base. 
+	if ($cds_modulo_gtf_phase == 2){$cds_modulo_gtf_phase=1;}
+	elsif($cds_modulo_gtf_phase == 1){$cds_modulo_gtf_phase=2;}
+
+	my $phase_to_check = $change_phase ? $first_phase : $cds_modulo_gtf_phase;
+
+	my ($c1,$c2) = $exons[$last_cds_exon_number]->get_coords();
+	my ($next_two,$cds_last_codon);
+	if ($strand eq '-' ){
+		my $t = $c1;
+		$c1 = $c2;
+		$c2 = $t;
+		$cds_last_codon = &reverse_complement(substr( $$genome_seq_ref,( $c1 - 1 ),3));
+		$next_two = &reverse_complement(substr($$genome_seq_ref,$c1-3,2));
+        }else{
+		$cds_last_codon = substr( $$genome_seq_ref,( $c2 -3 ),3);
+		$next_two = substr($$genome_seq_ref,$c2,2);
+	}
+	return $isoform if $next_two eq 'GT' || $next_two eq 'GC' || $next_two =~/^N/;
+	return $isoform if $stop_codons{$cds_last_codon};
+
+	#we need to make sure there is no 3'UTR
+	$isoform->trim_3UTR();
+	$isoform->refine_gene_object(); 
+	$isoform->create_all_sequence_types( $genome_seq_ref, %params );
+	#have to redo this as we removed UTR
+	@exons = $isoform->get_exons();
+	($first_cds_exon_number,$last_cds_exon_number) = &get_cds_ends($isoform);
+	($c1,$c2) = $exons[$last_cds_exon_number]->get_coords();
+	if ($strand eq '-' ){
+		my $t = $c1;
+		$c1 = $c2;
+		$c2 = $t;
+		$cds_last_codon = &reverse_complement(substr( $$genome_seq_ref,( $c1 - 1 ),3));
+		$next_two = &reverse_complement(substr($$genome_seq_ref,$c1-3,2));
+        }else{
+		$cds_last_codon = substr( $$genome_seq_ref,( $c2 -3 ),3);
+		$next_two = substr($$genome_seq_ref,$c2,2);
+	}
+
+	#if the phase is wrong, carry on search || if phase is correct but you
+	# still haven't found a stop codon, carry on search
+	# last will force the exit on intron splice site, gap or end of search
+	# natural exit if phase is correct and stop codon found
+	while ($cds_seq_length % 3 != $phase_to_check || !$stop_codons{$cds_last_codon} ){
+		$cds_seq_length++;
+		if ($strand eq '-') {
+			last if $c1==1;
+			$c1--;	
+			$cds_last_codon = &reverse_complement(substr( $$genome_seq_ref,( $c1 - 1 ),3));
+			$next_two = &reverse_complement(substr($$genome_seq_ref,$c1-3,2));
+		}else{
+			last if $c2==length($$genome_seq_ref);
+			$c2++;
+			$cds_last_codon = substr( $$genome_seq_ref,( $c2 -3 ),3);
+			$next_two = substr($$genome_seq_ref,$c2,2);
+		}
+		last if $next_two =~/^N/;
+		if ($next_two eq 'GT' || $next_two eq 'GC'){
+			last;
+		}
+	}
+	if ($exons[$last_cds_exon_number]->{CDS_exon_obj}->{'strand'} eq '+'){
+		$exons[$last_cds_exon_number]{end3} = $c2;
+		$exons[$last_cds_exon_number]->{CDS_exon_obj}->{end3} = $c2;
+	}else{
+		$exons[$last_cds_exon_number]{end3} = $c1;
+		$exons[$last_cds_exon_number]->{CDS_exon_obj}->{end3} = $c1;
+	}
+	$isoform->{mRNA_exon_objs} = 0;
+   	$isoform->{mRNA_exon_objs} = \@exons;
+	$isoform->refine_gene_object(); 
+	$isoform->create_all_sequence_types( $genome_seq_ref, %params );
+	return $isoform;
+}
+
+sub find_next_start(){
+	my ($isoform,$error_name_text,$genome_seq_ref,$change_phase) = @_;
+	my $cds_seq = $isoform->get_CDS_sequence();
+	my $cds_seq_length = length($cds_seq);
+	my $cds_modulo_gtf_phase = $cds_seq_length % 3;
+	# fun fun fun: GTF (and our libraries) work with a different definition
+	# of phase, where it is which codon base the first base corresponds to
+	# 0,1,2 for first, second, third base. 
+	if ($cds_modulo_gtf_phase == 2){$cds_modulo_gtf_phase=1;}
+	elsif($cds_modulo_gtf_phase == 1){$cds_modulo_gtf_phase=2;}
+	my @stops = &Nuc_translator::get_stop_codons();
+	my %stop_codons; 
+	foreach my $s (@stops){$stop_codons{$s}++;}
+
+	my @exons = $isoform->get_exons();
+	my $strand = $isoform->{strand};
+	my ($first_cds_exon_number,$last_cds_exon_number) = &get_cds_ends($isoform);
+	my $first_phase = $exons[$first_cds_exon_number]->{CDS_exon_obj}->{phase};
+
+	my ($c1,$c2) = $exons[$first_cds_exon_number]->get_coords();
+	my ($next_two,$next_three,$cds_first_codon);
+	if ($strand eq '-' ){
+		my $t = $c1;
+		$c1 = $c2;
+		$c2 = $t;
+		$cds_first_codon = &reverse_complement(substr( $$genome_seq_ref, $c2 -3,3));
+		$next_two = &reverse_complement(substr($$genome_seq_ref,$c2,2));
+		$next_three = &reverse_complement(substr($$genome_seq_ref,$c2,3));
+        }else{
+		$cds_first_codon = substr($$genome_seq_ref,$c1-1,3);
+		$next_two = substr($$genome_seq_ref,$c1-1-2,2);
+		$next_three = substr($$genome_seq_ref,$c1-1-3,3);
+	}
+
+        my $pep_seq = $isoform->get_protein_sequence();
+	my $phase_to_check = $change_phase ? $first_phase : $cds_modulo_gtf_phase;
+	my $is_3_partial = 1 if ($pep_seq!~/\*$/);
+	# we have this issue: cds_seq_length % 3 cannot be used to define 
+	# the right phase when we have a 3' partial gene. in that case cds_module must be used
+	# this is not necessarily right since we don't know the true ORF/phase
+	# but at least it prevents from the peptide sequence from changing.
+	# in reality however, this search may not be the best, sometimes 
+	# we should search for a start codon upstream but a splice site downstream
+	$phase_to_check = $is_3_partial ? $cds_modulo_gtf_phase : $phase_to_check;	
+
+	return $isoform if $next_two eq 'AG' || $next_two =~/N$/ || ($cds_seq_length % 3 == $phase_to_check && $stop_codons{$next_three});
+	#we need to make sure there is no 3'UTR
+	$isoform->trim_5UTR();
+	$isoform->refine_gene_object(); 
+	$isoform->create_all_sequence_types( $genome_seq_ref, %params );
+	warn "WARNING: $error_name_text has an internal stop codon\n" if $pep_seq=~/\*[A-Z]/;
+
+	#have to redo this as we removed UTR
+	@exons = $isoform->get_exons();
+	($first_cds_exon_number,$last_cds_exon_number) = &get_cds_ends($isoform);
+	($c1,$c2) = $exons[$first_cds_exon_number]->get_coords();
+	if ($strand eq '-' ){
+		my $t = $c1;
+		$c1 = $c2;
+		$c2 = $t;
+		$cds_first_codon = &reverse_complement(substr( $$genome_seq_ref, $c2 -3,3));
+		$next_two = &reverse_complement(substr($$genome_seq_ref,$c2,2));
+		$next_three = &reverse_complement(substr($$genome_seq_ref,$c2,3));
+        }else{
+		$cds_first_codon = substr($$genome_seq_ref,$c1-1,3);
+		$next_two = substr($$genome_seq_ref,$c1-1-2,2);
+		$next_three = substr($$genome_seq_ref,$c1-1-3,3);
+	}
+
+	my $phase_adjustment = $first_phase;
+	while ($cds_seq_length % 3 != $phase_to_check || $cds_first_codon ne 'ATG' ){
+		$cds_seq_length++;
+		if ($strand eq '-') {
+			last if $c2==length($$genome_seq_ref);
+			$c2++;
+			$cds_first_codon = &reverse_complement(substr( $$genome_seq_ref, $c2 -3,3));
+			$next_two = &reverse_complement(substr($$genome_seq_ref,$c2,2));
+			$next_three = &reverse_complement(substr($$genome_seq_ref,$c2,3));
+		}else{
+			last if $c1==1;
+			$c1--;
+			$cds_first_codon = substr($$genome_seq_ref,$c1-1,3);
+			$next_two = substr($$genome_seq_ref,$c1-1-2,2);
+			$next_three = substr($$genome_seq_ref,$c1-1-3,3);
+		}
+		$phase_adjustment++;
+
+		last if $cds_seq_length % 3 == $phase_to_check && $stop_codons{$next_three};
+		# phase change needed? often we have the partial 5' being at a splice site
+		# but originally erroneously marked by a UTR region
+		if ($exons[$first_cds_exon_number]->{CDS_exon_obj}->{phase} != $phase_adjustment % 3 && ($next_two eq 'AG' || $next_two =~/N$/)){
+			my $phase = $phase_adjustment % 3;
+			if ($phase == 2){$phase=1;}
+			elsif($phase == 1){$phase=2;}
+			warn "FIXING: $error_name_text has a new phase for the first CDS"
+#				."(".$exons[$first_cds_exon_number]->{CDS_exon_obj}->{phase}
+#				." vs "
+#				.$phase .")"
+				."\n";
+			$exons[$first_cds_exon_number]->{CDS_exon_obj}->{phase} = $phase;
+			last;
+		}
+	}
+
+	if ($exons[$first_cds_exon_number]->{CDS_exon_obj}->{'strand'} eq '+'){
+		$exons[$first_cds_exon_number]{end5} = $c1;
+		$exons[$first_cds_exon_number]->{CDS_exon_obj}->{end5} = $c1;
+	}else{
+		$exons[$first_cds_exon_number]{end5} = $c2;
+		$exons[$first_cds_exon_number]->{CDS_exon_obj}->{end5} = $c2;
+	}
+	$isoform->{mRNA_exon_objs} = 0;
+   	$isoform->{mRNA_exon_objs} = \@exons;
+	$isoform->refine_gene_object(); 
+	$isoform->create_all_sequence_types( $genome_seq_ref, %params );
+        $pep_seq = $isoform->get_protein_sequence();
+	warn "MANUAL FIX: $error_name_text has an internal stop codon\n" if $pep_seq=~/\*[A-Z]/;
+	return $isoform;
+}
+
 sub get_cds_ends(){
 	my $isoform = shift;
 
@@ -765,22 +1052,24 @@ sub get_cds_ends(){
 sub check_phasing(){
 	my ($isoform,$error_name_text,$genome_seq_ref,$do_phasing) = @_;
 	return if !$isoform;
-	#reset the phases based on the longest CDS within the ORF. #doesn't change much but when it does, it 
+	#reset the phases based on the longest CDS within the ORF. doesn't change much but when it does, it 
 	# completely destroys the CDS... this happens when the first CDS's phase is not 0 so we first need to fix that.
 	# also the first/last is used later
 	# these are already ordered
 
+	# however don't really do this if you have a 5' partial, it will de-align to a potential splice site.
+	# but sometimes we have a 5' partial with a UTR (which is terrible).
+
 	my ($first_cds_exon_number,$last_cds_exon_number) = &get_cds_ends($isoform);
 	my @exons = $isoform->get_exons();
-
+	
 	if ($exons[$first_cds_exon_number]->{CDS_exon_obj} && $exons[$first_cds_exon_number]->{CDS_exon_obj}->{'phase'} > 0){
-		warn "FIXING: $error_name_text has the first CDS with a non-zero phase. Adjusting...\n";
+		warn "FIXING: $error_name_text has the first CDS with a non-zero phase. Removing 5'UTR and adjusting...\n";
 		#adjust exon and CDS, strip 5' UTR
 		my ( $first_cds_end5,  $first_cds_end3 )  = $exons[$first_cds_exon_number]->{CDS_exon_obj}->get_coords();
 		if ($exons[$first_cds_exon_number]->{CDS_exon_obj}->{'strand'} eq '+'){
 			$exons[$first_cds_exon_number]->set_coords( $first_cds_end5 + ($exons[$first_cds_exon_number]->{CDS_exon_obj}->{'phase'}), $first_cds_end3 );
-			$exons[$first_cds_exon_number]->{CDS_exon_obj}->set_coords( $first_cds_end5 + ($exons[$first_cds_exon_number]->{CDS_exon_obj}->{'phase'}) , $first_cds_end3 );
-		}else{
+ 		}else{
 			$exons[$first_cds_exon_number]->set_coords( $first_cds_end5 - ($exons[$first_cds_exon_number]->{CDS_exon_obj}->{'phase'}) , $first_cds_end3 );
 		}
 		my @exon_coords = $exons[$first_cds_exon_number]->get_coords();
@@ -801,7 +1090,8 @@ sub check_phasing(){
 		my @cds_coords = $cds->get_coords();
 		my @exon_coords = $exon->get_coords();
 		unless ($cds_coords[0] == $exon_coords[0] && $cds_coords[1] == $exon_coords[1]){
-			die "FATAL:  $error_name_text has an internal CDS ($e) with different co-ordinates than its corresponding exon. This is likely to be a fused prediction, please split them before continuing\n";
+			#warn Dumper $isoform;
+			die "FATAL:  $error_name_text ($first_cds_exon_number,$last_cds_exon_number) has an internal CDS ($e) with different co-ordinates than its corresponding exon. This is likely to be a fused prediction, please split them before continuing\n";
 		}
 	}
 	if ($do_phasing){
