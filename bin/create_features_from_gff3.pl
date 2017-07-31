@@ -213,6 +213,7 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 		($isoform->{Model_feat_name} && $isoform->{Model_feat_name} =~/temp_model/) 
 		|| ( $isoform->{transcript_name} && $isoform->{transcript_name}=~/temp_model/)
 	);
+#warn Dumper (0,$isoform);
 
 	my $do_recreate_seqs;
         my $transcript_main_id = $isoform->{Model_feat_name} || confess;
@@ -875,7 +876,7 @@ sub find_next_stop(){
 	# still haven't found a stop codon, carry on search
 	# last will force the exit on intron splice site, gap or end of search
 	# natural exit if phase is correct and stop codon found
-	while ($cds_seq_length % 3 != $phase_to_check || !$stop_codons{$cds_last_codon} ){
+	while ($cds_modulo_gtf_phase != $phase_to_check || !$stop_codons{$cds_last_codon} ){
 		$cds_seq_length++;
 		if ($strand eq '-') {
 			last if $c1==1;
@@ -892,6 +893,9 @@ sub find_next_stop(){
 		if ($next_two eq 'GT' || $next_two eq 'GC'){
 			last;
 		}
+		$cds_modulo_gtf_phase = $cds_seq_length % 3;
+		if ($cds_modulo_gtf_phase == 2){$cds_modulo_gtf_phase=1;}
+		elsif($cds_modulo_gtf_phase == 1){$cds_modulo_gtf_phase=2;}
 	}
 	if ($exons[$last_cds_exon_number]->{CDS_exon_obj}->{'strand'} eq '+'){
 		$exons[$last_cds_exon_number]{end3} = $c2;
@@ -977,7 +981,7 @@ sub find_next_start(){
 	}
 
 	my $phase_adjustment = $first_phase;
-	while ($cds_seq_length % 3 != $phase_to_check || $cds_first_codon ne 'ATG' ){
+	while ($cds_modulo_gtf_phase != $phase_to_check || $cds_first_codon ne 'ATG' ){
 		$cds_seq_length++;
 		if ($strand eq '-') {
 			last if $c2==length($$genome_seq_ref);
@@ -993,14 +997,18 @@ sub find_next_start(){
 			$next_three = substr($$genome_seq_ref,$c1-1-3,3);
 		}
 		$phase_adjustment++;
-
-		last if $cds_seq_length % 3 == $phase_to_check && $stop_codons{$next_three};
+		my $phase = $phase_adjustment % 3;
+		if ($phase == 2){$phase=1;}
+		elsif($phase == 1){$phase=2;}
+		$cds_modulo_gtf_phase = $cds_seq_length % 3;
+		if ($cds_modulo_gtf_phase == 2){$cds_modulo_gtf_phase=1;}
+		elsif($cds_modulo_gtf_phase == 1){$cds_modulo_gtf_phase=2;}
+		
+		last if $cds_modulo_gtf_phase == $phase_to_check && $stop_codons{$next_three};
 		# phase change needed? often we have the partial 5' being at a splice site
 		# but originally erroneously marked by a UTR region
-		if ($exons[$first_cds_exon_number]->{CDS_exon_obj}->{phase} != $phase_adjustment % 3 && ($next_two eq 'AG' || $next_two =~/N$/)){
-			my $phase = $phase_adjustment % 3;
-			if ($phase == 2){$phase=1;}
-			elsif($phase == 1){$phase=2;}
+#warn Dumper ($phase_adjustment,$cds_first_codon,$phase);
+		if ($exons[$first_cds_exon_number]->{CDS_exon_obj}->{phase} != $phase && ($next_two eq 'AG' || $next_two =~/N$/)){
 			warn "FIXING: $error_name_text has a new phase for the first CDS"
 #				."(".$exons[$first_cds_exon_number]->{CDS_exon_obj}->{phase}
 #				." vs "
