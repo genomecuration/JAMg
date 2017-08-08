@@ -15,7 +15,8 @@ all:
 	cd 3rd_party && tar xzf libpng-1.6.19.tar.gz && cd libpng-1.6.19 && ./configure --prefix=`pwd`/../ --with-zlib-prefix=`pwd`/../ && $(MAKE) && $(MAKE) install
 	cd 3rd_party/mysql && find . -name "*bz2" -exec bunzip2 '{}' \; 
 	cd 3rd_party/EMBOSS && if [[ ! -e emboss/data/TAXONOMY/division.dmp ]]; then bunzip2 -k emboss/data/TAXONOMY/*bz2; fi && ./configure --prefix=`pwd`/../ --without-mysql --without-x --without-java --without-hpdf --without-auth --without-axis2c --without-postgresql --without-pngdriver && $(MAKE) -j3 && $(MAKE) install
-	cd 3rd_party/hhsuite && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -G "Unix Makefiles"  -DCMAKE_INSTALL_PREFIX=../ .. && $(MAKE) && $(MAKE) install
+	if [ ! -d 3rd_party/hhsuite ]; then cd 3rd_party && git clone --depth 1 https://github.com/soedinglab/hh-suite.git hhsuite && cd hhsuite && git submodule init; else cd 3rd_party/hhsuite && git pull; fi 
+	cd 3rd_party/hhsuite && git submodule update && rm -rf build && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=../ .. && $(MAKE) && $(MAKE) install
 	cd 3rd_party/hhsuite && cp -fp lib64/* ../lib64/ && cp -fp include/* ../include/ && cp -fp bin/* ../bin/
 	cd 3rd_party/ncbi-blast/bin && ln -fs `pwd`/* ../../bin/
 	cd 3rd_party/cdbtools/cdbfasta && $(MAKE) && cp -pf cdbfasta ../../bin/ && cp -pf cdbyank ../../bin/ && $(MAKE) clean
