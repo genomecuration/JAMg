@@ -1,0 +1,14 @@
+gsnapl_nosimd-cmet.o: cmet.c /usr/include/stdc-predef.h config.h cmet.h \
+ types.h uint8list.h bool.h
+
+/usr/include/stdc-predef.h:
+
+config.h:
+
+cmet.h:
+
+types.h:
+
+uint8list.h:
+
+bool.h:

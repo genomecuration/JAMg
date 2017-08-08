@@ -1,0 +1,14 @@
+gsnapl_nosimd-atoi.o: atoi.c /usr/include/stdc-predef.h config.h atoi.h \
+ types.h uint8list.h bool.h
+
+/usr/include/stdc-predef.h:
+
+config.h:
+
+atoi.h:
+
+types.h:
+
+uint8list.h:
+
+bool.h:

@@ -1,0 +1,14 @@
+gsnap_nosimd-atoi.o: atoi.c /usr/include/stdc-predef.h config.h atoi.h \
+ types.h uintlist.h bool.h
+
+/usr/include/stdc-predef.h:
+
+config.h:
+
+atoi.h:
+
+types.h:
+
+uintlist.h:
+
+bool.h:

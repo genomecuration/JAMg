@@ -1,0 +1,8 @@
+gsnap_sse42-sedgesort.o: sedgesort.c /usr/include/stdc-predef.h config.h \
+ sedgesort.h
+
+/usr/include/stdc-predef.h:
+
+config.h:
+
+sedgesort.h:
