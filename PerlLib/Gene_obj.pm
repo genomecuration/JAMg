@@ -3531,6 +3531,7 @@ sub to_GFF3_format {
 	}
     
 	foreach my $isoform ( $gene_obj, $gene_obj->get_additional_isoforms() ){
+		next unless $isoform;
 		if ($isoform->{internal_stop} ){
         	        $gff3_text .= ";pseudo=true;Note=".uri_escape('stop codon found within coding sequence');
 			last;
@@ -3547,10 +3548,8 @@ sub to_GFF3_format {
 
  if ( $gene_obj->{gene_type} eq "protein-coding" ) {
 
-  foreach
-    my $isoform ( $gene_obj, $gene_obj->get_additional_isoforms() )
-  {
-
+  foreach my $isoform ( $gene_obj, $gene_obj->get_additional_isoforms() ){
+   next unless $isoform;
    my $model_id    = $isoform->{Model_feat_name};
    my $model_alias = "";
    if ( my $model_locus = uri_escape($isoform->{Model_pub_locus}) ) {
@@ -3825,6 +3824,7 @@ sub to_GFF3_format_extended {
 	}
 
 	foreach my $isoform ( $gene_obj, $gene_obj->get_additional_isoforms() ){
+		next unless $isoform;
 		if ($isoform->{internal_stop}){
         	        $gff3_text .= ";pseudo=true;Note=".uri_escape('stop codon found within coding sequence');
 			last;
@@ -3841,10 +3841,8 @@ sub to_GFF3_format_extended {
 
  if ( $gene_obj->{gene_type} eq "protein-coding" ) {
 
-  foreach
-    my $isoform ( $gene_obj, $gene_obj->get_additional_isoforms() )
-  {
-  # $isoform->delete_isoforms(); 
+  foreach my $isoform ( $gene_obj, $gene_obj->get_additional_isoforms() ) {
+   next unless $isoform;
    my (@noteText_mrna);
    my $model_id    = $isoform->{Model_feat_name};
    my $transcript_common_name = uri_escape($isoform->{transcript_name}) || $com_name;

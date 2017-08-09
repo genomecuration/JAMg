@@ -275,7 +275,7 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 
 	#always check for Ns in coding
 	my $cNs = ($cds_seq =~ tr/N//);
-	if ($cNs && $cNs > $delete_ns){
+	if ($cNs){
 		#try to fix in beg or end; also necessary if bioproject genbank submission
 		my ($first_cds_exon_number,$last_cds_exon_number) = &get_cds_ends($isoform);
 		my @exons = $isoform->get_exons();
@@ -349,7 +349,7 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 		$cNs = ($cds_seq =~ tr/N//);
 	}
 #warn Dumper (1,$isoform);
-	if ($cNs && $cNs > $delete_ns){
+	if ($cNs){
 		if ( ($cNs / length($cds_seq) >= 0.5) ){
 			warn "SKIP: $error_name_text has assembly gaps Ns ($cNs) in coding sequence that are more than 50%. Will print as error\n";
 			print GFF3_ERR $isoform->to_GFF3_format(%preferences) . "\n";
