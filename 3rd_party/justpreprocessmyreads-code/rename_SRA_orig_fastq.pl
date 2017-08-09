@@ -6,9 +6,13 @@ my @dirs = glob("./?RR*");
 
 foreach my $dir (@dirs){
 	next unless -d $dir;
-	my $file1 = $dir . "/pass/1/fastq";
-	my $file2 = $dir . "/pass/2/fastq";
-	rename($file1, "./$dir" . "_1_fastq" ) if (-s $file1);
-	rename($file2, "./$dir" . "_2_fastq" ) if (-s $file2);
-
+	my @files = glob($dir . "/pass/?/fastq");
+	foreach my $file (@files){
+		if ($file=~/\/pass\/(\d)\//){
+			my $id = $1 || die;
+			my $new_name = "./$dir" . "_$id"."_fastq";
+			warn "SKIP: File $new_name already exists\n" if -s $new_name;
+			rename($file, $new_name ) if !-s $new_name;
+		}
+	}
 }
