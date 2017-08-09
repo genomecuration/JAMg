@@ -59,7 +59,7 @@ use Nuc_translator;
 $|=1;
 our $SEE;
 my $codon_table = 'universal';
-my $minorf = 150;    #minimum orf size in bp
+my $minorf = 96;    #minimum orf size in bp
 my $to_bed_exec = "$RealBin/../3rd_party/PASA/misc_utilities/gene_gff3_to_bed.pl";
 my ($simple_gff3, $gfffile, $genome, $change_name,$lettername,$verbose, 
  $one_iso, $do_rename, $change_source, $strip_name, $split_single, $delete_ns, $bioproject_locus_id,$go_file,%dbxref_hash );
@@ -702,8 +702,6 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
  if ($to_bed_exec && -x $to_bed_exec){
 	system("$to_bed_exec $gff3_file.gff3".' | sed -r \'~s/;\S+//\' | sed \'~s/ID=//\' '. " > $gff3_file.bed");
  }
-
- print "\nDone!\n";
 
  return;
 }
