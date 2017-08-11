@@ -45,7 +45,7 @@ Optional:
 
  Introns:
  -intron_db      :s  GMAP intron or splice database (iit_store). Automatically found and used if it exists as a single *.iit in maps/ directory.
- -intron_hard        If -intron_db, conservative handling of junction reads and eliminate soft-clipping (--ambig-splice-noclip --trim-mismatch-score=0)
+ -intron_hard        If -intron_db, conservative handling of junction reads and eliminate soft-clipping (--ambig-splice-noclip --trim-mismatch-score=0). no longer recommended (Jun2017)
  -intron_size    :i  Maximum intron length (def. 70,000)
 
  Other:
@@ -146,11 +146,11 @@ if ($do_parallel && $do_parallel > 1){
 }
 
 
-my ( $gmap_build_exec, $gsnap_exec, $samtools_exec,$bunzip2_exec,$bedtools_exec ) =
-  &check_program( "gmap_build", "gsnap", "samtools",'bunzip2','bedtools' );
+my ( $gmap_build_exec, $gsnap_exec, $gmap_exec, $samtools_exec,$bunzip2_exec,$bedtools_exec ) =
+  &check_program( "gmap_build", "gsnap", "gmap", "samtools",'bunzip2','bedtools' );
 &samtools_version_check($samtools_exec);
 
-( $gsnap_exec ) = &check_program( "gsnapl" ) if $do_large_genome || (-s $genome > 4306887543);
+( $gsnap_exec,$gmap_exec ) = &check_program( "gsnapl", "gmapl" ) if $do_large_genome || (-s $genome > 4306887543);
 
 
 my $samtools_sort_CPUs = int( $cpus / 2 ) > 2 ? int( $cpus / 2 ) : 2;
@@ -193,14 +193,13 @@ if ($suffix || $build_only) {
  warn "\n\nWARNING: Using -suffix with RNA-Seq gapped alignments is not recommended... it seems to be much (order of magnitude) slower in my tests\n\n\n" unless $build_only;
  $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 $genome >/dev/null";
  $align_cmd =
-"$gsnap_exec -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam ";
+" -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam ";
 }
 else {
  $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 --build-sarray=0 $genome >/dev/null";
  $align_cmd =
-"$gsnap_exec --use-sarray=0 -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus  --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam ";
+" -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus  --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam ";
 }
-
 system($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
 system("$samtools_exec faidx $genome") unless -s "$genome.fai";
 die "Failed to build genome ($genome.fai and $gmap_dir/$genome_dbname) " unless -s "$genome.fai" && -d "$gmap_dir/$genome_dbname";
@@ -222,8 +221,6 @@ if (!$intron_splice_db){
 
 $align_cmd .= " --nofails "                    if $nofails;
 $align_cmd .= " -s $intron_splice_db "         if $intron_splice_db;
-$align_cmd .= " --ambig-splice-noclip --trim-mismatch-score=0 " if $intron_splice_db && $intron_hard;
-$align_cmd .= " --pairmax-rna=$intron_length " if !$notpaired;
 $align_cmd .= " --sam-use-0M " if $piccard_0m;
 $align_cmd .= " --part=1/$do_proportion " if $do_proportion;
 
@@ -340,21 +337,6 @@ sub checked_unpaired_files() {
   if ($file =~ /\.bz2$/ || $file =~ /\.gz$/){
 	push( @files_to_do, $file );
   }else{
-   open (IN,$file);
-   my $max_read_length = int(0);
-   my $counter;
-   while (my $ln=<IN>){
-        my $seq = <IN>;chomp($seq);
-        my $discard = <IN>.<IN>;
-        $max_read_length = length($seq) if !$max_read_length || $max_read_length < length($seq);
-        $counter++;
-        last if $counter > 1000;
-   }
-   close (IN);
-   if ($max_read_length > 300){
-        warn "File $file has reads longer than 300 bp. Will not process (use another aligner, e.g. GMAP)\n";
-        next;
-   }
    if ($split_input) {
     print "Splitting data for unpaired $file\n";
     my $lines = `wc -l < $file`;
@@ -397,21 +379,6 @@ sub checked_paired_files() {
   if ($file =~ /\.bz2$/ || $file =~ /\.gz$/){
 	push( @files_to_do, $file );
   }else{
-   open (IN,$file);
-   my $max_read_length = int(0);
-   my $counter;
-   while (my $ln=<IN>){
-        my $seq = <IN>;chomp($seq);
-        my $discard = <IN>.<IN>;
-        $max_read_length = length($seq) if !$max_read_length || $max_read_length < length($seq);
-        $counter++;
-        last if $counter > 1000;
-   }
-   close (IN);
-   if ($max_read_length > 300){
-        warn "File $file has reads longer than 300 bp. Will not process (use another aligner, e.g. GMAP)\n";
-        next;
-   }
    if ($split_input) {
     print "Splitting data for pairs $file & $pair\n";
     my $lines = `wc -l < $file`;
@@ -469,7 +436,25 @@ sub align_unpaired_files() {
   }
   open( LOG, ">gsnap.$base.log" );
   my $base_out_filename = $notpaired ? "gsnap.$base.unpaired"  : "gsnap.$base.concordant";
-  my $file_align_cmd = $align_cmd;
+  my $file_align_cmd;
+   open (IN,$file);
+   my $max_read_length = int(0);
+   my $counter;
+   while (my $ln=<IN>){
+        my $seq = <IN>;chomp($seq);
+        my $discard = <IN>.<IN>;
+        $max_read_length = length($seq) if !$max_read_length || $max_read_length < length($seq);
+        $counter++;
+        last if $counter == 1000;
+   }
+   close (IN);
+   if ($max_read_length > 300){
+	$file_align_cmd = $gmap_exec.$align_cmd;
+   }else{
+	$file_align_cmd = $gsnap_exec.$align_cmd;
+	$file_align_cmd .= " --ambig-splice-noclip --trim-mismatch-score=0 " if $intron_splice_db && $intron_hard;
+	$file_align_cmd .= " --use-sarray=0 " if !$suffix;
+  }
 
   $file_align_cmd .= ' --bunzip2 ' if $file =~ /\.bz2$/; 
   $file_align_cmd .= ' --gunzip ' if $file =~ /\.gz$/; 
@@ -550,8 +535,27 @@ sub align_paired_files() {
   open( LOG, ">gsnap.$base.log" );
   my $base_out_filename = $notpaired ? "gsnap.$base.unpaired"  : "gsnap.$base.concordant";
   my $out_halfmapped = "gsnap.$base.halfmapping_uniq";
+  my $file_align_cmd;
+   open (IN,$file);
+   my $max_read_length = int(0);
+   my $counter;
+   while (my $ln=<IN>){
+        my $seq = <IN>;chomp($seq);
+        my $discard = <IN>.<IN>;
+        $max_read_length = length($seq) if !$max_read_length || $max_read_length < length($seq);
+        $counter++;
+        last if $counter == 1000;
+   }
+   close (IN);
+   if ($max_read_length > 300){
+	$file_align_cmd = $gmap_exec.$align_cmd;
+   }else{
+	$file_align_cmd = $gsnap_exec.$align_cmd;
+	$file_align_cmd .= " --ambig-splice-noclip --trim-mismatch-score=0 " if $intron_splice_db && $intron_hard;
+	$file_align_cmd .= " --pairmax-rna=$intron_length " if !$notpaired;
+	$file_align_cmd .= " --use-sarray=0 " if !$suffix;
+  }
 
-  my $file_align_cmd = $align_cmd;
   $file_align_cmd .= ' --bunzip2 ' if $file =~ /\.bz2$/; 
   $file_align_cmd .= ' --gunzip ' if $file =~ /\.gz$/; 
   $file_align_cmd .= $qual_prot if $qual_prot;

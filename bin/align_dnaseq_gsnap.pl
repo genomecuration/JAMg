@@ -82,8 +82,8 @@ use threads;
 use Thread_helper;
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 
-my ( $gmap_build_exec, $gsnap_exec, $samtools_exec,$bunzip2_exec,$bedtools_exec ) =
-  &check_program( "gmap_build", "gsnap", "samtools",'bunzip2','bedtools' );
+my ( $gmap_build_exec, $gsnap_exec, $gmap_exec, $samtools_exec,$bunzip2_exec,$bedtools_exec ) =
+  &check_program( "gmap_build", "gsnap", "gmap", "samtools",'bunzip2','bedtools' );
 &samtools_version_check($samtools_exec);
 my ( $input_dir, $pattern2, $debug, $genome, $genome_dbname, $nofails, $suffix,$piccard_0m,$do_parallel,
      $help, $just_write_out_commands, $split_input, $notpaired, $verbose, $matepair, $build_only, $no_split );
@@ -142,7 +142,7 @@ if ($do_parallel && $do_parallel > 1){
         $cpus = int($cpus / $do_parallel);
 }
 
-( $gsnap_exec ) = &check_program( "gsnapl" ) if $do_large_genome;
+( $gsnap_exec,$gmap_exec ) = &check_program( "gsnapl","gmapl" ) if $do_large_genome;
 
 my $samtools_sort_CPUs = int( $cpus / 2 ) > 2 ? int( $cpus / 2 ) : 2;
 my $suff = "";
@@ -183,13 +183,13 @@ if ($suffix || $build_only) {
  $build_cmd =
 "$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 $genome >/dev/null";
  $align_cmd =
-"$gsnap_exec -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam ";
+" -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam ";
 }
 else {
  $build_cmd =
 "$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 --build-sarray=0 $genome >/dev/null";
  $align_cmd =
-"$gsnap_exec --use-sarray=0 -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam ";
+" -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam ";
 }
 
 
@@ -203,9 +203,7 @@ if ($build_only){
 }
 
 $align_cmd .= " --nofails "                  if $nofails;
-$align_cmd .= " --pairmax-dna=$pe_distance " if !$notpaired && $pe_distance=~/^\d+$/;
 $align_cmd .= " --sam-use-0M " if $piccard_0m;
-$align_cmd .= " --orientation=RF " if $matepair;
 $align_cmd .= " --part=1/$do_proportion " if $do_proportion;
 
 open( CMD, ">$just_write_out_commands" ) if $just_write_out_commands;
@@ -323,21 +321,6 @@ sub checked_unpaired_files() {
   if ($file =~ /\.bz2$/ || $file =~ /\.gz$/){
 	push( @files_to_do, $file );
   }else{
-   open (IN,$file);
-   my $max_read_length = int(0);
-   my $counter;
-   while (my $ln=<IN>){
-	my $seq = <IN>;chomp($seq);
-	my $discard = <IN>.<IN>;
-	$max_read_length = length($seq) if !$max_read_length || $max_read_length < length($seq);
-	$counter++;
-	last if $counter > 1000;
-   }
-   close (IN);
-   if ($max_read_length > 300){
-	warn "File $file has reads longer than 300 bp. Will not process (use another aligner, e.g. GMAP)\n";
-	next;
-   }
    if ($split_input) {
     print "Splitting data for unpaired $file\n";
     my $lines = `wc -l < $file`;
@@ -380,21 +363,6 @@ sub checked_paired_files() {
   if ($file =~ /\.bz2$/ || $file =~ /\.gz$/){
 	push( @files_to_do, $file );
   }else{
-   open (IN,$file);
-   my $max_read_length = int(0);
-   my $counter;
-   while (my $ln=<IN>){
-	my $seq = <IN>;chomp($seq);
-	my $discard = <IN>.<IN>;
-	$max_read_length = length($seq) if !$max_read_length || $max_read_length < length($seq);
-	$counter++;
-	last if $counter > 1000;
-   }
-   close (IN);
-   if ($max_read_length > 300){
-	warn "File $file has reads longer than 300 bp. Will not process (use another aligner, e.g. GMAP)\n";
-	next;
-   }
    if ($split_input) {
     print "Splitting data for pairs $file & $pair\n";
     my $lines = `wc -l < $file`;
@@ -442,13 +410,34 @@ sub align_unpaired_files() {
    next if $log[-1] && $log[-1] =~ /^GSNAP Completed/;
   }
   open( LOG, ">gsnap.$base.log" );
-  my $file_align_cmd = $align_cmd;
+  my $file_align_cmd;
+   open (IN,$file);
+   my $max_read_length = int(0);
+   my $counter;
+   while (my $ln=<IN>){
+	my $seq = <IN>;chomp($seq);
+	my $discard = <IN>.<IN>;
+	$max_read_length = length($seq) if !$max_read_length || $max_read_length < length($seq);
+	$counter++;
+	last if $counter == 1000;
+   }
+   close (IN);
+   if ($max_read_length > 300){
+     $file_align_cmd = $gmap_exec.$align_cmd;
+   }else{
+     $file_align_cmd = $gsnap_exec.$align_cmd;
+     $file_align_cmd .= " --orientation=RF " if $matepair;
+     $file_align_cmd .= " --use-sarray=0 " if !$suffix;
+   }
+
   my $base_out_filename = $notpaired ? "gsnap.$base.unpaired"  : "gsnap.$base.concordant";
   $file_align_cmd .= ' --bunzip2 ' if $file =~ /\.bz2$/; 
   $file_align_cmd .= ' --gunzip ' if $file =~ /\.gz$/; 
   $file_align_cmd .= $qual_prot if $qual_prot;
   $file_align_cmd .= $no_split ? " --output-file=$base_out_filename " : " --split-output=gsnap.$base ";
   $file_align_cmd .= " --read-group-id=$base $file ";
+
+  
 
   if ($no_split){
    &process_cmd( $file_align_cmd) unless -s $base_out_filename || -s "$base_out_filename.bam";
@@ -524,12 +513,26 @@ sub align_paired_files() {
 
   unless ( -s "$base_out_filename"."_uniq.bam" || $just_write_out_commands) {
     open( LOG, ">gsnap.$base.log" );
-    my $file_align_cmd = $align_cmd;
-    $file_align_cmd .= ' --bunzip2 ' if $file =~ /\.bz2$/; 
-    $file_align_cmd .= ' --gunzip ' if $file =~ /\.gz$/; 
-    $file_align_cmd .= $qual_prot if $qual_prot;
+    my $file_align_cmd;
+    open (IN,$file);
+    my $max_read_length = int(0);
+    my $counter;
+    while (my $ln=<IN>){
+	my $seq = <IN>;chomp($seq);
+	my $discard = <IN>.<IN>;
+	$max_read_length = length($seq) if !$max_read_length || $max_read_length < length($seq);
+	$counter++;
+	last if $counter == 1000;
+    }
+    close (IN);
+    if ($max_read_length > 300){
+      $file_align_cmd = $gmap_exec.$align_cmd;
+    }else{
+      $file_align_cmd = $gsnap_exec.$align_cmd;
+      $file_align_cmd .= " --orientation=RF " if $matepair;
+      $file_align_cmd .= " --use-sarray=0 " if !$suffix;
 
-    if (!$pe_distance || $pe_distance!~/^\d+$/ || $pe_distance < 2){
+     if (!$pe_distance || $pe_distance!~/^\d+$/ || $pe_distance < 2){
 	#align 10000 reads picked from subset and get pe_distance
 	my $test_cmd = $file_align_cmd . ' --part=1/100 --pairmax-dna=100000 ';
         unless (-s "gsnap.test.$base.concordant_uniq.sizes"){
@@ -559,8 +562,14 @@ sub align_paired_files() {
 	$pe_distance = int($median + 0.30 * $median) +1; #round up
 	print "Maximum PE distance allowed was estimated as $pe_distance from $datapoints datapoints (median $median + 30%)\n\n";
         $file_align_cmd .= " --pairmax-dna=$pe_distance ";
-    } 
+    }elsif($pe_distance=~/^\d+$/){ 
+      $file_align_cmd .= " --pairmax-dna=$pe_distance ";
+    }
+   }
 
+   $file_align_cmd .= ' --bunzip2 ' if $file =~ /\.bz2$/; 
+   $file_align_cmd .= ' --gunzip ' if $file =~ /\.gz$/; 
+   $file_align_cmd .= $qual_prot if $qual_prot;
    $file_align_cmd .= $no_split ? " --output-file=$base_out_filename " : " --split-output=gsnap.$base ";
    $file_align_cmd .= " --read-group-id=$base $file $pair ";
 
