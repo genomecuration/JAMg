@@ -322,29 +322,45 @@ sub checked_unpaired_files() {
  foreach my $file ( sort @files ) {
   if ($file =~ /\.bz2$/ || $file =~ /\.gz$/){
 	push( @files_to_do, $file );
-  }
-  elsif ($split_input) {
-   print "Splitting data for unpaired $file\n";
-   my $lines = `wc -l < $file`;
-   chomp($lines);
-   my $number_of_lines = int( ( $lines / 4 ) / $split_input );
-   $number_of_lines *= 4;
-   die "Number of lines is not as expected for FASTQ ($number_of_lines / $lines)\n"
-     unless $number_of_lines % 4 == 0;
-   system("split -a 3 -d -l $number_of_lines $file $file. ");
-   my @new_files = glob("$file.0??");
-   print "\t Adding ";
-
-   foreach my $f (@new_files) {
-    if ( $f =~ /$file\.\d+$/ ) {
-     print " $f";
-     push( @files_to_do, $f );
-    }
+  }else{
+   open (IN,$file);
+   my $max_read_length = int(0);
+   my $counter;
+   while (my $ln=<IN>){
+	my $seq = <IN>;chomp($seq);
+	my $discard = <IN>.<IN>;
+	$max_read_length = length($seq) if !$max_read_length || $max_read_length < length($seq);
+	$counter++;
+	last if $counter > 1000;
    }
-   print "\n";
-  }
-  else {
-   push( @files_to_do, $file );
+   close (IN);
+   if ($max_read_length > 300){
+	warn "File $file has reads longer than 300 bp. Will not process (use another aligner, e.g. GMAP)\n";
+	next;
+   }
+   if ($split_input) {
+    print "Splitting data for unpaired $file\n";
+    my $lines = `wc -l < $file`;
+    chomp($lines);
+    my $number_of_lines = int( ( $lines / 4 ) / $split_input );
+    $number_of_lines *= 4;
+    die "Number of lines is not as expected for FASTQ ($number_of_lines / $lines)\n"
+      unless $number_of_lines % 4 == 0;
+    system("split -a 3 -d -l $number_of_lines $file $file. ");
+    my @new_files = glob("$file.0??");
+    print "\t Adding "; 
+ 
+    foreach my $f (@new_files) {
+     if ( $f =~ /$file\.\d+$/ ) {
+      print " $f";
+      push( @files_to_do, $f );
+     }
+    }
+    print "\n";
+   }
+   else {
+    push( @files_to_do, $file );
+   }
   }
  }
  return @files_to_do;
@@ -363,30 +379,46 @@ sub checked_paired_files() {
   }
   if ($file =~ /\.bz2$/ || $file =~ /\.gz$/){
 	push( @files_to_do, $file );
-  }
-  elsif ($split_input) {
-   print "Splitting data for pairs $file & $pair\n";
-   my $lines = `wc -l < $file`;
-   chomp($lines);
-   my $number_of_lines = int( ( $lines / 4 ) / $split_input );
-   $number_of_lines *= 4;
-   die "Number of lines is not as expected for FASTQ ($number_of_lines / $lines)\n"
-     unless $number_of_lines % 4 == 0;
-   system("split -a 3 -d -l $number_of_lines $file $file. ");
-   system("split -a 3 -d -l $number_of_lines $file $pair. ");
-   my @new_files = ( glob("$file.0??"), glob("$pair.0??") );
-   print "\t Adding ";
-
-   foreach my $f (@new_files) {
-    if ( $f =~ /$file\.\d+$/ ) {
-     print " $f";
-     push( @files_to_do, $f );
-    }
+  }else{
+   open (IN,$file);
+   my $max_read_length = int(0);
+   my $counter;
+   while (my $ln=<IN>){
+	my $seq = <IN>;chomp($seq);
+	my $discard = <IN>.<IN>;
+	$max_read_length = length($seq) if !$max_read_length || $max_read_length < length($seq);
+	$counter++;
+	last if $counter > 1000;
    }
-   print "\n";
-  }
-  else {
-   push( @files_to_do, $file );
+   close (IN);
+   if ($max_read_length > 300){
+	warn "File $file has reads longer than 300 bp. Will not process (use another aligner, e.g. GMAP)\n";
+	next;
+   }
+   if ($split_input) {
+    print "Splitting data for pairs $file & $pair\n";
+    my $lines = `wc -l < $file`;
+    chomp($lines);
+    my $number_of_lines = int( ( $lines / 4 ) / $split_input );
+    $number_of_lines *= 4;
+    die "Number of lines is not as expected for FASTQ ($number_of_lines / $lines)\n"
+      unless $number_of_lines % 4 == 0;
+    system("split -a 3 -d -l $number_of_lines $file $file. ");
+    system("split -a 3 -d -l $number_of_lines $file $pair. ");
+    my @new_files = ( glob("$file.0??"), glob("$pair.0??") );
+    print "\t Adding ";
+
+    foreach my $f (@new_files) {
+     if ( $f =~ /$file\.\d+$/ ) {
+      print " $f";
+      push( @files_to_do, $f );
+     }
+    }
+    print "\n";
+   }
+   else {
+    push( @files_to_do, $file );
+   }
   }
  }
  return @files_to_do;
