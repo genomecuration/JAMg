@@ -26,7 +26,7 @@ Optional
  
  -rep_cpus        :i   => Number of CPUs to use for /each/ of the 5 Repeatmasking steps in parallel (def. 2, i.e. 10 CPUs across five steps)
  -mpi_cpus        :i   => Number of MPI threads (or CPUs for local and nodes for cluster) to use (if applicable; def to 2). Careful of memory usage if local!
- -scratch         :s   => If engine is MPI, a 'local' scratch directory to copy databases to each node, e.g. /dev/shm if there is enough space
+ -scratch         :s   => If engine is local or MPI, a 'local' scratch directory to copy databases to each node, e.g. /dev/shm if there is enough space
  -no_uniprot           => Don't search for Uniprot hits. Useful if you want to conduct the transposon search separately from the Uniprot (e.g. different engine/computing environment)
  -no_transposon        => Don't search for transposon hits. See above.
  -min_exons_hints :i   => Minimum number of hits for a scaffold with same Uniprot ID before flagging sequence having a valid hit (def 2). Really useful for small scaffolds or Augustus training. Not useful otherwise but 2 is a good minimum
@@ -596,6 +596,19 @@ sub remove_zero_bytes() {
 sub prepare_local() {
  &cleanup_threaded_exit();
  my $fasta = "$exons.aa.trim";
+ if ($scratch_dir) {
+   unless ($no_transposon_search) {
+    print "Copying $transposon_db to $scratch_dir\n";
+    &process_cmd("rsync -lua --perms $transposon_db* $scratch_dir/");
+   }
+   unless ($no_uniprot_search) {
+    print "Copying $uniprot_db to $scratch_dir\n";
+    &process_cmd("rsync -lua --perms $uniprot_db* $scratch_dir/");
+   }
+  $transposon_db = $scratch_dir . '/' . basename($transposon_db);
+  $uniprot_db    = $scratch_dir . '/' . basename($uniprot_db);
+ }
+
  &process_cmd("$ffindex_from_fasta_exec -s $fasta.db $fasta.db.idx $fasta")  unless -s "$fasta.db";
  my $number_of_entries = `wc -l < $fasta.db.idx`;
  unlink("local_errors.log");

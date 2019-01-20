@@ -16,7 +16,7 @@ Download sequences from NCBI
 
         -o|outfile  :s  => Outfile filename (def. ncbitax or given ''taxonomy'')
         -f|format   :s  => Format of outfile, ''fasta'' or ''gi'' for accessions only (def. fasta)
-        -m|molecule :s  => ''protein'' (UNIPROT ); ''nucleotide'' (EMBL); ''cDNA'' (EMBL) or ''GSS'' (EMBL)
+        -m|molecule :s  => ''protein'' (UNIPROT ); ''nucleotide'' (NCBI); ''cDNA'' (NCBI), ''mrna'' (NCBI) or ''gene'' for gene IDs (NCBI)
         -s|species  :s  => Latin name or NCBI TaxID of species
         -t|taxonomy :s  => A taxonomy if searching proteins
         -q|query    :s  => A specific query in NCBI format, e.g. 'chimpanzee[orgn]+AND+biomol+mrna[prop]'
@@ -84,14 +84,24 @@ elsif (!$outfile && $ncbi_taxid){$outfile="$ncbi_taxid.$molecule.$format";}
 
 my $service_request= 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?';
 my $database;
-
+my $url_suffix;
 if ($molecule){
 	if ($molecule =~ /protein/i){
 		$database = 'protein';
+		$molecule = 'protein';
 	}elsif ($molecule=~/cdna/i){
 		$database = 'nucest';
+		$molecule = 'cdna';
+	}elsif ($molecule=~/gene/i){
+		$database = 'gene';
+		$molecule = 'gene';
+	}elsif ($molecule=~/mrna/i){
+		$database = 'nuccore';
+		$url_suffix .= '%20AND%20"mrna"[Filter]';
+		$molecule = 'mrna';
 	}elsif (!$molecule || $molecule =~ /nucleotide/i){
 		$database = 'nuccore';
+		$molecule = 'nucleotide';
 	}
 	$service_request .= "db=$database&usehistory=y&term=";
 }else{
@@ -108,7 +118,7 @@ if ($query_text){
 	die "I don't know what to do!\n";
 }
 print "Making this query: $query_text from NCBI's $database\n";
-$service_request.=$query_text;
+$service_request.=$query_text.$url_suffix;
 print "Fetching $service_request\n" if $debug;
 #http://www.ncbi.nlm.nih.gov/books/NBK25498/#chapter3.Application_3_Retrieving_large
 #post the esearch URL

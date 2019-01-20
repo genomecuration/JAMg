@@ -181,7 +181,7 @@ for ( my $i = 0 ; $i < @files ; $i++ ) {
   $verified_files{$files[$i]} = 1;
  }
  else {
-  warn "Skipping: did not find file " . $files[$i] . "\n";
+  warn "Skipping: it is empty or did not find file " . $files[$i] . "\n";
  }
 }
 @files = sort keys %verified_files;
@@ -226,7 +226,7 @@ $align_cmd .= " --part=1/$do_proportion " if $do_proportion;
 
 open( CMD, ">$just_write_out_commands" ) if $just_write_out_commands;
 
-if ($notpaired) {
+if ($notpaired || !$pattern2) {
  my @files_to_do = &checked_unpaired_files(@files);
  if ($do_parallel && $do_parallel > 1){
 	my $thread_helper = new Thread_helper($do_parallel);

@@ -3565,7 +3565,7 @@ sub to_GFF3_format {
    if ($gene_obj->{genbank_submission}){
 	my $tmodel_id = $model_id;
 	$gff3_text .= ";transcript_id=gnl|".$gene_obj->{genbank_submission}."|mrna.".$tmodel_id;
-	#$gff3_text .= ";protein_id=gnl|".$gene_obj->{genbank_submission}."|".$tmodel_id;
+	$gff3_text .= ";protein_id=gnl|".$gene_obj->{genbank_submission}."|".$tmodel_id;
 	if ($gene_obj->get_additional_isoforms()){
 		 push(@noteText_mrna,uri_escape('alternatively spliced'));
 	}
@@ -3694,7 +3694,7 @@ sub to_GFF3_format {
 
      if ($gene_obj->{genbank_submission}){
 	my $tmodel_id = $model_id;
-#	$gff3_text .= ";transcript_id=gnl|".$gene_obj->{genbank_submission}."|mrna.".$tmodel_id;
+	$gff3_text .= ";transcript_id=gnl|".$gene_obj->{genbank_submission}."|mrna.".$tmodel_id;
 	$gff3_text .= ";protein_id=gnl|".$gene_obj->{genbank_submission}."|".$tmodel_id;
 
 	if ($gene_obj->get_additional_isoforms()){
@@ -3861,7 +3861,7 @@ sub to_GFF3_format_extended {
    if ($gene_obj->{genbank_submission}){
 	my $tmodel_id = $model_id;
 	$gff3_text .= ";transcript_id=gnl|".$gene_obj->{genbank_submission}."|mrna.".$tmodel_id;
-#	$gff3_text .= ";protein_id=gnl|".$gene_obj->{genbank_submission}."|".$tmodel_id;
+	$gff3_text .= ";protein_id=gnl|".$gene_obj->{genbank_submission}."|".$tmodel_id;
 
 	if ($gene_obj->get_additional_isoforms()){
 		 push(@noteText_mrna,uri_escape('alternatively spliced'));
@@ -3991,7 +3991,7 @@ sub to_GFF3_format_extended {
 
      if ($gene_obj->{genbank_submission}){
 	my $tmodel_id = $model_id;
-#	$gff3_text .= ";transcript_id=gnl|".$gene_obj->{genbank_submission}."|mrna.".$tmodel_id;
+	$gff3_text .= ";transcript_id=gnl|".$gene_obj->{genbank_submission}."|mrna.".$tmodel_id;
 	$gff3_text .= ";protein_id=gnl|".$gene_obj->{genbank_submission}."|".$tmodel_id;
 
 	if ($gene_obj->get_additional_isoforms()){

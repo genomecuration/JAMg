@@ -603,12 +603,14 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
        $transcript_main_id = $common_name . '.1';
      }
      $alt_name = "($isoform_id) ";
+
+
      if ( $unique_names_check{$common_name} ) {
-      if ($lettername && $common_name =~ /-R[A-Z]+$/ ) {
-       die "Common name $common_name ends in transcript notation but it is not unique!\n";
+      if ($lettername && $common_name =~ /(-R[A-Z]+)$/ ) {
+       warn "Common name $common_name ends in transcript notation ($1) but it is not unique!\n";
       }
-      elsif (!$lettername && $common_name =~ /\.\d+$/) {
-       die "Common name $common_name ends in transcript notation but it is not unique!\n";
+      elsif (!$lettername && $common_name =~ /(\.\d+)$/) {
+       warn "Common name $common_name ends in transcript notation ($1) but it is not unique!\n";
       }
       if ($lettername){
        my $letter = 'B';

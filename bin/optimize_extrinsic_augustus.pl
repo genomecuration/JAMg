@@ -6,6 +6,7 @@
 
 Optimize extrinsic configuration for Augustus. Based on optimize_augustus by Mario Stanke, 23.04.2007 
 Modified by Jeremy Zucker <djinnome@gmail.com> to include local malus. 
+
 =head1 USAGE 
 
 Mandatory parameters:
