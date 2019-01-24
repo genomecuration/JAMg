@@ -1,0 +1,1 @@
+/mnt/nfs/home/30042108/software/JAMg/3rd_party/transdecoder/util/compute_base_probs.pl pasa_assemblies.fasta 0 > pasa.transdecoder_workdir/base_freqs.dat

@@ -1,51 +1,5 @@
 #!/usr/bin/env perl
 
-my $MIN_PROT_LENGTH = 100;
-
-=pod
-
-=head1 NAME
-
-L<Transdecoder.LongOrfs|http://transdecoder.github.io> - Transcriptome Protein Prediction
-
-=head1 USAGE
-
-Required:
-
- -t <string>                            transcripts.fasta
-
-Optional:
-
- -m <int>                               minimum protein length (default: 100)
- 
- -G <string>                            genetic code (default: universal; see PerlDoc; options: Euplotes, Tetrahymena, Candida, Acetabularia)
-
- -S                                     strand-specific (only analyzes top strand)
-
-=head1 Genetic Codes
-
-See L<http://golgi.harvard.edu/biolinks/gencode.html>. These are currently supported:
-
- universal (default)
- Euplotes
- Tetrahymena
- Candida
- Acetabularia
- Mitochondrial-Canonical
- Mitochondrial-Vertebrates
- Mitochondrial-Arthropods
- Mitochondrial-Echinoderms
- Mitochondrial-Molluscs
- Mitochondrial-Ascidians
- Mitochondrial-Nematodes
- Mitochondrial-Platyhelminths
- Mitochondrial-Yeasts
- Mitochondrial-Euascomycetes
- Mitochondrial-Protozoans
-
-
-=cut
-
 
 use strict;
 use warnings;
@@ -63,6 +17,11 @@ use Gene_obj;
 use Nuc_translator;
 use Fasta_reader;
 use Longest_orf;
+use Pipeliner;
+
+
+#my $VERSION = "__BLEEDING_EDGE__";
+my $VERSION = "5.5.0";
 
 my $UTIL_DIR = "$FindBin::RealBin/util";
 $ENV{PATH} = "$UTIL_DIR/bin:$ENV{PATH}";
@@ -71,17 +30,69 @@ $ENV{PATH} = "$UTIL_DIR/bin:$ENV{PATH}";
 my ($transcripts_file);
 
 my $genetic_code='universal';
+my $genetic_code_options = join("\n", &Nuc_translator::get_genetic_codes());
+
+
+my $MIN_PROT_LENGTH = 100;
+
+my $usage = <<__EOUSAGE__;
+
+########################################################################################
+#             ______                 ___                  __
+#            /_  __/______ ____ ___ / _ \\___ _______  ___/ /__ ____
+#             / / / __/ _ `/ _\\(_-</ // / -_) __/ _ \\/ _  / -_) __/
+#            /_/ /_/ \\_,_/_//_/___/____/\\__/\\__/\\___/\\_,_/\\__/_/   .LongOrfs
+#                                                       
+########################################################################################
+#
+#  Transdecoder.LongOrfs|http://transdecoder.github.io> - Transcriptome Protein Prediction
+#
+#
+#  Required:
+#
+#    -t <string>                            transcripts.fasta
+#
+#  Optional:
+#
+#   --gene_trans_map <string>              gene-to-transcript identifier mapping file (tab-delimited, gene_id<tab>trans_id<return> ) 
+#
+#   -m <int>                               minimum protein length (default: 100)
+# 
+#   -G <string>                            genetic code (default: universal; see PerlDoc; options: Euplotes, Tetrahymena, Candida, Acetabularia)
+#  
+#   -S                                     strand-specific (only analyzes top strand)
+#
+#   --output_dir | -O  <string>            path to intended output directory (default:  basename( -t val ) + ".transdecoder_dir")
+#
+#   --genetic_code <string>                Universal (default)
+#
+#        Genetic Codes (derived from: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi)
+#
+$genetic_code_options
+#
+#
+#   --version                              show version tag ($VERSION)
+#
+#########################################################################################
+
+
+__EOUSAGE__
+
+    ;
+
 
 my $TOP_STRAND_ONLY = 0;
 
 my $help;
-my $workdir;
 my $verbose;
 my $search_pfam = "";
 my ($reuse,$pfam_out);
-
+my $gene_trans_map_file;
 
 my $MPI_DEBUG = 1;
+
+my $show_version_flag;
+my $output_dir;
 
 &GetOptions( 't=s' => \$transcripts_file,
              'm=i' => \$MIN_PROT_LENGTH,
@@ -89,11 +100,21 @@ my $MPI_DEBUG = 1;
              'h' => \$help,
              'v' => \$verbose,
              'S' => \$TOP_STRAND_ONLY, 
-             );
+             'gene_trans_map=s' => \$gene_trans_map_file,
+             'version' => \$show_version_flag,
+             'output_dir|O=s' => \$output_dir,
+    );
 
 
+if ($help) {
+    die $usage;
+}
 
-pod2usage(-verbose => 2, -output => \*STDERR) if ($help);
+if ($show_version_flag) {
+    print "TransDecoder.LongOrfs $VERSION\n";
+    exit(0);
+}
+
 
 if (@ARGV) {
     die "Error, don't understand options: @ARGV";
@@ -101,34 +122,74 @@ if (@ARGV) {
 
 our $SEE = $verbose;
 
-pod2usage(-verbose => 2,
-          -output => \*STDERR) unless ($transcripts_file && -s $transcripts_file);
+unless ($transcripts_file && -s $transcripts_file) {
+    die $usage;
+}
+
 
 if ($genetic_code ne 'universal') {
     &Nuc_translator::use_specified_genetic_code($genetic_code);
 }
 
 
-
 main: {
-    my $workdir = basename($transcripts_file) . ".transdecoder_dir"; 
+
+    if ($transcripts_file =~ /\.gz$/) {
+        # create an uncompressed version locally and use that instead
+        my $uncompressed_transcripts_file = basename($transcripts_file);
+        $uncompressed_transcripts_file =~ s/\.gz$//;
+        if (! -s $uncompressed_transcripts_file) {
+            &process_cmd("gunzip -c $transcripts_file > $uncompressed_transcripts_file");
+        }
+        $transcripts_file = $uncompressed_transcripts_file;
+    }
+
+
+    my $workdir = $output_dir;
+    unless ($workdir) {
+        $workdir = &Pipeliner::ensure_full_path(basename($transcripts_file) . ".transdecoder_dir");
+    }
     unless (-d $workdir) {
         mkdir($workdir) or die "Error, cannot mkdir $workdir.";
     }
     
-    
-    my $base_freqs_file = "$workdir/base_freqs.dat";
-    my $base_freqs_checkpoint = "$base_freqs_file.ok";
-    if (! -e $base_freqs_checkpoint) {
-        print STDERR "\n\n-first extracting base frequencies, we'll need them later.\n";
-        my $cmd = "$UTIL_DIR/compute_base_probs.pl $transcripts_file $TOP_STRAND_ONLY > $base_freqs_file";
-        &process_cmd($cmd);
-        
-        &process_cmd("touch $base_freqs_checkpoint");
+    my $checkpoints_dir = "$workdir.__checkpoints_longorfs";
+    if (! -d $checkpoints_dir) {
+        mkdir($checkpoints_dir);
     }
     
+    my $pipeliner = new Pipeliner('-verbose' => 2);
+    $pipeliner->set_checkpoint_dir($checkpoints_dir);
+        
+    my %gene_trans_map;
+    if ($gene_trans_map_file) {
+        open(my $fh, $gene_trans_map_file) or die "Error, cannot open file $gene_trans_map_file";
+        while (<$fh>) {
+            chomp;
+            my ($gene_id, $trans_id) = split(/\t/);
+            $gene_trans_map{$trans_id} = $gene_id;
+        }
+        close $fh;
+    }
+    
+    
+    my $base_freqs_file = "$workdir/base_freqs.dat";
+    my $base_freqs_checkpoint = "base_freqs_file.ok";
+    my $msg = "\n\n-first extracting base frequencies, we'll need them later.\n";
+    my $cmd = "$UTIL_DIR/compute_base_probs.pl $transcripts_file $TOP_STRAND_ONLY > $base_freqs_file";
+    $pipeliner->add_commands(new Command($cmd, $base_freqs_checkpoint, $msg));
+
+    $pipeliner->run();
 
 
+    my $longorf_checkpoint = "$checkpoints_dir/TD.longorfs.ok";
+
+    if (-e $longorf_checkpoint) {
+        print STDERR "-skipping long orf extraction, already completed earlier as per checkpoint: $longorf_checkpoint\n";
+        exit(0);
+    }
+    
+    
     my $prefix = "$workdir/longest_orfs";
     my $cds_file = "$prefix.cds";
     my $gff3_file = "$prefix.gff3";
@@ -148,6 +209,9 @@ main: {
     chomp $num_total_trans;
     print STDERR "-total transcripts to examine: $num_total_trans\n";
 
+
+    my %SEEN_PROT_ID;
+    
 	my $fasta_reader = new Fasta_reader($transcripts_file);
 	while (my $seq_obj = $fasta_reader->next()) {
 		
@@ -170,6 +234,8 @@ main: {
 		my @orf_structs = $longest_orf_finder->capture_all_ORFs($sequence);
 		
 		@orf_structs = reverse sort {$a->{length}<=>$b->{length}} @orf_structs;
+        print "checking for fp in $acc \n" if ($SEE);
+        
 		
         while (@orf_structs) {
             my $orf = shift @orf_structs;
@@ -200,6 +266,8 @@ main: {
             if ($start < 1) {
                 $start += 3;
             }
+
+            print "Candidate (len $length): ".Dumper($orf) if($SEE);
             
                         
             if ($length < $MIN_PROT_LENGTH) { next; }
@@ -210,24 +278,56 @@ main: {
             my $gene_obj = new Gene_obj();
             
 
+            print "dumping coords for $acc $start $stop\n" if($SEE);
+            print Dumper(%$cds_coords_href) if($SEE);
+            print Dumper(%$exon_coords_href) if($SEE);
+            
             $gene_obj->populate_gene_object($cds_coords_href, $exon_coords_href);
             $gene_obj->{asmbl_id} = $acc;
             
             $model_counter++;
+            
+            
+            my $gene_id;
+            if (%gene_trans_map) {
+                $gene_id = $gene_trans_map{$acc} or die "Error, cannot locate gene identifier for transcript acc: [$acc]";
+            }
+            elsif (my $parsed_gene_id = &try_parse_gene_id_from_acc($acc)) {
+                $gene_id = $parsed_gene_id;
+            }
+            else {
+                $gene_id = "GENE.$acc";
+            }
 
-            my $model_id = "$acc|m.$model_counter";
-            my $gene_id = "$acc|g.$model_counter";
+            my $model_id;
+            {
+                ########### Important #############
+                ## gene ID and model ID must be unique for each entry, but also decipherable for later on.
+                ###################################
+                
+                my $pcounter = 1;
+                $model_id = "${acc}.p$pcounter";
+                while ($SEEN_PROT_ID{$model_id}) {
+                    $pcounter++;
+                    $model_id = "${acc}.p$pcounter";
+                }
+                $SEEN_PROT_ID{$model_id} = 1;
+                
+                $gene_id = "${gene_id}~~${model_id}";
+                
+                ###################################3
+            }
             
             $gene_obj->{TU_feat_name} = $gene_id;
             $gene_obj->{Model_feat_name} = $model_id;
-
-            
+                        
             my $cds = $gene_obj->create_CDS_sequence(\$sequence);
-
+            $gene_obj->set_CDS_phases(\$sequence);
+            
             unless ($cds) {
                 die "Error, no CDS for gene: " . Dumper($cds_coords_href) . Dumper($exon_coords_href);
             }
-
+            
             my $got_start = 0;
             my $got_stop = 0;
             if ($protein =~ /^M/) {
@@ -248,27 +348,31 @@ main: {
                 $prot_type = "internal";
             }
             
-            $gene_obj->{com_name} = "ORF $gene_id $model_id type:$prot_type len:$length ($orient)";            
+            $gene_obj->{com_name} = "ORF type:$prot_type len:$length ($orient)";            
             
             # this header is identical between CDS and PEP (since PEP is just a direct translation of CDS for a specific translation table)
             # we are currently not printing this out at the final data but it would be nice to.
-            my $pep_header = ">$model_id $gene_id type:$prot_type len:$length gc:$genetic_code $acc:$start-$stop($orient)\n";
-            my $cds_header = ">$model_id $gene_id type:$prot_type len:$length $acc:$start-$stop($orient)\n";
+            my $pep_header = ">$model_id type:$prot_type len:$length gc:$genetic_code $acc:$start-$stop($orient)\n";
+            my $cds_header = ">$model_id type:$prot_type len:$length $acc:$start-$stop($orient)\n";
             
             print PEP $pep_header."$protein\n";
                         
             print CDS $cds_header."$cds\n";
+
+            
             
             print GFF $gene_obj->to_GFF3_format(source => "transdecoder") . "\n";
             
         }
 	}
-
+    
     close PEP;
     close CDS;
     close GFF;
+
     
-    
+    &process_cmd("touch $longorf_checkpoint");
+        
     print STDERR "\n\n#################################\n"
                   . "### Done preparing long ORFs.  ###\n"
                   . "##################################\n\n";
@@ -299,3 +403,18 @@ sub process_cmd {
 
 }
 
+####
+sub try_parse_gene_id_from_acc {
+    my ($acc) = @_;
+
+    my $gene_id;
+    
+    if ($acc =~ /^(\S+_c\d+_g\d+)_i\d+$/) {
+        $gene_id = $1;
+    }
+    elsif ($acc =~ /^(\S+_c\d+)_seq\d+$/) {
+        $gene_id = $1;
+    }
+
+    return($gene_id);
+}

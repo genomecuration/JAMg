@@ -1,0 +1,13 @@
+data = read.table("Trinity.fasta.transdecoder_dir/start_refinement.feature.scores.roc.auc", header=F)
+colnames(data) = c('cat', 'auc')
+pdf("Trinity.fasta.transdecoder_dir/start_refinement.feature.scores.roc.auc.plot.pdf")
+barplot(data[,2], las=2, names=data[,1], cex.names=0.4, ylim=c(0,1))
+data = data[rev(order(data[,2])),]
+barplot(data[,2], las=2, names=data[,1], cex.names=0.4, ylim=c(0,1))
+library(ggplot2)
+before_after_df = data.frame(t(simplify2array(strsplit(as.character(data$cat), ','))))
+before_after_df = apply(before_after_df, 1:2, as.numeric)
+colnames(before_after_df) = c('before', 'after')
+data = cbind(before_after_df, data)
+ggplot(data, aes(x=before, y=after)) +  geom_point(aes(size=auc, color=auc))
+dev.off()

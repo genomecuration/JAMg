@@ -1,0 +1,1 @@
+/mnt/nfs/home/30042108/software/JAMg/3rd_party/transdecoder/util/compute_base_probs.pl transcripts.fasta 0 > /mnt/nfs/home/30042108/software/JAMg/3rd_party/transdecoder/sample_data/cufflinks_example/transcripts.fasta.transdecoder_dir/base_freqs.dat

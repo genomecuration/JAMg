@@ -5,8 +5,7 @@ use warnings;
 use FindBin;
 use lib ("$FindBin::Bin/../PerlLib");
 use Gene_obj;
-use Gene_obj_indexer;
-use GFF3_utils;
+use GFF3_utils2;
 use Carp;
 
 $|++;
@@ -20,7 +19,7 @@ main: {
 
     my $gene_obj_indexer_href = {};
     
-    my $asmbl_id_to_gene_list_href = &GFF3_utils::index_GFF3_gene_objs($gff3_file, $gene_obj_indexer_href);
+    my $asmbl_id_to_gene_list_href = &GFF3_utils2::index_GFF3_gene_objs($gff3_file, $gene_obj_indexer_href);
     
     foreach my $asmbl_id (sort keys %$asmbl_id_to_gene_list_href) {
         
@@ -33,7 +32,7 @@ main: {
             
             my $gene_obj_ref = $gene_obj_indexer_href->{$gene_id};
             
-            my ($lend, $rend) = sort {$a<=>$b} $gene_obj_ref->get_coords();
+            my ($lend, $rend) = sort {$a<=>$b} $gene_obj_ref->get_model_span();
             
             my $struct = { gene_obj => $gene_obj_ref,
                            lend => $lend,
@@ -64,6 +63,8 @@ main: {
                 
                 if ($next_lend > $lend && $next_rend < $rend) {
                     ## eclipsed
+                    my $model_feat_name = $gene->{gene_obj}->{Model_feat_name};
+                    print STDERR "\tECLIPSE: $model_feat_name is eclipsed by longer ORF, removing it.\n";
                     $found_eclipsed = 1;
                     last;
                 }
