@@ -262,8 +262,8 @@ my ($scaffold_seq_hashref,$scaffold_seq_length) = &read_fasta($genome_sequence_f
 "$gmap_build_exec --build-sarray=0 -e 0 -D $genome_sequence_file_dir -d $genome_sequence_file_base.gmap $genome_file"
 ) unless (-d "$genome_sequence_file_dir/$genome_sequence_file_base.gmap" || $peptide_file);
 
-unlink("$genome_sequence_file.cidx");
-&process_cmd("$cdbfasta_exec $genome_sequence_file");
+#unlink("$genome_sequence_file.cidx");
+&process_cmd("$cdbfasta_exec $genome_sequence_file") unless -s "$genome_sequence_file.cidx";
 #my $uppercase_genome_files = &split_fasta( $genome_file, $genome_dir, 1, 1 );
 my $aat_uppercase_genome_files = &split_fasta_multi( $genome_file, $genome_dir, 1);
 
@@ -2067,7 +2067,6 @@ sub check_augustus() {
 }
 
 sub shuffle_fasta() {
-
  # shuffling is important to allow aligners process the data
  # in roughly equal time per thread
  my $fasta    = shift;
@@ -2081,8 +2080,8 @@ sub shuffle_fasta() {
 	my $record =<IN>;$record =<IN>;chomp($record);
   	my @data = split( "\n", $record );
 	my $id = shift @data;
-	if ($id && $id=~/^(\S+)/){
-	  	$sequence_data{$1} = join( '', @data );
+	if ($id && $id=~/^(\S+)(.+)/){
+	  	$sequence_data{$1} = $2."\n".join( '', @data );
 	}
  }
 
@@ -2093,14 +2092,15 @@ sub shuffle_fasta() {
   my @data = split( "\n", $record );
   next unless $record;
   my $id = shift @data;
-	if ($id && $id=~/^(\S+)/){
-	  $sequence_data{$1} = join( '', @data );
+	if ($id && $id=~/^(\S+)(.+)/){
+	  $sequence_data{$1} = $2."\n".join( '', @data );
 	}
  }
 
  open( OUT, ">$fasta.shuff" );
  foreach my $id ( shuffle( keys %sequence_data ) ) {
-  print OUT $/ . $id . "\n" . &wrap_text( $sequence_data{$id} );
+  my ($descr,$seq) = split("\n",$sequence_data{$id});
+  print OUT $/ . $id . $descr."\n".&wrap_text( $seq );
  }
  $/ = $orig_sep;
  close OUT;
@@ -2118,15 +2118,20 @@ sub split_fasta() {
  return unless $file2split && -s $file2split && $outdir && $how_many_in_a_file;
  return if -d $outdir;
 
+ print "Splitting $file2split with $how_many_in_a_file sequences that are larger than $min_seq_size bp";
+ print " matching $pattern" if $pattern;
+ print " (shuffled)" if $shuffle;
+ print "\n";
+
  mkdir($outdir) unless -d $outdir;
  my $filecount;
  my $seqcount = int(0);
  undef ($shuffle) if -s $file2split > 1e8;
  my $shuffled_file = $shuffle ? &shuffle_fasta($file2split) : $file2split;
- open( FILE, $shuffled_file ) || die;
  my $orig_sep = $/;
  # the issue is that uniref has > characters in the description line which is 
  # breaking the parser
+ open( FILE, $shuffled_file ) || die;
 
  # we have two choices. skip the first sequence or assume
  # it doesn't break the parser. we do latter
@@ -2160,7 +2165,6 @@ sub split_fasta() {
 	  print OUT ">$id\n" . &wrap_text($seq);
   }
  }
-
 
  $/ = "\n>";
 
@@ -2776,7 +2780,7 @@ sub run_aligner() {
  
  if ( -d $output_directory ) {
   warn
-"$fasta_in.$aligner already exists. Will NOT overwrite and will skip existing output. Stop, delete it and restart otherwise\n";
+"$output_directory already exists. Will NOT overwrite and will skip existing output. Stop, delete it and restart otherwise\n";
   sleep(1);
  }
  else {
@@ -2840,9 +2844,11 @@ sub do_gmap_cmd() {
  my $identical_fraction_prop = sprintf( "%.2f", $identical_fraction_cutoff / 100 );
  $gmap_opt .=
 " -n 0 -p 3 --nofails -B 3 -t 1 -f gff3_gene --split-output=$fasta.gmap --min-trimmed-coverage=0.95 --min-identity=$identical_fraction_prop ";
- &process_cmd("$gmap_opt $fasta 2>/dev/null") unless -s "$fasta.gmap.uniq";
- unlink($fasta);
-
+ unless (-s "$fasta.gmap.uniq"){
+   print "$gmap_opt $fasta\n";
+   &process_cmd("$gmap_opt $fasta 2>/dev/null");
+ }
+   unlink($fasta);
 }
 
 sub run_gmap() {
