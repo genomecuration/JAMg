@@ -262,8 +262,8 @@ my ($scaffold_seq_hashref,$scaffold_seq_length) = &read_fasta($genome_sequence_f
 "$gmap_build_exec --build-sarray=0 -e 0 -D $genome_sequence_file_dir -d $genome_sequence_file_base.gmap $genome_file"
 ) unless (-d "$genome_sequence_file_dir/$genome_sequence_file_base.gmap" || $peptide_file);
 
-#unlink("$genome_sequence_file.cidx");
-&process_cmd("$cdbfasta_exec $genome_sequence_file") unless -s "$genome_sequence_file.cidx";
+unlink("$genome_sequence_file.cidx");
+&process_cmd("$cdbfasta_exec $genome_sequence_file");
 #my $uppercase_genome_files = &split_fasta( $genome_file, $genome_dir, 1, 1 );
 my $aat_uppercase_genome_files = &split_fasta_multi( $genome_file, $genome_dir, 1);
 
