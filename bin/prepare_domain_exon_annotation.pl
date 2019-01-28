@@ -11,7 +11,7 @@ prepare_domain_exon_annotation.pl
 
 Mandatory
 
- -fasta|genome|in :s   => FASTA file of genome. If the file GENOMEFASTA.masked is present, then RepeatMasker is not run
+ -fasta|genome|in :s   => FASTA file of genome. If the file GENOMEFASTA.hardmasked is present, then RepeatMasker is not run
  -engine          :s   => How to run hhblits: none, local, localmpi, PBS or cluster (def. local)
  -transposon_db   :s   => HHblits transposon database (provided)
  -uniprot_db      :s   => HHblits Uniprot database (see ftp://toolkit.genzentrum.lmu.de/pub/HH-suite/databases/hhsuite_dbs)
@@ -152,18 +152,13 @@ print "Using $genome_name as the name for $genome\n";
 &check_for_iupac_violation($genome);
 
 
-if (-s $genome.'.hardmasked' && !-s $genome . '.masked'){
-	print "Found $genome.hardmasked. Using it as a masked file\n";
-	symlink($genome.'.hardmasked',$genome . '.masked');
-}
-
-if (-s $genome . '.masked'){
-  print "Found masked file $genome.masked. Skipping repeatmasking\n";
+if (-s $genome . '.hardmasked'){
+  print "Found masked file $genome.hardmasked. Skipping repeatmasking\n";
 }else{
   &do_repeat_masking($repeatmasker_options);
 }
 
-$genome .= '.masked';
+$genome .= '.hardmasked';
 die "Could not find masked genome $genome.\n" unless -s $genome;
 if ($only_repeat){
 	print "User stop requested after RepeatMasking step.\n";
@@ -296,7 +291,7 @@ sub trim_X($) {
   my $xs = ( $seq_temp =~ tr/X// );
 
   if ($xs) {
-   next if ( $xs / length($seq) ) > 0.3;
+   next if ( $xs / length($seq) ) > 0.1;
    next if length($seq_temp) < ( $minaa * 0.9 );
   }
   print TRIM ">$id\n$seq\n";
@@ -1110,7 +1105,7 @@ sub do_repeat_masking(){
   close OUT;
   close IN;
 
-  #produce $genome.masked
+  #produce $genome.hardmasked
   &process_cmd("$bedtools_exec maskfasta -fi $genome -fo $genome.softmasked -bed $repeat_gff_file -soft");
   &process_cmd("$bedtools_exec maskfasta -fi $genome -fo $genome.hardmasked -bed $repeat_gff_file");
   symlink("$genome.hardmasked","$genome.masked");
