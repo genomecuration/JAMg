@@ -256,7 +256,7 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 	if ($delete_ns){
 		my $mNs = ($mrna_seq =~ tr/N//);
 		if ($mNs && $mNs > $delete_ns){
-			warn "UTR removed: $error_name_text has assembly gaps Ns ($mNs) in mRNA sequence.\n";
+			warn "UTR removed: $error_name_text has more than $delete_ns assembly gaps Ns ($mNs) in mRNA sequence.\n";
 			$isoform = $isoform->trim_UTRs();
 			$do_recreate_seqs++;
 		}
@@ -393,7 +393,7 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 	}
 
 
-	# sometimes breaks if we allow phase check with partial 5' genes
+	# sometimes breaks if we allow phase check with partial 5' genes but we have to do this because pasa rephases evm the wrong way
 	$isoform = &check_phasing($isoform,$error_name_text,\$genome_seq,1) unless $pep_seq!~/^M/;
 #warn Dumper (3,$isoform);
 
@@ -566,6 +566,7 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
    
 
    foreach my $isoform ( @isoforms )   {
+
 	my @exons = $isoform->get_exons();
 	foreach my $e (@exons){
 		my @coords = $e->get_coords();
@@ -578,7 +579,7 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 		}
 	}
   }
- $gene_obj_ref->{gene_span}   = [ $new_gene_span[0], $new_gene_span[1] ];
+  $gene_obj_ref->{gene_span}   = [ $new_gene_span[0], $new_gene_span[1] ];
 
    if ($do_rename){
      print TRACK "GENE\t$gene_id\t$jamg_id_gene\n";
