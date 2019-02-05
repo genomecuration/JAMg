@@ -64,7 +64,7 @@ my $to_bed_exec = "$RealBin/../3rd_party/PASA/misc_utilities/gene_gff3_to_bed.pl
 my ($simple_gff3, $gfffile, $genome, $change_name,$lettername,$verbose, 
  $one_iso, $do_rename, $change_source, $strip_name, $split_single, $delete_ns, $bioproject_locus_id,$go_file,%dbxref_hash );
 pod2usage $! unless &GetOptions(
-	          'one_isoform'      => \$one_iso,
+            'one_isoform'      => \$one_iso,
             'gff|infile:s'     => \$gfffile,
             'genome|fasta:s'   => \$genome,
             'name|change_name' => \$change_name,
@@ -136,7 +136,6 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
  my $gene_count = 1;
  if ($bioproject_locus_id){
 	print GFF3 "##gff-version 3\n";
-	print GFF3_ERR "##gff-version 3\n";
 	print GFF3_SINGLE "##gff-version 3\n" if $split_single;
  }
 
@@ -166,7 +165,6 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 	my $region_print = "##sequence-region\t$genome_id\t1\t".length($genome_seq)."\n";
 	$region_print .= "$genome_id\tAssembly_$bioproject_locus_id\tregion\t1\t".length($genome_seq)."\t.\t+\t.\tID=$genome_id\n";
 	print GFF3 $region_print;
-	print GFF3_ERR $region_print;
 	print GFF3_SINGLE $region_print if $split_single;
   }
 
@@ -194,7 +192,6 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
    my $gene_seq = $gene_obj_ref->get_gene_sequence();
 
    next if !$gene_seq;
-
    $gene_seq =~ s/(\S{80})/$1\n/g;
    chomp $gene_seq;
 
@@ -435,20 +432,37 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 #warn Dumper (5,$isoform);
 
 	# the following section MUST not be followed by a phase correction to 0
+	# jan19. why? something is wrong because the library edit doesn't seem to exist anymore
+	 # ah, we do set the first phase to > 0 if we are next to a gap/splice site and want to maintain the frame (later)
  	my ($first_cds_exon_number,$last_cds_exon_number) = &get_cds_ends($isoform);
         my @exons = $isoform->get_exons();
-        my $first_phase = $exons[$first_cds_exon_number]->{CDS_exon_obj}->{phase};
+	# finally if phase of first cds >0 then we need to chop and reset
+	my $first_cds = $exons[$first_cds_exon_number]->get_CDS_obj();
+        my $first_phase = $first_cds->{phase};
+	  if ( ref $first_cds && $first_phase > 0 ) {
+		warn "FIXING: $error_name_text has phase of first CDS > 0 ($first_phase), setting to 0 and resetting co-ordinates by $first_phase. This may change again later though, stay tuned\n";
+                if ($first_cds->{strand} eq '+'){
+                        # might have utr so only if no utr
+                        $exons[$first_cds_exon_number]->{end5}+=$first_phase if $exons[$first_cds_exon_number]->{end5} == $first_cds->{end5};
+                        $first_cds->{end5}+=$first_phase;
+                }else{
+                        $exons[$first_cds_exon_number]->{end5}-=$first_phase if $exons[$first_cds_exon_number]->{end5} == $first_cds->{end5};
+                        $first_cds->{end5}-=$first_phase;
+                }
+		$first_cds->{phase} = int(0);
+	        $first_phase = int(0);
+	   }
 
-	if (length($cds_seq) % 3 != $first_phase && $pep_seq!~/\*$/){
-		warn "FIXING: $error_name_text has no stop codon, a CDS that is of suspicious length (".length($cds_seq)." with first CDS phase $first_phase). Scanning for a stop codon\n";
+	if (length($cds_seq) % 3 != 0 && $pep_seq!~/\*$/){
+		warn "FIXING: $error_name_text has no stop codon, a CDS that is (length ".length($cds_seq)." whose % 3 != 0). Scanning for a stop codon\n";
 		$isoform = &find_next_stop($isoform,$error_name_text,\$genome_seq,1);
 	}elsif($pep_seq!~/\*$/){
 		warn "FIXING: $error_name_text has no stop codon. Scanning for a stop codon\n";
 		$isoform = &find_next_stop($isoform,$error_name_text,\$genome_seq);
 	}
 #warn Dumper (6,$isoform);
-	if (length($cds_seq) % 3 != $first_phase && $pep_seq!~/^M/){
-		warn "FIXING: $error_name_text has no start codon, a CDS that is of suspicious length (".length($cds_seq)." with first CDS phase $first_phase). Scanning for a start codon\n";
+	if (length($cds_seq) % 3 != 0 && $pep_seq!~/^M/){
+		warn "FIXING: $error_name_text has no start codon, a CDS that is (length ".length($cds_seq)." whose % 3 != 0). Scanning for a start codon\n";
 		$isoform = &find_next_start($isoform,$error_name_text,\$genome_seq,1);
 	}elsif ($pep_seq!~/^M/){
 		warn "FIXING: $error_name_text has no start codon. Scanning for a start codon\n";
@@ -476,6 +490,7 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 		}
 	}
 #warn Dumper (8,$isoform);
+
 
 	# if we have survived this far:
 	if ($one_iso){
@@ -574,7 +589,8 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
    # unfortunately this has to happen across the entire gene
    # and there are 2-3 genes (out of 20000) that have issues.
    # The second issue was start CDSs that had phase !=0 
-   # this is now solved within the library via set_CDS (basically first CDS is reset to have phase = 0 (frame = 1)
+   # this is now solved within the library via set_CDS_phases (basically first CDS is reset to have phase = 0 (frame = 1)
+	# JAN19; not solved.... it seems it was only for gtf
    if ($isoform->{'num_exons'} == 1){
 	$is_single_exon++;
    }
@@ -916,9 +932,9 @@ sub find_next_start(){
 	my $cds_seq = $isoform->get_CDS_sequence();
 	my $cds_seq_length = length($cds_seq);
 	my $cds_modulo_gtf_phase = $cds_seq_length % 3;
-	# fun fun fun: GTF (and our libraries) work with a different definition
-	# of phase, where it is which codon base the first base corresponds to
-	# 0,1,2 for first, second, third base. 
+#	# fun fun fun: GTF (and our libraries) work with a different definition
+#	# of phase, where it is which codon base the first base corresponds to
+#	# 0,1,2 for first, second, third base. 
 	if ($cds_modulo_gtf_phase == 2){$cds_modulo_gtf_phase=1;}
 	elsif($cds_modulo_gtf_phase == 1){$cds_modulo_gtf_phase=2;}
 	my @stops = &Nuc_translator::get_stop_codons();
@@ -957,7 +973,7 @@ sub find_next_start(){
 	$phase_to_check = $is_3_partial ? $cds_modulo_gtf_phase : $phase_to_check;	
 
 	return $isoform if $next_two eq 'AG' || $next_two =~/N$/ || ($cds_seq_length % 3 == $phase_to_check && $stop_codons{$next_three});
-	#we need to make sure there is no 3'UTR
+	#we need to make sure there is no 5'UTR
 	$isoform->trim_5UTR();
 	$isoform->refine_gene_object(); 
 	$isoform->create_all_sequence_types( $genome_seq_ref, %params );
@@ -1007,9 +1023,10 @@ sub find_next_start(){
 		last if $cds_modulo_gtf_phase == $phase_to_check && $stop_codons{$next_three};
 		# phase change needed? often we have the partial 5' being at a splice site
 		# but originally erroneously marked by a UTR region
+		# this does reset the first CDS to a new number
 #warn Dumper ($phase_adjustment,$cds_first_codon,$phase);
 		if ($exons[$first_cds_exon_number]->{CDS_exon_obj}->{phase} != $phase && ($next_two eq 'AG' || $next_two =~/N$/)){
-			warn "FIXING: $error_name_text has a new phase for the first CDS"
+			warn "FIXING: $error_name_text has a new phase for the first CDS because it is adjacent to a splice site or gap"
 #				."(".$exons[$first_cds_exon_number]->{CDS_exon_obj}->{phase}
 #				." vs "
 #				.$phase .")"
@@ -1026,6 +1043,7 @@ sub find_next_start(){
 		$exons[$first_cds_exon_number]{end5} = $c2;
 		$exons[$first_cds_exon_number]->{CDS_exon_obj}->{end5} = $c2;
 	}
+	# ok, rewrite isoform object
 	$isoform->{mRNA_exon_objs} = 0;
    	$isoform->{mRNA_exon_objs} = \@exons;
 	$isoform->refine_gene_object(); 
