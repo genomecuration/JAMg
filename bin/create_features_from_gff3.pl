@@ -27,7 +27,8 @@ Provide a GFF3 file and a genome FASTA file to phase and create sequence feature
   -delete_ns      :i  If more than this many Ns, 1) remove UTRs from mRNA
   -genbank        :s  Prepare for submission to GenBank; give BioProject-assigned locus_tag_id 
   -go_file        :s  SQL query from JAMp database
- 
+  -fix_first_phase    Change phase of first CDS to 0 if it is not 0
+
 NB: -name means that the common name has no spaces and is unique (will be checked). Useful for WebApollo
 
 =head1 JAMp database
@@ -61,7 +62,7 @@ our $SEE;
 my $codon_table = 'universal';
 my $minorf = 96;    #minimum orf size in bp
 my $to_bed_exec = "$RealBin/../3rd_party/PASA/misc_utilities/gene_gff3_to_bed.pl";
-my ($simple_gff3, $gfffile, $genome, $change_name,$lettername,$verbose, 
+my ($simple_gff3, $gfffile, $genome, $change_name,$lettername,$verbose, $fix_first_phase,
  $one_iso, $do_rename, $change_source, $strip_name, $split_single, $delete_ns, $bioproject_locus_id,$go_file,%dbxref_hash );
 pod2usage $! unless &GetOptions(
             'one_isoform'      => \$one_iso,
@@ -79,7 +80,8 @@ pod2usage $! unless &GetOptions(
 	    'delete_ns:i' => \$delete_ns,
 	    'genbank:s' => \$bioproject_locus_id,
 	    'go_file:s' =>\$go_file,
-	    'codon_table:s' => \$codon_table
+	    'codon_table:s' => \$codon_table,
+	    'fix_first_phase' => \$fix_first_phase
 );
 $gfffile = shift if !$gfffile;
 $genome  = shift if !$genome;
@@ -360,6 +362,38 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 		$isoform->{internal_gap} = 1;
 	}
 #warn Dumper (2,$isoform);
+	if ($fix_first_phase){
+		 # ah, we do set the first phase to > 0 if we are next to a gap/splice site and want to maintain the frame (later)
+ 		my ($first_cds_exon_number,$last_cds_exon_number) = &get_cds_ends($isoform);
+	        my @exons = $isoform->get_exons();
+		# finally if phase of first cds >0 then we need to chop and reset
+		my $first_cds = $exons[$first_cds_exon_number]->get_CDS_obj();
+	        my $first_phase = $first_cds->{phase};
+		  if ( ref $first_cds && $first_phase > 0 ) {
+			warn "FIXING: $error_name_text has phase of first CDS > 0 ($first_phase), setting to 0 and resetting co-ordinates by $first_phase. This may change again later though, stay tuned\n";
+	                if ($first_cds->{strand} eq '+'){
+	                        # might have utr so only if no utr
+	                        $exons[$first_cds_exon_number]->{end5}+=$first_phase if $exons[$first_cds_exon_number]->{end5} == $first_cds->{end5};
+	                        $first_cds->{end5}+=$first_phase;
+	                }else{
+	                        $exons[$first_cds_exon_number]->{end5}-=$first_phase if $exons[$first_cds_exon_number]->{end5} == $first_cds->{end5};
+	                        $first_cds->{end5}-=$first_phase;
+	                }
+			$first_cds->{phase} = int(0);
+		        $first_phase = int(0);
+		   }
+		$isoform->{mRNA_exon_objs} = 0;
+	   	$isoform->{mRNA_exon_objs} = \@exons;
+		$isoform->refine_gene_object();
+		$isoform->create_all_sequence_types( \$genome_seq, %params );
+		$mrna_seq = $isoform->get_cDNA_sequence();
+		$cds_seq = $isoform->get_CDS_sequence();
+		$gene_seq = $gene_obj_ref->get_gene_sequence();
+		$pep_seq = $isoform->get_protein_sequence();
+	}
+
+
+	# sometimes breaks if we allow phase check with partial 5' genes
 	$isoform = &check_phasing($isoform,$error_name_text,\$genome_seq,1) unless $pep_seq!~/^M/;
 #warn Dumper (3,$isoform);
 
@@ -432,26 +466,6 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 #warn Dumper (5,$isoform);
 
 	# the following section MUST not be followed by a phase correction to 0
-	# jan19. why? something is wrong because the library edit doesn't seem to exist anymore
-	 # ah, we do set the first phase to > 0 if we are next to a gap/splice site and want to maintain the frame (later)
- 	my ($first_cds_exon_number,$last_cds_exon_number) = &get_cds_ends($isoform);
-        my @exons = $isoform->get_exons();
-	# finally if phase of first cds >0 then we need to chop and reset
-	my $first_cds = $exons[$first_cds_exon_number]->get_CDS_obj();
-        my $first_phase = $first_cds->{phase};
-	  if ( ref $first_cds && $first_phase > 0 ) {
-		warn "FIXING: $error_name_text has phase of first CDS > 0 ($first_phase), setting to 0 and resetting co-ordinates by $first_phase. This may change again later though, stay tuned\n";
-                if ($first_cds->{strand} eq '+'){
-                        # might have utr so only if no utr
-                        $exons[$first_cds_exon_number]->{end5}+=$first_phase if $exons[$first_cds_exon_number]->{end5} == $first_cds->{end5};
-                        $first_cds->{end5}+=$first_phase;
-                }else{
-                        $exons[$first_cds_exon_number]->{end5}-=$first_phase if $exons[$first_cds_exon_number]->{end5} == $first_cds->{end5};
-                        $first_cds->{end5}-=$first_phase;
-                }
-		$first_cds->{phase} = int(0);
-	        $first_phase = int(0);
-	   }
 
 	if (length($cds_seq) % 3 != 0 && $pep_seq!~/\*$/){
 		warn "FIXING: $error_name_text has no stop codon, a CDS that is (length ".length($cds_seq)." whose % 3 != 0). Scanning for a stop codon\n";
