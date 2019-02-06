@@ -147,6 +147,7 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
   } keys %$genome_id_to_gene_list_href ) {
 
   my $genome_seq = $scaffold_seq_hashref->{$genome_id};
+  my $genome_seq_length = length($genome_seq);
   if ( !$genome_seq ) {
    warn "Cannot find genome sequence $genome_id\n";
    next;
@@ -161,11 +162,11 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 		die "Sequence $genome_id begins or ends with a run of Ns (assembly gaps). This is not allowed for genome submissions, please edit the genome sequence\n";
 	}elsif($genome_seq=~/([^ATCGN])/){
 		die "Genome sequence sequence $genome_id has non-ATCGN characters (e.g. $1). Please run cleanup_iupac.pl or similar\n";
-	}elsif (length($genome_seq) < 200){
+	}elsif ($genome_seq_length < 200){
 		die "Sequence $genome_id is shorter than the GenBank minimum of 200. Please edit the genome sequence e.g. trim_fasta_all.pl -le 200 (or better -le 2000; I mean, are these even meaningful contigs?!)\n";
 	}
-	my $region_print = "##sequence-region\t$genome_id\t1\t".length($genome_seq)."\n";
-	$region_print .= "$genome_id\tAssembly_$bioproject_locus_id\tregion\t1\t".length($genome_seq)."\t.\t+\t.\tID=$genome_id\n";
+	my $region_print = "##sequence-region\t$genome_id\t1\t$genome_seq_length\n";
+	$region_print .= "$genome_id\tAssembly_$bioproject_locus_id\tregion\t1\t$genome_seq_length\t.\t+\t.\tID=$genome_id\n";
 	print GFF3 $region_print;
 	print GFF3_SINGLE $region_print if $split_single;
   }
@@ -183,6 +184,11 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 	|| ($gene_obj_ref->{gene_name} && $gene_obj_ref->{gene_name}=~/temp_model/) 
 	|| ($gene_obj_ref->{TU_feat_name} && $gene_obj_ref->{TU_feat_name}=~/temp_model/)
 	);
+
+   my ( $gene_lend, $gene_rend ) = sort { $a <=> $b } $gene_obj_ref->get_gene_span();
+   if ($gene_rend > $genome_seq_length){
+	warn "Skipping gene $gene_id as it expands past length of scaffold\n";
+   }
 
    $gene_obj_ref->{TU_feat_name} = $gene_id if !$gene_obj_ref->{TU_feat_name};
 
@@ -435,17 +441,17 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 		@gene_span = $isoform->get_gene_span();
 	}
 #warn Dumper (4,$isoform);
-	if ($gene_span[1] > length($genome_seq) - 4 && $gene_span[1] != length($genome_seq)){
+	if ($gene_span[1] > $genome_seq_length - 4 && $gene_span[1] != $genome_seq_length){
 		my @exons = $isoform->get_exons();
 		if ( $pep_seq!~/^M/ && $strand eq '-' ){
 			#expand gene, first exon, its cds if there
-			$exons[0]{'end3'} = length($genome_seq);
+			$exons[0]{'end3'} = $genome_seq_length;
 			if ( $exons[0]{'CDS_exon_obj'} && $exons[0]{'CDS_exon_obj'}{'end3'}){
 				$exons[0]{'CDS_exon_obj'}{'end3'} = $exons[0]{'end3'};
 			}
 		}elsif($pep_seq!~/\*$/ && $strand eq '+'){
-			#expand gene to length($genome_seq), last exon, its cds if there
-			$exons[-1]{'end3'} = length($genome_seq);
+			#expand gene to $genome_seq_length, last exon, its cds if there
+			$exons[-1]{'end3'} = $genome_seq_length;
 			if ( $exons[-1]{'CDS_exon_obj'} && $exons[-1]{'CDS_exon_obj'}{'end3'}){
 				$exons[-1]{'CDS_exon_obj'}{'end3'} = $exons[-1]{'end3'};
 			}
