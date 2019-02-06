@@ -28,6 +28,7 @@ Provide a GFF3 file and a genome FASTA file to phase and create sequence feature
   -genbank        :s  Prepare for submission to GenBank; give BioProject-assigned locus_tag_id 
   -go_file        :s  SQL query from JAMp database
   -fix_first_phase    Change phase of first CDS to 0 if it is not 0
+  -padding        :s  Info file from parse_genome_for_ncbi.pl if needed to pad 5'
 
 NB: -name means that the common name has no spaces and is unique (will be checked). Useful for WebApollo
 
@@ -62,7 +63,7 @@ our $SEE;
 my $codon_table = 'universal';
 my $minorf = 96;    #minimum orf size in bp
 my $to_bed_exec = "$RealBin/../3rd_party/PASA/misc_utilities/gene_gff3_to_bed.pl";
-my ($simple_gff3, $gfffile, $genome, $change_name,$lettername,$verbose, $fix_first_phase,
+my ($simple_gff3, $gfffile, $genome, $change_name,$lettername,$verbose, $fix_first_phase, $padding_file,
  $one_iso, $do_rename, $change_source, $strip_name, $split_single, $delete_ns, $bioproject_locus_id,$go_file,%dbxref_hash );
 pod2usage $! unless &GetOptions(
             'one_isoform'      => \$one_iso,
@@ -81,7 +82,8 @@ pod2usage $! unless &GetOptions(
 	    'genbank:s' => \$bioproject_locus_id,
 	    'go_file:s' =>\$go_file,
 	    'codon_table:s' => \$codon_table,
-	    'fix_first_phase' => \$fix_first_phase
+	    'fix_first_phase' => \$fix_first_phase,
+            'padding:s'       => \$padding_file
 );
 $gfffile = shift if !$gfffile;
 $genome  = shift if !$genome;
@@ -92,6 +94,17 @@ die "Fasta file $genome does not exist\n" unless -s $genome;
 
 #global
 Nuc_translator::use_specified_genetic_code ($codon_table);
+
+my %padding_hash;
+if ($padding_file){
+	die "Padding file not found\n" if !-s $padding_file;
+	open (IN,$padding_file);
+	while (my $ln=<IN>){
+		chomp($ln);
+		my @data = split("\t",$ln);
+		$padding_hash{$data[0]} = $data[3] if $data[3];
+	}
+}
 
 if ($go_file){
 	open (GO,$go_file) || die "Cannot find $go_file";
@@ -113,9 +126,57 @@ my %unique_names_check;
 my %params;
 $params{unspliced_transcript} = 1;    # highlights introns
 
+$gfffile = &pad_gff3($gfffile) if $padding_file;
 &gff3_process($gfffile);
 
 #########################################################################
+sub pad_gff3($){
+  my $gff3_file = shift;
+  my $new_gff3_file = $gff3_file.'.pad';
+  open (IN,$gff3_file);
+  open (OUT,">$new_gff3_file");
+  my %deleted_parents;
+  while (my $ln=<IN>){
+	if ($ln=~/^#/ || $ln=~/^\s*$/){
+		print OUT $ln;
+		next;
+	}
+	my @data = split("\t",$ln);
+	if ($data[8]){
+  	  #   not in genome file.
+	  next if !$scaffold_seq_hashref->{$data[0]};
+
+	  if ($padding_hash{$data[0]}){
+		$data[3] -= $padding_hash{$data[0]};
+		$data[4] -= $padding_hash{$data[0]};
+	  }
+	  if ($data[4] < 1){
+		$deleted_parents{$1} = 1 if (($data[2] eq 'mRNA' || $data[2] eq 'gene') && $data[8]=~/ID=([^;]+)/ );
+		next;
+	  }
+	  # if the parent is gone
+	  if ($data[8]=~/Parent=([^;]+)/){
+		next if $deleted_parents{$1};
+	  }
+	  
+	  # sometimes we have to delete the ends and they may contain only parts of a gene. we
+	   # want to keep these partials because in future can help scaffold sequences.
+	  if ($data[3] < 1){
+		warn "Increasing left side from ".$data[3]." to 1 for ".$data[8];
+		$data[3] = 1; # rescale genes that are in deleted area. Phase is fixed in gff anyway
+	  }
+	  if ($data[4] > length($scaffold_seq_hashref->{$data[0]}) ){
+		warn "Reducing extend of ".$data[4] ." to ".length($scaffold_seq_hashref->{$data[0]})." - ".$data[8];
+		$data[4] = length($scaffold_seq_hashref->{$data[0]});
+	  }
+	}
+	print OUT join("\t",@data);
+  }
+  close IN;
+  close OUT;
+  return $new_gff3_file;
+}
+
 sub gff3_process() {
  my $gff3_file = shift;
  confess "Cannot find $gff3_file\n" unless -s $gff3_file;
@@ -134,7 +195,7 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
  open( GENE, ">$gff3_file.gene" );
  open( MRNA, ">$gff3_file.mRNA" );
  open( TRACK, ">$gff3_file.track"); 
- print "Indexing complete\n";
+ print "Indexing complete\n" if $verbose;
  my $gene_count = 1;
  if ($bioproject_locus_id){
 	print GFF3 "##gff-version 3\n";
@@ -174,7 +235,7 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
   print "\nProcessing scaffold $genome_id\n" if $verbose;
 
  foreach my $gene_id (sort @gene_ids) {
-    
+   print "Processing $gene_id\n" if $verbose; 
    my (%preferences,$is_single_exon);
    $preferences{'sequence_ref'} = \$genome_seq;
    $preferences{'source'}  = $change_source if $change_source;
@@ -186,9 +247,15 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 	);
 
    my ( $gene_lend, $gene_rend ) = sort { $a <=> $b } $gene_obj_ref->get_gene_span();
-   if ($gene_rend > $genome_seq_length){
-	warn "Skipping gene $gene_id as it expands past length of scaffold\n";
+   if ($gene_rend > $genome_seq_length || $gene_lend > $genome_seq_length){
+	warn "Skipping gene $gene_id as it expands past length of scaffold ($gene_lend,$gene_rend > $genome_seq_length)\n";
+	next;
    }
+   if ( $gene_lend < 1 ||  $gene_rend < 1 ){
+	warn "Skipping gene $gene_id as it extends before the padded scaffold ($gene_lend,$gene_rend)\n";
+	next;
+   }
+
 
    $gene_obj_ref->{TU_feat_name} = $gene_id if !$gene_obj_ref->{TU_feat_name};
 
