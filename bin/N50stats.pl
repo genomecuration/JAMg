@@ -81,8 +81,8 @@ foreach my $infile (@infiles){
 	$outfile.='g' if ($user_genome_size);
 	warn ("Outfile $outfile already exists\n") if -s $outfile && !$overwrite;
 	next  if -s $outfile && !$overwrite;
-	my $total=int(0);my $gaps = int(0);
-	my ($seq_ref,$gap_distrib_ref);
+	my $total=int(0);
+	my ($seq_ref,$gap_distrib_ref,$mask_distrib_ref);
 	my @head=`head $infile`;
 	foreach (@head){
 		if ($_=~/^>\S/){
@@ -97,8 +97,9 @@ foreach my $infile (@infiles){
 	}
 
 	print "Parsing file $infile...\n";
+	my $gaps;
 	if ($is_fasta){
-		($total,$seq_ref,$gap_distrib_ref) = &process_fasta($infile);
+		($total,$seq_ref,$gap_distrib_ref,$mask_distrib_ref) = &process_fasta($infile);
 	}
 	elsif($is_fastq){
 		($total,$gaps,$seq_ref) = &process_fastq($infile);
@@ -129,6 +130,17 @@ foreach my $infile (@infiles){
 				$gap_median = sprintf("%.1f",$gap_stat->median());
 			}
 		}
+		my $masks = int(0); my $mask_mean = int(0);my $mask_median =int(0);my $mask_number=int(0);
+		if ($mask_distrib_ref){
+			my $mask_stat = Statistics::Descriptive::Full->new();
+			$mask_stat ->add_data($mask_distrib_ref);
+			$masks = $mask_stat->sum();
+			if ($masks){
+				$mask_number = $mask_stat->count();
+				$mask_mean = sprintf("%.2f",$mask_stat->mean());
+				$mask_median = sprintf("%.1f",$mask_stat->median());
+			}
+		}
 
 		if (!$scaffolds || $scaffolds == 0){
 			$scaffolds=$sequence_number;
@@ -136,7 +148,8 @@ foreach my $infile (@infiles){
 		}
 		print OUT "File: $infile\n";
 		print OUT "TOTAL: ".&thousands($total)." bp in ".&thousands($sequence_number)." sequences\n";
-		print OUT "\tof which ".&thousands($gaps)." are Ns/gaps (occurences: $gap_number; mean: $gap_mean; median: $gap_median).\n";
+		print OUT "\tof total ".&thousands($gaps)." are Ns/gaps (occurences: $gap_number; mean: $gap_mean; median: $gap_median).\n";
+		print OUT "\tof total ".&thousands($masks)." are masked (lc /X) (occurences: $mask_number; mean: $mask_mean; median: $mask_median).\n";
 		print OUT "Mean: ".&thousands($mean)."\nStdev: ".&thousands($sd)."\n";
 		print OUT "Median: ".&thousands($median)."\n";
 		print OUT "Smallest: ".&thousands($smallest)."\nLargest: ".&thousands($largest)."\n";
@@ -172,12 +185,16 @@ sub process_fasta(){
 	my $infile=shift;
 	my @array ;
 	my @gap_distrib ;
+	my @mask_distrib ;
 	my $total=int(0);
+	my $timer   = new Time::Progress;
+        $timer->attr( min => 0, max => -s $infile );
 	my $counter = int(0);
 
 	if ($is_single){
 		open (IN,$infile)||die($!);
 		while (my $seq_id=<IN>) {
+			print $timer->report( "eta: %E min, %40b %p\r", $counter ) if ( $counter =~ /00000$/ );
 	                my $seq=<IN>;
 	                my $length=length($seq)-1; # newline
 			$counter+=length($seq_id)+$length+1;
@@ -185,6 +202,9 @@ sub process_fasta(){
 			while ($seq=~/([nN\-]+)/g){
 				push(@gap_distrib,length($1));
 			}
+			while ($seq=~/([xXatcg]+)/g){
+                                push(@mask_distrib,length($1));
+                        }
 	                push(@array,$length);
         	        $total+=$length;
 		}
@@ -195,6 +215,7 @@ sub process_fasta(){
 		open (IN,$infile)||die($!);
 		while (my $record=<IN>) {
 			$counter+=length($record);
+			print $timer->report( "eta: %E min, %40b %p\r", $counter ) if ( $counter =~ /0000$/ );
 			chomp($record);
 			next if $record=~/^\s*$/;
 			my @data = split("\n",$record);
@@ -207,6 +228,9 @@ sub process_fasta(){
 			while ($seq=~/([nN\-]+)/g){
 				push(@gap_distrib,length($1));
 			}
+			while ($seq=~/([xXatcg]+)/g){
+                                push(@mask_distrib,length($1));
+                        }
 			push(@array,$length);
 	        	$total+=$length;
 	        }
@@ -215,7 +239,7 @@ sub process_fasta(){
 	}
 	print "\n";
 	die "No data found or wrong format\n" unless $total;
-	return ($total,\@array,\@gap_distrib);
+	return ($total,\@array,\@gap_distrib,\@mask_distrib);
 }
 sub process_fastq(){
 	print "Processing as FASTQ\n";
@@ -223,15 +247,18 @@ sub process_fastq(){
 	my @array ;
 	my $total=int(0);
 	my $gaps=int(0);
+	my $timer   = new Time::Progress;
+        $timer->attr( min => 0, max => -s $infile );
 	my $counter = int(0);
 	open (IN,$infile);
 	while (my $seq_id=<IN>) {
+		print $timer->report( "eta: %E min, %40b %p\r", $counter ) if ( $counter =~ /00000$/ );
 		my $seq=<IN>;
 		my $scrap=<IN>.<IN>;
 		my $length=length($seq)-1; #newline
 		$counter+=length($seq_id)+$length+1;
 		next unless $length;
-		$gaps+=($seq=~tr/[nN\-]//);
+		$gaps+=($seq=~tr/[xXNn\-]//);
                 push(@array,$length);
                 $total+=$length;
        }
@@ -246,9 +273,12 @@ sub process_csv(){
 	my @array ;
 	my $total=int(0);
 	my $gaps='N/A';
+	my $timer   = new Time::Progress;
+        $timer->attr( min => 0, max => -s $infile );
 	my $counter = int(0);
 	open (IN,$infile)||die ("Cannot open $infile\n");
 	while (my $ln=<IN>){
+		print $timer->report( "eta: %E min, %40b %p\r", $counter ) if ( $counter =~ /00000$/ );
 		$counter+=length($ln);
 		$ln=~/(\d+)$/;
 		next unless $1;
