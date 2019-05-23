@@ -43,7 +43,7 @@ Optional:
  -nofail             Don't print out failures (I/O friendlyness if sparse hits expected). Otherwise captured as FASTQ
 
  Introns:
- -intron_db      :s  GMAP intron or splice database (iit_store). Automatically found and used if it exists as a single *.iit in maps/ directory.
+ -intron_db      :s  No longer supported manually, must be stored as *.iit in \$GMAP_DIR/\$GENOME_NAME/\$GENOME_NAME.maps/ directory. See \$JAMG_PATH/bin/gmap_introns.pl
  -intron_hard        If -intron_db, conservative handling of junction reads and eliminate soft-clipping (--ambig-splice-noclip --trim-mismatch-score=0). no longer recommended (Jun2017)
  -intron_size    :i  Maximum intron length (def. 70,000)
 
@@ -89,8 +89,7 @@ $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 my (
      $input_dir,               $pattern2,      $debug, $piccard_0m, $do_parallel,
      $genome,                  $genome_dbname, $nofails, $intron_hard,
-     $suffix,                  $help,          $intron_splice_db,
-     $just_write_out_commands, $split_input,   $notpaired, $verbose, $build_only
+     $suffix,                  $help,          $just_write_out_commands, $split_input,   $notpaired, $verbose, $build_only
 );
 my $cwd = `pwd`;
 chomp($cwd);
@@ -109,7 +108,6 @@ my $do_large_genome;
 	     'verbose'=>\$verbose,
              'fasta:s'         => \$genome,
              'dbname:s'        => \$genome_dbname,
-             'intron_db:s'     => \$intron_splice_db,
              'intron_hard'     => \$intron_hard,
              'gmap_dir:s'      => \$gmap_dir,
              'intron_size:i'   => \$intron_length,
@@ -210,18 +208,7 @@ if ($build_only){
 	exit(0);
 }
 
-if (!$intron_splice_db){
- my @checks = glob("$gmap_dir/$genome_dbname/$genome_dbname.maps/*iit");
- if (@checks && length(scalar(@checks)) == 1){
-  $intron_splice_db = $checks[0];
-  print "Will use the splice file $intron_splice_db\n";
-  sleep(1);
- }
-}
-
-
 $align_cmd .= " --nofails "                    if $nofails;
-$align_cmd .= " -s $intron_splice_db "         if $intron_splice_db;
 $align_cmd .= " --sam-use-0M " if $piccard_0m;
 $align_cmd .= " --part=1/$do_proportion " if $do_proportion;
 
@@ -453,7 +440,7 @@ sub align_unpaired_files() {
 	$file_align_cmd = $gmap_exec.$align_cmd;
    }else{
 	$file_align_cmd = $gsnap_exec.$align_cmd;
-	$file_align_cmd .= " --ambig-splice-noclip --trim-mismatch-score=0 " if $intron_splice_db && $intron_hard;
+	$file_align_cmd .= " --ambig-splice-noclip --trim-mismatch-score=0 " if $intron_hard;
   }
 
   $file_align_cmd .= ' --bunzip2 ' if $file =~ /\.bz2$/; 
@@ -551,7 +538,7 @@ sub align_paired_files() {
 	$file_align_cmd = $gmap_exec.$align_cmd;
    }else{
 	$file_align_cmd = $gsnap_exec.$align_cmd;
-	$file_align_cmd .= " --ambig-splice-noclip --trim-mismatch-score=0 " if $intron_splice_db && $intron_hard;
+	$file_align_cmd .= " --ambig-splice-noclip --trim-mismatch-score=0 " if $intron_hard;
 	$file_align_cmd .= " --pairmax-rna=$intron_length " if !$notpaired;
   }
 
