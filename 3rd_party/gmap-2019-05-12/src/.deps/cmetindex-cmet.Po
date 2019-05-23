@@ -1,0 +1,10 @@
+cmetindex-cmet.o: cmet.c /usr/include/stdc-predef.h config.h cmet.h \
+ types.h
+
+/usr/include/stdc-predef.h:
+
+config.h:
+
+cmet.h:
+
+types.h:

@@ -1,0 +1,165 @@
+-*- mode: compilation; default-directory: "~/bioinfo/gmap/trunk/src/" -*-
+Compilation started at Mon Dec 14 14:13:20
+
+make -k gsnap.sse42
+/gne/home/twu/bin/gcc -DHAVE_CONFIG_H -I.     -pthread -DTARGET=\"x86_64-unknown-linux-gnu\" -DGMAPDB=\"/gne/research/data/bioinfo/gmap/data/genomes\" -DMAX_READLENGTH=300 -DGSNAP=1 -DHAVE_SSE2=1 -DHAVE_SSSE3=1 -DHAVE_SSE4_1=1 -DHAVE_SSE4_2=1 -msse2 -mssse3 -msse4.1 -msse4.2 -mpopcnt -g -Wall -Wextra -DCHECK_ASSERTIONS=1 -MT gsnap_sse42-dynprog_simd.o -MD -MP -MF .deps/gsnap_sse42-dynprog_simd.Tpo -c -o gsnap_sse42-dynprog_simd.o `test -f 'dynprog_simd.c' || echo './'`dynprog_simd.c
+dynprog_simd.c: In function ‘Dynprog_simd_8’:
+dynprog_simd.c:2143:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+    na2 = revp ? nt_to_int_array[gsequence[1-c]] : nt_to_int_array[gsequence[c-1]];
+    ^
+dynprog_simd.c:2143:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+dynprog_simd.c:2144:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+    na2_alt = revp ? nt_to_int_array[gsequence_alt[1-c]] : nt_to_int_array[gsequence_alt[c-1
+    ^
+dynprog_simd.c:2144:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+dynprog_simd.c:2347:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+    na2 = revp ? nt_to_int_array[gsequence[1-c]] : nt_to_int_array[gsequence[c-1]];
+    ^
+dynprog_simd.c:2347:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+dynprog_simd.c:2348:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+    na2_alt = revp ? nt_to_int_array[gsequence_alt[1-c]] : nt_to_int_array[gsequence_alt[c-1
+    ^
+dynprog_simd.c:2348:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+dynprog_simd.c:1942:33: warning: variable ‘extend_ladder’ set but not used [-Wunused-but-set-variable]
+   __m128i gap_open, gap_extend, extend_ladder, complement_dummy;
+                                 ^
+dynprog_simd.c: In function ‘Dynprog_simd_8_upper’:
+dynprog_simd.c:2770:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+    na2 = revp ? nt_to_int_array[gsequence[1-c]] : nt_to_int_array[gsequence[c-1]];
+    ^
+dynprog_simd.c:2770:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+dynprog_simd.c:2771:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+    na2_alt = revp ? nt_to_int_array[gsequence_alt[1-c]] : nt_to_int_array[gsequence_alt[c-1
+    ^
+dynprog_simd.c:2771:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+dynprog_simd.c:2896:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+    na2 = revp ? nt_to_int_array[gsequence[1-c]] : nt_to_int_array[gsequence[c-1]];
+    ^
+dynprog_simd.c:2896:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+dynprog_simd.c:2897:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+    na2_alt = revp ? nt_to_int_array[gsequence_alt[1-c]] : nt_to_int_array[gsequence_alt[c-1
+    ^
+dynprog_simd.c:2897:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+dynprog_simd.c:2632:8: warning: unused variable ‘na2_single’ [-Wunused-variable]
+   char na2_single;
+        ^
+dynprog_simd.c:2626:70: warning: unused variable ‘pairscore’ [-Wunused-variable]
+   Score8_T *pairscores[5], *pairscores_std_ptr, *pairscores_alt_ptr, pairscore;
+                                                                      ^
+dynprog_simd.c: In function ‘Dynprog_simd_8_lower’:
+dynprog_simd.c:3238:3: error: ‘extend_ladder’ undeclared (first use in this function)
+   extend_ladder = _mm_setr_epi8(0,extend,2*extend,3*extend,4*extend,5*extend,6*extend,7*ext
+   ^
+dynprog_simd.c:3238:3: note: each undeclared identifier is reported only once for each function it appears in
+dynprog_simd.c:3267:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+    na1 = revp ? nt_to_int_array[rsequence[1-r]] : nt_to_int_array[rsequence[r-1]];
+    ^
+dynprog_simd.c:3267:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+dynprog_simd.c:3389:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+    na1 = revp ? nt_to_int_array[rsequence[1-r]] : nt_to_int_array[rsequence[r-1]];
+    ^
+dynprog_simd.c:3389:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+dynprog_simd.c:3089:8: warning: unused variable ‘na2_single’ [-Wunused-variable]
+   char na2_single;
+        ^
+dynprog_simd.c:3083:45: warning: unused variable ‘pairscore’ [-Wunused-variable]
+   Score8_T *pairscores[5], *pairscores_ptr, pairscore;
+                                             ^
+dynprog_simd.c: In function ‘Dynprog_simd_16’:
+dynprog_simd.c:3739:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+    na2 = revp ? nt_to_int_array[gsequence[1-c]] : nt_to_int_array[gsequence[c-1]];
+    ^
+dynprog_simd.c:3739:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+dynprog_simd.c:3740:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+    na2_alt = revp ? nt_to_int_array[gsequence_alt[1-c]] : nt_to_int_array[gsequence_alt[c-1
+    ^
+dynprog_simd.c:3740:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+dynprog_simd.c:3923:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+    na2 = revp ? nt_to_int_array[gsequence[1-c]] : nt_to_int_array[gsequence[c-1]];
+    ^
+dynprog_simd.c:3923:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+dynprog_simd.c:3924:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+    na2_alt = revp ? nt_to_int_array[gsequence_alt[1-c]] : nt_to_int_array[gsequence_alt[c-1
+    ^
+dynprog_simd.c:3924:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+dynprog_simd.c:3563:33: warning: variable ‘extend_ladder’ set but not used [-Wunused-but-set-variable]
+   __m128i gap_open, gap_extend, extend_ladder, complement_dummy;
+                                 ^
+dynprog_simd.c: In function ‘Dynprog_simd_16_upper’:
+dynprog_simd.c:4259:3: error: ‘extend_ladder’ undeclared (first use in this function)
+   extend_ladder = _mm_setr_epi16(0,extend,2*extend,3*extend,4*extend,5*extend,6*extend,7*ex
+   ^
+dynprog_simd.c:4284:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+    na2 = revp ? nt_to_int_array[gsequence[1-c]] : nt_to_int_array[gsequence[c-1]];
+    ^
+dynprog_simd.c:4284:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+dynprog_simd.c:4285:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+    na2_alt = revp ? nt_to_int_array[gsequence_alt[1-c]] : nt_to_int_array[gsequence_alt[c-1
+    ^
+dynprog_simd.c:4285:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+dynprog_simd.c:4381:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+    na2 = revp ? nt_to_int_array[gsequence[1-c]] : nt_to_int_array[gsequence[c-1]];
+    ^
+dynprog_simd.c:4381:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+dynprog_simd.c:4382:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+    na2_alt = revp ? nt_to_int_array[gsequence_alt[1-c]] : nt_to_int_array[gsequence_alt[c-1
+    ^
+dynprog_simd.c:4382:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+dynprog_simd.c:4158:8: warning: unused variable ‘na2_single’ [-Wunused-variable]
+   char na2_single;
+        ^
+dynprog_simd.c:4152:71: warning: unused variable ‘pairscore’ [-Wunused-variable]
+   Score16_T *pairscores[5], *pairscores_std_ptr, *pairscores_alt_ptr, pairscore;
+                                                                       ^
+dynprog_simd.c: In function ‘Dynprog_simd_16_lower’:
+dynprog_simd.c:4675:3: error: ‘extend_ladder’ undeclared (first use in this function)
+   extend_ladder = _mm_setr_epi16(0,extend,2*extend,3*extend,4*extend,5*extend,6*extend,7*ex
+   ^
+dynprog_simd.c:4699:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+    na1 = revp ? nt_to_int_array[rsequence[1-r]] : nt_to_int_array[rsequence[r-1]];
+    ^
+dynprog_simd.c:4699:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+dynprog_simd.c:4792:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+    na1 = revp ? nt_to_int_array[rsequence[1-r]] : nt_to_int_array[rsequence[r-1]];
+    ^
+dynprog_simd.c:4792:4: warning: array subscript has type ‘char’ [-Wchar-subscripts]
+dynprog_simd.c:4542:8: warning: unused variable ‘na2_single’ [-Wunused-variable]
+   char na2_single;
+        ^
+dynprog_simd.c:4536:46: warning: unused variable ‘pairscore’ [-Wunused-variable]
+   Score16_T *pairscores[5], *pairscores_ptr, pairscore;
+                                              ^
+dynprog_simd.c: In function ‘Dynprog_traceback_8_lower’:
+dynprog_simd.c:5278:8: warning: unused variable ‘add_dashes_p’ [-Wunused-variable]
+   bool add_dashes_p;
+        ^
+dynprog_simd.c:5275:11: warning: unused parameter ‘cdna_direction’ [-Wunused-parameter]
+       int cdna_direction, bool watsonp, int dynprogindex) {
+           ^
+dynprog_simd.c: In function ‘Dynprog_traceback_16_lower’:
+dynprog_simd.c:5662:8: warning: unused variable ‘add_dashes_p’ [-Wunused-variable]
+   bool add_dashes_p;
+        ^
+dynprog_simd.c:5659:12: warning: unused parameter ‘cdna_direction’ [-Wunused-parameter]
+        int cdna_direction, bool watsonp, int dynprogindex) {
+            ^
+dynprog_simd.c: At top level:
+dynprog_simd.c:1:13: warning: ‘rcsid’ defined but not used [-Wunused-variable]
+ static char rcsid[] = "$Id: dynprog_simd.c 146623 2014-09-02 21:31:32Z twu $";
+             ^
+dynprog_simd.c:510:1: warning: ‘Directions8_print’ defined but not used [-Wunused-function]
+ Directions8_print (Direction8_T **directions_nogap, Direction8_T **directions_Egap, Directi
+ ^
+dynprog_simd.c:604:1: warning: ‘Directions8_print_ud’ defined but not used [-Wunused-function]
+ Directions8_print_ud (Direction8_T **directions_nogap, Direction8_T **directions_Egap,
+ ^
+dynprog_simd.c:713:1: warning: ‘Directions16_print’ defined but not used [-Wunused-function]
+ Directions16_print (Direction16_T **directions_nogap, Direction16_T **directions_Egap, Dire
+ ^
+dynprog_simd.c:807:1: warning: ‘Directions16_print_ud’ defined but not used [-Wunused-function]
+ Directions16_print_ud (Direction16_T **directions_nogap, Direction16_T **directions_Egap,
+ ^
+make: *** [gsnap_sse42-dynprog_simd.o] Error 1
+make: Target `gsnap.sse42' not remade because of errors.
+
+Compilation exited abnormally with code 2 at Mon Dec 14 14:13:23

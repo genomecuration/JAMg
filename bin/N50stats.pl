@@ -148,8 +148,8 @@ foreach my $infile (@infiles){
 		}
 		print OUT "File: $infile\n";
 		print OUT "TOTAL: ".&thousands($total)." bp in ".&thousands($sequence_number)." sequences\n";
-		print OUT "\tof total ".&thousands($gaps)." are Ns/gaps (occurences: $gap_number; mean: $gap_mean; median: $gap_median).\n";
-		print OUT "\tof total ".&thousands($masks)." are masked (lc /X) (occurences: $mask_number; mean: $mask_mean; median: $mask_median).\n";
+		print OUT "\tof total ".&thousands($gaps)." are Ns/gaps (occurrences: $gap_number; mean: $gap_mean; median: $gap_median).\n";
+		print OUT "\tof total ".&thousands($masks)." are masked (lc /X) (occurrences: $mask_number; mean: $mask_mean; median: $mask_median).\n";
 		print OUT "Mean: ".&thousands($mean)."\nStdev: ".&thousands($sd)."\n";
 		print OUT "Median: ".&thousands($median)."\n";
 		print OUT "Smallest: ".&thousands($smallest)."\nLargest: ".&thousands($largest)."\n";
