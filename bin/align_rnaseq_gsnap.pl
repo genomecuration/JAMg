@@ -35,8 +35,7 @@ Optional:
  -cpus           :i  Number of CPUs/threads (def. 6). I don't recommend more than 6 in a system that has 12 CPUs
  -memory             Memory for samtools sorting, use suffix G M b (def '35G')
  -do_parallel    :i  Run these many alignments (if multiple input files) in parallel. Number of CPUs per alignment is -cpus divided by -do_parallel. Note, memory is not divided.
- -suffix             Build/use suffix array (fast, downweights SNPs, use for non-polymorphic genomes). Not suggested for RNAseq
- -build_only         Build genome (with suffix array) but don't do any alignments. Useful for building genome to be used many times
+ -build_only         Build genome but don't do any alignments. Useful for building genome to be used many times
  -path_number        Maximum number of hits for the read pair. If more that these many hits, then nothing is returned (defaults to 10)
  -do_proportion  :i  Only process one sequence every this many reads (e.g. 1000). Good for doing a subset to build an intron DB.
 
@@ -70,6 +69,8 @@ See LICENSE file for license info
 It is provided "as is" without warranty of any kind.
 
 =cut
+
+# -suffix             Build/use suffix array (fast, downweights SNPs, use for non-polymorphic genomes). Not suggested for RNAseq
 
 use strict;
 use warnings;
@@ -196,7 +197,7 @@ if ($suffix || $build_only) {
 " -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam ";
 }
 else {
- $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 --build-sarray=0 $genome >/dev/null";
+ $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 $genome >/dev/null";
  $align_cmd =
 " -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus  --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam ";
 }
@@ -453,7 +454,6 @@ sub align_unpaired_files() {
    }else{
 	$file_align_cmd = $gsnap_exec.$align_cmd;
 	$file_align_cmd .= " --ambig-splice-noclip --trim-mismatch-score=0 " if $intron_splice_db && $intron_hard;
-	$file_align_cmd .= " --use-sarray=0 " if !$suffix;
   }
 
   $file_align_cmd .= ' --bunzip2 ' if $file =~ /\.bz2$/; 
@@ -553,7 +553,6 @@ sub align_paired_files() {
 	$file_align_cmd = $gsnap_exec.$align_cmd;
 	$file_align_cmd .= " --ambig-splice-noclip --trim-mismatch-score=0 " if $intron_splice_db && $intron_hard;
 	$file_align_cmd .= " --pairmax-rna=$intron_length " if !$notpaired;
-	$file_align_cmd .= " --use-sarray=0 " if !$suffix;
   }
 
   $file_align_cmd .= ' --bunzip2 ' if $file =~ /\.bz2$/; 
