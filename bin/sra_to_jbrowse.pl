@@ -8,7 +8,12 @@ use JSON;
 my $aligns_dir = 'aligns';
 my $url_prefix = 'https://s3b.hortgenomics.science/ntg/jbrowse';
 my $injson_file = 'data/trackList.json';
-my $plot = 1;
+my $xyplot = 1;
+my $organism;
+
+print STDERR "Using aligns_dir aligns; URL Prefix $url_prefix; INPUT JSON is $injson_file";
+print STDERR "Coverage graphs will be XY plots\n" if $xyplot;
+print STDERR "Coverage graphs will be Density plots\n" if !$xyplot;
 
 my $sra_description_file = shift || die("Provide SRA description table file\n");
 die "No INPUT JSON FILE found ($injson_file)" unless $injson_file && -s $injson_file;
@@ -21,7 +26,7 @@ close IN;
 my @json_lines;
 
 open (SRA,$sra_description_file) || die $!;
-#open (OUT,"$sra_description_file.json");
+open (OUT,">$sra_description_file.json");
 
 my $header_str = <SRA>;
 chomp($header_str);
@@ -32,14 +37,26 @@ for (my $i=0;$i<@headers;$i++){
 }
 # use $data[$header_lookup{''}]
 
+
 while (my $ln=<SRA>){
 	chomp($ln);
 	next unless $ln;
 	my @data = split("\t",$ln);
-	my $organism = $data[$header_lookup{'Organism'}];
-	$organism =~s/\s+/_/g;
+	if (!$organism || $organism=~/from\s*data/i){
+		$organism = $data[$header_lookup{'Organism'}];
+		$organism =~s/\s+/_/g;
+	}
+	
+	my $align_file = "gsnap.".$data[$header_lookup{'Run'}]."_vs_".$organism.".concordant_uniq.coverage.bw";
+	# single-end
+	if (!-s $aligns_dir.'/'.$align_file){
+		$align_file = "gsnap.".$data[$header_lookup{'Run'}]."_vs_".$organism.".unpaired_uniq.coverage.bw";
+	}
 
-	next if !-s $aligns_dir."/gsnap.".$data[$header_lookup{'Run'}]."_vs_".$organism.".concordant_uniq.coverage.bw";
+	if (!-s $aligns_dir.'/'.$align_file){
+		warn "File not found for: ".$data[$header_lookup{'Run'}]."\n";
+		next;
+	}
 
 	my %hash_item = (
          "bicolor_pivot" => "zero",
@@ -48,10 +65,10 @@ while (my $ln=<SRA>){
          "autoscale" => "local",
          "key" => $data[$header_lookup{'Assay_Type'}]." of ".$data[$header_lookup{'Run'}]." coverage",
          "category" => $data[$header_lookup{'Assay_Type'}]." coverage graph",
-         "urlTemplate" => $url_prefix."/$organism/data/bigwig/gsnap.ERR760722_vs_Citrus_maxima.concordant_uniq.coverage.bw",
+         "urlTemplate" => $url_prefix."/$organism/data/bigwig/".$align_file
 	);
 
-	if ($plot){
+	if ($xyplot){
 	        $hash_item{"type"} = "JBrowse/View/Track/Wiggle/XYPlot";
 	}else{
 	        $hash_item{"type"} = "JBrowse/View/Track/Wiggle/Density";
@@ -63,18 +80,71 @@ while (my $ln=<SRA>){
 		if ($data[$i] && $data[$i]=~/^[A-Za-z]{2,}/){
 			$hash_item{"metadata"}{$headers[$i]} = $data[$i];
 		}
-		#not really used:
-		#push(@{$hash{$headers[$i]}},$data[$i]);
 	}
 
 	push(@json_lines,\%hash_item);
 }
 close SRA;
 
+my $junction_file_base = 'master_bamfile.bam';
+&process_bw($junction_file_base.".coverage.bw",\@json_lines,"RNA-Seq Global coverage","rnaseq_global_coverage");
+&process_bam($junction_file_base.".junctions.bam.sorted",\@json_lines,"RNA-Seq junction reads","rnaseq_junctions");
+
+
+
 push(@{$json_track_hashref->{'tracks'}},@json_lines);
 
-print to_json($json_track_hashref, {utf8 => 1, pretty => 1});
-
+# print to_json($json_track_hashref, {utf8 => 1, pretty => 1});
+print OUT to_json($json_track_hashref, {utf8 => 1, pretty => 1});
+close OUT;
+print "Done, see $sra_description_file.json\n";
 
 ####
+
+sub process_bw(){
+  my $file = shift;
+  my $out_arrayref = shift;
+  my $key = shift;
+  my $label = shift;
+
+  if (!-s $aligns_dir.'/'.$file){
+    warn "BigWig not found ($aligns_dir/$file)\n";
+    next;
+  }
+	my %hash_item = (
+         "bicolor_pivot" => "zero",
+         "storeClass" => "JBrowse/Store/SeqFeature/BigWig",
+         "label" => $label,
+         "autoscale" => "local",
+         "key" => $key,
+         "category" => "Global coverage graphs",
+	 "type" => "JBrowse/View/Track/Wiggle/Density",
+         "urlTemplate" => $url_prefix."/$organism/data/bigwig/".$file
+	);
+   push(@$out_arrayref,\%hash_item);
+
+}
+
+
+sub process_bam(){
+  my $file = shift;
+  my $out_arrayref = shift;
+  my $key = shift;
+  my $label = shift;
+
+  if (!-s $aligns_dir.'/'.$file){
+    warn "BAM not found ($aligns_dir/$file)\n";
+    next;
+  }
+  my %hash_item = (
+         "type" => "JBrowse/View/Track/Alignments2",
+         "key" => $key,
+         "label" => $label,
+         "storeClass" => "JBrowse/Store/SeqFeature/BAM",
+         "urlTemplate" => $url_prefix."/$organism/data/bam/".$file,
+         "category" => "Read alignments"
+  );
+
+   push(@$out_arrayref,\%hash_item);
+}
 

@@ -3605,7 +3605,7 @@ sub split_fasta_multi(){
 		}else{
 			my @seq_array = split("",$seq);
 			for (my $split_start=0;$split_start<scalar(@seq_array);$split_start+=$size_bp-$overlap_bp){
-				my $split_end = int($split_start + $size_bp) >= scalar(@seq_array) ? int(scalar(@seq_array)-1) : int($split_start + $size_bp);
+				my $split_end = int($split_start + $size_bp) >= scalar(@seq_array) ? int(scalar(@seq_array)-1) : int($split_start + $size_bp)-1;
 				if ($split_start > (scalar(@seq_array)-$overlap_bp)){last;}
 				my $split_seq = join('',@seq_array[$split_start..$split_end]);
 				my $split_label = $label.'_'.$split_start.'-'.$split_end;
