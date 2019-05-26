@@ -23,7 +23,6 @@ Other options:
  -min_coverage     i	  	Minimum coverage for parsing coverage (defaults to 20)
  -window           i  		Window size for coverage graph (defaults to 50)
  -background_fold  i  		Background (defaults to 4), see perldoc
- -no_hints            		Don't create hints file for Augustus and no intron database for GMAP, just process junction reads. Why would you want that though?
  -cpus             i		Number of CPUs for sorting (defaults to 4)
  -memory           s            Amount of memory for sorting. Use K/M/G for kilo/mega/giga-bytes (defaults to 5G)
  -min_jr_length    i		Minimum read length to use for junctions (def to 75)
@@ -68,7 +67,7 @@ use threads;
 use Thread_helper;
 
 #Options
-my ( @bamfiles, $genome, $help,$no_hints, $master_bamfile,$intron_db_only, $do_it_faster );
+my ( @bamfiles, $genome, $help, $master_bamfile,$intron_db_only, $do_it_faster );
 
 my $cpus = 4;
 my $sort_buffer = '5G';
@@ -92,7 +91,6 @@ pod2usage $! unless &GetOptions(
             'strandness:i'      => \$strandness,
             'window:i'          => \$window,
             'background_fold:i' => \$background_level,
-	    'nohints|no_hints'  => \$no_hints,
 	    'cpus:i'            => \$cpus,
 	    'memory:s'          => \$sort_buffer,
 	    'min_jr_length:i'   => \$min_jr_length,
@@ -106,8 +104,6 @@ pod2usage $! unless &GetOptions(
 
 my ( $samtools_exec, $bedtools_exec, $bed_to_aug_script ) = &check_program( 'samtools', 'bedtools','bed12_to_augustus_junction_hints.pl' );
 my $sort_exec = &check_sort_version;
-
-die "If you want the intron DB then you cannot set -nohints\n" if $no_hints && $intron_db_only;
 
 pod2usage if $help;
 
@@ -153,12 +149,10 @@ unless (-e "$master_bamfile.junctions.completed"){
  	."|$sort_exec -n -k 4,4 | $sort_exec -s -n -k 5,5 | $sort_exec -s -n -k 3,3 | $sort_exec -s -k 1,1"
  	." -o $master_bamfile.junctions.all.hints" ) unless (-s "$master_bamfile.junctions.all.hints");
 
-	 unless ($no_hints){
-		 # For Augustus
-		 &intron_driven_fixes("$master_bamfile.junctions.all.hints");
-		 # don't merge before getting intronic.
-		 &merge_hints("$master_bamfile.junctions.hints");
-	  }
+	 # For Augustus
+	 &intron_driven_fixes("$master_bamfile.junctions.all.hints");
+	 # don't merge before getting intronic.
+	 &merge_hints("$master_bamfile.junctions.hints");
  }else{	
 	warn "No junction reads found!";
  }
@@ -173,7 +167,7 @@ unless (-e "$master_bamfile.coverage.bg.completed"){
  &touch("$master_bamfile.coverage.bg.completed");
 }
 
-unless (-e "$master_bamfile.coverage.hints.completed" && !$no_hints){
+unless (-e "$master_bamfile.coverage.hints.completed" ){
  &bg2hints("$master_bamfile.coverage.bg") ;
  &merge_hints("$master_bamfile.coverage.hints");
  &touch("$master_bamfile.coverage.hints.completed");
@@ -190,11 +184,6 @@ if (    -e "$master_bamfile.junctions.completed"
 
  $thread_helper->wait_for_all_threads_to_complete();
  print "Done!\n";
-}
-elsif (!$no_hints) {
- die "Something went wrong....\n";
-}else{
-  print "Done, no hints were processed as requested\n";
 }
 ###
 sub check_program() {

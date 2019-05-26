@@ -133,10 +133,10 @@ foreach my $hint_file (@hintfiles){
 			}
 		}
 		my $prog = int(($line_count / $line_max) * 100);
-		print STDERR "$prog %  \r" if $line_count % 10000 == 0;
+		print STDERR "  $prog %  \r" if $line_count % 10000 == 0;
 	}
 	close IN;
-	print STDERR "100 % \n";
+	print STDERR "  100 % \n";
 }
 $|=0;
 
