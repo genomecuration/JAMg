@@ -30,6 +30,8 @@ Other options:
  -min_jr_reads     i            Minimum number of introns to use for print out "known" splice sites database (Augustus and GMAP). Not used for hints. Defaults to 15. Caution: this is after de-duplication for PCR duplicates and so this maybe too high if the 'bam_rmdupse_core' output is too high
  -min_intron       i            Minimum intron length (def 30)
  -intron_db_only		Do enough work to produce an intron database and then stop (e.g for align_rnaseq)
+ -no_junctions                  Do not use junction subroutine. Necessary for Nanopore RNA-Seq
+ -do_it_faster                  Do not use deduplication when making junction files. Much faster but not recommended
 
 =head1 DESCRIPTION
 
@@ -67,7 +69,7 @@ use threads;
 use Thread_helper;
 
 #Options
-my ( @bamfiles, $genome, $help, $master_bamfile,$intron_db_only, $do_it_faster );
+my ( @bamfiles, $genome, $help, $master_bamfile,$intron_db_only, $do_it_faster, $no_junctions );
 
 my $cpus = 4;
 my $sort_buffer = '5G';
@@ -99,7 +101,8 @@ pod2usage $! unless &GetOptions(
 	    'min_jr_reads:i'    => \$intron_coverage_cutoff,
 	    'tmp:s'             => \$tmpdir,
 	    'intron_db_only'   => \$intron_db_only,
-	    'faster'           => \$do_it_faster
+	    'faster'           => \$do_it_faster,
+	    'no_junctions'     => \$no_junctions
 );
 
 my ( $samtools_exec, $bedtools_exec, $bed_to_aug_script ) = &check_program( 'samtools', 'bedtools','bed12_to_augustus_junction_hints.pl' );
@@ -142,7 +145,7 @@ if (scalar(@bamfiles == 1)){
 die "Cannot index genome $genome\n" unless -s $genome . '.fai';
 my $thread_helper = new Thread_helper($cpus);
 
-unless (-e "$master_bamfile.junctions.completed"){
+unless (-e "$master_bamfile.junctions.completed" || $no_junctions){
  my $junction_bam = &grab_intronic_bam($master_bamfile);
  if (-f $junction_bam && (-s $junction_bam) > 10000){
  	&process_cmd("$bedtools_exec bamtobed -bed12 < $junction_bam | $bed_to_aug_script -prio 7 -out $master_bamfile.junctions.bed"
@@ -453,7 +456,10 @@ sub get_intron_orient(){
 		chomp($data[8]);
 		my ($ref,$type,$start,$end,$strand) = ($data[0],$data[2],$data[3],$data[4],$data[6]);
 		die "Cannot find sequence for $ref in genome FASTA file\n" unless $fasta_data{$ref};
-		die "Unexpected GFF with start higher than the end\n$ln" if $start > $end;
+		if ($start > $end){
+			warn "Unexpected GFF with start higher than the end. Skipping\n$ln";
+			next;
+		}
 		# acceptor and donor sites (3' and 5' on + strand)
 		my $site1 = uc(substr($fasta_data{$ref},($start-1),2));
 		my $site2 = uc(substr($fasta_data{$ref},($end-1-1),2));

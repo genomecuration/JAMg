@@ -3645,13 +3645,14 @@ sub recombine_split_aat_multi(){
 	my $counter = int(0);
 	foreach my $file (map  { $_->[1] }  sort { $a->[0] <=> $b->[0] }map  { /_(\d+)-\d+$suffix$/; [$1, $_] } @files){
 		$counter++;
-		print "$counter       \r" if $counter % 100 == 0;
+		print "   $counter       \r" if $counter % 100 == 0;
 		next unless -s $file && $file=~/^(\S+)_(\d+)-(\d+)$suffix$/;
 		my $thread = threads->create( 'fix_aat1',$file,$suffix,$indir );
 		$thread_helper->add_thread($thread,int(0));
 	}
 	$thread_helper->wait_for_all_threads_to_complete();
 	undef($thread_helper);
+	print "   $counter       \n";
 	#my $thread_helper2 = new Thread_helper($threads,1);
 	my @all_files = glob($indir."/*$suffix");
 	$counter = int(0);
@@ -3659,7 +3660,7 @@ sub recombine_split_aat_multi(){
 	foreach my $file (@all_files){
 		if ($file=~/^(\S+)$suffix$/){
 			$counter++;
-			print "$counter       \r" if $counter % 100 == 0;
+			print "    $counter       \r" if $counter % 100 == 0;
 			my $b = $1;
 			next if -s "$b.aat.filter" || !-s $file || -s $file < 50;
 			#my $thread = threads->create( 'fix_aat2',$file,$suffix,$indir );
@@ -3669,6 +3670,7 @@ sub recombine_split_aat_multi(){
 		}
 	}
         #$thread_helper2->wait_for_all_threads_to_complete();
+	print "    $counter       \n";
 	print "Post-processing done\n";
 }
 

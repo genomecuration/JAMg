@@ -40,6 +40,7 @@ all:
 	cd 3rd_party/exonerate/bin && ln -fs `pwd`/* ../../bin/
 	cd 3rd_party/tRNAscan-SE && $(MAKE) && $(MAKE) install
 	cd 3rd_party/aragorn && gcc -O3 -o aragorn aragorn1.2.36.c && cp -fp aragorn ../bin/
+	cd 3rd_party/minimap2/ && make && cp -f minimap2 ../bin/
 	cd 3rd_party/RECON/src && $(MAKE) && $(MAKE) install && cp -fp ../bin/* ../../bin/
 	cd 3rd_party/RepeatScout && $(MAKE)
 	cd 3rd_party/RepeatMasker && \
