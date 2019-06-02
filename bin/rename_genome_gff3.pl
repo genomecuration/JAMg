@@ -18,7 +18,7 @@ open (OUT,">$gff.renamed")||die;
 
 while (my $ln=<GFF>){
 	my @data = split("\t",$ln);
-	if ($hash{$data[0] && $data[8]){
+	if ($hash{$data[0]} && $data[8]){
 		$data[8] =~s/$data[0]\b/$hash{$data[0]}/g;
 		$data[0] = $hash{$data[0]};
 		print OUT join("\t",@data);

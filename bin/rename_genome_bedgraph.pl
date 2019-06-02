@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 my $list = shift;
-my $gff = shift||die;
+my $bg = shift||die;
 my %hash;
 open (IN,$list)||die;
 while (my $ln=<IN>){
@@ -13,14 +13,15 @@ while (my $ln=<IN>){
 }
 close IN;
 
-open (GFF,$gff)||die;
-open (OUT,">$gff.renamed")||die;
+open (BG,$bg)||die;
+open (OUT,">$bg.renamed")||die;
 
-while (my $ln=<GFF>){
+while (my $ln=<BG>){
 	my @data = split("\t",$ln);
-	if ($hash{$data[0] && $data[3]){
+	if ($hash{$data[0]} && $data[3]){
 		$data[0] = $hash{$data[0]};
 		print OUT join("\t",@data);
 	}
 }
-close GFF;
+close BG;
+close OUT;
