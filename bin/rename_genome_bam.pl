@@ -9,7 +9,13 @@ use Pod::Usage;
 
 USAGE
 
- samtools merge -u -@ 4 - ../RNAseq/raw*/master_bamfile.bam.junctions.bam.sorted ../RNAseq/single/master_bamfile.bam.junctions.bam.sorted | samtools view - | rename_sam.pl LGAM02_contigs.tsv.rename | samtools view -b -T $GENOME_PATH -o bamout.bam -
+ Multiple files:
+
+ samtools merge -u -@ 4 - ../*bam | samtools view - | rename_bam.pl rename.tsv | samtools view -b -T $GENOME_PATH -o bamout.bam -
+
+ Single file:
+
+ samtools view bamfile | rename_bam.pl rename.tsv | samtools view -b -T $GENOME_PATH -o bamout.bam -
 
 =cut
 
@@ -29,13 +35,13 @@ while (my $ln=<IN>){
 }
 close IN;
 
-foreach my $sam (@files){
+foreach my $bam (@files){
 
-	open (SAM,$sam)||die;
-	my $output = $sam ne '/dev/stdin' ? $sam.'.renamed' : "/dev/stdout";
-	open (OUT,">$output")||die "$sam to $output: ".$!;
+	open (BAM,$bam)||die;
+	my $output = $bam ne '/dev/stdin' ? $bam.'.renamed' : "/dev/stdout";
+	open (OUT,">$output")||die "$bam to $output: ".$!;
 
-	while (my $ln=<SAM>){
+	while (my $ln=<BAM>){
 		chomp($ln);
 		my @data = split("\t",$ln);
 		my $old_id = $data[2];
@@ -54,7 +60,7 @@ foreach my $sam (@files){
 
 		print OUT join("\t",@data)."\n";
 	}
-	close SAM;
+	close BAM;
 	close OUT;
 }
 

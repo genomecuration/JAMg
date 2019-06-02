@@ -9,7 +9,18 @@ use Pod::Usage;
 
 USAGE
 
- samtools merge -u -@ 4 - ../RNAseq/raw*/master_bamfile.bam.junctions.bam.sorted ../RNAseq/single/master_bamfile.bam.junctions.bam.sorted | samtools view - | rename_sam.pl LGAM02_contigs.tsv.rename > output.sam
+ Multiple BAM files:
+
+ samtools merge -u -@ 4 - ../*bam | samtools view - | rename_sam.pl rename.tsv > output.sam
+
+ Single SAM file to BAM:
+
+ cat samfile | rename_bam.pl rename.tsv | samtools view -b -T $GENOME_PATH -o bamout.bam -
+
+ Single SAM file to SAM:
+
+ cat samfile | rename_bam.pl rename.tsv > output.sam
+
 
 =cut
 

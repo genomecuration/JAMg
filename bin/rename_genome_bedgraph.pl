@@ -13,8 +13,13 @@ while (my $ln=<IN>){
 }
 close IN;
 
+my $out_bg_file = "$bg.renamed";
 open (BG,$bg)||die;
-open (OUT,">$bg.renamed")||die;
+open (OUT,">$out_bg_file")||die;
+
+my $bedGraphToBigWig_exec = `which bedGraphToBigWig`;
+chomp ($bedGraphToBigWig_exec) if $bedGraphToBigWig_exec;
+
 
 while (my $ln=<BG>){
 	my @data = split("\t",$ln);
@@ -25,3 +30,6 @@ while (my $ln=<BG>){
 }
 close BG;
 close OUT;
+my $bw_file = $out_bg_file;
+$bw_file=~s/\.bg\.renamed$/.bw.renamed/;
+system("$bedGraphToBigWig_exec $out_bg_file ".$ENV{'GENOME_PATH'}.".fai $bw_file") if $bedGraphToBigWig_exec && $ENV{'GENOME_PATH'};
