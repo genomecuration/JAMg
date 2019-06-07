@@ -30,7 +30,7 @@ Other options:
  -min_jr_reads     i            Minimum number of introns to use for print out "known" splice sites database (Augustus and GMAP). Not used for hints. Defaults to 15. Caution: this is after de-duplication for PCR duplicates and so this maybe too high if the 'bam_rmdupse_core' output is too high
  -min_intron       i            Minimum intron length (def 30)
  -intron_db_only		Do enough work to produce an intron database and then stop (e.g for align_rnaseq)
- -no_junctions                  Do not use junction subroutine. Necessary for Nanopore RNA-Seq
+ -no_junctions                  Do not use junction subroutine
  -do_it_faster                  Do not use deduplication when making junction files. Much faster but not recommended
 
 =head1 DESCRIPTION
@@ -69,7 +69,7 @@ use threads;
 use Thread_helper;
 
 #Options
-my ( @bamfiles, $genome, $help, $master_bamfile,$intron_db_only, $do_it_faster, $no_junctions );
+my ( @bamfiles, $genome, $help, $master_bamfile,$intron_db_only, $do_it_faster, $no_junctions, $do_nanopore );
 
 my $cpus = 4;
 my $sort_buffer = '5G';
@@ -84,6 +84,7 @@ my $strandness       = int(0);
 my $background_level = 4;
 my $intron_coverage_cutoff = 15;
 my $min_intron_length = 30;
+
 
 pod2usage $! unless &GetOptions(
             'help'              => \$help,
@@ -102,7 +103,8 @@ pod2usage $! unless &GetOptions(
 	    'tmp:s'             => \$tmpdir,
 	    'intron_db_only'   => \$intron_db_only,
 	    'faster'           => \$do_it_faster,
-	    'no_junctions'     => \$no_junctions
+	    'no_junctions'     => \$no_junctions,
+	    'nanopore'	       => \$do_nanopore
 );
 
 my ( $samtools_exec, $bedtools_exec, $bed_to_aug_script ) = &check_program( 'samtools', 'bedtools','bed12_to_augustus_junction_hints.pl' );
@@ -537,9 +539,16 @@ sub grab_intronic_bam(){
 	return $outfile if -s $outfile;
 	# at least 10 bp each side and intron at least 10bp.
 	# without \t at end, allows for double introns (cf bed12_to_augustus_junction_hints.pl )
-	&process_cmd("$samtools_exec view -@ $cpus -q $min_jr_score -m $min_jr_length $file |grep -P '[0-9]{2,}M[0-9]{2,}N[0-9]{2,}M'|"
-		." samtools view -T $genome -@ $cpus -b -o $outfile -");
-	unless ($do_it_faster){
+	if ($do_nanopore){
+		&process_cmd("$samtools_exec view  -q $min_jr_score -m $min_jr_length $file |"
+			#gaps of 2-5 digits, indels allowed next to gap if < 10 bp
+			." grep -E '[0-9]{2,}M[0-9]{,1}[DI][0-9]{2,5}N[0-9]{,1}[DI][0-9]{2,}M' |"
+			." samtools view -T $genome -b -o $outfile -");
+	}else{
+		&process_cmd("$samtools_exec view -q $min_jr_score -m $min_jr_length $file |grep -E '[0-9]{2,}M[0-9]{2,}N[0-9]{2,}M'|"
+			." samtools view -T $genome -b -o $outfile -");
+	}
+	unless ($do_nanopore ||  $do_it_faster){
 		my $thread        = threads->create('remove_dups',$outfile);
 		$thread_helper->add_thread($thread);
 	}

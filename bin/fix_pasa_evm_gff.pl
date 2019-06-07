@@ -78,7 +78,7 @@ sub process_gene_data(){
 		print $fh join('',(@gene_data,"###\n"));	
 	}
 	if (!$gene_data[1]){
-		warn "No data for this gene. Skipping\n".join('',@gene_data);
+		warn "No data for this gene. Skipping\n";#.join('',@gene_data);
 		return;
 	}
 	# more checks
@@ -89,10 +89,15 @@ sub process_gene_data(){
 		warn "DANGEROUS: SKIPPING gene not unique: $gene_id (".$unique_id{$gene_id}.")\n".$gene_data[0]."\n";
 		return;
 	}
-
-	if ($gene_data[0]=~/Name=([^;]+)/){$gene_name = $1;}
+	$gene_name = '';
+	if ($gene_data[0]=~/Name=([^;]+)/){
+		$gene_name = $1;
+	}elsif ($gene_data[0]=~/ID=([^;]+)/){
+		$gene_name = $1;
+		$gene_data[0].=';Name='.$gene_name;
+	}
 	unless ($gene_name){ 
-		warn "Cannot find a name for a gene. Skipping\n".join('',@gene_data);
+		warn "Cannot find a name for a gene. Skipping:\n".join('',@gene_data);
 		return;
 	}
 

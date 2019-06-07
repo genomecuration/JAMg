@@ -152,7 +152,7 @@ my (
      $softmasked_genome,  $stop_after_correction, $norefine,
      $nodataprint,        $no_gmap,               $no_exonerate,
      $pasa_genome_gff,    $extra_gff_file,        $show_help, 
-     $liberal_cutoffs, $aat_dir, $parafly_exec, $do_exhaustive
+     $liberal_cutoffs, $aat_dir, $parafly_exec, $do_exhaustive, $filter_exec
 );
 
 my $no_rerun_exonerate;
@@ -212,6 +212,12 @@ pod2usage $! unless &GetOptions(
             'extra_gff:s'        => \$extra_gff_file,
 	    'liberal'            => \$liberal_cutoffs
 );
+
+my $sort_buffer = '5G';  # will run up to two sorts in parallel
+my $tmpdir = $ENV{'TMP'};
+$tmpdir = $ENV{'TMPDIR'} if !$tmpdir;
+$tmpdir = '/tmp' if !$tmpdir;
+my $sort_exec = &check_sort_version;
 
 my ( $makeblastdb_exec, $tblastn_exec, $tblastx_exec ) =
   &check_program( 'makeblastdb', 'tblastn', 'tblastx' );
@@ -3001,7 +3007,7 @@ sub run_aat() {
 
 # this is different as it's parallelized versus genome.
 # also it is not using the pasa_cds because that is not appropriate input for exonerate.
- ( $aat_dir, $parafly_exec ) = &check_program( 'AAT.pl', 'ParaFly' );
+ ( $aat_dir, $parafly_exec, $filter_exec ) = &check_program( 'AAT.pl', 'ParaFly', 'filter' );
  $aat_dir = dirname($aat_dir);
  my $aat_command_file = "./" . basename($genome_dir) . ".commands";
 
@@ -3639,19 +3645,17 @@ sub recombine_split_aat_multi(){
 		next unless -s $f && $f=~/^\S+_\d+-\d+$suffix$/;
 		push(@files2,$f);
 	}
-	@files = @files2;undef(@files2);
+	@files = sort @files2;undef(@files2);
 	print "Merging results from ".scalar(@files)." files...\n";
-	my $thread_helper = new Thread_helper($threads,1);
 	my $counter = int(0);
+	#CM007752.1_48070000-48270000.seq.aat.ext
+	# sort according to co-ordinates
 	foreach my $file (map  { $_->[1] }  sort { $a->[0] <=> $b->[0] }map  { /_(\d+)-\d+$suffix$/; [$1, $_] } @files){
 		$counter++;
 		print "   $counter       \r" if $counter % 100 == 0;
 		next unless -s $file && $file=~/^(\S+)_(\d+)-(\d+)$suffix$/;
-		my $thread = threads->create( 'fix_aat1',$file,$suffix,$indir );
-		$thread_helper->add_thread($thread,int(0));
+		&fix_aat1($file,$suffix,$indir );
 	}
-	$thread_helper->wait_for_all_threads_to_complete();
-	undef($thread_helper);
 	print "   $counter       \n";
 	#my $thread_helper2 = new Thread_helper($threads,1);
 	my @all_files = glob($indir."/*$suffix");
@@ -3663,13 +3667,9 @@ sub recombine_split_aat_multi(){
 			print "    $counter       \r" if $counter % 100 == 0;
 			my $b = $1;
 			next if -s "$b.aat.filter" || !-s $file || -s $file < 50;
-			#my $thread = threads->create( 'fix_aat2',$file,$suffix,$indir );
-			#$thread_helper2->add_thread($thread,int(0));
-			#OR
 			&fix_aat2($file,$suffix,$indir);
 		}
 	}
-        #$thread_helper2->wait_for_all_threads_to_complete();
 	print "    $counter       \n";
 	print "Post-processing done\n";
 }
@@ -3678,10 +3678,11 @@ sub fix_aat2(){
 	my ($file,$suffix,$indir) = @_;
 	if ($file=~/^(\S+)$suffix$/){
 		my $b = $1;
-		return if -s "$b.aat.filter" || -f $file."Col";
-		system("$aat_dir/extCollapse_AP.pl $file");
+		return if -s "$b.aat.filter";
+		&collapse_aat($file) if !-s $file."Col";
+		#system("$aat_dir/extCollapse_AP.pl $file") if !-s $file."Col";
 		return unless -s $file."Col";
-		system("$aat_dir/filter $file"."Col -c 1 > $b.aat.filter");
+		system("$filter_exec $file"."Col -c 1 > $b.aat.filter 2>/dev/null");
 		if (-s "$b.aat.filter"){
 			unlink($file.".aat.d");
 			unlink($file."Col");
@@ -3707,6 +3708,7 @@ sub fix_aat1(){
 		print OUT join (" ",@header_data)."\n";
 	}
 	while (my $ln=<IN>){
+		$ln=~s/\x00+//g;
 		if ($ln=~/^\s+(\d+)\s+(\d+)(\s+.+)$/){
 			my ($split_start,$split_end,$rest) = ($1,$2,$3);
 			my $correct_start = sprintf("%10s",($split_start + $ref_start));
@@ -3719,3 +3721,91 @@ sub fix_aat1(){
 	close OUT;
 	unlink($file);
 }
+
+
+sub collapse_aat(){
+	my $extFile = shift;
+	return unless $extFile && -s $extFile;
+	my $outfile = $extFile.'Col';
+	open (TMP,"$extFile");
+	my $header = <TMP>;
+	close TMP;
+	system("$sort_exec -nk1 $extFile | $sort_exec -s -nk6,6 | $sort_exec -s -k9,9 > $extFile.sorted") unless -s "$extFile.sorted";
+	open (EXT, "$extFile.sorted") or die "Cannot open $extFile.sorted\n";
+	open (OUT1,">$extFile.collapsed1") || die $!;
+	my $discard = <EXT>;
+	my $previous_ln;
+	warn "Processing sorted file $extFile.sorted\n" if $debug;
+	while (my $ln = <EXT>) {
+	    next if $ln=~/^\s*$/;
+	    chomp($ln);
+	    $ln =~ s/^\s+//; #rm leading whitespace
+	    next if $ln!~/^[1-9]/;#corruption? must start with a number (not 0)
+	    ## using var names as in ext.c
+	    my ($next_dstart, $next_dend, $next_score, $next_astart, $next_aend, $next_orient, $next_zero1, $next_zero2, $next_acc) = split (/\s+/,$ln);
+	    next if (!$next_dstart || $next_dstart!~/^\d+$/ || $next_dstart < 1 || !$next_dend || $next_dend!~/^\d+$/ || $next_dend < 1 || !$next_score || $next_score!~/^\d+$/ || $next_score < 1 || !$next_acc);
+	    if (!$previous_ln){
+		$previous_ln = $ln if $ln=~/\d+/; 
+		next;
+	    }
+
+	    my ($prev_dstart, $prev_dend, $prev_score, $prev_astart, $prev_aend, $prev_orient, $prev_zero1, $prev_zero2, $prev_acc) = split (/\s+/,$previous_ln);
+	
+	    if ($next_acc && $prev_acc && $next_acc eq $prev_acc 
+		&& $next_orient == $prev_orient && $next_dstart <= $prev_dend) {
+	
+		## merge overlapping entry:
+		my @dcoords = sort {$a<=>$b} ($prev_dstart, $prev_dend, $next_dstart, $next_dend);
+		my $dstart = shift @dcoords;
+		my $dend = pop @dcoords;
+		my @acoords = sort {$a<=>$b} ($prev_astart, $prev_aend, $next_astart, $next_aend);
+		my $astart = shift @acoords;
+		my $aend = pop @acoords;
+		my @scores = sort {$a<=>$b} ($prev_score, $next_score);
+		my $score = pop @scores;
+	
+		$previous_ln = "$dstart $dend $score $astart $aend $prev_orient $prev_zero1 $prev_zero2 $prev_acc";	
+		#warn "expanding current chain.\n" if $debug;
+	    } 
+	    else {
+		$previous_ln = $ln;
+		next if ($prev_dstart > 9999999999 || $prev_dend > 9999999999);
+		printf OUT1 ("%10d %10d %6d %7d %5d %1d %5d %5d %s\n",
+	          $prev_dstart, $prev_dend, $prev_score, $prev_astart, $prev_aend, $prev_orient, $prev_zero1, $prev_zero2, $prev_acc) if ($prev_acc && $prev_score && $prev_score >0);
+	    }
+	}
+	#last line
+	my ($prev_dstart, $prev_dend, $prev_score, $prev_astart, $prev_aend, $prev_orient, $prev_zero1, $prev_zero2, $prev_acc) = split (/\s+/,$previous_ln) if $previous_ln;
+	next if ($prev_dstart > 9999999999 || $prev_dend > 9999999999);
+	printf OUT1 ("%10d %10d %6d %7d %5d %1d %5d %5d %s\n",$prev_dstart, $prev_dend, $prev_score, $prev_astart, $prev_aend, $prev_orient, $prev_zero1, $prev_zero2, $prev_acc) if ($prev_acc && $prev_score && $prev_score >0);
+	
+	close EXT;
+	close OUT1;
+	open (OUT,">$outfile");
+	print OUT $header;
+	close OUT;
+	# i added uniq here because there is a bug somewhere i cant find
+	system("$sort_exec -nk1,1 -nk2,2 $extFile.collapsed1|uniq >> $outfile");
+	system("sed -i '\$d' $outfile");
+	unlink("$extFile.collapsed1");
+	unlink("$extFile.sorted");
+}
+
+sub check_sort_version(){
+	my ($sort_exec) = &check_program('sort');
+	my $cpus = 4;
+	my @v=`$sort_exec --version`;
+
+	if ($v[0] && $v[0]=~/(\d+)\.(\d+)\s*$/){
+		my $major = $1;
+		my $minor = $2;
+		if ($major >= 8 && $minor >= 6){
+			return "$sort_exec -T $tmpdir --parallel $cpus -S $sort_buffer";
+		}else{
+			return "$sort_exec -S $sort_buffer -T $tmpdir";
+		}
+	}else{
+		die "Sort of coreutils not found!";
+	}
+}
+

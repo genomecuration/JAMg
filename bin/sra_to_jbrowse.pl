@@ -11,12 +11,13 @@ my $injson_file = 'data/trackList.json';
 my $xyplot = 1;
 my $organism;
 
-print STDERR "Using aligns_dir aligns; URL Prefix $url_prefix; INPUT JSON is $injson_file";
+my $sra_description_file = shift || die("Provide SRA description table file\n");
+die "No INPUT JSON FILE found ($injson_file)" unless $injson_file && -s $injson_file;
+
+print STDERR "Using $aligns_dir for finding alignments\nURL Prefix is $url_prefix\nINPUT JSON is $injson_file\n";
 print STDERR "Coverage graphs will be XY plots\n" if $xyplot;
 print STDERR "Coverage graphs will be Density plots\n" if !$xyplot;
 
-my $sra_description_file = shift || die("Provide SRA description table file\n");
-die "No INPUT JSON FILE found ($injson_file)" unless $injson_file && -s $injson_file;
 
 open (IN, $injson_file);
 my @a = <IN>;
@@ -45,6 +46,7 @@ while (my $ln=<SRA>){
 	if (!$organism || $organism=~/from\s*data/i){
 		$organism = $data[$header_lookup{'Organism'}];
 		$organism =~s/\s+/_/g;
+		print STDERR "Organism set as $organism\n";
 	}
 	
 	my $align_file = "gsnap.".$data[$header_lookup{'Run'}]."_vs_".$organism.".concordant_uniq.coverage.bw";
@@ -90,6 +92,11 @@ my $junction_file_base = 'master_bamfile.bam';
 &process_bw($junction_file_base.".coverage.bw",\@json_lines,"RNA-Seq Global coverage","rnaseq_global_coverage");
 &process_bam($junction_file_base.".junctions.bam.sorted",\@json_lines,"RNA-Seq junction reads","rnaseq_junctions");
 
+if ($ENV{'GENOME_PATH'} && -s $ENV{'GENOME_PATH'}){
+	my $gaps_file = $ENV{'GENOME_PATH'} . '.gap.wig.bw';
+	system('genome_gaps_to_bed.pl '.$ENV{'GENOME_PATH'} ) if !-s $gaps_file;
+	&process_bw($gaps_file,\@json_lines,"Genome gaps","genome_caps") if -s $gaps_file;
+}
 
 
 push(@{$json_track_hashref->{'tracks'}},@json_lines);
