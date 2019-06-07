@@ -1,0 +1,8 @@
+*.o
+*.pyc
+*.swp
+*~
+/Chrysalis/bin
+/Chrysalis/build
+/Inchworm/bin
+/Inchworm/build
