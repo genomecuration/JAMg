@@ -62,7 +62,7 @@ def split_fasta( fasta, chunks, rundir, verbose ):
     out = {}
     for c in seqs_of_chunk:
         if verbose:
-            sys.stderr.write('Writing %d seqs to chunk %d\n' % (len(seqs_of_chunk[c]), c) )        
+            sys.stderr.write('Writing %d seqs to chunk %d\n' % (len(seqs_of_chunk[c]), c) )
         out[c] = open( chunkfile( rundir, fasta.name, c ), 'w' )
         SeqIO.write([records[r] for r in seqs_of_chunk[c]], 
                     out[c], 'fasta')
@@ -151,7 +151,7 @@ def run_split_augustus( run, fasta, species, chunks, hints, extrinsicCfgFile, cf
         seqs_of_chunk, seq_files = split_fasta( fasta, chunks, rundir, verbose )
     with out:
         cmds = prepare_augustus_commands(UTR, gff3, species, uniqueGeneId, genemodel, alternatives, extrinsicCfgFile, hint_files, seq_files, rundir )
-        out.write( '\n'.join( cmds ) )
+        out.write( '\n'.join( cmds ).'\n' )
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='split the genome and the hints into chunks. Run augustus on each chunk')
