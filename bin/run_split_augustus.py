@@ -119,10 +119,11 @@ def split_hints( hints, chunks, rundir, verbose ):
     return out, seqs_of_chunk, chunk_of_seq
 
 
-def prepare_augustus_commands( UTR, gff3, species, uniqueGeneId, genemodel, alternatives, extrinsicCfgFile, hint_files, seq_files, rundir ):
+def prepare_augustus_commands( UTR, gff3, species, uniqueGeneId, genemodel, alternatives, extrinsicCfgFile, hint_files, seq_files, rundir, softmasking ):
     cmds = []
     for chunk in seq_files:
         augustus = ['augustus']
+        augustus.append('--softmasking=' + softmasking)
         augustus.append('--gff3=' + gff3)
         augustus.append('--species=' + species)
         augustus.append('--uniqueGeneId=' + uniqueGeneId)
@@ -140,7 +141,7 @@ def prepare_augustus_commands( UTR, gff3, species, uniqueGeneId, genemodel, alte
     return cmds
         
         
-def run_split_augustus( run, fasta, species, chunks, hints, extrinsicCfgFile, cfgPath, gff3, genemodel, UTR, alternatives, out, verbose, uniqueGeneId ):
+def run_split_augustus( run, fasta, species, chunks, hints, extrinsicCfgFile, cfgPath, gff3, genemodel, UTR, alternatives, out, verbose, uniqueGeneId, softmasking ):
     rundir = make_rundir( run, verbose )
 
     if hints and extrinsicCfgFile:
@@ -150,8 +151,8 @@ def run_split_augustus( run, fasta, species, chunks, hints, extrinsicCfgFile, cf
         hint_files = []
         seqs_of_chunk, seq_files = split_fasta( fasta, chunks, rundir, verbose )
     with out:
-        cmds = prepare_augustus_commands(UTR, gff3, species, uniqueGeneId, genemodel, alternatives, extrinsicCfgFile, hint_files, seq_files, rundir )
-        out.write( '\n'.join( cmds ).'\n' )
+        cmds = prepare_augustus_commands(UTR, gff3, species, uniqueGeneId, genemodel, alternatives, extrinsicCfgFile, hint_files, seq_files, rundir, softmasking )
+        out.write( '\n'.join( cmds ) + '\n')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='split the genome and the hints into chunks. Run augustus on each chunk')
@@ -163,11 +164,12 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--extrinsicCfgFile', help='Configuration file to tell Augustus how to weight different lines of evidence')
     parser.add_argument('-p', '--cfgPath', help='Location of species configuration files (default %(default)s)', default=os.getenv('AUGUSTUS_CONFIG_PATH'))
     parser.add_argument('-g', '--gff3', help='GFF3 output (default on)', default='on', choices=['on', 'off'])
-    parser.add_argument('-m', '--genemodel', default='complete', help='Gene model (default %(default)s)', choices=['complete', 'partial'] )
+    parser.add_argument('-m', '--genemodel', default='complete', help='Gene model (default %(default)s)', choices=['complete', 'partial', 'intronless'] )
     parser.add_argument('-u', '--UTR', default='off', help='Predict UTR (default %(default)s)', choices=['on', 'off'])
     parser.add_argument('-a', '--alternatives', default='false', help='Use alternatives from evidence (default %(default)s)', choices=['true', 'false'] )
     parser.add_argument('-o', '--out', default=sys.stdout, type=argparse.FileType('w') , help='command file (default STDOUT)')
     parser.add_argument('-q', '--uniqueGeneId', default='true', choices=['true', 'false'])
+    parser.add_argument('-x', '--softmasking', default='1', help='Use softmasked regions as repeats', choices=['1', '0'])
     parser.add_argument('-v', '--verbose', action='store_true', default=False)
     args = parser.parse_args()
     if args.hints and not args.extrinsicCfgFile:
