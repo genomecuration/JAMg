@@ -4,12 +4,16 @@
 
 =USAGE
 
-        'fill_in=s' => 
-        'longreads=s{1,}' => 
-        'min_gap:i' => 
-        'max_gap:i' => 
-        'capture_length:i' => 
- 
+        -fill_in             =s  Genome to gap fill
+        -longreads           =s  Other genome assembly
+        -min_gap            :i   Defaults to 1
+        -max_gap            :i   Defaults to 10000
+        -capture_length     :i   Defaults to 1000
+	-max_gap_diff       :i   Defaults to 10 unless within -max_replacement
+	-max_replacement    :i   Defaults to 10000 unless within -max_gap_diff
+	-identity_min       :f   Defaults to 98.0
+	-cpus		    :i   Defaults to 1
+        -lastz_aln_opts     :s   Defaults to ' -S 1 -T 1 -l 200 '
 
 =cut
 
@@ -20,13 +24,18 @@ use Pod::Usage;
 use Data::Dumper;
 use File::Basename;
 
-my ($fill_in,$longreads,$do_help) ;
+my ($fill_in,$longreads,$do_help,%fill_in_hash) ;
 my $gap_size_min = 1;
 my $gap_size_max = 1e4;
+my $max_gap_diff = 10;
+my $max_replacement = 10000;
 my $capture_length = 1000;
-my $identity_cutoff = 98;
+my $identity_cutoff = 98.0;
+my $lastz_aln_opts = ' -S 1 -T 1 -l 200 ';
 my $cpus = 1;
 GetOptions ( 
+	'max_gap_diff:i' => \$max_gap_diff,
+	'max_replacement:i' => \$max_replacement,
 	'h|?' => \$do_help,
 	'fill_in=s' => \$fill_in,
 	'longreads=s' => \$longreads,
@@ -34,25 +43,43 @@ GetOptions (
 	'max_gap:i' => \$gap_size_max,
 	'capture_length:i' => \$capture_length,
         'identity_min:f' => \$identity_cutoff,
-	'cpus:i'	=>\$cpus
+	'cpus:i'	=>\$cpus,
+	'lastz_aln_opts:s' => \$lastz_aln_opts
+ 
 ) || pod2usage(2);
-pod2usage(1) unless !$do_help || ($fill_in && -s $fill_in && $longreads && -s $longreads);
+pod2usage(1) if $do_help || !$fill_in || !-s $fill_in ||  !$longreads || !-s $longreads;
 
+die "Minimum gap must be at least 1bp and less than 32766\n" if $gap_size_min < 1 || $gap_size_min > 32766;
+die "Maximum gap cannot be more than 32766\n" if $gap_size_max > 32766;
+die "Capture length cannot be more than 32766\n" if $capture_length > 32766;
+die "Identity cut off must be between 1-100\n" unless $identity_cutoff > 1 && $identity_cutoff <=100;
+
+$lastz_aln_opts .= " -f BlastTab  -P $cpus";
 my ($lastz_db_exec,$lastz_aln_exec ) = &check_program('lastdb','lastal');
 
-#split fill_in
-my $lastdb = $longreads.'.contigdb';
-&process_cmd($lastz_db_exec ." -c $lastdb $longreads") unless -s "$lastdb.bck";
+my $lastdb = &make_lastdb($longreads);
+
 my $query_read_file = &split_gap_fasta($fill_in);
 
-my $lastz_aln_opts = ' -S 1 -T 1 -f BlastTab -l 200 -P '.$cpus;
-my $lastz_output = $query_read_file.'_vs_'.basename($longreads).'.lastz';
+my $lastz_output = $query_read_file.'_vs_'.basename($longreads);
 &process_cmd($lastz_aln_exec ." $lastz_aln_opts $lastdb $query_read_file > $lastz_output") unless -s $lastz_output;
 
 &process_lastz_blast($lastz_output);
 
+unlink($query_read_file);
 
 #########################
+sub make_lastdb(){
+	my $input = shift;
+	my $db = $longreads.'.contigdb';
+	return $db if -s $db.'.bck';
+	print "Creating LASTZ database (SLOW)\n";
+	&process_cmd($lastz_db_exec ." -c $db $longreads");
+	die "Cannot create LASTDB for $longreads"  unless -s "$db.bck";
+	return $db;
+}
+
+
 sub parse_fasta_to_hash(){
   my $fasta = shift;
   die unless $fasta && -s $fasta;
@@ -76,9 +103,12 @@ sub parse_fasta_to_hash(){
 }
 
 sub process_lastz_blast(){
-  my ($file) = @_;
+  my $file = shift;
+  die  "No LASTZ output\n" unless $file && -s $file;
+
   my $output = $file.".parsed";
   my (%hash1,%hash2);
+  my ($gaps_filled,$new_seq_counter)=(int(0),int(0));
 
   open (IN,$file);
   while (my $ln=<IN>){
@@ -110,8 +140,10 @@ sub process_lastz_blast(){
 		( $data[2] > $hash1{$data[1]}{$parsed_query[0].':'.$parsed_query[1]}{$parsed_query[2]}{'identity'} 
 		&& $data[11] > $hash1{$data[1]}{$parsed_query[0].':'.$parsed_query[1]}{$parsed_query[2]}{'score'} )
 		){
+
 		# query can be reversed
 		my ($q_start,$q_end,$orient) = $data[6] < $data[7] ? ($data[6],$data[7],'1') : ($data[7],$data[6],'-1');
+
 
 		$hash1{$data[1]}{$parsed_query[0]}{$parsed_query[1]}{$parsed_query[2]} = 
 		 {
@@ -137,11 +169,22 @@ sub process_lastz_blast(){
   close IN;
 #die Dumper \%hash1;
  # each subject must get both subseq fragments. but each fragment pair must be linked to the same and only one subject
-  foreach my $subject (keys %hash1){
-	foreach my $scaffold (keys %{$hash1{$subject}}){
-	   foreach my $subseq (keys %{$hash1{$subject}{$scaffold}}){
+  foreach my $subject (sort keys %hash1){
+	foreach my $scaffold (sort keys %{$hash1{$subject}}){
+	   foreach my $subseq (sort {$b<=>$a} keys %{$hash1{$subject}{$scaffold}}){
 		next unless $hash1{$subject}{$scaffold}{$subseq}{'A'} && $hash1{$subject}{$scaffold}{$subseq}{'B'} 
                      && $hash1{$subject}{$scaffold}{$subseq}{'A'}{'orientation'} == $hash1{$subject}{$scaffold}{$subseq}{'B'}{'orientation'};
+
+		my $orig_gap_size = $hash1{$subject}{$scaffold}{$subseq}{'A'}{'orig_gap_length'};
+		my $new_gap_size = ($hash1{$subject}{$scaffold}{$subseq}{'A'}{'orientation'} == 1)
+				   ? int ($hash1{$subject}{$scaffold}{$subseq}{'B'}{'s_real_start_1'} - $hash1{$subject}{$scaffold}{$subseq}{'A'}{'s_real_end_1'} -1)
+				   : int ($hash1{$subject}{$scaffold}{$subseq}{'A'}{'s_real_start_1'} - $hash1{$subject}{$scaffold}{$subseq}{'B'}{'s_real_end_1'} -1);
+		next if ( $new_gap_size < 1
+			 || ($new_gap_size > $max_replacement
+			 && ($new_gap_size > $orig_gap_size * $max_gap_diff) ) );
+
+		$hash1{$subject}{$scaffold}{$subseq}{'A'}{'new_gap_size'} = $new_gap_size;
+		$hash1{$subject}{$scaffold}{$subseq}{'B'}{'new_gap_size'} = $new_gap_size;
 		# if there is more than one, pick the one with highest alignment length, identity, score
 		my ($new_aln_length,$new_score) = (
 			$hash1{$subject}{$scaffold}{$subseq}{'A'}{'alignment_length'} + $hash1{$subject}{$scaffold}{$subseq}{'B'}{'alignment_length'},
@@ -166,11 +209,10 @@ sub process_lastz_blast(){
 
   # coz i'm too lazy to index but someone should
   my $longread_hash = &parse_fasta_to_hash($longreads);
-  my $fill_in_hash = &parse_fasta_to_hash($fill_in);
-  open (OUT,">$file.contigfill");
-  open (OUTFSA,">$file.contigfill.fsa");
+  open (OUT,">$file.fill");
+  print OUT "ID\tgap_START\tgap_END\tgap_ORIGINAL_SIZE\tgap_REPLACEMENT_SIZE\n";
   foreach my $scaffold (keys %hash2){
-	my $genome_seq = $fill_in_hash->{$scaffold};
+	my $genome_seq = $fill_in_hash{$scaffold} || die ("Cannot find sequence for $scaffold\n");
 	foreach my $subseq (sort {$b <=> $a} keys %{$hash2{$scaffold}}){
 		if (
 		    $hash2{$scaffold}{$subseq}{'A'} && $hash2{$scaffold}{$subseq}{'B'}
@@ -196,8 +238,6 @@ sub process_lastz_blast(){
 				  $hash2{$scaffold}{$subseq}{'A'}{'s_real_start_1'} - $hash2{$scaffold}{$subseq}{'B'}{'s_real_end_1'} -1
 				);
 			}
-			warn Dumper \$hash2{$scaffold}{$subseq};
-#			die Dumper $gap_replace_str;
 			print OUT $scaffold."\t".$hash2{$scaffold}{$subseq}{'A'}{'q_real_end_1'}
 			  ."\t".$hash2{$scaffold}{$subseq}{'B'}{'q_real_start_1'}
 			  ."\t".$hash2{$scaffold}{$subseq}{'A'}{'orig_gap_length'}
@@ -209,16 +249,34 @@ sub process_lastz_blast(){
 			my $old_gap = substr($genome_seq,
 					$hash2{$scaffold}{$subseq}{'A'}{'q_real_end_1'}-1,
 					$hash2{$scaffold}{$subseq}{'B'}{'q_real_start_1'}-1 - $hash2{$scaffold}{$subseq}{'A'}{'q_real_end_1'}+1,
-#					$hash2{$scaffold}{$subseq}{'A'}{'orig_gap_length'},
 					$gap_replace_str );
-warn Dumper ($old_gap,$gap_replace_str);
+			$gaps_filled +=$hash2{$scaffold}{$subseq}{'A'}{'orig_gap_length'};
+			$new_seq_counter +=length($gap_replace_str);
+#			warn Dumper \$hash2{$scaffold}{$subseq};
+#			die Dumper $gap_replace_str;
+#			warn Dumper ($old_gap,$gap_replace_str);
 
 		}
+        $fill_in_hash{$scaffold} = $genome_seq;
 	}
-	print OUTFSA ">$scaffold\n".&wrap_text($genome_seq)."\n";
   }
  close OUT;
+ #my $fsa_out = "$fill_in.fill.fsa";
+ my $fsa_out = "$file.fill.fsa";
+ if ($gaps_filled>0){
+  print "Completed. Replaced "
+	.&thousands($gaps_filled)." bp of gaps with "
+	.&thousands($new_seq_counter)." bp of new sequence.\n"
+	."Printing out genome to $fsa_out\n";
+  }else{
+	die "No gaps were filled. Try a different input\n";
+  }
+  open (OUTFSA,">$fsa_out"); 
+  foreach my $id (sort {length($fill_in_hash{$b}) <=> length($fill_in_hash{$a}) } keys %fill_in_hash){
+	print OUTFSA ">$id\n".&wrap_text($fill_in_hash{$id})."\n";
+  }
  close OUTFSA;
+
 }
 
 
@@ -226,7 +284,6 @@ sub split_gap_fasta() {
  my $fasta = shift;
  my ($seq_counter,$subseq_counter) = (int(0),int(0));
  my $output = "$fasta.gapsplit.$gap_size_min.$gap_size_max.$capture_length";
- return $output if -s $output;
  open (OUT,">$output");
  my $orig_sep = $/;
  $/ = '>';
@@ -236,10 +293,11 @@ sub split_gap_fasta() {
   next unless $record;
   my @lines = split( $orig_sep, $record );
   my $id    = shift(@lines);
+  $id=~s/\s+$//;
   my $seq   = join( '', @lines );
   $seq =~ s/\s+//g;
-
-  next unless $id && $seq;
+  die "Weird FASTA file $fasta ...\n" unless $id && $seq;
+  $fill_in_hash{$id}=$seq;
   my $seq_length = length($seq);
   next unless $seq_length > 2 * $capture_length + $gap_size_min;
   $seq_counter++;
@@ -279,7 +337,7 @@ sub split_gap_fasta() {
  close IN;
  close OUT;
  $/ = $orig_sep;
- print "Processed $seq_counter sequences into $subseq_counter pair of subsequences\n";
+ print "Processed ".&thousands($seq_counter)." sequences into ".&thousands($subseq_counter)." gaps/pair of subsequences\n";
  return $output;
 }
 
@@ -317,3 +375,26 @@ sub process_cmd {
  }
  return $ret;
 }
+
+
+sub median(){
+    my $ref = shift; #sorted
+    my $len = shift;
+    return -1 unless $ref && $len;
+
+    if($len%2){
+        return $ref->[int($len/2)];
+    }
+    else{
+        return ($ref->[int($len/2)-1] + $ref->[int($len/2)])/2;
+    }
+}
+
+sub thousands(){
+        my $val = shift;
+        $val = sprintf("%.0f", $val);
+        return $val if length($val)<4;
+        1 while $val =~ s/(.*\d)(\d\d\d)/$1,$2/;
+        return $val;
+}
+
