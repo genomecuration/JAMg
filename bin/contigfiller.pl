@@ -12,8 +12,19 @@
 	-max_gap_diff       :i   Defaults to 10 unless within -max_replacement
 	-max_replacement    :i   Defaults to 10000 unless within -max_gap_diff
 	-identity_min       :f   Defaults to 98.0
-	-cpus		    :i   Defaults to 1
+	-cpus		    :i   Defaults to 2
         -lastz_aln_opts     :s   Defaults to ' -S 1 -T 1 -l 200 '
+	-out                :s   Output fasta
+
+ Requires LASTZ in PATH. Recommend both -fill_in and -longreads to be RepeatMasked
+
+Can do multiple rounds but start with largest capture, For example
+
+ contigfiller.pl -long other_genome_assembly.fsa -capt 5000 -max_gap 10000 -fill my_genome.fasta -out round1 | tee fill.log
+ contigfiller.pl -long other_genome_assembly.fsa -capt 5000 -max_gap 20000 -fill round1.filled.fsa -out round2 | tee -a  fill.log
+ contigfiller.pl -long other_genome_assembly.fsa -capt 5000 -max_replacement 50000 -max_gap 32766 -fill round2.filled.fsa -out round3| tee -a  fill.log
+ contigfiller.pl -long other_genome_assembly.fsa -capt 3000 -max_gap 10000 -fill round3.filled.fsa -out round4| tee -a  fill.log
+ contigfiller.pl -long other_genome_assembly.fsa -capt 1000 -max_gap 10000 -fill round4.filled.fsa -out round5| tee -a  fill.log
 
 =cut
 
@@ -24,7 +35,7 @@ use Pod::Usage;
 use Data::Dumper;
 use File::Basename;
 
-my ($fill_in,$longreads,$do_help,%fill_in_hash) ;
+my ($fill_in,$longreads,$do_help,%fill_in_hash,$output_base,$debug) ;
 my $gap_size_min = 1;
 my $gap_size_max = 1e4;
 my $max_gap_diff = 10;
@@ -32,7 +43,7 @@ my $max_replacement = 10000;
 my $capture_length = 1000;
 my $identity_cutoff = 98.0;
 my $lastz_aln_opts = ' -S 1 -T 1 -l 200 ';
-my $cpus = 1;
+my $cpus = 2;
 GetOptions ( 
 	'max_gap_diff:i' => \$max_gap_diff,
 	'max_replacement:i' => \$max_replacement,
@@ -44,7 +55,8 @@ GetOptions (
 	'capture_length:i' => \$capture_length,
         'identity_min:f' => \$identity_cutoff,
 	'cpus:i'	=>\$cpus,
-	'lastz_aln_opts:s' => \$lastz_aln_opts
+	'lastz_aln_opts:s' => \$lastz_aln_opts,
+	'outfile:s'  => \$output_base,
  
 ) || pod2usage(2);
 pod2usage(1) if $do_help || !$fill_in || !-s $fill_in ||  !$longreads || !-s $longreads;
@@ -66,7 +78,11 @@ my $lastz_output = $query_read_file.'_vs_'.basename($longreads);
 
 &process_lastz_blast($lastz_output);
 
-unlink($query_read_file);
+unless ($debug){
+	unlink($lastz_output);
+	unlink($query_read_file);
+}
+
 
 #########################
 sub make_lastdb(){
@@ -209,7 +225,8 @@ sub process_lastz_blast(){
 
   # coz i'm too lazy to index but someone should
   my $longread_hash = &parse_fasta_to_hash($longreads);
-  open (OUT,">$file.fill");
+  my $outlog =  $output_base ? $output_base.".filled.log" : "$file.filled.log";
+  open (OUT,">$outlog");
   print OUT "ID\tgap_START\tgap_END\tgap_ORIGINAL_SIZE\tgap_REPLACEMENT_SIZE\n";
   foreach my $scaffold (keys %hash2){
 	my $genome_seq = $fill_in_hash{$scaffold} || die ("Cannot find sequence for $scaffold\n");
@@ -261,8 +278,7 @@ sub process_lastz_blast(){
 	}
   }
  close OUT;
- #my $fsa_out = "$fill_in.fill.fsa";
- my $fsa_out = "$file.fill.fsa";
+ my $fsa_out = $output_base ? $output_base.".filled.fsa" : "$file.filled.fsa";
  if ($gaps_filled>0){
   print "Completed. Replaced "
 	.&thousands($gaps_filled)." bp of gaps with "
