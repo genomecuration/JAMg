@@ -22,7 +22,7 @@ trim_fasta_all.pl [options] <infiles>
 
 removes sequences from a FASTA file. See perldoc for more info.
 
-	'i|fa|fasta=s'    => FASTA file to trim. You can also give multiples as arguments without any -i/-fa option.
+	'fa|fasta=s'    => FASTA file to trim. You can also give multiples as arguments without any -i/-fa option.
 	'outfile:s'	=> Optionally, the name of the trimmed outfile
 	'blastfile:s'	=> BLASTFILE to retrieve sequences from
 	'blastquery'		=> grab BLAST queries 
@@ -36,7 +36,7 @@ removes sequences from a FASTA file. See perldoc for more info.
 	xdiscard        => Discard if these many Xs
 	'npl'           => Do not include these characters when calculating size: NPLnpl
 	'lc|lowercase'  => Do not include lowercase characters when calculating size of sequence (e.g. to not include low quality bases)
-	'id|idfile=s'   => A second FASTA file containing IDs to remove from FASTA file. Alternatively a text file with one ID per line
+	'list=s'   => A second FASTA file containing IDs to remove from FASTA file. Alternatively a text file with one ID per line
 	'descr'		=> For above: search description line instead of primary id.
 	'ci'		=> Case insensitivity for above two options
 	'invert'	=> Invert match (invert output filenames)
@@ -91,7 +91,7 @@ my (
 	 $seq_search,   $single_line, $ratio_cutoff,  $ghash, $overwrite, $casava
 );
 &GetOptions(
-	'i|fa|fasta=s{,}' => \@infiles,
+	'fa|fasta=s{,}' => \@infiles,
 	'blastfile=s'     => \$blastfile,
 	#'evalue=s'	=> \$evalue_cutoff,
 	'c|character=s'   => \$character,
@@ -102,7 +102,7 @@ my (
 	'uc|uppercase'    => \$convert2uc,
 	'npl'             => \$nplmask,
 	'lc|lowercase'    => \$lcmask,
-	'ids|idfile=s{,}' => \@idfiles,
+	'list=s{,}' => \@idfiles,
 	'description'     => \$descr_flag,
 	'invert'          => \$invert,
 	'ci'              => \$ci,
