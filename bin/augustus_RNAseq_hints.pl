@@ -150,8 +150,14 @@ my $thread_helper = new Thread_helper($cpus);
 unless (-e "$master_bamfile.junctions.completed" || $no_junctions){
  my $junction_bam = &grab_intronic_bam($master_bamfile);
  if (-f $junction_bam && (-s $junction_bam) > 10000){
+	 my ($local_sort_buffer, $local_sort_unit) = (1,'G');
+	 if ($sort_buffer=~/(\d+)([KMG])/){
+		($local_sort_buffer, $local_sort_unit) = ($1, $2);
+	 }
+	 $local_sort_buffer = int($local_sort_buffer / 4);
+	 $local_sort_buffer .= $local_sort_unit;
  	&process_cmd("$bedtools_exec bamtobed -bed12 < $junction_bam | $bed_to_aug_script -prio 7 -out $master_bamfile.junctions.bed"
- 	."|$sort_exec -n -k 4,4 | $sort_exec -s -n -k 5,5 | $sort_exec -s -n -k 3,3 | $sort_exec -s -k 1,1"
+ 	."|$sort_exec -S $local_sort_buffer -n -k 4,4 | $sort_exec -S $local_sort_buffer -s -n -k 5,5 | $sort_exec -S $local_sort_buffer -s -n -k 3,3 | $sort_exec -S $local_sort_buffer -s -k 1,1"
  	." -o $master_bamfile.junctions.all.hints" ) unless (-s "$master_bamfile.junctions.all.hints");
 
 	 # For Augustus
@@ -167,7 +173,7 @@ unless (-e "$master_bamfile.junctions.completed" || $no_junctions){
 
 unless (-e "$master_bamfile.coverage.bg.completed"){
  # For JBrowse
- &process_cmd("$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $master_bamfile| $sort_exec -k1,1 -k2,2n -o $master_bamfile.coverage.bg");
+ &process_cmd("$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $master_bamfile| $sort_exec -S $sort_buffer -k1,1 -k2,2n -o $master_bamfile.coverage.bg");
  &process_cmd("bedGraphToBigWig $master_bamfile.coverage.bg $genome.fai $master_bamfile.coverage.bw") if `which bedGraphToBigWig`; 
  &touch("$master_bamfile.coverage.bg.completed");
 }
@@ -181,8 +187,14 @@ unless (-e "$master_bamfile.coverage.hints.completed" ){
 if (    -e "$master_bamfile.junctions.completed"
      && -e "$master_bamfile.coverage.hints.completed" ){
  unless (-e "$master_bamfile.rnaseq.completed"){
+    my ($local_sort_buffer, $local_sort_unit) = (1,'G');
+    if ($sort_buffer=~/(\d+)([KMG])/){
+	($local_sort_buffer, $local_sort_unit) = ($1, $2);
+    }
+    $local_sort_buffer = int($local_sort_buffer / 4);
+    $local_sort_buffer .= $local_sort_unit;
    &process_cmd("cat $master_bamfile.junctions.hints $master_bamfile.coverage.hints"
-	."|$sort_exec -n -k 4,4 | $sort_exec -s -n -k 5,5 | $sort_exec -s -n -k 3,3 | $sort_exec -s -k 1,1 -o $master_bamfile.rnaseq.hints" ) if -s "$master_bamfile.junctions.hints";
+	."|$sort_exec -S $local_sort_buffer -n -k 4,4 | $sort_exec -S $local_sort_buffer -s -n -k 5,5 | $sort_exec -S $local_sort_buffer -s -n -k 3,3 | $sort_exec -S $local_sort_buffer -s -k 1,1 -o $master_bamfile.rnaseq.hints" ) if -s "$master_bamfile.junctions.hints";
    &merge_hints("$master_bamfile.rnaseq.hints") if -s "$master_bamfile.rnaseq.hints";
    &touch("$master_bamfile.rnaseq.completed");
  }
@@ -275,7 +287,14 @@ sub bg2hints() {
 
  close OUT;
  close IN;
- &process_cmd("$sort_exec -n -k 4,4 $outfile| $sort_exec -s -n -k 5,5 | $sort_exec -s -n -k 3,3 | $sort_exec -s -k 1,1 -o $outfile.");
+
+  my ($local_sort_buffer, $local_sort_unit) = (1,'G');
+  if ($sort_buffer=~/(\d+)([KMG])/){
+    ($local_sort_buffer, $local_sort_unit) = ($1, $2);
+  }
+  $local_sort_buffer = int($local_sort_buffer / 4);
+  $local_sort_buffer .= $local_sort_unit;
+ &process_cmd("$sort_exec -S $local_sort_buffer -n -k 4,4 $outfile| $sort_exec -S $local_sort_buffer -s -n -k 5,5 | $sort_exec -S $local_sort_buffer -s -n -k 3,3 | $sort_exec -S $local_sort_buffer -s -k 1,1 -o $outfile.");
  rename("$outfile.",$outfile);
  return $outfile;
 }
@@ -332,9 +351,16 @@ sub intron_driven_fixes(){
  }
  close IN;
  close OUT2;
-  
+
+ my ($local_sort_buffer, $local_sort_unit) = (1,'G');
+ if ($sort_buffer=~/(\d+)([KMG])/){
+	($local_sort_buffer, $local_sort_unit) = ($1, $2);
+ }
+ $local_sort_buffer = int($local_sort_buffer / 4);
+ $local_sort_buffer .= $local_sort_unit;
+
  system("cat $intronic_file $outfile"
- ." |$sort_exec -n -k 4,4 | $sort_exec -s -n -k 5,5 | $sort_exec -s -n -k 3,3 | $sort_exec -s -k 1,1"
+ ." |$sort_exec -S $local_sort_buffer -n -k 4,4 | $sort_exec -S $local_sort_buffer -s -n -k 5,5 | $sort_exec -S $local_sort_buffer -s -n -k 3,3 | $sort_exec -S $local_sort_buffer -s -k 1,1"
  ." -o $outfile.sorted");
  rename("$outfile.sorted",$outfile);
 }
@@ -516,10 +542,10 @@ sub get_intron_orient(){
 	close SPLICE2;
 
 	#uniquefy
-	system("$sort_exec -u -o $hint_file.splice.augustus. $hint_file.splice.augustus");
+	system("$sort_exec -S $sort_buffer -u -o $hint_file.splice.augustus. $hint_file.splice.augustus");
 	rename("$hint_file.splice.augustus.","$hint_file.splice.augustus");
 
-	system("$sort_exec -u -k2,2 -o $hint_file.splice.gmap. $hint_file.splice.gmap");
+	system("$sort_exec -S $sort_buffer -u -k2,2 -o $hint_file.splice.gmap. $hint_file.splice.gmap");
 	rename("$hint_file.splice.gmap.","$hint_file.splice.gmap");
 
 	return "$hint_file.intron.only";
@@ -592,9 +618,9 @@ sub check_sort_version(){
 		my $major = $1;
 		my $minor = $2;
 		if ($major >= 8 && $minor >= 6){
-			return "$sort_exec -T $tmpdir --parallel $cpus -S $sort_buffer";
+			return "$sort_exec -T $tmpdir --parallel $cpus";
 		}else{
-			return "$sort_exec -S $sort_buffer -T $tmpdir";
+			return "$sort_exec -T $tmpdir";
 		}
 	}else{
 		die "Sort of coreutils not found!";
