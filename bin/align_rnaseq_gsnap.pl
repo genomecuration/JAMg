@@ -88,7 +88,7 @@ $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 
 my (
      $input_dir,               $pattern2,      $debug, $piccard_0m, $do_parallel,
-     $genome,                  $genome_dbname, $nofails, $intron_hard,
+     $genome,                  $genome_dbname, $nofails, $intron_hard, $compressed_files,
      $suffix,                  $help,          $just_write_out_commands, $split_input,   $notpaired, $verbose, $build_only
 );
 my $cwd = `pwd`;
@@ -145,8 +145,8 @@ if ($do_parallel && $do_parallel > 1){
 }
 
 
-my ( $gmap_build_exec, $gsnap_exec, $gmap_exec, $samtools_exec,$bunzip2_exec,$bedtools_exec ) =
-  &check_program( "gmap_build", "gsnap", "gmap", "samtools",'bunzip2','bedtools' );
+my ( $gmap_build_exec, $gsnap_exec, $gmap_exec, $samtools_exec,$bunzip2_exec,$bedtools_exec,$gunzip_exec ) =
+  &check_program( "gmap_build", "gsnap", "gmap", "samtools",'bunzip2','bedtools','gunzip' );
 &samtools_version_check($samtools_exec);
 
 ( $gsnap_exec,$gmap_exec ) = &check_program( "gsnapl", "gmapl" ) if $do_large_genome || (-s $genome > 4306887543);
@@ -399,7 +399,7 @@ sub checked_paired_files() {
 sub align_unpaired_files() {
  my (@files_to_do) = @_;
  foreach my $file ( sort @files_to_do ) {
-  my $qual_prot = &check_fastq_format($file);
+  my ($qual_prot,$max_read_length) = &check_fastq_format($file);
   $qual_prot = $qual_prot eq 'fasta' ? '' : ' --quality-protocol='.$qual_prot;
   my $base = basename($file);
   my $group_id;
@@ -425,19 +425,10 @@ sub align_unpaired_files() {
   open( LOG, ">gsnap.$base.log" );
   my $base_out_filename = $notpaired ? "gsnap.$base.unpaired"  : "gsnap.$base.concordant";
   my $file_align_cmd;
-   open (IN,$file);
-   my $max_read_length = int(0);
-   my $counter;
-   while (my $ln=<IN>){
-        my $seq = <IN>;chomp($seq);
-        my $discard = <IN>.<IN>;
-        $max_read_length = length($seq) if !$max_read_length || $max_read_length < length($seq);
-        $counter++;
-        last if $counter == 1000;
-   }
-   close (IN);
    if ($max_read_length > 300){
 	$file_align_cmd = $gmap_exec.$align_cmd;
+        warn "Long reads detected, using GMAP\n";
+	$file_align_cmd =~s/format=sam/format=sampe/;
    }else{
 	$file_align_cmd = $gsnap_exec.$align_cmd;
 	$file_align_cmd .= " --ambig-splice-noclip --trim-mismatch-score=0 " if $intron_hard;
@@ -494,7 +485,7 @@ sub align_unpaired_files() {
 sub align_paired_files() {
  my @files_to_do = @_;
  foreach my $file ( sort @files_to_do ) {
-  my $qual_prot = &check_fastq_format($file);
+  my ($qual_prot,$max_read_length) = &check_fastq_format($file);
   $qual_prot = $qual_prot eq 'fasta' ? '' : ' --quality-protocol='.$qual_prot;
   my $pair = $file;
   $pair =~ s/$pattern1/$pattern2/;
@@ -523,27 +514,18 @@ sub align_paired_files() {
   my $base_out_filename = $notpaired ? "gsnap.$base.unpaired"  : "gsnap.$base.concordant";
   my $out_halfmapped = "gsnap.$base.halfmapping_uniq";
   my $file_align_cmd;
-   open (IN,$file);
-   my $max_read_length = int(0);
-   my $counter;
-   while (my $ln=<IN>){
-        my $seq = <IN>;chomp($seq);
-        my $discard = <IN>.<IN>;
-        $max_read_length = length($seq) if !$max_read_length || $max_read_length < length($seq);
-        $counter++;
-        last if $counter == 1000;
-   }
-   close (IN);
    if ($max_read_length > 300){
 	$file_align_cmd = $gmap_exec.$align_cmd;
+        warn "Long reads detected, using GMAP\n";
+	$file_align_cmd =~s/format=sam/format=sampe/;
    }else{
 	$file_align_cmd = $gsnap_exec.$align_cmd;
 	$file_align_cmd .= " --ambig-splice-noclip --trim-mismatch-score=0 " if $intron_hard;
 	$file_align_cmd .= " --pairmax-rna=$intron_length " if !$notpaired;
   }
 
-  $file_align_cmd .= ' --bunzip2 ' if $file =~ /\.bz2$/; 
-  $file_align_cmd .= ' --gunzip ' if $file =~ /\.gz$/; 
+  if ($file =~ /\.bz2$/) {$file_align_cmd .= ' --bunzip2 ' ; $compressed_files = 1; }
+  if ($file =~ /\.gz$/)  {$file_align_cmd .= ' --gunzip '; $compressed_files = 1; }
   $file_align_cmd .= $qual_prot if $qual_prot;
 
   $file_align_cmd .=    " --split-output=gsnap.$base --read-group-id=$base $file $pair ";
@@ -591,11 +573,14 @@ sub align_paired_files() {
 }
 sub check_fastq_format() {
  my $fq        = shift;
- my $max_seqs  = 100;
+ my $max_seqs  = 1000;
  my $max_lines = $max_seqs * 4;
  my ( @lines, $number, $counter );
  if ( $fq =~ /.bz2$/ ) {
   @lines = `$bunzip2_exec -dkc $fq|head -n $max_lines`;
+ }
+ elsif ( $fq =~ /.gz$/ ) {
+  @lines = `$gunzip_exec -dkc $fq|head -n $max_lines`;
  }
  else {
   @lines = `head -n $max_lines $fq`;
@@ -604,7 +589,7 @@ sub check_fastq_format() {
  for ( my $k = 0 ; $k < @lines ; $k += 4 ) {
   my $ids = $lines[$k];
   if ($ids =~ /^>/){
-        return 'fasta';
+        return ('fasta',length($lines[$k+1])-1);
   }
   confess "$fq: Not in illumina format!\n" unless $ids =~ /^@/;
   $counter++;
@@ -612,15 +597,16 @@ sub check_fastq_format() {
   my $idq   = $lines[ $k + 2 ];
   my $qual  = $lines[ $k + 3 ];
   my @quals = split( //, $qual );
+  
   for ( my $i = 0 ; $i <= $#quals ; $i++ ) {
    $number = ord( $quals[$i] );
    if ( $number > 75 ) {
-    warn "File $fq is solexa/illumina phred64 format!\n";
-    return 'illumina';
+	warn "File $fq is solexa/illumina phred64 format!\n";
+        return ('illumina',length($seq)-1);
    }
   }
   last if $counter >= $max_seqs;
+  return ('sanger',length($seq)-1);
  }
- return 'sanger';
 }
 

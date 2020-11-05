@@ -396,7 +396,7 @@ sub checked_paired_files() {
 sub align_unpaired_files() {
  my @files = @_;
  foreach my $file ( sort @files ) {
-  my $qual_prot = &check_fastq_format($file);
+  my ($qual_prot,$max_read_length) = &check_fastq_format($file);
   $qual_prot = $qual_prot eq 'fasta' ? '' : ' --quality-protocol='.$qual_prot;
   my $base = basename($file);
   $base =~ s/$pattern1.+//;
@@ -411,17 +411,6 @@ sub align_unpaired_files() {
   }
   open( LOG, ">gsnap.$base.log" );
   my $file_align_cmd;
-   open (IN,$file);
-   my $max_read_length = int(0);
-   my $counter;
-   while (my $ln=<IN>){
-	my $seq = <IN>;chomp($seq);
-	my $discard = <IN>.<IN>;
-	$max_read_length = length($seq) if !$max_read_length || $max_read_length < length($seq);
-	$counter++;
-	last if $counter == 1000;
-   }
-   close (IN);
    if ($max_read_length > 300){
      $file_align_cmd = $gmap_exec.$align_cmd;
    }else{
@@ -486,7 +475,7 @@ sub align_unpaired_files() {
 sub align_paired_files() {
  my @files = @_;
  foreach my $file ( sort @files ) {
-  my $qual_prot = &check_fastq_format($file);
+  my ($qual_prot,$max_read_length) = &check_fastq_format($file);
   $qual_prot = $qual_prot eq 'fasta' ? '' : ' --quality-protocol='.$qual_prot;
   my $pair = $file;
   $pair =~ s/$pattern1/$pattern2/;
@@ -513,17 +502,6 @@ sub align_paired_files() {
   unless ( -s "$base_out_filename"."_uniq.bam" || $just_write_out_commands) {
     open( LOG, ">gsnap.$base.log" );
     my $file_align_cmd;
-    open (IN,$file);
-    my $max_read_length = int(0);
-    my $counter;
-    while (my $ln=<IN>){
-	my $seq = <IN>;chomp($seq);
-	my $discard = <IN>.<IN>;
-	$max_read_length = length($seq) if !$max_read_length || $max_read_length < length($seq);
-	$counter++;
-	last if $counter == 1000;
-    }
-    close (IN);
     if ($max_read_length > 300){
       $file_align_cmd = $gmap_exec.$align_cmd;
     }else{
@@ -619,7 +597,7 @@ sub align_paired_files() {
 
 sub check_fastq_format() {
  my $fq        = shift;
- my $max_seqs  = 100;
+ my $max_seqs  = 1000;
  my $max_lines = $max_seqs * 4;
  my ( @lines, $number, $counter );
  if ( $fq =~ /.bz2$/ ) {
@@ -632,7 +610,7 @@ sub check_fastq_format() {
  for ( my $k = 0 ; $k < @lines ; $k += 4 ) {
   my $ids = $lines[$k];
   if ($ids =~ /^>/){
-        return 'fasta';
+        return ('fasta',length($lines[$k+1])-1);
   }
   confess "$fq: Not in illumina format!\n" unless $ids =~ /^@/;
   $counter++;
@@ -644,12 +622,13 @@ sub check_fastq_format() {
    $number = ord( $quals[$i] );
    if ( $number > 75 ) {
     warn "File $fq is solexa/illumina phred64 format!\n";
-    return 'illumina';
+        return ('illumina',length($lines[$k+1])-1);
    }
   }
   last if $counter >= $max_seqs;
+  return ('sanger',length($lines[$k+1])-1);
+
  }
- return 'sanger';
 }
 
 
