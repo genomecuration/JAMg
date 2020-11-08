@@ -265,7 +265,7 @@ my ($scaffold_seq_hashref,$scaffold_seq_length) = &read_fasta($genome_sequence_f
 "$makeblastdb_exec -in $genome_sequence_file -out $genome_sequence_file -hash_index -parse_seqids -dbtype nucl"
 ) unless (-s "$genome_sequence_file.nin" || -s "$genome_sequence_file.nal");
 &process_cmd(
-"$gmap_build_exec --build-sarray=0 -e 0 -D $genome_sequence_file_dir -d $genome_sequence_file_base.gmap $genome_file"
+"$gmap_build_exec -e 0 -D $genome_sequence_file_dir -d $genome_sequence_file_base.gmap $genome_file"
 ) unless (-d "$genome_sequence_file_dir/$genome_sequence_file_base.gmap" || $peptide_file);
 
 #unlink("$genome_sequence_file.cidx");
@@ -833,7 +833,7 @@ sub create_golden_gffs_from_exonerate() {
    next;
   }
 
-  unless ( $liberal_cutoffs || $is_cdna
+  unless ( $liberal_cutoffs || !$only_complete || $is_cdna
           || substr( $details_hashref->{$query_id}{'query_seq'}, 0, 1 ) eq 'M' )
   {
    print LOG "$query_id rejected: query does not start with M: "
@@ -841,7 +841,7 @@ sub create_golden_gffs_from_exonerate() {
    $failed_cutoff++;
    next;
   }
-  unless ( $liberal_cutoffs || $is_cdna
+  unless ( $liberal_cutoffs || !$only_complete || $is_cdna
          || substr( $details_hashref->{$query_id}{'query_seq'}, -1, 1 ) eq '*' )
   {
    print LOG "$query_id rejected: query does not end with stop codon (*): "
@@ -849,7 +849,7 @@ sub create_golden_gffs_from_exonerate() {
    $failed_cutoff++;
    next;
   }
-  unless ( $liberal_cutoffs || 
+  unless ( $liberal_cutoffs || !$only_complete || 
           substr( $details_hashref->{$query_id}{'target_seq'}, 0, 3 ) eq 'ATG' )
   {
    print LOG "$query_id rejected: target does not start with ATG: "
@@ -857,7 +857,7 @@ sub create_golden_gffs_from_exonerate() {
    $failed_cutoff++;
    next;
   }
-  unless ( $liberal_cutoffs || 
+  unless ( $liberal_cutoffs || !$only_complete || 
        (
            substr( $details_hashref->{$query_id}{'target_seq'}, -3, 3 ) eq 'TAG'
         || substr( $details_hashref->{$query_id}{'target_seq'}, -3, 3 ) eq 'TAA'
