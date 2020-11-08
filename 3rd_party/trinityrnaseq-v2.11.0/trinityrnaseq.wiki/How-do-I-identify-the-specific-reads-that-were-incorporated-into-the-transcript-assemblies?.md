@@ -1,0 +1,3 @@
+## How do I identify the specific reads that were incorporated into the transcript assemblies?
+
+Currently, the mappings of reads to transcripts are not reported.  To obtain this information, we recommend realigning the reads to the assembled transcripts [Bowtie](http://bowtie-bio.sourceforge.net/index.shtml). Capturing both properly paired read alignments and single unpaired alignments can be captured and quantified as described [here](RNA-Seq-Read-Representation-by-Trinity-Assembly).

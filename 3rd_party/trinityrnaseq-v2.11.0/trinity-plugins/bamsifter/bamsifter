@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -e
+
+BAMSIFTERDIR=`dirname $0`
+
+export LD_LIBRARY_PATH=${BAMSIFTERDIR}//htslib:${LD_LIBRARY_PATH}
+
+exec ${BAMSIFTERDIR}/_sift_bam_max_cov $*
+
+

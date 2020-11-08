@@ -1,0 +1,809 @@
+pull_reads_with_kmers.o: pull_reads_with_kmers.cpp Fasta_reader.hpp \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/iostream \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/c++config.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/os_defines.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/cpu_defines.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/ostream \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/ios \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/iosfwd \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stringfwd.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/memoryfwd.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/postypes.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/cwchar \
+ /usr/include/wchar.h /usr/include/_types.h /usr/include/sys/_types.h \
+ /usr/include/sys/cdefs.h /usr/include/sys/_symbol_aliasing.h \
+ /usr/include/sys/_posix_availability.h /usr/include/machine/_types.h \
+ /usr/include/i386/_types.h /usr/include/sys/_pthread/_pthread_types.h \
+ /usr/include/Availability.h /usr/include/AvailabilityInternal.h \
+ /usr/include/sys/_types/_null.h /usr/include/sys/_types/_size_t.h \
+ /usr/include/sys/_types/_mbstate_t.h \
+ /usr/include/sys/_types/_ct_rune_t.h /usr/include/sys/_types/_rune_t.h \
+ /usr/include/sys/_types/_wchar_t.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/stdarg.h \
+ /usr/include/stdio.h /usr/include/sys/_types/_va_list.h \
+ /usr/include/sys/stdio.h /usr/include/sys/_types/_off_t.h \
+ /usr/include/sys/_types/_ssize_t.h /usr/include/time.h \
+ /usr/include/sys/_types/_clock_t.h /usr/include/sys/_types/_time_t.h \
+ /usr/include/sys/_types/_timespec.h /usr/include/_wctype.h \
+ /usr/include/sys/_types/_wint_t.h /usr/include/_types/_wctype_t.h \
+ /usr/include/ctype.h /usr/include/runetype.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/exception \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/atomic_lockfree_defines.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/exception_ptr.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/exception_defines.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/nested_exception.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/char_traits.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_algobase.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/functexcept.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/cpp_type_traits.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/type_traits.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/numeric_traits.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_pair.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/move.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/concept_check.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/type_traits \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_iterator_base_types.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_iterator_base_funcs.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/debug/debug.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_iterator.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ptr_traits.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/predefined_ops.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/cstdint \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/stdint.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include-fixed/stdint.h \
+ /usr/include/sys/_types/_int8_t.h /usr/include/sys/_types/_int16_t.h \
+ /usr/include/sys/_types/_int32_t.h /usr/include/sys/_types/_int64_t.h \
+ /usr/include/_types/_uint8_t.h /usr/include/_types/_uint16_t.h \
+ /usr/include/_types/_uint32_t.h /usr/include/_types/_uint64_t.h \
+ /usr/include/sys/_types/_intptr_t.h /usr/include/sys/_types/_uintptr_t.h \
+ /usr/include/_types/_intmax_t.h /usr/include/_types/_uintmax_t.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/localefwd.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/c++locale.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/clocale \
+ /usr/include/locale.h /usr/include/_locale.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/cctype \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/atomicity.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/gthr.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/gthr-default.h \
+ /usr/include/pthread.h /usr/include/pthread/pthread_impl.h \
+ /usr/include/pthread/sched.h /usr/include/pthread_impl.h \
+ /usr/include/sys/_pthread/_pthread_attr_t.h \
+ /usr/include/sys/_pthread/_pthread_cond_t.h \
+ /usr/include/sys/_pthread/_pthread_condattr_t.h \
+ /usr/include/sys/_pthread/_pthread_key_t.h \
+ /usr/include/sys/_pthread/_pthread_mutex_t.h \
+ /usr/include/sys/_pthread/_pthread_mutexattr_t.h \
+ /usr/include/sys/_pthread/_pthread_once_t.h \
+ /usr/include/sys/_pthread/_pthread_rwlock_t.h \
+ /usr/include/sys/_pthread/_pthread_rwlockattr_t.h \
+ /usr/include/sys/_pthread/_pthread_t.h /usr/include/pthread/qos.h \
+ /usr/include/sys/qos.h /usr/include/sys/_types/_mach_port_t.h \
+ /usr/include/sys/_types/_sigset_t.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/atomic_word.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_classes.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/string \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/allocator.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/c++allocator.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/new_allocator.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/new \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ostream_insert.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/cxxabi_forced.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_function.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/backward/binders.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/range_access.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/initializer_list \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/alloc_traits.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/alloc_traits.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/string_conversions.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/cstdlib \
+ /usr/include/stdlib.h /usr/include/sys/wait.h \
+ /usr/include/sys/_types/_pid_t.h /usr/include/sys/_types/_id_t.h \
+ /usr/include/sys/signal.h /usr/include/sys/appleapiopts.h \
+ /usr/include/machine/signal.h /usr/include/i386/signal.h \
+ /usr/include/machine/_mcontext.h /usr/include/i386/_mcontext.h \
+ /usr/include/mach/i386/_structs.h /usr/include/sys/_types/_sigaltstack.h \
+ /usr/include/sys/_types/_ucontext.h /usr/include/sys/_types/_uid_t.h \
+ /usr/include/sys/resource.h /usr/include/sys/_types/_timeval.h \
+ /usr/include/machine/endian.h /usr/include/i386/endian.h \
+ /usr/include/sys/_endian.h /usr/include/libkern/_OSByteOrder.h \
+ /usr/include/libkern/i386/_OSByteOrder.h /usr/include/alloca.h \
+ /usr/include/machine/types.h /usr/include/i386/types.h \
+ /usr/include/sys/_types/_dev_t.h /usr/include/sys/_types/_mode_t.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/cstdio \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/cerrno \
+ /usr/include/errno.h /usr/include/sys/errno.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/functional_hash.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/hash_bytes.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_classes.tcc \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/system_error \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/error_constants.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/stdexcept \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/streambuf \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/streambuf.tcc \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_ios.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/cwctype \
+ /usr/include/wctype.h /usr/include/_types/_wctrans_t.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/ctype_base.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/streambuf_iterator.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/ctype_inline.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_ios.tcc \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ostream.tcc \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/istream \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/istream.tcc \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/fstream \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/codecvt.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/basic_file.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/c++io.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/fstream.tcc \
+ Fasta_entry.hpp /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/map \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_tree.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/aligned_buffer.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_map.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/tuple \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/utility \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_relops.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/array \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/uses_allocator.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_multimap.h \
+ KmerCounter.hpp /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/vector \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_construct.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_uninitialized.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_vector.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_bvector.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/vector.tcc \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/set \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_set.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_multiset.h \
+ sequenceUtil.hpp /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/cstring \
+ /usr/include/string.h /usr/include/strings.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/hash_map \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/backward/backward_warning.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/backward/hashtable.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/iterator \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stream_iterator.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/algorithm \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_algo.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/algorithmfwd.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_heap.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_tempbuf.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/random \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/cmath \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include-fixed/math.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/limits \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/random.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/opt_random.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/x86intrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/ia32intrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/mmintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/xmmintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/mm_malloc.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/emmintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/pmmintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/tmmintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/ammintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/smmintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/popcntintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/wmmintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/immintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avxintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx2intrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512fintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512erintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512pfintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512cdintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512vlintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512bwintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512dqintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512vlbwintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512vldqintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512ifmaintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512ifmavlintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512vbmiintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512vbmivlintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/shaintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/lzcntintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/bmiintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/bmi2intrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/fmaintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/f16cintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/rtmintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/xtestintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/mm3dnow.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/prfchwintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/fma4intrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/xopintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/lwpintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/tbmintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/rdseedintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/fxsrintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/xsaveintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/xsaveoptintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/adxintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/clwbintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/pcommitintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/clflushoptintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/xsavesintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/xsavecintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/mwaitxintrin.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/random.tcc \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/numeric \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_numeric.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/backward/hash_fun.h \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/sstream \
+ /usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/sstream.tcc \
+ argProcessor.hpp irke_common.hpp
+
+Fasta_reader.hpp:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/iostream:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/c++config.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/os_defines.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/cpu_defines.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/ostream:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/ios:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/iosfwd:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stringfwd.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/memoryfwd.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/postypes.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/cwchar:
+
+/usr/include/wchar.h:
+
+/usr/include/_types.h:
+
+/usr/include/sys/_types.h:
+
+/usr/include/sys/cdefs.h:
+
+/usr/include/sys/_symbol_aliasing.h:
+
+/usr/include/sys/_posix_availability.h:
+
+/usr/include/machine/_types.h:
+
+/usr/include/i386/_types.h:
+
+/usr/include/sys/_pthread/_pthread_types.h:
+
+/usr/include/Availability.h:
+
+/usr/include/AvailabilityInternal.h:
+
+/usr/include/sys/_types/_null.h:
+
+/usr/include/sys/_types/_size_t.h:
+
+/usr/include/sys/_types/_mbstate_t.h:
+
+/usr/include/sys/_types/_ct_rune_t.h:
+
+/usr/include/sys/_types/_rune_t.h:
+
+/usr/include/sys/_types/_wchar_t.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/stdarg.h:
+
+/usr/include/stdio.h:
+
+/usr/include/sys/_types/_va_list.h:
+
+/usr/include/sys/stdio.h:
+
+/usr/include/sys/_types/_off_t.h:
+
+/usr/include/sys/_types/_ssize_t.h:
+
+/usr/include/time.h:
+
+/usr/include/sys/_types/_clock_t.h:
+
+/usr/include/sys/_types/_time_t.h:
+
+/usr/include/sys/_types/_timespec.h:
+
+/usr/include/_wctype.h:
+
+/usr/include/sys/_types/_wint_t.h:
+
+/usr/include/_types/_wctype_t.h:
+
+/usr/include/ctype.h:
+
+/usr/include/runetype.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/exception:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/atomic_lockfree_defines.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/exception_ptr.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/exception_defines.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/nested_exception.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/char_traits.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_algobase.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/functexcept.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/cpp_type_traits.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/type_traits.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/numeric_traits.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_pair.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/move.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/concept_check.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/type_traits:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_iterator_base_types.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_iterator_base_funcs.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/debug/debug.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_iterator.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ptr_traits.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/predefined_ops.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/cstdint:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/stdint.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include-fixed/stdint.h:
+
+/usr/include/sys/_types/_int8_t.h:
+
+/usr/include/sys/_types/_int16_t.h:
+
+/usr/include/sys/_types/_int32_t.h:
+
+/usr/include/sys/_types/_int64_t.h:
+
+/usr/include/_types/_uint8_t.h:
+
+/usr/include/_types/_uint16_t.h:
+
+/usr/include/_types/_uint32_t.h:
+
+/usr/include/_types/_uint64_t.h:
+
+/usr/include/sys/_types/_intptr_t.h:
+
+/usr/include/sys/_types/_uintptr_t.h:
+
+/usr/include/_types/_intmax_t.h:
+
+/usr/include/_types/_uintmax_t.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/localefwd.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/c++locale.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/clocale:
+
+/usr/include/locale.h:
+
+/usr/include/_locale.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/cctype:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/atomicity.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/gthr.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/gthr-default.h:
+
+/usr/include/pthread.h:
+
+/usr/include/pthread/pthread_impl.h:
+
+/usr/include/pthread/sched.h:
+
+/usr/include/pthread_impl.h:
+
+/usr/include/sys/_pthread/_pthread_attr_t.h:
+
+/usr/include/sys/_pthread/_pthread_cond_t.h:
+
+/usr/include/sys/_pthread/_pthread_condattr_t.h:
+
+/usr/include/sys/_pthread/_pthread_key_t.h:
+
+/usr/include/sys/_pthread/_pthread_mutex_t.h:
+
+/usr/include/sys/_pthread/_pthread_mutexattr_t.h:
+
+/usr/include/sys/_pthread/_pthread_once_t.h:
+
+/usr/include/sys/_pthread/_pthread_rwlock_t.h:
+
+/usr/include/sys/_pthread/_pthread_rwlockattr_t.h:
+
+/usr/include/sys/_pthread/_pthread_t.h:
+
+/usr/include/pthread/qos.h:
+
+/usr/include/sys/qos.h:
+
+/usr/include/sys/_types/_mach_port_t.h:
+
+/usr/include/sys/_types/_sigset_t.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/atomic_word.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_classes.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/string:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/allocator.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/c++allocator.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/new_allocator.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/new:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ostream_insert.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/cxxabi_forced.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_function.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/backward/binders.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/range_access.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/initializer_list:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/alloc_traits.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/alloc_traits.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/string_conversions.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/cstdlib:
+
+/usr/include/stdlib.h:
+
+/usr/include/sys/wait.h:
+
+/usr/include/sys/_types/_pid_t.h:
+
+/usr/include/sys/_types/_id_t.h:
+
+/usr/include/sys/signal.h:
+
+/usr/include/sys/appleapiopts.h:
+
+/usr/include/machine/signal.h:
+
+/usr/include/i386/signal.h:
+
+/usr/include/machine/_mcontext.h:
+
+/usr/include/i386/_mcontext.h:
+
+/usr/include/mach/i386/_structs.h:
+
+/usr/include/sys/_types/_sigaltstack.h:
+
+/usr/include/sys/_types/_ucontext.h:
+
+/usr/include/sys/_types/_uid_t.h:
+
+/usr/include/sys/resource.h:
+
+/usr/include/sys/_types/_timeval.h:
+
+/usr/include/machine/endian.h:
+
+/usr/include/i386/endian.h:
+
+/usr/include/sys/_endian.h:
+
+/usr/include/libkern/_OSByteOrder.h:
+
+/usr/include/libkern/i386/_OSByteOrder.h:
+
+/usr/include/alloca.h:
+
+/usr/include/machine/types.h:
+
+/usr/include/i386/types.h:
+
+/usr/include/sys/_types/_dev_t.h:
+
+/usr/include/sys/_types/_mode_t.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/cstdio:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/cerrno:
+
+/usr/include/errno.h:
+
+/usr/include/sys/errno.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/functional_hash.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/hash_bytes.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_classes.tcc:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/system_error:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/error_constants.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/stdexcept:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/streambuf:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/streambuf.tcc:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_ios.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/cwctype:
+
+/usr/include/wctype.h:
+
+/usr/include/_types/_wctrans_t.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/ctype_base.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/streambuf_iterator.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/ctype_inline.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_ios.tcc:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ostream.tcc:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/istream:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/istream.tcc:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/fstream:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/codecvt.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/basic_file.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/c++io.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/fstream.tcc:
+
+Fasta_entry.hpp:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/map:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_tree.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/aligned_buffer.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_map.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/tuple:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/utility:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_relops.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/array:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/uses_allocator.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_multimap.h:
+
+KmerCounter.hpp:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/vector:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_construct.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_uninitialized.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_vector.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_bvector.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/vector.tcc:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/set:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_set.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_multiset.h:
+
+sequenceUtil.hpp:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/cstring:
+
+/usr/include/string.h:
+
+/usr/include/strings.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/hash_map:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/backward/backward_warning.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/backward/hashtable.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/iterator:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stream_iterator.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/algorithm:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_algo.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/algorithmfwd.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_heap.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_tempbuf.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/random:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/cmath:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include-fixed/math.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/limits:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/random.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-apple-darwin13.4.0/bits/opt_random.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/x86intrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/ia32intrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/mmintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/xmmintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/mm_malloc.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/emmintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/pmmintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/tmmintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/ammintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/smmintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/popcntintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/wmmintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/immintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avxintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx2intrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512fintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512erintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512pfintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512cdintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512vlintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512bwintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512dqintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512vlbwintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512vldqintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512ifmaintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512ifmavlintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512vbmiintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/avx512vbmivlintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/shaintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/lzcntintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/bmiintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/bmi2intrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/fmaintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/f16cintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/rtmintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/xtestintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/mm3dnow.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/prfchwintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/fma4intrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/xopintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/lwpintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/tbmintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/rdseedintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/fxsrintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/xsaveintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/xsaveoptintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/adxintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/clwbintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/pcommitintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/clflushoptintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/xsavesintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/xsavecintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin13.4.0/5.3.0/include/mwaitxintrin.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/random.tcc:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/numeric:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_numeric.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/backward/hash_fun.h:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/sstream:
+
+/usr/local/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/sstream.tcc:
+
+argProcessor.hpp:
+
+irke_common.hpp:

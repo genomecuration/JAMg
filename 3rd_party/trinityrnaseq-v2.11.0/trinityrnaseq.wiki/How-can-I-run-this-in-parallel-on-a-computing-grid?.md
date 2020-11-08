@@ -1,0 +1,3 @@
+## How can I run this in parallel on a computing grid?
+
+The initial Inchworm and Chrysalis steps currently need to be run on a single server, however parts of Chrysalis and all of Butterfly can be run as naive parallel processes on a computing grid. Both SGE and LSF are currently supported. Configuring Trinity for leveraging these grid-computing platforms is described [here](Running-Trinity#grid_conf).

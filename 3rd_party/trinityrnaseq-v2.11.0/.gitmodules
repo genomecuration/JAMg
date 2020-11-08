@@ -1,0 +1,26 @@
+[submodule "trinityrnaseq.wiki"]
+	path = trinityrnaseq.wiki
+	url = https://github.com/trinityrnaseq/trinityrnaseq.wiki.git
+
+[submodule "trinity_ext_sample_data"]
+	path = trinity_ext_sample_data
+	url = https://github.com/trinityrnaseq/trinity_ext_sample_data.git
+[submodule "Inchworm"]
+	path = Inchworm
+	url = https://github.com/trinityrnaseq/Inchworm.git
+[submodule "Chrysalis"]
+	path = Chrysalis
+	url = https://github.com/trinityrnaseq/Chrysalis.git
+
+[submodule "trinity-plugins/seqtk-trinity"]
+	path = trinity-plugins/seqtk-trinity
+	url = https://github.com/trinityrnaseq/seqtk-trinity.git
+[submodule "trinity-plugins/bamsifter"]
+	path = trinity-plugins/bamsifter
+	url = https://github.com/trinityrnaseq/bamsifter.git
+[submodule "trinity-plugins/htslib"]
+	path = trinity-plugins/htslib
+	url = https://github.com/samtools/htslib.git
+[submodule "Butterfly/Butterfly"]
+	path = Butterfly/Butterfly
+	url = https://github.com/trinityrnaseq/Butterfly.git

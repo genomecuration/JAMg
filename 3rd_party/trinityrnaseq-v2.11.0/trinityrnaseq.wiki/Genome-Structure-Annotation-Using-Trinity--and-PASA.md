@@ -1,0 +1,3 @@
+# Comprehensive transcriptome-based genome annotation using Trinity and PASA
+
+The Trinity-reconstructed transcripts can be used to annotate genomes using PASA.  Documentation for this is provided on the PASA website under [Build a Comprehensive Transcriptome Database Using Genome-guided and De novo RNA-Seq Assembly](http://pasapipeline.github.io/#A_ComprehensiveTranscriptome) at the [PASA web portal](http://pasapipeline.github.io).
