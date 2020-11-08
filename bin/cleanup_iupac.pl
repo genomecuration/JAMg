@@ -35,6 +35,7 @@ sub cleanupiupac ($) {
 sub iupac_replace($) {
     my $string = shift;
     $string =~ s/\s+//g;
+    $string =~ s/U/T/g;
     $string =~ s/S/G/g;
     $string =~ s/R/G/g;
     $string =~ s/Y/T/g;

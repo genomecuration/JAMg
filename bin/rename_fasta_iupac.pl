@@ -34,29 +34,18 @@ sub wrap_text() {
 sub iupac_replace($) {
     my $string = shift;
     $string =~ s/\s+//g;
-    $string =~ s/S/G/g;
-    $string =~ s/R/G/g;
-    $string =~ s/Y/T/g;
-    $string =~ s/M/C/g;
-    $string =~ s/K/T/g;
-    $string =~ s/W/T/g;
-    $string =~ s/B/T/g;
-    $string =~ s/D/T/g;
-    $string =~ s/H/T/g;
-    $string =~ s/V/G/g;
-    $string =~ s/X/N/g;
-
-    $string =~ s/s/G/g;
-    $string =~ s/r/G/g;
-    $string =~ s/y/T/g;
-    $string =~ s/m/C/g;
-    $string =~ s/k/T/g;
-    $string =~ s/w/T/g;
-    $string =~ s/b/T/g;
-    $string =~ s/d/T/g;
-    $string =~ s/h/T/g;
-    $string =~ s/v/G/g;
-    $string =~ s/x/N/g;
+    $string =~ s/U/T/ig;
+    $string =~ s/S/G/ig;
+    $string =~ s/R/G/ig;
+    $string =~ s/Y/T/ig;
+    $string =~ s/M/C/ig;
+    $string =~ s/K/T/ig;
+    $string =~ s/W/T/ig;
+    $string =~ s/B/T/ig;
+    $string =~ s/D/T/ig;
+    $string =~ s/H/T/ig;
+    $string =~ s/V/G/ig;
+    $string =~ s/X/N/ig;
 
     return $string;
 }
