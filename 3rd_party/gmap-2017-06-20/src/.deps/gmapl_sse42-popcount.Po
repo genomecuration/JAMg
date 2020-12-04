@@ -1,5 +1,0 @@
-gmapl_sse42-popcount.o: popcount.c /usr/include/stdc-predef.h config.h
-
-/usr/include/stdc-predef.h:
-
-config.h:

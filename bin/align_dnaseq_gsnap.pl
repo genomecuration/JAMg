@@ -140,6 +140,7 @@ $input_dir = $cwd unless $input_dir;
 $do_parallel = 1 if $do_parallel && $do_parallel < 1;
 if ($do_parallel && $do_parallel > 1){
         $cpus = int($cpus / $do_parallel);
+	$cpus = 2 if $cpus < 2;
 }
 
 ( $gsnap_exec,$gmap_exec ) = &check_program( "gsnapl","gmapl" ) if $do_large_genome;
@@ -183,13 +184,13 @@ if ($suffix || $build_only) {
  $build_cmd =
 "$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 $genome >/dev/null";
  $align_cmd =
-" -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam ";
+" --use-shared-memory=1 -B 2 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam ";
 }
 else {
  $build_cmd =
 "$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0  $genome >/dev/null";
  $align_cmd =
-" -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam ";
+" --use-shared-memory=1 -B 2 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam ";
 }
 
 

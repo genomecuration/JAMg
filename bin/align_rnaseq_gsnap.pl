@@ -142,6 +142,7 @@ $input_dir = $cwd unless $input_dir;
 $do_parallel = 1 if $do_parallel && $do_parallel < 1;
 if ($do_parallel && $do_parallel > 1){
 	$cpus = int($cpus / $do_parallel);
+	$cpus = 2 if $cpus < 2;
 }
 
 
@@ -192,12 +193,12 @@ if ($suffix || $build_only) {
  warn "\n\nWARNING: Using -suffix with RNA-Seq gapped alignments is not recommended... it seems to be much (order of magnitude) slower in my tests\n\n\n" unless $build_only;
  $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 $genome >/dev/null";
  $align_cmd =
-" -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam ";
+" --use-shared-memory=1 -B 2 -D $gmap_dir -d $genome_dbname --nthreads=$cpus --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam ";
 }
 else {
  $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 $genome >/dev/null";
  $align_cmd =
-" -B 5 -D $gmap_dir -d $genome_dbname --nthreads=$cpus  --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam ";
+" --use-shared-memory=1 -B 2 -D $gmap_dir -d $genome_dbname --nthreads=$cpus  --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam ";
 }
 system($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
 system("$samtools_exec faidx $genome") unless -s "$genome.fai";

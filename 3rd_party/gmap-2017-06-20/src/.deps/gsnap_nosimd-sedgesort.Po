@@ -1,8 +1,0 @@
-gsnap_nosimd-sedgesort.o: sedgesort.c /usr/include/stdc-predef.h config.h \
- sedgesort.h
-
-/usr/include/stdc-predef.h:
-
-config.h:
-
-sedgesort.h:
