@@ -34,7 +34,7 @@ Run exonerate
   -padding       => genome padding for exonerate alignment (2000)
   -aat_dir    :s => AAT FILTER output directory. Do not use blast hash
   -aat_suffix :s => AAT FILTER output suffix of files (def. '.filter')
-
+  -gmap_file  :s => GMAP gff3_genes (for cDNA)
 
  @ Stage 2:
   -postprocess:s{,}' => The result files of exonerate if run with -separate in orted to reconstruct co-ordinates of the GFF (and only the GFF)
@@ -102,7 +102,7 @@ my (
      $same_species,                  $softmasked,
      @post_process_similarity_files, $separate,
      @post_process_result_files,     $not_exhaustive, $verbose,
-     $annotation_file,               $paths_need_to_be_made
+     $annotation_file,               $paths_need_to_be_made, $gmap_file
 );
 
 #variables
@@ -153,6 +153,7 @@ pod2usage $! unless &GetOptions(
          'local_protein'    => \$not_exhaustive,
          'postscore:i'      => \$exonerate_postscore,
          'from_blast'       => \$paths_need_to_be_made,
+	 'gmap_file:s'      => \$gmap_file
 );
 pod2usage if $help;
 
@@ -204,10 +205,13 @@ print "Will exclude " . scalar( keys %exclude_ids ) . " queries"
   if %exclude_ids;
 
 print "Searching $fasta_file vs $reference_file\n";
-my @aat_filter_files = glob($aat_filter_dir."/*".$aat_filter_suffix);
+my @aat_filter_files = glob($aat_filter_dir."/*".$aat_filter_suffix) if $aat_filter_dir && $aat_filter_suffix && -d  $aat_filter_dir;
 if (@aat_filter_files && $aat_filter_files[0] && -s $aat_filter_files[0]) {
  print "Temporary output from dps. Using it...\n";
   &parse_aat_filter(\@aat_filter_files);
+}
+elsif ($gmap_file){
+ &parse_analyze_gmap($gmap_file);
 }
 elsif ( !$blast_file ) {
  my $reference_base = basename($reference_file);
@@ -284,11 +288,11 @@ if ( !$is_protein ) {
    &process_cmd(
        "$getorf_exec $fasta_file $fasta_file.orf.u  -minsize $minorf -find 3" );
    &convert_fasta_to_single_line("$fasta_file.orf.u");
-   rename( "$fasta_file.orf.u", "$fasta_file.orf.orf" );
+   rename( "$fasta_file.orf.u", "$fasta_file.orf" );
    die "Cannot translate $fasta_file\n"
      unless ( -s "$fasta_file.orf" );
   }
-  print "Parsing ORFs\n";
+  print "Parsing ORFs from $fasta_file.orf\n";
   open( ORF, "$fasta_file.orf" );
   while ( my $ln = <ORF> ) {
    if ( $ln =~ /^>(\S+)_(\d+)\s\[(\d+)\s\-\s(\d+)\]/ ) {
@@ -442,6 +446,38 @@ print "\n" if -s "run_exonerate_commands.cmd";
 print "Something went wrong or no exonerates jobs to run run...\n"
   if !-s "run_exonerate_commands.cmd";
 ######################################3
+sub parse_analyze_gmap() {
+	my $file = shift;
+	open (GMAP, $file);
+ while (my $ln=<GMAP>){
+  chomp($ln);
+  next unless $ln;
+  my @data = split( "\t", $ln );
+  next if !$data[2] || $data[2] ne 'gene';
+  my $query_id = $data[8];
+  $query_id=~s/\.gene;.+//;
+  $query_id=~s/ID=//;
+  my $score = $data[4] - $data[3]; # length is used as a score
+  next if exists $exclude_ids{$query_id};
+  next
+    if $queries{$query_id}{'score'}
+     && $score < $queries{$query_id}{'score'};
+  my $seq = &get_id_seq_from_fasta( $query_id, $fasta_file );
+  if ( !$seq ) {
+   #warn "Sequence not found for $query_id. Skipping...\n";
+   next;
+  }
+  $queries{$query_id}{'score'}  = $score;
+  $queries{$query_id}{'seq'}    = $seq;
+  $queries{$query_id}{'length'} = length($seq);
+  $queries{$query_id}{'hit'}    = $data[0];
+  $queries{$query_id}{'lower_bound'} = $data[3];
+  $queries{$query_id}{'upper_bound'} = $data[4];
+
+ }
+ close GMAP;
+	
+}
 sub parse_analyze_blast() {
  
  # not to be used
@@ -629,7 +665,10 @@ sub scaffold_exonerate() {
   #"echo '$header' > $query_file.exonerate_results && $exonerate"
   my $common =
       "$exonerate "
-    . ' --ryo "RYOAP_START\nRYOAP_STATS_D\tAlignment length\tidentical\tsimilar\tmismatch\tidentical%%\tsimilar%%\nRYOAP_STATS\t%s\t%et\t%ei\t%es\t%em\t%pi\t%ps\nRYOAP_CODING_QUERY\t%qi\t%qab\t%qae\n>%qi\n%qas\nRYOAP_CODING_GENOME\t%ti\t%tcb\t%tce\n>%ti\n%tcs\nRYOAP_END\n" '
+    . ' --ryo "RYOAP_START\nRYOAP_STATS_D\tAlignment length\tidentical\tsimilar\tmismatch\tidentical%%\tsimilar%%\n'
+    .'RYOAP_STATS\t%s\t%et\t%ei\t%es\t%em\t%pi\t%ps\n'
+    .'RYOAP_CODING_QUERY\t%qi\t%qab\t%qae\n>%qi\n%qas\n'
+    .'RYOAP_CODING_GENOME\t%ti\t%tcb\t%tce\n>%ti\n%tcs\nRYOAP_END\n" '
     . " --targettype dna -D 8192 -M 8192 --showquerygff y --showtargetgff y -n 1 -S n --maxintron $max_intron  ";
   my $cmd;
   if ($same_species) {

@@ -45,7 +45,7 @@ And one of:
 
 4. OR
 
-    -mrna                  :s => A FASTA file with cDNA sequence (not fully implemented yet)
+    -mrna                  :s => A FASTA file with cDNA sequence
 
 Other options:
 
@@ -2634,11 +2634,14 @@ sub prepare_pasa_output() {
 sub run_exonerate() {
  my $is_blast;
  ($parafly_exec) = &check_program('ParaFly');
- $exonerate_file =
-     $pasa_gff
-   ? basename($pasa_gff) . '.exonerate.results'
-   : basename($peptide_file) . '.exonerate.results';
 
+ if ($pasa_gff){
+	$exonerate_file = basename($pasa_gff) . '.exonerate.results';
+ }elsif($peptide_file){
+	$exonerate_file = basename($peptide_file) . '.exonerate.results';
+ }elsif($mrna_file){
+	$exonerate_file = basename($mrna_file) . '.exonerate.results';
+ }
  my $exonerate_command_file = "run_exonerate_commands.cmd";
 
  # check if it already has been processed
@@ -2696,8 +2699,30 @@ sub run_exonerate() {
     }
    }
    elsif ($mrna_file) {
-    die "Not implemented yet - see GMAP output\n";
-	#TODO &do_gmap_cmd()
+    #die "Not implemented yet - see GMAP output\n";
+     my $gmap_output = $cwd.basename($genome_file).".vs.".basename($mrna_file).".gmap.gff3";
+     die "Cannot find GMAP output $gmap_output\n" unless -s $gmap_output;
+
+    print "Finding accurate co-ordinates using exonerate...\n";
+    unlink($exonerate_file);
+    my $exonerate_options = " -minorf $minorf -in $mrna_file -separate -threads $threads "
+	."-intron_max $intron_size  $same_species -gmap_file $gmap_output ";
+    $exonerate_options .= " -softmask -ref $softmasked_genome "
+      if ($softmasked_genome);
+    $exonerate_options .= " -ref $genome_file "
+      if ( !$softmasked_genome );
+    $exonerate_options .= " -norefine "   if $norefine;
+    $exonerate_options .= " -from_blast " if $is_blast;
+    my $aat_score = $same_species ? 100 : 20;
+    $exonerate_options .= " -score_dps $aat_score";
+    &process_cmd( 'run_exonerate.pl' . $exonerate_options );
+    die "Exonerate run failed for some reason....\n" if ( !-d basename($mrna_file) . "_queries" );
+    my @files_to_cat = glob(basename($mrna_file)."_queries/*exonerate_results");
+    die "No *exonerate_results files found!" unless @files_to_cat && $files_to_cat[0];
+    foreach my $f (@files_to_cat){
+	 system("cat $f >> $exonerate_file");
+    }
+
    }
    else {
 
@@ -2847,23 +2872,6 @@ sub do_blast_cmd() {
  $blast_opt .= " -lcase_masking" if $softmasked_genome;
  &process_cmd("$blast_opt -query $fasta -out $fasta.blast");
  unlink($fasta);
-}
-
-sub do_gmap_cmd() {
- my $fasta            = shift;
- my $output_directory = shift;    # currently ignored.
- my $type             = shift;    # currently ignored.
-
- my $gmap_opt =
-   "$gmap_exec -D $genome_sequence_file_dir -d $genome_sequence_file_base.gmap";
- my $identical_fraction_prop = sprintf( "%.2f", $identical_fraction_cutoff / 100 );
- $gmap_opt .=
-" -n 0 -p 3 --nofails -B 3 -t 1 -f gff3_gene --split-output=$fasta.gmap --min-trimmed-coverage=0.95 --min-identity=$identical_fraction_prop ";
- unless (-s "$fasta.gmap.uniq"){
-   print "$gmap_opt $fasta\n";
-   &process_cmd("$gmap_opt $fasta 2>/dev/null");
- }
-   unlink($fasta);
 }
 
 sub run_gmap() {
@@ -3456,7 +3464,7 @@ sub check_for_options() {
  die "Cannot have both -mRNA and -peptide" if $mrna_file && $peptide_file;
  die "cDNA mode is only used without peptides\n" if $peptide_file && $is_cdna;
 
- $is_cdna = 1 if $pasa_gff;
+ $is_cdna = 1 if $pasa_gff || $mrna_file;
 
  die "Softmasked genome file does not exist\n"
    if $softmasked_genome && !-s $softmasked_genome;
