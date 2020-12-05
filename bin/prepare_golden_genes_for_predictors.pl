@@ -214,6 +214,7 @@ pod2usage $! unless &GetOptions(
 	    'liberal'            => \$liberal_cutoffs,
 	    'build_only'	 => \$build_only
 );
+pod2usage if $show_help;
 
 my $sort_buffer = '5G';  # will run up to two sorts in parallel
 my $tmpdir = $ENV{'TMP'};
@@ -226,6 +227,8 @@ my ( $makeblastdb_exec, $tblastn_exec, $tblastx_exec ) =
 my ( $gmap_build_exec, $gmap_exec ) = &check_program( 'gmap_build', 'gmap' );
 
 die "No genome found in '$genome_file'\n" if $genome_file && !-s $genome_file;
+pod2usage "No genome found\n" unless ( $genome_file && -s $genome_file );
+
 if ($genome_file && -s $genome_file > 4306887543){ ($gmap_exec) = &check_program( 'gmapl');}
 
 my ( $gff2gb_exec, $fathom_exec, $augustus_exec, $augustus_train_exec,
@@ -235,6 +238,28 @@ my ( $gff2gb_exec, $fathom_exec, $augustus_exec, $augustus_train_exec,
                              'augustus',          'etraining',
                              'filterGenes.pl'
   );
+
+
+my $genome_sequence_file =
+    $softmasked_genome
+  ? $softmasked_genome
+  : $genome_file;    # the full sequence, not repeatmasked
+print "Indexing genome\n";
+my $genome_sequence_file_dir  = dirname($genome_sequence_file);
+my $genome_sequence_file_base = basename($genome_sequence_file);
+my $genome_dir                = basename($genome_file) . '_dir';
+my ($scaffold_seq_hashref,$scaffold_seq_length) = &read_fasta($genome_sequence_file);
+
+&process_cmd(
+"$makeblastdb_exec -in $genome_sequence_file -out $genome_sequence_file -hash_index -parse_seqids -dbtype nucl"
+) unless (-s "$genome_sequence_file.nin" || -s "$genome_sequence_file.nal");
+&process_cmd(
+"$gmap_build_exec -e 0 -D $genome_sequence_file_dir -d $genome_sequence_file_base.gmap $genome_file"
+) unless (-d "$genome_sequence_file_dir/$genome_sequence_file_base.gmap" || $peptide_file);
+&process_cmd("$cdbfasta_exec $genome_sequence_file") unless -s "$genome_sequence_file.cidx" ;
+
+exit (0) if $build_only;
+
 &check_for_options();
 
 if ($liberal_cutoffs){
@@ -254,27 +279,6 @@ print "These cutoffs will be used:
 sleep(3);
 
 
-my $genome_sequence_file =
-    $softmasked_genome
-  ? $softmasked_genome
-  : $genome_file;    # the full sequence, not repeatmasked
-print "Indexing genome\n";
-my $genome_sequence_file_dir  = dirname($genome_sequence_file);
-my $genome_sequence_file_base = basename($genome_sequence_file);
-my $genome_dir                = basename($genome_file) . '_dir';
-my ($scaffold_seq_hashref,$scaffold_seq_length) = &read_fasta($genome_sequence_file);
-
-&process_cmd(
-"$makeblastdb_exec -in $genome_sequence_file -out $genome_sequence_file -hash_index -parse_seqids -dbtype nucl"
-) unless (-s "$genome_sequence_file.nin" || -s "$genome_sequence_file.nal");
-&process_cmd(
-"$gmap_build_exec -e 0 -D $genome_sequence_file_dir -d $genome_sequence_file_base.gmap $genome_file"
-) unless (-d "$genome_sequence_file_dir/$genome_sequence_file_base.gmap" || $peptide_file);
-
-exit (0) if $build_only;
-
-#unlink("$genome_sequence_file.cidx");
-&process_cmd("$cdbfasta_exec $genome_sequence_file") unless -s "$genome_sequence_file.cidx" ;
 #my $uppercase_genome_files = &split_fasta( $genome_file, $genome_dir, 1, 1 );
 my $aat_uppercase_genome_files = &split_fasta_multi( $genome_file, $genome_dir, 1);
 
@@ -3392,7 +3396,6 @@ sub read_fasta() {
 }
 
 sub check_for_options() {
- pod2usage if $show_help;
  pod2usage "No genome found\n" unless ( $genome_file && -s $genome_file );
  pod2usage "Provide at least one set of the input files\n"
    unless (
