@@ -1014,7 +1014,7 @@ sub check_program() {
   die "Error, path to required $prog cannot be found\n"
     unless $path =~ /^\//;
   chomp($path);
-  $path = readlink($path) if -l $path;
+  #$path = readlink($path) if -l $path;
   push( @paths, $path );
  }
  return @paths;

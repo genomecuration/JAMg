@@ -2419,7 +2419,7 @@ sub check_program() {
   die "Error, path to required $prog cannot be found\n"
     unless $path =~ /^\//;
   chomp($path);
-  $path = readlink($path) if -l $path;
+  #$path = readlink($path) if -l $path;
   push( @paths, $path );
  }
  return @paths;
@@ -2433,7 +2433,7 @@ sub check_program_optional() {
 "Warning: path to optional $prog cannot be found in your path environment.\n"
     unless $path =~ /^\//;
   chomp($path);
-  $path = readlink($path) if -l $path;
+  #$path = readlink($path) if -l $path;
   push( @paths, $path );
  }
  return @paths;

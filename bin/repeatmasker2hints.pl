@@ -61,7 +61,7 @@ sub check_program() {
   pod2usage "Error, path to a required program ($prog) cannot be found\n\n"
     unless $path =~ /^\//;
   chomp($path);
-  $path = readlink($path) if -l $path;
+  #$path = readlink($path) if -l $path;
   push( @paths, $path );
  }
  return @paths;

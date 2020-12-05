@@ -1044,7 +1044,7 @@ sub check_programs() {
 	  confess "Error, path to $prog cannot be found"
 	    unless $path =~ /^\//;
 	  chomp($path);
-	  $path = readlink($path) while -l $path;
+	 # $path = readlink($path) while -l $path;
 	push (@paths,$path);
  }
  return @paths;

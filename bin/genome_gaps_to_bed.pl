@@ -119,7 +119,7 @@ sub check_program() {
 		  "Error, path to a required program ($prog) cannot be found\n\n"
 		  unless $path =~ /^\//;
 		chomp($path);
-		$path = readlink($path) if -l $path;
+		#$path = readlink($path) if -l $path;
 		print "Found $path\n";
 		push( @paths, $path );
 	}
