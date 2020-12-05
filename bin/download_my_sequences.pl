@@ -118,7 +118,8 @@ if ($query_text){
 	die "I don't know what to do!\n";
 }
 print "Making this query: $query_text from NCBI's $database\n";
-$service_request.=$query_text.$url_suffix;
+$service_request.=$query_text if $query_text;
+$service_request.=$url_suffix if $url_suffix;
 print "Fetching $service_request\n" if $debug;
 #http://www.ncbi.nlm.nih.gov/books/NBK25498/#chapter3.Application_3_Retrieving_large
 #post the esearch URL

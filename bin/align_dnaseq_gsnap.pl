@@ -500,8 +500,8 @@ sub align_paired_files() {
   my $base_out_filename = $notpaired ? "gsnap.$base.unpaired"  : "gsnap.$base.concordant";
   my $out_halfmapped = "gsnap.$base.halfmapping_uniq";
 
+  open( LOG, ">gsnap.$base.log" );
   unless ( -s "$base_out_filename"."_uniq.bam" || $just_write_out_commands) {
-    open( LOG, ">gsnap.$base.log" );
     my $file_align_cmd;
     if ($max_read_length > 300){
       $file_align_cmd = $gmap_exec.$align_cmd;

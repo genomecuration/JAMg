@@ -224,7 +224,7 @@ my $sort_exec = &check_sort_version;
 
 my ( $makeblastdb_exec, $tblastn_exec, $tblastx_exec ) =
   &check_program( 'makeblastdb', 'tblastn', 'tblastx' );
-my ( $gmap_build_exec, $gmap_exec ) = &check_program( 'gmap_build', 'gmap' );
+my ( $gmap_build_exec, $gmap_exec, $gff3_introns_exec ) = &check_program( 'gmap_build', 'gmap', 'gff3_introns' );
 
 die "No genome found in '$genome_file'\n" if $genome_file && !-s $genome_file;
 pod2usage "No genome found\n" unless ( $genome_file && -s $genome_file );
@@ -253,9 +253,11 @@ my ($scaffold_seq_hashref,$scaffold_seq_length) = &read_fasta($genome_sequence_f
 &process_cmd(
 "$makeblastdb_exec -in $genome_sequence_file -out $genome_sequence_file -hash_index -parse_seqids -dbtype nucl"
 ) unless (-s "$genome_sequence_file.nin" || -s "$genome_sequence_file.nal");
+
 &process_cmd(
 "$gmap_build_exec -e 0 -D $genome_sequence_file_dir -d $genome_sequence_file_base.gmap $genome_file"
-) unless (-d "$genome_sequence_file_dir/$genome_sequence_file_base.gmap" || $peptide_file);
+) unless (-d "$genome_sequence_file_dir/$genome_sequence_file_base.gmap" || ($peptide_file && !$build_only) );
+
 &process_cmd("$cdbfasta_exec $genome_sequence_file") unless -s "$genome_sequence_file.cidx" ;
 
 exit (0) if $build_only;
@@ -1228,25 +1230,6 @@ sub process_for_gene_prediction() {
    &order_fasta( $genome_sequence_file, "$geneid_gff_file.golden.train.gff3" );
    &order_fasta( $genome_sequence_file, "$geneid_gff_file.golden.test.gff3" );
 
-#TODO run optimization script (already written)
-# for i in {0..20}; do INDEX_PADDED=`printf "%02d" $i`; ParaFly -CPU 1 -v -c H.armigera_geneid.optimization.$INDEX_PADDED -failed_cmds H.armigera_geneid.optimization.$INDEX_PADDED.failed ; done
-#TODO get intron/exon sizes with R
-#data_intron <- read.table(file="exonerate.results.golden.intron.gff3",header=F,sep="\t")
-# data_exon <- read.table(file="exonerate.results.golden.exon.gff3",header=F,sep="\t")
-#dataInter<-read.table(file="intergenic.exon.gff",header=F,sep="\t");
-#data_intron_length<-abs(data_intron$V5-data_intron$V4)
-#data_exon_length<-abs(data_exon$V5-data_exon$V4)
-#dataInter_length<-abs(dataInter$V5-dataInter$V4)
-#quantile(dataInter_length,probs = c(0,0.25,0.5,0.95,0.96,0.97,0.98,0.99,1)) # pick 98%
-# quantile(data_intron_length,probs = c(0,0.25,0.5,0.95,0.96,0.97,0.98,0.99,1)) # pick 98%
-# INTRAgenic connections
-# First+:Internal+                Internal+:Terminal+             15:2000 block
-# Terminal-:Internal-             First-:Internal-                15:2000 blockr
-# INTERgeneic connections
-# aataaa+:Terminal+:Single+       Single+:First+:Promoter+        150:Infinity
-# aataaa+:Terminal+:Single+       Single-:Terminal-:aataaa-       150:Infinity
-# Promoter-:First-:Single-        Single+:First+:Promoter+        150:Infinity
-# Promoter-:First-:Single-        Single-:Terminal-:aataaa-       150:Infinity
    &gb2geneid( $train_ref, "$geneid_gff_file.golden.train.good.gb.geneid" )
      if $train_ref;
    &gb2geneid( $test_ref, "$geneid_gff_file.golden.test.good.gb.geneid" )
@@ -1285,6 +1268,8 @@ sub process_for_gene_prediction() {
 
  #Different thresholds that can be chosen for the splice sites
  #can be consulted in: - false.acc  false.don  false.atg
+
+ system("$gff3_introns_exec < final_golden_genes.gff3.nr.golden.gff3 > final_golden_genes.gff3.nr.golden.splice.gmap") if -s "final_golden_genes.gff3.nr.golden.gff3" && $gff3_introns_exec;
 
  print "\tevaluation\n";
  foreach my $file (@to_evaluate) {
@@ -3415,6 +3400,7 @@ sub check_for_options() {
                  && $pasa_genome_gff )
             || $peptide_file
             || $mrna_file
+	    || $build_only
    );
 
  unless (
@@ -3431,6 +3417,7 @@ sub check_for_options() {
                && -s $pasa_genome_gff )
           || ( $peptide_file && -s $peptide_file )
           || ( $mrna_file    && -s $mrna_file )
+          || $build_only
    )
  {
   warn "A required input file is missing\n";
