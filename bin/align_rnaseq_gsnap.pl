@@ -132,7 +132,7 @@ my $do_large_genome;
 pod2usage if $help;
 pod2usage "No genome FASTA\n" unless $genome && -s $genome;
 pod2usage "No GMAP genome database name\n" unless $genome_dbname;
-pod2usage "GMAP database does not exist: $gmap_dir\n" unless -d $gmap_dir;
+pod2usage "GMAP database directory does not exist: $gmap_dir\n" unless -d $gmap_dir;
 pod2usage "Split input requires the -commands_only option\n"
   if $split_input && !$just_write_out_commands;
 pod2usage "Split input cannot be more than 100\n"
@@ -200,8 +200,8 @@ else {
  $align_cmd =
 " --use-shared-memory=1 -B 2 -D $gmap_dir -d $genome_dbname --nthreads=$cpus  --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam ";
 }
-system($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
-system("$samtools_exec faidx $genome") unless -s "$genome.fai";
+&process_cmd($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
+&process_cmd("$samtools_exec faidx $genome") unless -s "$genome.fai";
 die "Failed to build genome ($genome.fai and $gmap_dir/$genome_dbname) " unless -s "$genome.fai" && -d "$gmap_dir/$genome_dbname";
 
 if ($build_only){
@@ -334,7 +334,7 @@ sub checked_unpaired_files() {
     $number_of_lines *= 4;
     die "Number of lines is not as expected for FASTQ ($number_of_lines / $lines)\n"
      unless $number_of_lines % 4 == 0;
-    system("split -a 3 -d -l $number_of_lines $file $file. ");
+    &process_cmd("split -a 3 -d -l $number_of_lines $file $file. ");
     my @new_files = glob("$file.0??");
     print "\t Adding ";
 
@@ -376,8 +376,8 @@ sub checked_paired_files() {
     $number_of_lines *= 4;
     die "Number of lines is not as expected for FASTQ ($number_of_lines / $lines)\n"
      unless $number_of_lines % 4 == 0;
-    system("split -a 3 -d -l $number_of_lines $file $file. ");
-    system("split -a 3 -d -l $number_of_lines $file $pair. ");
+    &process_cmd("split -a 3 -d -l $number_of_lines $file $file. ");
+    &process_cmd("split -a 3 -d -l $number_of_lines $file $pair. ");
     my @new_files = ( glob("$file.0??"), glob("$pair.0??") );
     print "\t Adding ";
 

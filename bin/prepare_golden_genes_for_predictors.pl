@@ -50,6 +50,7 @@ And one of:
 Other options:
 
     -help                     => Show this menu
+    -gmap_dir        :s       => Where the GMAP databases are meant to live (def. JAMG_PATH/databases/gmap)
     -training        :i       => number of genes to go into a random training set (def. 66% of total or 5000, whichever is higher)
     -complete                 => only do full length (recommended)
     -softmasked      :s       => Genome that has been softmasked for repeats
@@ -172,8 +173,10 @@ my $cwd = `pwd`;chomp($cwd);$cwd.='/';
 my $failed_cutoff = int(0);
 my ( $cdbfasta_exec, $cdbyank_exec ) = &check_program( 'cdbfasta', 'cdbyank' );
 my ( %get_id_seq_from_fasta_hash, $augustus_dir, $force_blast );
+my $gmap_dir           = "$RealBin/../databases/gmap/";
 
 pod2usage $! unless &GetOptions(
+	    'gmap_dir:s'        => \$gmap_dir,
 	    'force_blast'       => \$force_blast,
             'help'              => \$show_help,
             'debug' 		=> \$debug,
@@ -226,6 +229,8 @@ my ( $makeblastdb_exec, $tblastn_exec, $tblastx_exec ) =
   &check_program( 'makeblastdb', 'tblastn', 'tblastx' );
 my ( $gmap_build_exec, $gmap_exec, $gff3_introns_exec ) = &check_program( 'gmap_build', 'gmap', 'gff3_introns' );
 
+my ($samtools_exec) = &check_program('samtools');
+
 die "No genome found in '$genome_file'\n" if $genome_file && !-s $genome_file;
 pod2usage "No genome found\n" unless ( $genome_file && -s $genome_file );
 
@@ -244,20 +249,24 @@ my $genome_sequence_file =
     $softmasked_genome
   ? $softmasked_genome
   : $genome_file;    # the full sequence, not repeatmasked
-print "Indexing genome\n";
 my $genome_sequence_file_dir  = dirname($genome_sequence_file);
 my $genome_sequence_file_base = basename($genome_sequence_file);
 my $genome_dir                = basename($genome_file) . '_dir';
+my $genome_dbname             = $genome_sequence_file_base.'.gmap';
+print "Processing genome $genome_sequence_file_dir/$genome_sequence_file_base\n";
+
 my ($scaffold_seq_hashref,$scaffold_seq_length) = &read_fasta($genome_sequence_file);
 
-&process_cmd(
-"$makeblastdb_exec -in $genome_sequence_file -out $genome_sequence_file -hash_index -parse_seqids -dbtype nucl"
-) unless (-s "$genome_sequence_file.nin" || -s "$genome_sequence_file.nal");
+print "Building BLAST directory at $genome_sequence_file\n";
+&process_cmd("$makeblastdb_exec -in $genome_sequence_file -out $genome_sequence_file -hash_index -parse_seqids -dbtype nucl")
+ unless (-s "$genome_sequence_file.nin" || -s "$genome_sequence_file.nal");
 
-&process_cmd(
-"$gmap_build_exec -e 0 -D $genome_sequence_file_dir -d $genome_sequence_file_base.gmap $genome_file"
-) unless (-d "$genome_sequence_file_dir/$genome_sequence_file_base.gmap" || ($peptide_file && !$build_only) );
+print "Building GMAP directory at $gmap_dir/$genome_dbname\n";
+&process_cmd("$gmap_build_exec -e 0 -D $gmap_dir -d $genome_dbname $genome_file")
+ unless (-d "$gmap_dir/$genome_dbname" || ($peptide_file && !$build_only) );
 
+print "Indexing...\n";
+&process_cmd("$samtools_exec faidx $genome_sequence_file") unless -s "$genome_sequence_file.fai";
 &process_cmd("$cdbfasta_exec $genome_sequence_file") unless -s "$genome_sequence_file.cidx" ;
 
 exit (0) if $build_only;
@@ -1152,15 +1161,15 @@ sub process_for_gene_prediction() {
       && $augustus_filterGenes_exec )
  {
 
-  system(
+  &process_cmd(
 "$gff2gb_exec $gff_file.golden.train.gff3 $genome_sequence_file $augustus_flank_region $gff_file.golden.train.gb >/dev/null 2> /dev/null"
   ) if -s "$gff_file.golden.train.gff3";
-  system(
+  &process_cmd(
 "$augustus_train_exec --species=generic $gff_file.golden.train.gb 2>&1 | grep 'n sequence' | perl -pe 's/.*n sequence (\\S+):.*/\$1/' | sort -u > $gff_file.golden.train.gb.bad.lst 2>/dev/null"
   ) if -s "$gff_file.golden.train.gb";
 
   if ( -s "$gff_file.golden.train.gb.bad.lst" ) {
-   system(
+   &process_cmd(
 "$augustus_filterGenes_exec $gff_file.golden.train.gb.bad.lst $gff_file.golden.train.gb > $gff_file.golden.train.good.gb 2>/dev/null"
    );
   }
@@ -1169,15 +1178,15 @@ sub process_for_gene_prediction() {
      if -s "$gff_file.golden.train.gb";
   }
 
-  system(
+  &process_cmd(
 "$gff2gb_exec $gff_file.golden.test.gff3 $genome_sequence_file $augustus_flank_region $gff_file.golden.test.gb  >/dev/null 2>/dev/null"
   ) if -s "$gff_file.golden.test.gff3";
-  system(
+  &process_cmd(
 "$augustus_train_exec --species=generic $gff_file.golden.test.gb 2>&1 | grep 'n sequence' | perl -pe 's/.*n sequence (\\S+):.*/\$1/' | sort -u > $gff_file.golden.test.gb.bad.lst 2>/dev/null"
   ) if -s "$gff_file.golden.test.gb";
 
   if ( -s "$gff_file.golden.test.gb.bad.lst" ) {
-   system(
+   &process_cmd(
 "$augustus_filterGenes_exec $gff_file.golden.test.gb.bad.lst $gff_file.golden.test.gb > $gff_file.golden.test.good.gb 2>/dev/null"
    );
   }
@@ -1186,15 +1195,15 @@ sub process_for_gene_prediction() {
      if -s "$gff_file.golden.test.gb";
   }
 
-  system(
+  &process_cmd(
 "$gff2gb_exec $gff_file.golden.optimization.gff3 $genome_sequence_file $augustus_flank_region $gff_file.golden.optimization.gb  >/dev/null"
   ) if -s "$gff_file.golden.optimization.gff3";
-  system(
+  &process_cmd(
 "$augustus_train_exec --species=generic $gff_file.golden.optimization.gb 2>&1 | grep 'n sequence' | perl -pe 's/.*n sequence (\\S+):.*/\$1/' | sort -u > $gff_file.golden.optimization.gb.bad.lst 2>/dev/null"
   ) if -s "$gff_file.golden.optimization.gb";
 
   if ( -s "$gff_file.golden.optimization.gb.bad.lst" ) {
-   system(
+   &process_cmd(
 "$augustus_filterGenes_exec $gff_file.golden.optimization.gb.bad.lst $gff_file.golden.optimization.gb > $gff_file.golden.optimization.good.gb 2>/dev/null"
    );
   }
@@ -1269,7 +1278,7 @@ sub process_for_gene_prediction() {
  #Different thresholds that can be chosen for the splice sites
  #can be consulted in: - false.acc  false.don  false.atg
 
- system("$gff3_introns_exec < final_golden_genes.gff3.nr.golden.gff3 > final_golden_genes.gff3.nr.golden.splice.gmap") if -s "final_golden_genes.gff3.nr.golden.gff3" && $gff3_introns_exec;
+ &process_cmd("$gff3_introns_exec < final_golden_genes.gff3.nr.golden.gff3 > final_golden_genes.gff3.nr.golden.splice.gmap") if -s "final_golden_genes.gff3.nr.golden.gff3" && $gff3_introns_exec;
 
  print "\tevaluation\n";
  foreach my $file (@to_evaluate) {
@@ -2839,7 +2848,7 @@ sub run_aligner() {
   die "Error, " . scalar(@failed_threads) . " threads failed.\n";
   exit(1);
  }
- system("find $output_directory -empty -delete");
+ &process_cmd("find $output_directory -empty -delete");
  my @aligner_out = glob("$output_directory/*");
  die "$aligner failed" unless @aligner_out && scalar(@aligner_out) > 0;
  print "$aligner: Completed\n";
@@ -3052,7 +3061,7 @@ sub run_aat() {
    print CMD shuffle(@commands);
    close CMD;
    &process_cmd("$parafly_exec -shuffle -CPU $threads -c $aat_command_file -v -failed_cmds $aat_command_file.failed");
-   system("find $genome_dir -empty -delete");
+   &process_cmd("find $genome_dir -empty -delete");
    &recombine_split_aat_multi($genome_dir);
   }
   else {
@@ -3074,7 +3083,7 @@ sub run_aat() {
    close CMD;
    &process_cmd("$parafly_exec -shuffle -CPU $threads -c $aat_command_file -v -failed_cmds $aat_command_file.failed" );
   }
-  system("find $genome_dir -empty -delete");
+  &process_cmd("find $genome_dir -empty -delete");
   &recombine_split_aat_multi($genome_dir);
 
  }
@@ -3683,9 +3692,9 @@ sub fix_aat2(){
 		my $b = $1;
 		return if -s "$b.aat.filter";
 		&collapse_aat($file) if !-s $file."Col";
-		#system("$aat_dir/extCollapse_AP.pl $file") if !-s $file."Col";
+		#&process_cmd("$aat_dir/extCollapse_AP.pl $file") if !-s $file."Col";
 		return unless -s $file."Col";
-		system("$filter_exec $file"."Col -c 1 > $b.aat.filter 2>/dev/null");
+		&process_cmd("$filter_exec $file"."Col -c 1 > $b.aat.filter 2>/dev/null");
 		if (-s "$b.aat.filter"){
 			unlink($file.".aat.d");
 			unlink($file."Col");
@@ -3733,7 +3742,7 @@ sub collapse_aat(){
 	open (TMP,"$extFile");
 	my $header = <TMP>;
 	close TMP;
-	system("$sort_exec -nk1 $extFile | $sort_exec -s -nk6,6 | $sort_exec -s -k9,9 > $extFile.sorted") unless -s "$extFile.sorted";
+	&process_cmd("$sort_exec -nk1 $extFile | $sort_exec -s -nk6,6 | $sort_exec -s -k9,9 > $extFile.sorted") unless -s "$extFile.sorted";
 	open (EXT, "$extFile.sorted") or die "Cannot open $extFile.sorted\n";
 	open (OUT1,">$extFile.collapsed1") || die $!;
 	my $discard = <EXT>;
@@ -3788,8 +3797,8 @@ sub collapse_aat(){
 	print OUT $header;
 	close OUT;
 	# i added uniq here because there is a bug somewhere i cant find
-	system("$sort_exec -nk1,1 -nk2,2 $extFile.collapsed1|uniq >> $outfile");
-	system("sed -i '\$d' $outfile");
+	&process_cmd("$sort_exec -nk1,1 -nk2,2 $extFile.collapsed1|uniq >> $outfile");
+	&process_cmd("sed -i '\$d' $outfile");
 	unlink("$extFile.collapsed1");
 	unlink("$extFile.sorted");
 }
