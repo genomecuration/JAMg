@@ -447,8 +447,10 @@ sub align_unpaired_files() {
    unlink("$base_out_filename".".mult");
   }
 
+  &process_cmd("bzip2 $base_out_filename.nomapping") if -s "$base_out_filename.nomapping";
+
 # decided to remove as it was a resource hog; keep just for rnaseq
-  if ($do_merge.mult && !-s $base_out_filename.".uniq.mult.bam" ) {
+  if ($do_merge_mult && !-s $base_out_filename.".uniq.mult.bam" ) {
    &process_cmd("$samtools_exec merge -@ $cpus -l 9 $base_out_filename".".uniq.mult.bam $base_out_filename".".uniq.bam $base_out_filename".".mult.bam");
    &process_cmd("$samtools_exec index $base_out_filename".".uniq.mult.bam");
    print LOG "\n$base_out_filename".".uniq.mult.bam:\n";
@@ -570,6 +572,8 @@ sub align_paired_files() {
     &process_cmd("$samtools_exec index $out_halfmapped.bam");
     unlink($out_halfmapped) if -s "$out_halfmapped.bam";
   }
+
+  &process_cmd("bzip2 $base_out_filename.nomapping") if -s "$base_out_filename.nomapping";
 
 # decided to remove as it was a resource hog
   if (!$no_split && $do_merge_mult && !-s "$base_out_filename"."_uniq_mult.bam" ) {
