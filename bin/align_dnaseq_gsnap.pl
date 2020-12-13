@@ -408,7 +408,7 @@ sub align_unpaired_files() {
      $file_align_cmd .= " --orientation=RF " if $matepair;
    }
 
-  my $base_out_filename = $notpaired ? "gsnap.$base.unpaired"  : "gsnap.$base.concordant";
+  my $base_out_filename = $notpaired ? "gsnap.$base"  : "gsnap.$base.concordant";
   $file_align_cmd .= ' --bunzip2 ' if $file =~ /\.bz2$/; 
   $file_align_cmd .= ' --gunzip ' if $file =~ /\.gz$/; 
   $file_align_cmd .= $qual_prot if $qual_prot;
@@ -421,38 +421,38 @@ sub align_unpaired_files() {
    &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename.bam -");
    &process_cmd("$samtools_exec index $base_out_filename.bam");
   }else{
-   &process_cmd( $file_align_cmd, '.', "gsnap.$base*" ) unless (    -s $base_out_filename."_uniq" || -s $base_out_filename."_uniq.bam" );
-   unless ( -s $base_out_filename."_uniq.bam" || $just_write_out_commands) {
-   &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename"."_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_uniq.bam -"   );
-   &process_cmd("$samtools_exec index $base_out_filename"."_uniq.bam");
+   &process_cmd( $file_align_cmd, '.', "gsnap.$base*" ) unless (    -s $base_out_filename.".uniq" || -s $base_out_filename.".uniq.bam" );
+   unless ( -s $base_out_filename.".uniq.bam" || $just_write_out_commands) {
+   &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename".".uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename".".uniq.bam -"   );
+   &process_cmd("$samtools_exec index $base_out_filename".".uniq.bam");
 
    ## For JBrowse
    &process_cmd("$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $base_out_filename"
-     ."_uniq.bam| sort -S 4G -k1,1 -k2,2n > $base_out_filename"."_uniq.coverage.bg");
-   &process_cmd("bedGraphToBigWig $base_out_filename"."_uniq.coverage.bg $genome.fai $base_out_filename"."_uniq.coverage.bw") if `which bedGraphToBigWig`;
+     .".uniq.bam| sort -S 4G -k1,1 -k2,2n > $base_out_filename".".uniq.coverage.bg");
+   &process_cmd("bedGraphToBigWig $base_out_filename".".uniq.coverage.bg $genome.fai $base_out_filename".".uniq.coverage.bw") if `which bedGraphToBigWig`;
 
-   print LOG "\n$base_out_filename"."_uniq.bam:\n";
+   print LOG "\n$base_out_filename".".uniq.bam:\n";
    &process_cmd(
-    "$samtools_exec flagstat $base_out_filename"."_uniq.bam >> gsnap.$base.log"
+    "$samtools_exec flagstat $base_out_filename".".uniq.bam >> gsnap.$base.log"
    );
-   unlink($base_out_filename."_uniq");
+   unlink($base_out_filename.".uniq");
   }
-  unless ( -s $base_out_filename."_mult.bam" || $just_write_out_commands) {
-   &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename"."_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_mult.bam -"   );
-   &process_cmd("$samtools_exec index $base_out_filename"."_mult.bam");
-   print LOG "\n$base_out_filename"."_mult.bam:\n";
+  unless ( -s $base_out_filename.".mult.bam" || $just_write_out_commands) {
+   &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename".".mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename".".mult.bam -"   );
+   &process_cmd("$samtools_exec index $base_out_filename".".mult.bam");
+   print LOG "\n$base_out_filename".".mult.bam:\n";
    &process_cmd(
-    "$samtools_exec flagstat $base_out_filename"."_mult.bam >> gsnap.$base.log"
+    "$samtools_exec flagstat $base_out_filename".".mult.bam >> gsnap.$base.log"
    );
-   unlink("$base_out_filename"."_mult");
+   unlink("$base_out_filename".".mult");
   }
 
 # decided to remove as it was a resource hog; keep just for rnaseq
-  if ($do_merge_mult && !-s $base_out_filename."_uniq_mult.bam" ) {
-   &process_cmd("$samtools_exec merge -@ $cpus -l 9 $base_out_filename"."_uniq_mult.bam $base_out_filename"."_uniq.bam $base_out_filename"."_mult.bam");
-   &process_cmd("$samtools_exec index $base_out_filename"."_uniq_mult.bam");
-   print LOG "\n$base_out_filename"."_uniq_mult.bam:\n";
-   &process_cmd("$samtools_exec flagstat $base_out_filename"."_uniq_mult.bam >> gsnap.$base.log" );
+  if ($do_merge.mult && !-s $base_out_filename.".uniq.mult.bam" ) {
+   &process_cmd("$samtools_exec merge -@ $cpus -l 9 $base_out_filename".".uniq.mult.bam $base_out_filename".".uniq.bam $base_out_filename".".mult.bam");
+   &process_cmd("$samtools_exec index $base_out_filename".".uniq.mult.bam");
+   print LOG "\n$base_out_filename".".uniq.mult.bam:\n";
+   &process_cmd("$samtools_exec flagstat $base_out_filename".".uniq.mult.bam >> gsnap.$base.log" );
   }
  }
   print LOG "\nGSNAP Completed!\n" unless $just_write_out_commands;
