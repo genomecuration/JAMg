@@ -143,7 +143,7 @@ if ($do_parallel && $do_parallel > 1){
 	$cpus = 2 if $cpus < 2;
 }
 
-( $gsnap_exec,$gmap_exec ) = &check_program( "gsnapl","gmapl" ) if $do_large_genome;
+( $gsnap_exec,$gmap_exec,  $pbzip2_exec  ) = &check_program( "gsnapl","gmapl",'pbzip2' ) if $do_large_genome;
 
 my $samtools_sort_CPUs = int( $cpus / 2 ) > 2 ? int( $cpus / 2 ) : 2;
 my $suff = "";
@@ -447,7 +447,7 @@ sub align_unpaired_files() {
    unlink("$base_out_filename".".mult");
   }
 
-  &process_cmd("bzip2 $base_out_filename.nomapping") if -s "$base_out_filename.nomapping";
+  &process_cmd("$pbzip2_exec $base_out_filename.nomapping") if -s "$base_out_filename.nomapping";
 
 # decided to remove as it was a resource hog; keep just for rnaseq
   if ($do_merge_mult && !-s $base_out_filename.".uniq.mult.bam" ) {
@@ -573,7 +573,7 @@ sub align_paired_files() {
     unlink($out_halfmapped) if -s "$out_halfmapped.bam";
   }
 
-  &process_cmd("bzip2 $base_out_filename.nomapping") if -s "$base_out_filename.nomapping";
+  &process_cmd("$pbzip2_exec $base_out_filename.nomapping") if -s "$base_out_filename.nomapping";
 
 # decided to remove as it was a resource hog
   if (!$no_split && $do_merge_mult && !-s "$base_out_filename"."_uniq_mult.bam" ) {

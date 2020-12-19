@@ -22,13 +22,14 @@ RECORD: while ( my $record = <GFF> ) {
 	for ( my $i = 0 ; $i < scalar(@lines) ; $i++ ) {
 		my @data = split( "\t", $lines[$i] );
 		$data[2] = 'exonpart';
-		$data[1] = 'PASA_assembly';
-		my $grp='';
+		my $grp;
+		my $src="\tsrc=E;pri=3";
 		if ($data[8]=~/ID=(\S+);/){
-			$grp = "grp=".$1.';';
+			$src .= ";grp=".$1;
 		}
+		
 		print OUT join( "\t", @data[ 0 .. 7 ] )
-	          . "\tsrc=PASA;pri=3;$grp\n";
+	          . $src."\n";
 	}
 	next RECORD;
     }

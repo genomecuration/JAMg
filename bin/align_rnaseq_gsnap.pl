@@ -146,8 +146,8 @@ if ($do_parallel && $do_parallel > 1){
 }
 
 
-my ( $gmap_build_exec, $gsnap_exec, $gmap_exec, $samtools_exec,$bunzip2_exec,$bedtools_exec,$gunzip_exec ) =
-  &check_program( "gmap_build", "gsnap", "gmap", "samtools",'bunzip2','bedtools','gunzip' );
+my ( $gmap_build_exec, $gsnap_exec, $gmap_exec, $samtools_exec,$bunzip2_exec,$bedtools_exec,$gunzip_exec, $pbzip2_exec ) =
+  &check_program( "gmap_build", "gsnap", "gmap", "samtools",'bunzip2','bedtools','gunzip', 'pbzip2' );
 &samtools_version_check($samtools_exec);
 
 ( $gsnap_exec,$gmap_exec ) = &check_program( "gsnapl", "gmapl" ) if $do_large_genome || (-s $genome > 4306887543);
@@ -468,7 +468,7 @@ sub align_unpaired_files() {
    unlink("$base_out_filename".".mult");
   }
 
-  &process_cmd("bzip2 $base_out_filename.nomapping") if -s "$base_out_filename.nomapping";
+  &process_cmd("$pbzip2_exec $base_out_filename.nomapping") if -s "$base_out_filename.nomapping";
 
 # decided to remove as it was a resource hog
 #  unless ( -s "$base_out_filename"."_uniq.mult.bam" ) {
@@ -563,7 +563,7 @@ sub align_paired_files() {
     unlink($out_halfmapped) if -s "$out_halfmapped.bam";
   }
 
-  &process_cmd("bzip2 $base_out_filename.nomapping") if -s "$base_out_filename.nomapping";
+  &process_cmd("$pbzip2_exec $base_out_filename.nomapping") if -s "$base_out_filename.nomapping";
 
 #  unless ( -s "$base_out_filename"."_uniq_mult.bam" ) {
 #   &process_cmd("$samtools_exec merge -@ $cpus -l 9 $base_out_filename"."_uniq_mult.bam $base_out_filename"."_uniq.bam $base_out_filename"."_mult.bam"   );

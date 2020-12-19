@@ -262,7 +262,7 @@ print "Building BLAST directory at $genome_sequence_file\n";
  unless (-s "$genome_sequence_file.nin" || -s "$genome_sequence_file.nal");
 
 print "Building GMAP directory at $gmap_dir/$genome_dbname\n";
-&process_cmd("$gmap_build_exec -e 0 -D $gmap_dir -d $genome_dbname $genome_file")
+&process_cmd("$gmap_build_exec -e 0 -D $gmap_dir -d $genome_dbname $genome_file > /dev/null")
  unless (-d "$gmap_dir/$genome_dbname" || ($peptide_file && !$build_only) );
 
 print "Indexing...\n";
