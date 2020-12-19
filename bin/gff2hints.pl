@@ -12,8 +12,19 @@ use strict;
   open( OUT, ">$gff.hints" ) || die;
   $/ = $delimiter;
 
-  while ( my $record = <GFF> ) {
+  RECORD: while ( my $record = <GFF> ) {
     my @lines = split( "\n", $record );
+
+    if ($lines[0]=~/\bcDNA_match\b/){
+	for ( my $i = 0 ; $i < scalar(@lines) ; $i++ ) {
+		my @data = split( "\t", $lines[$i] );
+		$data[2] = 'exonpart';
+		$data[1] = 'PASA_assembly';
+		print OUT join( "\t", @data[ 0 .. 7 ] )
+	          . "\tsrc=PASA;pri=3\n";
+	}
+	next RECORD;
+    }
 
     #my $gene_line = $lines[0];
     my $mRNA_line = $lines[1];
