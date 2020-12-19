@@ -1,18 +1,21 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
+
 use strict;
+use warnings;
 
-  my $gff       = shift;
-  my $golden    = shift;
-  my $src       = $golden ? 'GLD' : 'XNT';
-  my $type_suffix = $golden ? '' : 'part';
-  my $priority = $golden ? 7 : 5;
-  my $delimiter = "\n\n";
-  my $orig_sep  = $/;
-  open( GFF, $gff )          || die;
-  open( OUT, ">$gff.hints" ) || die;
-  $/ = $delimiter;
+my $gff       = shift;
+my $golden    = shift;
+die "<GFF_filename> [is golden]\n" unless $gff && -s $gff;
+my $src       = $golden ? 'GLD' : 'XNT';
+my $type_suffix = $golden ? '' : 'part';
+my $priority = $golden ? 7 : 5;
+my $delimiter = "\n\n";
+my $orig_sep  = $/;
+open( GFF, $gff )          || die $!;
+open( OUT, ">$gff.hints" ) || die $!;
+$/ = $delimiter;
 
-  RECORD: while ( my $record = <GFF> ) {
+RECORD: while ( my $record = <GFF> ) {
     my @lines = split( "\n", $record );
 
     if ($lines[0]=~/\bcDNA_match\b/){
@@ -20,8 +23,12 @@ use strict;
 		my @data = split( "\t", $lines[$i] );
 		$data[2] = 'exonpart';
 		$data[1] = 'PASA_assembly';
+		my $grp='';
+		if ($data[8]=~/ID=(\S+);/){
+			$grp = "grp=".$1.';';
+		}
 		print OUT join( "\t", @data[ 0 .. 7 ] )
-	          . "\tsrc=PASA;pri=3\n";
+	          . "\tsrc=PASA;pri=3;$grp\n";
 	}
 	next RECORD;
     }
