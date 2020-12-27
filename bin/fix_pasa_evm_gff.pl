@@ -16,6 +16,7 @@ my (@file_lines,%states);
 while (my $ln = <IN>){
 	last if $ln=~/^##FASTA/;
 	next if $ln=~/^##[^#]/;
+	next if $ln=~/	region	/;
 	if ($ln=~/status=([^;]+)/){$states{$1}++;}
 	push (@file_lines,$ln);
 }
