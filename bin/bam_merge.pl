@@ -5,6 +5,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 
+my $merge_mult_uniq = shift;
 my $verbose = 1;
 my ( $samtools_exec ) = &check_program( 'samtools' );
 
@@ -13,9 +14,10 @@ mkdir ('merged') if !-d 'merged';
 
 my %hash;
 foreach my $file (@files){
-	if ($file=~/^(\S+)_L\d+(_\S+)$/){
-		my $new_file = $1.$2;
-#		print "Merging $file into merged/$new_file\n";
+	my $pattern = $merge_mult_uniq ? '^(\S+)_L\d+(_\S+)\.\S+\.bam' : '^(\S+)_L\d+(_\S+)\.bam$';
+
+	if ($file=~/$pattern/){
+		my $new_file = $1.$2.'.bam';
 		push(@{$hash{$new_file}},$file);
 	}
 }
@@ -24,8 +26,8 @@ foreach my $file (@files){
 
 foreach my $outfile (sort keys %hash){
 	my $infiles = join(' ',sort @{$hash{$outfile}});
-	&process_cmd($samtools_exec." merge  --threads 5 -l 9 merged/$outfile ".$infiles);
-	&process_cmd($samtools_exec." index  merged/$outfile") if -s "merged/$outfile";
+	&process_cmd($samtools_exec." merge --threads 10 -l 9 merged/$outfile ".$infiles);
+	&process_cmd($samtools_exec." index merged/$outfile") if -s "merged/$outfile";
 } 
 
 
