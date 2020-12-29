@@ -18,8 +18,8 @@ mkdir("$jsondir/bam/") if !-d "$jsondir/bam/";
 my $bam_dir = shift;
 $bam_dir = './' if !$bam_dir;
 
-my @bam_files = sort glob("gsnap.*.merged.bam");
-die "No gsnap.*.merged.bam files found\n" unless scalar(@bam_files)>0;
+my @bam_files = sort glob("gsnap.*.bam");
+die "No gsnap.*.bam files found\n" unless scalar(@bam_files)>0;
 
 
 my ($json_track_hashref,@json_lines);
@@ -70,7 +70,7 @@ while (my $ln=<IN>){
 }
 close IN;
 
-print "Copying bigwig and backing up in $jsondir\n";
+print "Copying BAM and backing up in $jsondir\n";
 rename($injson_file,$injson_file.".bak");
 
 #die Dumper \%hash;
