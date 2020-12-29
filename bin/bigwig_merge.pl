@@ -31,7 +31,6 @@ foreach my $outfile (sort keys %hash){
 	my $infiles = join(' ',sort @{$hash{$outfile}});
 	&process_cmd($bigwigmerge_exec." $infiles merged/$outfile.bg");
 	&process_cmd($bedGraphToBigWig_exec. " merged/$outfile.bg merged/$outfile.bw $genome_path.fai merged/$outfile.bw");
-	unlink("merged/$outfile.bg");
 } 
 
 
