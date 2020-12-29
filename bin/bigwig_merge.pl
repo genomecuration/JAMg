@@ -5,8 +5,13 @@ use strict;
 use warnings;
 use Data::Dumper;
 
+
+my $genome_path = shift || die("Please provide the path to the genome FASTA\n");
 my $verbose = 1;
-my ( $bigwigmerge_exec ) = &check_program( 'bigWigMerge' );
+
+my ( $bigwigmerge_exec,$bedGraphToBigWig_exec, $samtools_exec ) = &check_program( 'bigWigMerge','bedGraphToBigWig', 'samtools' );
+
+&process_cmd($samtools_exec . " faidx $genome_path") unless -s "$genome_path.fai";
 
 my @files = sort glob("*coverage.bw");
 mkdir ('merged') if !-d 'merged';
@@ -24,7 +29,9 @@ foreach my $file (@files){
 
 foreach my $outfile (sort keys %hash){
 	my $infiles = join(' ',sort @{$hash{$outfile}});
-	&process_cmd($bigwigmerge_exec." ".$infiles." merged/$outfile");
+	&process_cmd($bigwigmerge_exec." $infiles merged/$outfile.bg");
+	&process_cmd($bedGraphToBigWig_exec. " merged/$outfile.bg merged/$outfile.bw $genome_path.fai merged/$outfile.bw");
+	unlink("merged/$outfile.bg");
 } 
 
 
