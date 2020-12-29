@@ -92,6 +92,7 @@ foreach my $bam_filename (sort keys %hash){
    }
    push(@json_lines,\%hash_item);
    link($bam_filename,"$jsondir/bam/$bam_filename");
+   link($bam_filename.'.bai',"$jsondir/bam/$bam_filename.bai");
    die $! unless -s "$jsondir/bam/$bam_filename";
 }
 
