@@ -27,9 +27,9 @@ while (my $record = <IN>){
 	$softmasked_seq=~tr/n/N/;
 	my $hardmasked_seq = $softmasked_seq =~ tr/atgc/NNNN/r;
 	my $normal_seq = $softmasked_seq =~ tr/atgc/ATGC/r;	
-	print OUTH "$id\n$hardmasked_seq\n";
-	print OUTN "$id\n$normal_seq\n";
-	print OUTS "$id\n$softmasked_seq\n";
+	print OUTH ">$id\n$hardmasked_seq\n";
+	print OUTN ">$id\n$normal_seq\n";
+	print OUTS ">$id\n$softmasked_seq\n";
 
 	my $counter;
 	while ($softmasked_seq =~ /([a-z]+)/g){
