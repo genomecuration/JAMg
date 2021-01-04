@@ -2,7 +2,7 @@
 echo What is the PATH for JAMg? e.g. `echo "$( dirname "${BASH_SOURCE[0]}" )"`
 read JAMG_PATH
 
-echo What directory to use for temporary files? e.g. /dev/shm /tmp `echo $TMPDIR`
+echo What directory to use for temporary files? e.g. /dev/shm /tmp or the currrent default of `echo $TMPDIR`
 read TMPDIR
 
 echo How many CPUs would like to use for some of the multi-threaded scripts? e.g. 5
@@ -23,10 +23,13 @@ read MAX_INTRON_LENGTH
 echo "What is the name of the species for Augustus (no spaces, use underscore)?"
 read SPECIES
 
+echo "What is the NCBI TaxId for this species?"
+read NCBITAXID
+
 echo "What is a species classification for RepeatMasker (e.g. Insecta, fungi, Viridiplantae, human, primates)?"
 read SPECIES_CATEGORY
 
-echo "What directory is Genemark-HMM installed (needs a licence key; free for academics)? e.g. $HOME/software/gm_et_linux_64/gmes_petap/"
+echo "What directory is Genemark-HMM installed (needs a licence key; free for academics)? e.g. $HOME/software/gmes_linux_64/"
 read GENEMARK_DIR
 
 #system variables
@@ -54,6 +57,7 @@ export GENOME_NAME=$GENOME_NAME
 export GENOME_PATH=$GENOME_PATH
 export MAX_INTRON_LENGTH=$MAX_INTRON_LENGTH
 export SPECIES=$SPECIES
+export NCBITAXID=$NCBITAXID
 export SPECIES_CATEGORY=$SPECIES_CATEGORY
 
 # compilation variables
