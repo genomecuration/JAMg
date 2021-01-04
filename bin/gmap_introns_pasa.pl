@@ -11,13 +11,21 @@ use Carp;
 use Nuc_translator;
 
 
-my $usage = "Provide a PASA genes GFF .inx file\n";
+my $usage = "Provide a PASA genes GFF file\n";
+my $gff3_file = shift or die $usage;
+die $usage if !-s $gff3_file;
+my $index_file = "$gff3_file.inx";
 
-my $inx_file = shift or die $usage;
+my ($gene_obj_indexer,$asmbl_id_to_gene_list_href);
+if (!-s $index_file){
+	$gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
+	$asmbl_id_to_gene_list_href = &GFF3_utils::index_GFF3_gene_objs( $gff3_file, $gene_obj_indexer );
+}else{
+	$gene_obj_indexer =  new Gene_obj_indexer( { "use" => $index_file } );
+}
+#undef($gene_obj_indexer);
+die "Cannot index with $index_file\n" unless $gene_obj_indexer && -s $index_file;
 
-die $usage unless (-s $inx_file);
-
-my $gene_obj_indexer = new Gene_obj_indexer( { "use" => $inx_file } ) || die $!;
 
 my @gene_ids = $gene_obj_indexer->get_keys();
 
