@@ -205,10 +205,10 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
   open( GFF3, ">$gff3_file.gff3" );
   open( GFF3_ERR, ">$gff3_file.err.gff3" );
   open( GFF3_SINGLE, ">$gff3_file.gff3.single" ) if $split_single;
-  open( PEP,  ">$gff3_file.pep" );
-  open( GENE, ">$gff3_file.gene" );
-  open( CDS,  ">$gff3_file.cds" );
-  open( MRNA, ">$gff3_file.mRNA" );
+  open( PEP,  ">$gff3_file.pep.fasta" );
+  open( GENE, ">$gff3_file.gene.fasta" );
+  open( CDS,  ">$gff3_file.cds.fasta" );
+  open( MRNA, ">$gff3_file.mRNA.fasta" );
   open( MRNAMAP, ">$gff3_file.mRNA.map" );
   open( TRACK, ">$gff3_file.track"); 
  }
@@ -312,7 +312,7 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 	my $mrna_seq = $isoform->get_cDNA_sequence();
 	my $pep_seq = $isoform->get_protein_sequence();
 
-	$isoform = &check_phasing($isoform,$error_name_text,\$genome_seq,1) unless $pep_seq!~/^M/; # see subroutine comments on why;
+	$isoform = &check_phasing($isoform,$error_name_text,\$genome_seq,1) unless !$pep_seq || $pep_seq!~/^M/; # see subroutine comments on why;
 
 
 	if (!$pep_seq){

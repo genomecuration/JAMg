@@ -84,6 +84,7 @@ GENE: while ( my $record = <IN> ) {
 
   foreach my $d (@record_data) {
    my @t = split( "\t", $d );
+   next unless $t[2];
    if ( $t[2] eq 'CDS' ) {
     $cds_sizes{$mrna_id} += abs( $t[4] - $t[3] );
    }
