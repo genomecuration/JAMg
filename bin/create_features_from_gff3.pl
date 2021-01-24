@@ -282,7 +282,9 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 
    $gene_obj_ref->{genbank_submission} = $bioproject_locus_id if $bioproject_locus_id;
    $gene_obj_ref->create_all_sequence_types( \$genome_seq, %params );
-   my $gene_seq = $gene_obj_ref->get_gene_sequence();
+#die Dumper $gene_obj_ref;
+   # we should make sure only this gene sequence is used. the one in the isoforms may not be correct.
+   my $gene_seq = $gene_obj_ref->get_gene_sequence(); # NB: this is replaced later on the code with the longest gene_seq isoform
 
    next if !$gene_seq;
    $gene_seq =~ s/(\S{80})/$1\n/g;
@@ -358,7 +360,6 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 		$isoform->create_all_sequence_types( \$genome_seq, %params );
 		$mrna_seq = $isoform->get_cDNA_sequence();
 		$cds_seq = $isoform->get_CDS_sequence();
-		$gene_seq = $gene_obj_ref->get_gene_sequence();
 		$pep_seq = $isoform->get_protein_sequence();
 		$do_recreate_seqs = undef;
 	}
@@ -402,7 +403,6 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 			($first_cds_exon_number,$last_cds_exon_number) = &get_cds_ends($isoform);
 			$mrna_seq = $isoform->get_cDNA_sequence();
 			$cds_seq = $isoform->get_CDS_sequence();
-			$gene_seq = $gene_obj_ref->get_gene_sequence();
 			$pep_seq = $isoform->get_protein_sequence();
 		}
 		#another while loop 
@@ -433,7 +433,6 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 			($first_cds_exon_number,$last_cds_exon_number) = &get_cds_ends($isoform);
 			$mrna_seq = $isoform->get_cDNA_sequence();
 			$cds_seq = $isoform->get_CDS_sequence();
-			$gene_seq = $gene_obj_ref->get_gene_sequence();
 			$pep_seq = $isoform->get_protein_sequence();
 		}
 		$cNs = ($cds_seq =~ tr/N//);
@@ -479,7 +478,6 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 		$isoform->create_all_sequence_types( \$genome_seq, %params );
 		$mrna_seq = $isoform->get_cDNA_sequence();
 		$cds_seq = $isoform->get_CDS_sequence();
-		$gene_seq = $gene_obj_ref->get_gene_sequence();
 		$pep_seq = $isoform->get_protein_sequence();
 	}
 
@@ -490,7 +488,6 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 
 	$mrna_seq = $isoform->get_cDNA_sequence();
 	$cds_seq = $isoform->get_CDS_sequence();
-	$gene_seq = $gene_obj_ref->get_gene_sequence();
 	$pep_seq = $isoform->get_protein_sequence();
 
 	my $strand = $isoform->{strand};
@@ -521,7 +518,6 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 		$isoform->create_all_sequence_types( \$genome_seq, %params );
 		$mrna_seq = $isoform->get_cDNA_sequence();
 		$cds_seq = $isoform->get_CDS_sequence();
-		$gene_seq = $gene_obj_ref->get_gene_sequence();
 		$pep_seq = $isoform->get_protein_sequence();
 		@gene_span = $isoform->get_gene_span();
 	}
@@ -550,7 +546,6 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 		$isoform->create_all_sequence_types(\$genome_seq, %params);
 		$mrna_seq = $isoform->get_cDNA_sequence();
 		$cds_seq = $isoform->get_CDS_sequence();
-		$gene_seq = $gene_obj_ref->get_gene_sequence();
 		$pep_seq = $isoform->get_protein_sequence();
 		@gene_span = $isoform->get_gene_span();
 	}
@@ -577,7 +572,6 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 #printDumper (7,$isoform);
 	$mrna_seq = $isoform->get_cDNA_sequence();
 	$cds_seq = $isoform->get_CDS_sequence();
-	$gene_seq = $gene_obj_ref->get_gene_sequence();
 	$pep_seq = $isoform->get_protein_sequence();
 	@gene_span = $isoform->get_gene_span();
 
@@ -670,6 +664,10 @@ $gene_obj_indexer =  new Gene_obj_indexer( { "create" => $index_file } );
 			$new_gene_span[1] = $coords[1] if (!$new_gene_span[1] || $new_gene_span[1] > $coords[1]);
 		}
 	}
+
+     # NB: we want to get the longest gene sequence
+     $gene_seq = $isoform->get_gene_sequence() if length($gene_seq) < $isoform->{gene_sequence_length};
+
   }
   $gene_obj_ref->{gene_span}   = [ $new_gene_span[0], $new_gene_span[1] ];
 
@@ -1225,7 +1223,7 @@ sub check_phasing(){
 		my @cds_coords = $cds->get_coords();
 		my @exon_coords = $exon->get_coords();
 		unless ($cds_coords[0] == $exon_coords[0] && $cds_coords[1] == $exon_coords[1]){
-			#printDumper $isoform;
+			warn Dumper $isoform;
 			die "FATAL:  $error_name_text ($first_cds_exon_number,$last_cds_exon_number) has an internal CDS ($e) with different co-ordinates than its corresponding exon. This is likely to be a fused prediction, please split them before continuing\n";
 		}
 	}

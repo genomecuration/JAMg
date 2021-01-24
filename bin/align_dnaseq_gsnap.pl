@@ -85,7 +85,7 @@ my ( $gmap_build_exec, $gsnap_exec, $gmap_exec, $samtools_exec,$bunzip2_exec,$be
   &check_program( "gmap_build", "gsnap", "gmap", "samtools",'bunzip2','bedtools' );
 &samtools_version_check($samtools_exec);
 my ( $input_dir, $pattern2, $debug, $genome, $genome_dbname, $nofails, $suffix,$piccard_0m,$do_parallel,
-     $help, $just_write_out_commands, $split_input, $notpaired, $verbose, $matepair, $build_only, $no_split );
+     $help, $just_write_out_commands, $split_input, $notpaired, $verbose, $matepair, $build_only, $no_split, $pbzip2_exec );
 my $cwd = `pwd`;
 chomp($cwd);
 my $gmap_dir           = "$RealBin/../databases/gmap/";
