@@ -6,8 +6,9 @@
 =head1 USAGE
 
 	*  -i|fa|fasta   =s 	=> FASTA file to split
-  	   -size         =i     => How many megabases per file (def 0.5)
-           -overlap      =i     => How many bp for overlaps (def 1e4)
+  	   -size         =f     => How many megabases per file (def 0.5)
+           -overlap      =f     => How many bp for overlaps (def 1e4)
+	   -out		 :s     => Output directory (def fasta_split)
 
 =cut
 
@@ -30,8 +31,9 @@ my $suffix="seq";
 
 pod2usage $! unless &GetOptions(
 	'i|fa|fasta=s'  => \$file2split,
-	'size=i'	=> \$size_mbp,
-	'overlap=i'     => \$overlap_bp,
+	'size=f'	=> \$size_mbp,
+	'overlap=f'     => \$overlap_bp,
+	'out:s'		=> \$splitfiledir
 );
 
 $size_mbp = $size_mbp * 1e6;
@@ -46,7 +48,6 @@ my $seqcount=0;
 mkdir $splitfiledir;			 # to allow multiple runs of this program in wrapper
 my $orig_sep = $/;
 $/ =  ">";
-$|=1;
 open (FILE, "$file2split") || die $!;
 print "Processing $file2split\n";
 
@@ -89,12 +90,11 @@ while (my $record=<FILE>){
 		}
 
 	}
-	print "$filecount seqs\r";
+	print "  Seqs: $filecount   \r";
 }
 close (FILE);
 $/=$orig_sep;
-$|=0;
-print "\nProcessed $filecount files.\n";
+print "  Seqs: $filecount   \n";
 
 
 ###############3

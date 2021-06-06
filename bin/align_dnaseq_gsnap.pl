@@ -427,7 +427,7 @@ sub align_unpaired_files() {
    &process_cmd("$samtools_exec index $base_out_filename".".uniq.bam");
 
    ## For JBrowse
-   &process_cmd("$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $base_out_filename"
+   &process_cmd("$bedtools_exec genomecov -split -bg -ibam $base_out_filename"
      .".uniq.bam| sort -S 4G -k1,1 -k2,2n > $base_out_filename".".uniq.coverage.bg");
    &process_cmd("bedGraphToBigWig $base_out_filename".".uniq.coverage.bg $genome.fai $base_out_filename".".uniq.coverage.bw") if `which bedGraphToBigWig`;
 
@@ -550,7 +550,7 @@ sub align_paired_files() {
    &process_cmd("$samtools_exec index $base_out_filename"."_uniq.bam");
 
    ## For JBrowse
-   &process_cmd("$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $base_out_filename"
+   &process_cmd("$bedtools_exec genomecov -split -bg -ibam $base_out_filename"
      ."_uniq.bam| sort -S 4G -k1,1 -k2,2n > $base_out_filename"."_uniq.coverage.bg");
    &process_cmd("bedGraphToBigWig $base_out_filename"."_uniq.coverage.bg $genome.fai $base_out_filename"."_uniq.coverage.bw") if `which bedGraphToBigWig`;
 

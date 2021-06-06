@@ -8,6 +8,8 @@
  -xml => Input is BLASTXML (otherwise BLAST is expected)
  -d => NCBI taxonomy flatfile directory (def. /databases/ncbi_taxonomy)
  -ncbi:s => is an NCBI blast (GI IDs) 'protein' or 'nucleotide'; otherwise Uniprot/Uniref is assumed
+ -top   => how many hits
+ -all   => do whole taxonomy tree
 
 =head1 AUTHORS
 
@@ -113,7 +115,8 @@ my $notax=int(0);
 open (IN, "$in.taxa_hub");
 while (my $ln=<IN>){
         $counter++;
-	if ($ln=~/^Query=/){
+	if ($ln=~/^Query=([^<\s]+)/){
+		my $query = $1;
 		my $hit=0;
 		while (my $ln2=<IN>){
 			if ($ln2=~/^Query=/){
@@ -124,7 +127,7 @@ while (my $ln=<IN>){
 				my $tax=$1;
 				chomp($tax);
 				$tax=~s/\s+RepID.*//;
-				$hash{$tax}++;
+				$hash{$tax}{$query}++;
 			}elsif($is_ncbi && $ln2=~/^gi=(\d+)/){
 	        	        my $gi=$1;
 				my $tax =  $ncbi_dictionary->get_taxid($gi);
@@ -132,7 +135,7 @@ while (my $ln=<IN>){
 				if (!$tax){
 					$notax++;
 				}else{
-			                $hash{$tax}++;
+					$hash{$tax}{$query}++;
 				}
 			}
 			$hit++;
@@ -164,7 +167,8 @@ foreach my $tax (sort {$a cmp $b} keys %hash){
 	chomp($lineage) if $lineage;
 	$genspe=~s/\s+\d+\s*$//;
 	$lineage="Lineage not found" if !$lineage;
-	print OUT "$genspe\t$tax\t".$hash{$tax}."\t$lineage\n";
+	my $nu_contigs = scalar(keys %{$hash{$tax}});
+	print OUT "$genspe\t$tax\t".$nu_contigs."\t".join(';',keys %{$hash{$tax}})."\t$lineage\n";
 }
 close OUT;
 system ("sort -t '	' -nrk 3,3 -o $in.taxa.sort $in.taxa.tsv");

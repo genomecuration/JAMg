@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 my $list = shift;
-my $gff = shift||die;
+my $gff = shift||die "Give a tab delimited list and a GFF\n";
 my %hash;
 open (IN,$list)||die;
 while (my $ln=<IN>){
