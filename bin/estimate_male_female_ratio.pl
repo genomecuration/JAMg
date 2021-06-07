@@ -87,15 +87,20 @@ print "\n\n";
 open (OUT1,">$outbasename.overall.tsv");
 open (OUT2,">$outbasename.window.tsv");
 
-print OUT1 "CONTIG_ID\tCONTIG_SIZE\tCONTIG_DESCRIPTION\tMedian\tMean\n";
+print OUT1 "CONTIG_ID\tCONTIG_SIZE\tMedian\tMean\tCONTIG_DESCRIPTION\n";
 print OUT2 "CONTIG_ID\tWINDOW_SIZE\tWindow_Mean\tWindow_number\n";
 
+
+my $counter = 0;
+my $number_of_contigs = scalar(keys %{$genome_data_hashref} ); 
 foreach my $contig_id (sort keys %{$genome_data_hashref} ) {
+	$counter++;
 	my ($mean, $median, $ratio_ref, $true_window_size) =  &estimate_coverage($contig_id);
 	print OUT1 "$contig_id\t"
 		.$genome_data_hashref->{$contig_id}->{'length'}
+		."\t$median\t$mean"
 		."\t".$genome_data_hashref->{$contig_id}->{'description'}
-		."\t$median\t$mean\n";
+		."\n";
 
 #	foreach my $window_ratio (@$ratio_ref){
 #		print OUT2 "$contig_id\t$window_ratio\n";
@@ -105,9 +110,11 @@ foreach my $contig_id (sort keys %{$genome_data_hashref} ) {
 		my $window_mean_ratio = $ratio_ref->[$i];
 		print OUT2 "$contig_id\t$true_window_size\t$window_mean_ratio\t$i\n";
 	}
+	print "  Processed $counter/$number_of_contigs      \r" if $counter % 10 == 0;
 }
 close OUT1;
 close OUT2;
+print "  Processed $counter/$number_of_contigs      \n\n";
 
 
 ####################
@@ -203,8 +210,8 @@ sub estimate_norm_factor(){
 	my $male_mean = &estimate_whole_unnormalised_contig_mean($autosome_contig,$male_depth_file); 
 	my $female_mean = &estimate_whole_unnormalised_contig_mean($autosome_contig,$female_depth_file); 
 	my $norm_factor = $male_mean / $female_mean;
-
-	$repeat_cutoff =  int ( ($male_mean + $female_mean * $norm_factor ) / 2) if !$repeat_cutoff;
+	# the calc below is unnecessary but keep for making clear (could just be $male_mean * 2)
+	$repeat_cutoff =  int ( ($male_mean + $female_mean * $norm_factor ) / 2) * 2 if !$repeat_cutoff;
 	return($norm_factor);
 }
 
@@ -322,6 +329,7 @@ sub check_files(){
 	&check_file_exists($genome_fasta);
 	if (!$outbasename){
 		$outbasename = $genome_fasta;
+		$outbasename =~s/^[\.\/]+//;
 		$outbasename =~s/\.\S+$//;
 	}
 	unlink("$outbasename.err");
