@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-
+use Data::Dumper;
 
 my $file = shift; 
 
@@ -33,12 +33,21 @@ while (my $line = <IN>){
 
 	my $sequence = join('',@data);	
 
-	my @subsequences = split(/N{100,}/,$sequence);
+	my @subsequences = split(/N{100,}/i,$sequence);
+	my $counter = int(0);
+
 	for (my $i=0; $i < scalar(@subsequences); $i++){
 		print OUT ">$id.$i";
-		print OUT $desc if $desc;
+		# find 
+		my $pos = index($sequence,$subsequences[$i],$counter) + 1;
+
+		print OUT " coord=$pos:" . ($pos + length($subsequences[$i]) );
+		print OUT " $desc" if $desc;
 		print OUT "\n" . $subsequences[$i] . "\n";
+		$counter += length($subsequences[$i]);
 	}
+	
+
 }
 
 
