@@ -489,6 +489,7 @@ sub align_paired_files() {
 
   my $base_out_filename = $notpaired ? "gsnap.$base.unpaired"  : "gsnap.$base.concordant";
   my $out_halfmapped = "gsnap.$base.halfmapping_uniq";
+  my $out_unpaired = "gsnap.$base.unpaired_uniq";
 
   open( LOG, ">gsnap.$base.log" );
   unless ( -s "$base_out_filename"."_uniq.bam" || $just_write_out_commands) {
@@ -571,6 +572,12 @@ sub align_paired_files() {
     &process_cmd("$samtools_exec view -h -u -T $genome $out_halfmapped | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $out_halfmapped.bam -");
     &process_cmd("$samtools_exec index $out_halfmapped.bam");
     unlink($out_halfmapped) if -s "$out_halfmapped.bam";
+  }
+
+  if (!$no_split || (!$just_write_out_commands && ( -s $out_unpaired && !-s "$out_unpaired.bam"))){
+    &process_cmd("$samtools_exec view -h -u -T $genome $out_unpaired | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $out_unpaired.bam -");
+    &process_cmd("$samtools_exec index $out_unpaired.bam");
+    unlink($out_unpaired) if -s "$out_unpaired.bam";
   }
 
   &process_cmd("$pbzip2_exec $base_out_filename.nomapping") if -s "$base_out_filename.nomapping";
