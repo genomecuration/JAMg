@@ -334,6 +334,7 @@ sub check_files(){
 		$outbasename = $genome_fasta;
 		$outbasename =~s/^[\.\/]+//;
 		$outbasename =~s/\.\S+$//;
+		$outbasename .= "_w".$window_size;
 	}
 	unlink("$outbasename.err");
 	unlink("$outbasename.overall.tsv");
