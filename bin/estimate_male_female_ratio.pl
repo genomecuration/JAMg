@@ -72,6 +72,7 @@ pod2usage if !$female_depth_file || !$male_depth_file || !$autosome_contig || !$
 my $genome_data_hashref = &get_genome_data();
 my $found_norm_factor = &estimate_norm_factor();
 my ($autosome_mean,$autosome_median) = &estimate_coverage($autosome_contig);
+die "Invalid autosome\n" if $autosome_mean eq 'NA';
 
 print "Using $autosome_contig (size="
    . &thousands($genome_data_hashref->{$autosome_contig}->{'length'} )
@@ -96,6 +97,7 @@ my $number_of_contigs = scalar(keys %{$genome_data_hashref} );
 foreach my $contig_id (sort keys %{$genome_data_hashref} ) {
 	$counter++;
 	my ($mean, $median, $ratio_ref, $true_window_size) =  &estimate_coverage($contig_id);
+	next if $mean eq 'NA';
 	print OUT1 "$contig_id\t"
 		.$genome_data_hashref->{$contig_id}->{'length'}
 		."\t$median\t$mean"
@@ -122,7 +124,7 @@ sub estimate_coverage(){
 	my $contig_id = shift;
 
 	my $number_of_windows = &estimate_bigwig_datapoints($contig_id);
-	next if $number_of_windows < 1;
+	return ('NA','NA','NA') if $number_of_windows < 1;
 	my $true_window_size = int( $genome_data_hashref->{$contig_id}->{'length'} / $number_of_windows);
 
 	# bigWigSummary -type=mean male_uniq.coverage.bw NW_001845718.1 0 499 10
