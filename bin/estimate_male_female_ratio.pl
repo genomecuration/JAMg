@@ -122,6 +122,7 @@ sub estimate_coverage(){
 	my $contig_id = shift;
 
 	my $number_of_windows = &estimate_bigwig_datapoints($contig_id);
+	next if $number_of_windows < 1;
 	my $true_window_size = int( $genome_data_hashref->{$contig_id}->{'length'} / $number_of_windows);
 
 	# bigWigSummary -type=mean male_uniq.coverage.bw NW_001845718.1 0 499 10
