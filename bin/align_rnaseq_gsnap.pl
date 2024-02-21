@@ -70,7 +70,6 @@ It is provided "as is" without warranty of any kind.
 
 =cut
 
-# -suffix             Build/use suffix array (fast, downweights SNPs, use for non-polymorphic genomes). Not suggested for RNAseq
 
 use strict;
 use warnings;
@@ -89,7 +88,7 @@ $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 my (
      $input_dir,               $pattern2,      $debug, $piccard_0m, $do_parallel,
      $genome,                  $genome_dbname, $nofails, $intron_hard, $compressed_files,
-     $suffix,                  $help,          $just_write_out_commands, $split_input,   $notpaired, $verbose, $build_only
+              $help,          $just_write_out_commands, $split_input,   $notpaired, $verbose, $build_only
 );
 my $cwd = `pwd`;
 chomp($cwd);
@@ -117,7 +116,6 @@ my $do_large_genome;
              'pattern1:s'      => \$pattern1,
              'pattern2:s'      => \$pattern2,
              'nofail'          => \$nofails,
-             'suffix'          => \$suffix,
              'input_dir:s'     => \$input_dir,
              'path_number:i'   => \$repeat_path_number,
              'commands_only:s' => \$just_write_out_commands,
@@ -189,16 +187,14 @@ die "No files found!\n" unless @files || $build_only;
 print "Found these files:\n".join("\n",@files)."\n";
 
 my ( $build_cmd, $align_cmd );
-if ($suffix || $build_only) {
- warn "\n\nWARNING: Using -suffix with RNA-Seq gapped alignments is not recommended... it seems to be much (order of magnitude) slower in my tests\n\n\n" unless $build_only;
+if ($build_only) {
  $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 $genome >/dev/null";
- $align_cmd =
-" --use-shared-memory=1 -B 2 -D $gmap_dir -d $genome_dbname --nthreads=$cpus --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam ";
+ $align_cmd = " -D $gmap_dir -d $genome_dbname --nthreads=$cpus ";
 }
 else {
  $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 $genome >/dev/null";
  $align_cmd =
-" --use-shared-memory=1 -B 2 -D $gmap_dir -d $genome_dbname --nthreads=$cpus  --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam ";
+" -D $gmap_dir -d $genome_dbname --nthreads=$cpus  --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam --use-shared-memory=1 --batch=2 ";
 }
 &process_cmd($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
 &process_cmd("$samtools_exec faidx $genome") unless -s "$genome.fai";
@@ -230,12 +226,14 @@ if ($notpaired || !$pattern2) {
  }
 }else {
  my @files_to_do = &checked_paired_files(@files);
+ my $sleep = 10;
  if ($do_parallel && $do_parallel > 1){
 	my $thread_helper = new Thread_helper($do_parallel);
 	foreach my $f (@files_to_do){
 	        my $thread        = threads->create('align_paired_files',($f));
 	        $thread_helper->add_thread($thread);
-		sleep(10);
+		sleep($sleep);
+		$sleep+=5;
 	}
 	$thread_helper->wait_for_all_threads_to_complete();
  }else{

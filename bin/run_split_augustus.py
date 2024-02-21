@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import argparse, sys, os
 import operator
 
@@ -123,6 +123,7 @@ def prepare_augustus_commands( UTR, gff3, species, uniqueGeneId, genemodel, alte
     cmds = []
     for chunk in seq_files:
         augustus = ['augustus']
+        augustus.append('--min_intron_len=30')
         augustus.append('--softmasking=' + softmasking)
         augustus.append('--gff3=' + gff3)
         augustus.append('--species=' + species)

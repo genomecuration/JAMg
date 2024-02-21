@@ -31,7 +31,7 @@ Other options:
  -min_intron       i            Minimum intron length (def 30)
  -intron_db_only		Do enough work to produce an intron database and then stop (e.g for align_rnaseq)
  -no_junctions                  Do not use junction subroutine
- -do_it_faster                  Do not use deduplication when making junction files. Much faster but not recommended
+ -faster                        Do not use deduplication when making junction files. Much faster but not recommended
 
 =head1 DESCRIPTION
 

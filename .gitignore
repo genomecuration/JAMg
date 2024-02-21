@@ -2,3 +2,4 @@ env.source
 3rd_party/RepeatMasker/Libraries/RepeatMaskerLib.embl
 local
 conf.txt
+test_suite/dmel-X-r5.53.repeat.soft.bz2

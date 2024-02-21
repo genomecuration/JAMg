@@ -2295,7 +2295,7 @@ sub gff3_fix_phase() {
  my $index_file = "$gff3_file.inx";
  my $gene_obj_indexer = new Gene_obj_indexer( { "create" => $index_file } );
  my $asmbl_id_to_gene_list_href = &GFF3_utils::index_GFF3_gene_objs( $gff3_file, $gene_obj_indexer );
- die "There was an error indexing the data!" unless $asmbl_id_to_gene_list_href && scalar(keys %{$asmbl_id_to_gene_list_href})>0;
+ die "There was an error indexing the gff file $gff3_file" unless $asmbl_id_to_gene_list_href && scalar(keys %{$asmbl_id_to_gene_list_href})>0;
 
  open( OUT,  ">$gff3_file.gff3" );
  open( PEP,  ">$gff3_file.pep" );
@@ -2864,13 +2864,28 @@ sub do_blast_cmd() {
 " -num_threads 1 -evalue 1e-20 -max_target_seqs 1 -outfmt 6 -db $genome_sequence_file";
  $blast_opt .= " -max_intron_length $intron_size" if $type eq 'protein';
  $blast_opt .= " -lcase_masking" if $softmasked_genome;
- &process_cmd("$blast_opt -query $fasta -out $fasta.blast");
+ &process_cmd("$blast_opt -query $fasta -out $fasta.blast") unless -s "$fasta.blast";
+ unlink($fasta);
+}
+
+sub do_gmap_cmd(){
+ my $fasta            = shift;
+ my $output_directory = shift; # currently ignored.
+ my $type             = shift;
+ my $id_fraction = $identical_fraction_cutoff / 100;
+ my $gmap_opt = "-D $gmap_dir -d $genome_dbname -f gff3_gene -n 1 --nofails --use-shared-memory=1 --no-chimeras --min-identity=$id_fraction --min-trimmed-coverage=0.80";
+ if ($type ne 'protein'){
+  &process_cmd("$gmap_exec $gmap_opt --split-output=$fasta.gmap $fasta 2>/dev/null") unless -s "$fasta.gmap.uniq";
+ }else{
+  die "GMAP only supported for nucleotides not $type\n";
+ }
  unlink($fasta);
 }
 
 sub run_gmap() {
  my $fasta       = shift;
- my $gmap_output = $cwd.basename($genome_file).".vs.".basename($fasta).".gmap.gff3";
+ my $gmap_output = shift;
+ $gmap_output = $cwd.basename($genome_file).".vs.".basename($fasta).".gmap.gff3" if !$gmap_output;
 
  my $output_files_ref = &run_aligner( $fasta, 'gmap', 'nuc' );
  my $orig_sep = $/;

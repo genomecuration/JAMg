@@ -17,6 +17,7 @@ my %sort_order = (
 	'CDS' =>5,
 	'tss' => 3,
 	'tts' => 3,
+	'nucleotide_to_protein_match' => 7
 );
 
 $delimiter =&get_gff_delimiter($file) unless $delimiter;

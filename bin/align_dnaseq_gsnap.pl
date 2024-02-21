@@ -181,7 +181,7 @@ print "Found these files:\n".join("\n",@files)."\n";
 my ( $build_cmd, $align_cmd );
 
  $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0  $genome >/dev/null";
- $align_cmd = " --use-shared-memory=1 -B 2 -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam ";
+ $align_cmd = " -D $gmap_dir -d $genome_dbname --nthreads=$cpus -Q --npaths=$repeat_path_number --format=sam ";
 
 &process_cmd($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
 &process_cmd("$samtools_exec faidx $genome") unless -s "$genome.fai";

@@ -6,7 +6,7 @@
 
 =head1 USAGE
 
-	-in input file in FASTA/Q or posmap length file (e.g. posmap.scflen)
+	-in input file in FASTA/Q 
 	-genome genome size in bp for estimating N lengths and indexes
 	-single FASTA/Q has sequence in a single line (faster)
 	-overwrite => Force overwrite
@@ -43,7 +43,7 @@ use Pod::Usage;
 use Statistics::Descriptive;
 $|=1;
 
-my (@infiles,$user_genome_size,$is_fasta,$is_fastq,$is_single,$overwrite,$is_reads,$isnot_reads);
+my (@infiles,$user_genome_size,$is_fasta,$is_fastq,$is_single,$overwrite,$is_reads,$isnot_reads,$csv_file);
 GetOptions(
 	'in=s{,}'    => \@infiles,
 	'single' =>\$is_single,
@@ -51,6 +51,7 @@ GetOptions(
 	'overwrite' => \$overwrite,
 	'reads'	=>\$is_reads,
 	'noreads'	=>\$isnot_reads,
+	'csvfile:s' =>\$csv_file 
 );
 if (!@infiles){
 	@infiles = @ARGV;
@@ -60,7 +61,11 @@ die "Cannot ask for both reads and noreads options at the same time!\n" if $is_r
  
 if ($is_reads && !$isnot_reads){
 	print "Processing all data as reads\n";
+}elsif (scalar(@infiles) > 1 && !$csv_file){
+	$csv_file = "N50stats";
 }
+
+
 $user_genome_size=~s/,//g if $user_genome_size;
 if ($user_genome_size && $user_genome_size=~/\D$/){
 	if ($user_genome_size=~/^(\d+)k/i){
@@ -75,8 +80,14 @@ if ($user_genome_size && $user_genome_size=~/\D$/){
 	print "Genome set to ".&thousands($user_genome_size)." b.p.\n";
 }
 
+
+if ($csv_file){
+	open (CSV,">$csv_file.tsv") || die $!;
+	print CSV "#InputFile\tTotal:Bases\tTotal:Seqs\tGaps:Bases\tGaps:Number\tGaps:Mean\tGaps:Median\tMasks:Bases\tMasks:Number\tMasks:Mean\tMasks:Median\tSeqSize:Mean\tSeqSize:StDev\tSeqSize:Median\tSeqSize:Smallest\tSeqSize:Largest\tStats:Genome Size Set\tN10:Length\tN10:Number\tN25:Length\tN25:Number\tN50:Length\tN50:Number\tN90:Length\tN90:Number\tGenomeSize_TopScaffols:Number\tGenomeSize_TopScaffols:min Size\n";
+}
+
 foreach my $infile (@infiles){
-	unless ($infile && -s $infile){warn("I need a posmap length file, e.g. .posmap.scflen for scaffolds\n");pod2usage;}
+	unless ($infile && -s $infile){warn("I can't find $infile\n");}
 	my $outfile=$infile.'.n50';
 	$outfile.='g' if ($user_genome_size);
 	warn ("Outfile $outfile already exists\n") if -s $outfile && !$overwrite;
@@ -128,6 +139,11 @@ foreach my $infile (@infiles){
 				$gap_number = $gap_stat->count();
 				$gap_mean = sprintf("%.2f",$gap_stat->mean());
 				$gap_median = sprintf("%.1f",$gap_stat->median());
+			}else{
+				$gaps = int(0);
+				$gap_number = int(0);
+				$gap_mean = int(0);
+				$gap_median = int(0);
 			}
 		}
 		my $masks = int(0); my $mask_mean = int(0);my $mask_median =int(0);my $mask_number=int(0);
@@ -139,6 +155,11 @@ foreach my $infile (@infiles){
 				$mask_number = $mask_stat->count();
 				$mask_mean = sprintf("%.2f",$mask_stat->mean());
 				$mask_median = sprintf("%.1f",$mask_stat->median());
+			}else{
+				$masks = int(0);
+				$mask_number = int(0);
+				$mask_mean = int(0);
+				$mask_median = int(0);
 			}
 		}
 
@@ -165,10 +186,13 @@ foreach my $infile (@infiles){
 				." account for it (min "
 				.&thousands($scaffolds_size)
 				." bp)\n" if $user_genome_size;
+			print CSV "$infile\t$total\t$sequence_number\t$gaps\t$gap_number\t$gap_mean\t$gap_median\t$masks\t$mask_number\t$mask_mean\t$mask_median\t$mean\t$sd\t$median\t$smallest\t$largest\t$user_genome_size\t$n10_length\t$n10\t$n25_length\t$n25\t$n50_length\t$n50\t$n90_length\t$n90\t$scaffolds\t$scaffolds_size\n" if $csv_file;
 		}else{
+			print CSV "$infile\t$total\t$sequence_number\t$gaps\t$gap_number\t$gap_mean\t$gap_median\t$masks\t$mask_number\t$mask_mean\t$mask_median\t$mean\t$sd\t($median\t$smallest\t$largest\t$user_genome_size\t".sprintf("%.2f",$total/$user_genome_size)."x\n"  if $csv_file;
 			print OUT "Reads found! Read coverage estimated to ".sprintf("%.2f",$total/$user_genome_size)."x using user provided genome size of ".&thousands($user_genome_size)."\n" if $user_genome_size;
 		}
 		close (OUT);
+
 		print "Done, see $outfile\n";
 		system("cat $outfile");
 	}else {
@@ -179,6 +203,12 @@ foreach my $infile (@infiles){
 		warn "Non fatal warning: Something went wrong in estimating the statistics. Maybe the provided genome length is much larger than sequence length or maybe less than 3 sequences provided?\n";
 	}
 }
+
+
+close CSV if $csv_file;
+
+
+
 ########################################################################
 sub process_fasta(){
 	print "Processing as FASTA\n";

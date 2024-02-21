@@ -250,7 +250,7 @@ sub parse_best_predictions(){
  while (my $ln=<IN>){
  	chomp($ln);
 	next if $ln=~/^\s*$/;
-	my @log_files = split("\t",$ln);
+	my @log_files = split(/\s+/,$ln);
 	my $source_evidence = shift(@log_files);
 	my $top_accuracy = int(0);
  	my $top_accuracy_file;
@@ -268,7 +268,7 @@ sub parse_best_predictions(){
 		}
 		close LOG;
 	}
-	$return_output .= "$source_evidence\t$top_accuracy\t$top_accuracy_file\n" if $top_accuracy > 0;
+	$return_output .= "$source_evidence\t$top_accuracy\t$top_accuracy_file\n" if $top_accuracy;
  }
  close IN;
  open (OUT,">$tracking.best");
@@ -337,7 +337,8 @@ sub run_evaluation {
   &check_prediction_finished($pred_out,$pred_out.'.log') if -s $pred_out;
   system("grep 'src=$track_being_optimized;' $hint_file > $tested_hint_file") unless -s $tested_hint_file;
   if (-s $tested_hint_file){
-	  $augustus_cmd ="$augustus_exec --genemodel=complete --species=$species --alternatives-from-evidence=true --AUGUSTUS_CONFIG_PATH=$config_path --extrinsicCfgFile=$extrinsic_file --hintsfile=$tested_hint_file $common_parameters $optimize_gb >> $pred_out 2>/dev/null";
+	  $augustus_cmd ="$augustus_exec --softmasking=false --genemodel=complete --species=$species --alternatives-from-evidence=true --AUGUSTUS_CONFIG_PATH=$config_path "
+			."--extrinsicCfgFile=$extrinsic_file --hintsfile=$tested_hint_file $common_parameters $optimize_gb >> $pred_out 2>/dev/null";
   }else{
 	unlink($tested_hint_file);
 	return;
@@ -346,7 +347,7 @@ sub run_evaluation {
  else {
   $pred_out = $output_directory . '/no_hints.prediction';
   &check_prediction_finished($pred_out,$pred_out.'.log') if -s $pred_out;
-  $augustus_cmd ="$augustus_exec --genemodel=complete --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $common_parameters $optimize_gb >> $pred_out 2>/dev/null";
+  $augustus_cmd ="$augustus_exec --softmasking=false --genemodel=complete --species=$species --AUGUSTUS_CONFIG_PATH=$config_path $common_parameters $optimize_gb >> $pred_out 2>/dev/null";
  }
  unless (-s $pred_out){
 	open (OUT,">$pred_out");
@@ -468,7 +469,7 @@ sub check_options() {
         copy($config_path.'species/generic/generic_intron_probs.pbl',$config_path.'species/'.$species.'/'.$species.'_intron_probs.pbl');
 	copy($extrinsic,$config_path.'species/'.$species.'/'.$species.'_extrinsic_metapars.cfg');
  }
- $common_parameters .= " --species=$species ";
+ $common_parameters .= " --species=$species --softmasking=false ";
  $common_parameters .= " --UTR=on"                         if ($utr);
  $common_parameters .= " --translation_table=$trans_table" if ($trans_table);
  $common_parameters .= " --genemodel=$genemodel"           if ($genemodel);
@@ -558,7 +559,7 @@ sub parse_extrinsic_meta() {
    ? $extrinsic
    : $species_config_dir . "/" . $species . "_metaextrinsic.cfg";
  open( IN, $species_meta_cfg_filename ) || die("Can't open $species_meta_cfg_filename\n");
- @feature_headers = split( "\t", <IN> );
+ @feature_headers = split(/\s+/, <IN> );
 
  die "CFG meta file $species_meta_cfg_filename has less than 18 header columns ("
    . scalar(@feature_headers) . ")\n"
@@ -582,7 +583,7 @@ sub parse_extrinsic_meta() {
    last;
   }
   chomp($ln);
-  my @data = split( "\t", $ln );
+  my @data = split( /\s+/, $ln );
   die "CFG meta file $species_meta_cfg_filename has less than 18 columns for this line:\n$ln\n"
     unless @data == 18;
   my $source = $data[0];

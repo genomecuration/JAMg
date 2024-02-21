@@ -22,7 +22,7 @@ trim_fasta_all.pl [options] <infiles>
 
 removes sequences from a FASTA file. See perldoc for more info.
 
-	'fa|fasta=s'    => FASTA file to trim. You can also give multiples as arguments without any -i/-fa option.
+	'in|fa|fasta=s'    => FASTA file to trim. You can also give multiples as arguments without any -i/-fa option.
 	'outfile:s'	=> Optionally, the name of the trimmed outfile
 	'blastfile:s'	=> BLASTFILE to retrieve sequences from
 	'blastquery'		=> grab BLAST queries 
@@ -33,20 +33,21 @@ removes sequences from a FASTA file. See perldoc for more info.
 	'p|proportion'  => Discard sequences for which a mononucleotide frequency exceeds this proportion 
 	'ratio'		=> Discard sequences for which the GC or AT frequency exceeds this ratio
 	'x'             => Do not include the Xx characters when calculating size of sequence
-	xdiscard        => Discard if these many Xs
+	'xdiscard=i'    => Discard if these many Xs
 	'npl'           => Do not include these characters when calculating size: NPLnpl
 	'lc|lowercase'  => Do not include lowercase characters when calculating size of sequence (e.g. to not include low quality bases)
 	'list=s'   => A second FASTA file containing IDs to remove from FASTA file. Alternatively a text file with one ID per line
 	'descr'		=> For above: search description line instead of primary id.
 	'ci'		=> Case insensitivity for above two options
-	'invert'	=> Invert match (invert output filenames)
+	'flip'		=> Flip ouput (invert output filenames)
 	'log'           => Keep a log file
 	'df'            => Do not write discarded sequences (less IO)
 	'solq'          => Input is FASTQ (Solexa 1.3-1.4)
 	'sanq'          => Input is FASTQ (Sanger)
 	'casava18'	=> Input is Fastq from Casava 1.8
-	'single'	    => Entire output sequence/quality is in a single line (no BioPerl; good for parsing)
+	'single'	=> Entire output sequence/quality is in a single line (no BioPerl; good for parsing). STDIN or '-' supported. can use with -out
 	'ghash'		=> Use a Glib hash table (less memory, slower)
+	-uc		=> Convert output to uppercase
 
 =head1 DESCRIPTION
 
@@ -85,13 +86,13 @@ my (
 	 $character,    @infiles,     $length_cutoff, $xmask, $xdiscard,
 	 $nplmask,      $ci,          $blastfile,     $evalue_cutoff,
 	 $lcmask,       $prop_cutoff, @idfiles,       $log,
-	 $logfile,      $invert,      $sangerfastq,   $blast_hit,$blast_query,
+	 $logfile,      $flip_output,      $sangerfastq,   $blast_hit,$blast_query,
 	 $user_outfile, $df,          %ids,           $help,
 	 $convert2uc,   $descr_flag,  $solexafastq,   $search_accession,
 	 $seq_search,   $single_line, $ratio_cutoff,  $ghash, $overwrite, $casava
 );
 &GetOptions(
-	'fa|fasta=s{,}' => \@infiles,
+	'in|fa|fasta=s{,}' => \@infiles,
 	'blastfile=s'     => \$blastfile,
 	#'evalue=s'	=> \$evalue_cutoff,
 	'c|character=s'   => \$character,
@@ -104,7 +105,7 @@ my (
 	'lc|lowercase'    => \$lcmask,
 	'list=s{,}' => \@idfiles,
 	'description'     => \$descr_flag,
-	'invert'          => \$invert,
+	'flip'          => \$flip_output,
 	'ci'              => \$ci,
 	'log'             => \$log,
 	'df'              => \$df,
@@ -125,7 +126,7 @@ my (
 if ($help) { pod2usage; }
 @infiles = @ARGV if !@infiles;
 unless (@infiles) {
-	print "Failed to provide or find input file\n";
+	warn "Failed to provide or find input file\n";
 	pod2usage;
 }
 tie %ids,'Tie::GHash' if $ghash;
@@ -156,7 +157,7 @@ foreach my $idfile (@idfiles) {
 #		my $number = `wc -l < $idfile`;
 #		chomp($number);
 #		$number /= 2 if $pattern eq "Bio::SeqIO";
-		print "Building hash from $idfile with $pattern\n";
+		warn "Building hash from $idfile with $pattern\n";
 		my $flag;
 
 		if ( $pattern eq "Bio::SeqIO" ) {
@@ -170,8 +171,8 @@ foreach my $idfile (@idfiles) {
 				$flag = 1 if !$flag;
 			}
 		} else {
-			open( IN, $idfile ) || die();
-			while ( my $line = <IN> ) {
+			open( INID, $idfile ) || die();
+			while ( my $line = <INID> ) {
 				$counter+=length($line);
 				if ($ci) {
 					if ( $line =~ /$pattern/i ) {
@@ -185,11 +186,11 @@ foreach my $idfile (@idfiles) {
 					}
 				}
 			}
-			close(IN);
+			close(INID);
 		}
 		if ( !$flag ) { die "Failed to get list of IDs to extract...\n"; }
 		else {
-			print "Hash presence of $idfile verified\n";
+			warn "Hash presence of $idfile verified\n";
 		}
 	} elsif ($idfile) {
 		warn "File $idfile is empty or does not exist!\n";
@@ -197,7 +198,7 @@ foreach my $idfile (@idfiles) {
 }
 if ( $blastfile && -s $blastfile ) {
     if ($blast_hit){
-	 print "Building HASH for queries and hits from $blastfile...\n";
+	 warn "Building HASH for queries and hits from $blastfile...\n";
 	 my @blast_hits = `grep '^>' $blastfile`;
       chomp(@blast_hits);
       foreach my $blast (@blast_hits) {
@@ -206,9 +207,9 @@ if ( $blastfile && -s $blastfile ) {
         $blast =~ /^>(\S+)/;
         $ids{$1} = 1;
       }
-      print "Found $counter significant results\n";
+      warn "Found $counter significant results\n";
     }elsif($blast_query){
-	print "Building HASH for queries from $blastfile...\n";
+	warn "Building HASH for queries from $blastfile...\n";
 	my @blast_queries = `grep -B 18 '^Sequences producing' $blastfile |grep '^Query='`;
 	
 	chomp(@blast_queries);
@@ -218,7 +219,7 @@ if ( $blastfile && -s $blastfile ) {
 		$_ =~ s/^Query=\s+//;
 		$ids{$_} = 1;
 	}
-	print "Found $counter significant results\n";
+	warn "Found $counter significant results\n";
     }else{
       die "Please provide -blasthit and/or -blastquery\n";
     }
@@ -229,14 +230,25 @@ foreach my $file (@infiles) {
 #####################################################
 sub process ($) {
 	my $fastafile = shift;
+	my ($input_fh,$output1_fh,$output2_fh,$fastafiletrim ,$fastafilediscard);
+	my $input_is_stdin = ($fastafile eq '-' || $fastafile eq '/dev/stdin') ? 1 : 0;
+
 	my $fsize = -s $fastafile;
 	my ( $filein, $fileout, $fileout2);
-	my $fastafiletrim = "$fastafile.trim";
-	$fastafiletrim = $user_outfile if $user_outfile;
-	my $fastafilediscard = "$fastafile.discard";
-	print "Processing... $fastafile as $fastafiletrim  && $fastafilediscard\n";
+
+
+	if ($input_is_stdin == 1){
+		$fastafiletrim = "trim_fasta.trim";
+		$fastafiletrim = $user_outfile if $user_outfile;
+		$fastafilediscard = "trim_fasta.discard";
+	}else{
+		$fastafiletrim = "$fastafile.trim";
+		$fastafiletrim = $user_outfile if $user_outfile;
+		$fastafilediscard = "$fastafile.discard";
+	}
+	warn "Processing... $fastafile as $fastafiletrim  && $fastafilediscard\n";
 	$fastafilediscard = $user_outfile . ".discard" if $user_outfile;
-	if (!-s $fastafile){
+	if (!-s $fastafile && $input_is_stdin == 0){
 		warn "File not found, skipping\n";
 		return;
 	}if (-s $fastafiletrim){
@@ -245,9 +257,9 @@ sub process ($) {
 	}
 	if ($solexafastq) {
 		if ($single_line){
-			open( IN,   $fastafile )           if $single_line;
-			open( OUT1, ">$fastafiletrim" )    if $single_line;
-			open( OUT2, ">$fastafilediscard" ) if $single_line;
+			open( $input_fh,   $fastafile )           if $single_line;
+			open( $output1_fh, ">$fastafiletrim" )    if $single_line;
+			open( $output2_fh, ">$fastafilediscard" ) if $single_line;
 		}else{
 		$filein = new Bio::SeqIO( -file => $fastafile, -format => "fastq-solexa" );
 		$fileout = new Bio::SeqIO( -file => ">$fastafiletrim", -format => "fastq-solexa" );
@@ -258,9 +270,19 @@ sub process ($) {
 		}
 	} elsif ($sangerfastq) {
 		if ($single_line){
-			open( IN,   $fastafile );
-			open( OUT1, ">$fastafiletrim" );
-			open( OUT2, ">$fastafilediscard" );
+			if ($input_is_stdin == 1){
+				$input_fh = *STDIN;
+				if ($user_outfile){
+					open( $output1_fh, ">$fastafiletrim" );
+				}else{
+					$output1_fh = *STDOUT;
+				}
+				open( $output2_fh, ">$fastafilediscard" );
+			}else{
+				open( $input_fh,   $fastafile );
+				open( $output1_fh, ">$fastafiletrim" );
+				open( $output2_fh, ">$fastafilediscard" );
+			}
 		}else{
 			$filein = new Bio::SeqIO( -file => $fastafile, -format => "fastq" );
 			$fileout =  new Bio::SeqIO( -file => ">$fastafiletrim", -format => "fastq" );
@@ -268,9 +290,19 @@ sub process ($) {
 		}
 	} else {
 		if ($single_line){
-			open( IN,   $fastafile ) ||die("Cannot open $fastafile\n");
-			open( OUT1, ">$fastafiletrim" );
-			open( OUT2, ">$fastafilediscard" );
+			if ($input_is_stdin == 1){
+				$input_fh = *STDIN;
+				if ($user_outfile){
+					open( $output1_fh, ">$fastafiletrim" );
+				}else{
+					$output1_fh = *STDOUT;
+				}
+				open( $output2_fh, ">$fastafilediscard" );
+			}else{
+				open( $input_fh,   $fastafile ) ||die("Cannot open $fastafile\n");
+				open( $output1_fh, ">$fastafiletrim" );
+				open( $output2_fh, ">$fastafilediscard" );
+			}
 		}else{
 			$filein = new Bio::SeqIO( -file => $fastafile, -format => "fasta" );
 			$fileout =  new Bio::SeqIO( -file => ">$fastafiletrim", -format => "fasta" );
@@ -284,14 +316,14 @@ sub process ($) {
 	my ( $empty, $discard, $trim );
 	$counter = 0;
 	if ($single_line){
-		print "Processing  as single line FASTA/Q\n";
+		warn "Processing  as single line FASTA/Q\n";
 	}else{
 		my $number=($sangerfastq || $solexafastq) ? `grep -c "^@" $fastafile` : `grep -c "^>" $fastafile`;
 		chomp($number);		
-		print "$number sequences\n";
+		warn "$number sequences\n";
 	}
 	my $errors = int(0);
-	while ( my $object = $single_line ? <IN> : $filein->next_seq() ) {
+	while ( my $object = $single_line ? <$input_fh> : $filein->next_seq() ) {
 	        next if !$object;
 		$counter=$single_line ? $counter+length($object) : $counter+1;
        		next if $single_line && $object=~/^\s*$/;
@@ -305,7 +337,7 @@ sub process ($) {
 			if (($casava) && $description=~/(\d)\:[A-Z]\:/){
 				$id.='/'.$1;
 			}
-			$sequence    = <IN>;
+			$sequence    = <$input_fh>;
 			$counter+=length($sequence);
 			chomp($sequence);
 			my $ok = ($prefix eq '>'||$prefix eq '@' || $prefix eq '+') ? 1 : int(0);
@@ -315,7 +347,7 @@ sub process ($) {
 				die "\nToo many errors found\n" if $errors > 20;
 				$object          = $sequence;
 				chomp($object);
-				$sequence    = <IN>;
+				$sequence    = <$input_fh>;
 				$object =~ /^(\S)(\S+)\s*(\S*)/;
 				$prefix = $1;
 		                $id          = $2;
@@ -323,7 +355,7 @@ sub process ($) {
 				$ok = ($prefix eq '>'||$prefix eq '@' || $prefix eq '+') ? 1 : int(0);
 			}
 			if ( $solexafastq || $sangerfastq ) {
-				$qual = <IN> . <IN>;
+				$qual = <$input_fh> . <$input_fh>;
 				$counter+=length($qual);
 				chomp($qual);
 			}
@@ -337,15 +369,16 @@ sub process ($) {
 		if ( @idfiles || $blastfile ) {
 			if ( $sequence && $seq_search ) {
 				if ( $ids{$sequence} ) {
-						unless ( $df && !$invert ) {
+						unless ( $df && !$flip_output ) {
 							if ($single_line) {
+								$sequence = uc($sequence) if ($convert2uc);
 								if ($qual) {
-									print OUT2 "@" . "$id\n$sequence\n$qual\n";
+									print $output2_fh "@" . "$id\n$sequence\n$qual\n";
 								} else {
-									print OUT2 ">$id";
-									print OUT2 " $description" if $description;
-									print OUT2 "\n";
-									print OUT2 "$sequence\n";
+									print $output2_fh ">$id";
+									print $output2_fh " $description" if $description;
+									print $output2_fh "\n";
+									print $output2_fh "$sequence\n";
 								}
 							} else {
 								$fileout2->write_seq($object);
@@ -362,15 +395,16 @@ sub process ($) {
 					next;
 				}
 			} elsif ( exists $ids{$id} && $ids{$id}==1) {
-				unless ( $df && !$invert ) {
+				unless ( $df && !$flip_output ) {
 					if ($single_line) {
+						$sequence = uc($sequence) if ($convert2uc);
 						if ($qual) {
-							print OUT2 "@" . "$id\n$sequence\n$qual\n";
+							print $output2_fh "@" . "$id\n$sequence\n$qual\n";
 						} else {
-							print OUT2 ">$id";
-							print OUT2 " $description" if $description;
-							print OUT2 "\n";
-							print OUT2 "$sequence\n";
+							print $output2_fh ">$id";
+							print $output2_fh " $description" if $description;
+							print $output2_fh "\n";
+							print $output2_fh "$sequence\n";
 						}
 					} else {
 						$fileout2->write_seq($object);
@@ -388,15 +422,16 @@ sub process ($) {
 		    	next;
 				# if id exists multiple times don't write it in any file.
 			} elsif ( exists $ids{ $id . ' ' . $description } && $ids{ $id . ' ' . $description }==1) {
-				unless ( $df && !$invert ) {
+				unless ( $df && !$flip_output ) {
 					if ($single_line) {
+						$sequence = uc($sequence) if ($convert2uc);
 						if ($qual) {
-							print OUT2 "@" 
+							print $output2_fh "@" 
 							  . $id
 							  . $description
 							  . "\n$sequence\n$qual\n";
 						} else {
-							print OUT2 ">" 
+							print $output2_fh ">" 
 							  . $id
 							  . $description
 							  . "\n$sequence\n";
@@ -428,12 +463,13 @@ sub process ($) {
 			# trim if given a character(s)
 			if ($character) {
 				if ( $sequence =~ /[$character]/ ) {
-					unless ( $df && !$invert ) {
+					unless ( $df && !$flip_output ) {
 						if ($single_line) {
+							$sequence = uc($sequence) if ($convert2uc);
 							if ($qual) {
-								print OUT2 "@" . "$id\n$sequence\n$qual\n";
+								print $output2_fh "@" . "$id\n$sequence\n$qual\n";
 							} else {
-								print OUT2 ">$id $description\n$sequence\n";
+								print $output2_fh ">$id $description\n$sequence\n";
 
 							}
 						} else {
@@ -442,8 +478,7 @@ sub process ($) {
 					}
 					$discard++;
 					if ($log) {
-						print LOG
-"Sequence $id discarded because character $character was found\n";
+						print LOG "Sequence $id discarded because character $character was found\n";
 					}
 					next;
 				}
@@ -452,12 +487,13 @@ sub process ($) {
 			#trim if given a length cutoff
 			if ($length_cutoff) {
 				if ( !$length || $length < $length_cutoff ) {
-					unless ( $df && !$invert ) {
+					unless ( $df && !$flip_output ) {
 						if ($single_line) {
+							$sequence = uc($sequence) if ($convert2uc);
 							if ($qual) {
-								print OUT2 "@" . "$id\n$sequence\n$qual\n";
+								print $output2_fh "@" . "$id\n$sequence\n$qual\n";
 							} else {
-								print OUT2 ">$id $description\n$sequence\n";
+								print $output2_fh ">$id $description\n$sequence\n";
 							}
 						} else {
 							$fileout2->write_seq($object);
@@ -474,12 +510,13 @@ sub process ($) {
 			if ($xdiscard){
 				my $Xs = ( $sequence =~ tr/X// );
 				if ($Xs >= $xdiscard){
-					unless ( $df && !$invert ) {
+					unless ( $df && !$flip_output ) {
+						$sequence = uc($sequence) if ($convert2uc);
 						if ($single_line) {
 							if ($qual) {
-								print OUT2 "@" . "$id\n$sequence\n$qual\n";
+								print $output2_fh "@" . "$id\n$sequence\n$qual\n";
 							} else {
-								print OUT2 ">$id $description\n$sequence\n";
+								print $output2_fh ">$id $description\n$sequence\n";
 							}
 						} else {
 							$fileout2->write_seq($object);
@@ -519,12 +556,13 @@ sub process ($) {
 				   )
 				{
 
-					unless ( $df && !$invert ) {
+					unless ( $df && !$flip_output ) {
+						$sequence = uc($sequence) if ($convert2uc);
 						if ($single_line) {
 							if ($qual) {
-								print OUT2 "@" . "$id\n$sequence\n$qual\n";
+								print $output2_fh "@" . "$id\n$sequence\n$qual\n";
 							} else {
-								print OUT2 ">$id $description\n$sequence\n";
+								print $output2_fh ">$id $description\n$sequence\n";
 							}
 						} else {
 							$fileout2->write_seq($object);
@@ -546,12 +584,12 @@ sub process ($) {
 				$object->seq( uc($sequence) ) if !$single_line;
 				$sequence = uc($sequence) if $single_line;
 			}
-			unless ( $df && $invert ) {
+			unless ( $df && $flip_output ) {
 				if ($single_line) {
 					if ($qual) {
-						print OUT1 "@" . "$id\n$sequence\n$qual\n";
+						print $output1_fh "@" . "$id\n$sequence\n$qual\n";
 					} else {
-						print OUT1 ">$id $description\n$sequence\n";
+						print $output1_fh ">$id $description\n$sequence\n";
 					}
 				} else {
 					$fileout->write_seq($object);
@@ -569,7 +607,7 @@ sub process ($) {
 	if ( !$empty )   { $empty   = int(0); }
 	if ( !$discard ) { $discard = int(0); }
 	if ( !$trim )    { $trim    = int(0); }
-	if ($invert) {
+	if ($flip_output) {
 		system("mv -i $fastafiletrim tmpfile");
 		system("mv $fastafilediscard $fastafiletrim");
 		system("mv tmpfile $fastafilediscard");
@@ -579,9 +617,9 @@ sub process ($) {
 	}
 	unless ( -s "$fastafilediscard" ) { unlink "$fastafilediscard"; }
 	if ($log) { print LOG "FASTA $fastafile contained ".($empty+$discard+$trim)." sequences\n"; }
-	print "\nDone, $empty were empty and an additional $discard were discarded. Kept $trim as $fastafiletrim\n";
+	warn "\nDone, $empty were empty and an additional $discard were discarded. Kept $trim as $fastafiletrim\n";
 	if ($log) {	print LOG "\n$empty were empty and an additional $discard were discarded. Kept $trim as $fastafiletrim\n";
 	}
 	close(LOG);
 }
-print "\n";
+warn "\n";

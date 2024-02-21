@@ -144,14 +144,14 @@ print "Fetching using efetch: $efetch_url\n" if $debug;
 
 $|=1;
 for (my $retstart = int(0); $retstart < $count; $retstart += $retmax) {
-	print "Retrieved $retstart / $count     \r";
         my $fetch = $efetch_url . "retstart=$retstart";
         my $efetch_out = get($fetch);
+	chomp($efetch_out) if $efetch_out;
         print OUT $efetch_out if $efetch_out;
 	print "Retrieved $retstart / $count     \r";
 }
 close OUT;
-
+print "Retrieved $count / $count\n";
 
 
 ####################
