@@ -5,6 +5,7 @@ use warnings;
 
 my $code = shift;
 $code ='' if !$code;
+my $allow_descr = shift;
 
 my $orig_sep = $/;
 $/ = ">";
@@ -13,7 +14,7 @@ while (my $record=<STDIN>){
 	chomp($record);next unless $record;
 	my @lines = split($orig_sep,$record);
 	my $id = shift (@lines);
-	$id = ">".$code.$counter;
+	$id = $allow_descr ? ">".$code.$counter." ".$id : ">".$code.$counter;
 	my $seq = join("",@lines);
 	$seq = &iupac_replace($seq);
 	print $id.$orig_sep.&wrap_text($seq).$orig_sep;
