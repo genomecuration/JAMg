@@ -530,7 +530,7 @@ sub align_paired_files() {
   if ($file =~ /\.gz$/)  {$file_align_cmd .= ' --gunzip '; $compressed_files = 1; }
   $file_align_cmd .= $qual_prot if $qual_prot;
 
-  $file_align_cmd .=    " --split-output=gsnap.$base --read-group-id=$base $file $pair ";
+  $file_align_cmd .=    " --split-output=gsnap.$base --read-group-id=$base --allow-pe-name-mismatch $file $pair ";
   &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )    unless (    -s "$base_out_filename"."_uniq" || -s "$base_out_filename"."_uniq.bam" );
 
   unless ( -s "$base_out_filename"."_uniq.bam" || $just_write_out_commands) {
