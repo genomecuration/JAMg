@@ -30,6 +30,7 @@ Optional:
  -split_input    :i  Split the input FASTQ files to these many subfiles (good for a single large readset). Needs -commands_only
  -commands_only  :s  Don't run commands, instead write them out into a file as specified by the option. Useful for preparing jobs for ParaFly
  -notpaired          Data are single end. Don't look for pairs (use -pattern1 to glob files)
+ -distance       :s  Paired end distance (def 'adaptive', i.e. estimate using median + 30 % from up to 10,000 reads, 1% slower )
 
  Speed:
  -cpus           :i  Number of CPUs/threads (def. 6). I don't recommend more than 6 in a system that has 12 CPUs
@@ -98,10 +99,16 @@ my $intron_length      = 70000;
 my $cpus               = 6;
 my $memory             = '35G';
 my $pattern1            = '_1_';
+my $max_pe_distance        = 'adaptive';
 my $filetype = '';
 my $do_proportion;
 my $do_large_genome;
+my $orientation;
+my $no_die;
 &GetOptions(
+             'distance:s'      => \$max_pe_distance,
+	     'no_die'          => \$no_die,
+             'orientation:s'   => \$orientation,
 	     'do_parallel:i'   => \$do_parallel,
              'debug'           => \$debug,
 	     'verbose'=>\$verbose,
@@ -143,9 +150,13 @@ if ($do_parallel && $do_parallel > 1){
 	$cpus = 2 if $cpus < 2;
 }
 
+if ($orientation && ($orientation ne 'FR' && $orientation ne 'RF' && $orientation ne 'FF' && $orientation ne '10X' )){
+	pod2usage " -orientation must be FR, RF, FF, or 10x\n";
+}
 
-my ( $gmap_build_exec, $gsnap_exec, $gmap_exec, $samtools_exec,$bunzip2_exec,$bedtools_exec,$gunzip_exec, $pbzip2_exec ) =
-  &check_program( "gmap_build", "gsnap", "gmap", "samtools",'bunzip2','bedtools','gunzip', 'pbzip2' );
+
+my ( $gmap_build_exec, $gsnap_exec, $gmap_exec, $samtools_exec,$bunzip2_exec,$gunzip_exec, $pbzip2_exec, $mosdepth_exec, $bedGraphToBigWig_exec ) =
+  &check_program( "gmap_build", "gsnap", "gmap", "samtools",'bunzip2','gunzip', 'pbzip2', 'mosdepth', 'bedGraphToBigWig' );
 &samtools_version_check($samtools_exec);
 
 ( $gsnap_exec,$gmap_exec ) = &check_program( "gsnapl", "gmapl" ) if $do_large_genome || (-s $genome > 4306887543);
@@ -245,6 +256,7 @@ close(CMD) if $just_write_out_commands;
 ########################################
 sub process_cmd {
  my ( $cmd, $dir, $delete_pattern ) = @_;
+ my $ret;
  print &mytime . "CMD: $cmd\n" if $debug || $verbose;
  undef($dir) if $dir && $dir eq '.';
  if ($just_write_out_commands) {
@@ -253,15 +265,19 @@ sub process_cmd {
  }
  else {
   chdir($dir) if $dir;
-  my $ret = system($cmd);
+  $ret = system($cmd);
   if ( $ret && $ret != 256 ) {
    chdir($cwd) if $dir;
    &process_cmd_delete_fails($cwd, $dir, $delete_pattern ) if $delete_pattern;
-   die "Error, cmd died with ret $ret\n";
+   if ($no_die){
+	warn "Error, cmd died with ret $ret\n";
+   }else{
+	die "Error, cmd died with ret $ret\n";
+   }
    chdir($cwd) if $dir;
   }
  }
- return;
+ return $ret;
 }
 
 sub mytime() {
@@ -285,7 +301,7 @@ sub check_program() {
  my @paths;
  foreach my $prog (@progs) {
   my $path = `which $prog`;
-  pod2usage "Error, path to a required program ($prog) cannot be found\n\n"
+  die "\nError, path to a required program ($prog) cannot be found\n\n"
     unless $path =~ /^\//;
   chomp($path);
   #$path = readlink($path) if -l $path;
@@ -438,17 +454,22 @@ sub align_unpaired_files() {
   $file_align_cmd .= $qual_prot if $qual_prot;
 
   $file_align_cmd .= " --split-output=gsnap.$base --read-group-id=$base $file ";
-  &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
+  my $ret = &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )
     unless (    -s "$base_out_filename".".uniq"
              || -s "$base_out_filename".".uniq.bam" );
+  next if ( $ret && $ret != 256 );
+
   unless ( -s "$base_out_filename".".uniq.bam" || $just_write_out_commands) {
    &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename".".uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename".".uniq.bam -");
    &process_cmd("$samtools_exec index $base_out_filename".".uniq.bam");
 
    ## For JBrowse
-   &process_cmd("$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $base_out_filename"
-     .".uniq.bam| sort -S 4G -k1,1 -k2,2n > $base_out_filename".".uniq.coverage.bg");
-   &process_cmd("bedGraphToBigWig $base_out_filename".".uniq.coverage.bg $genome.fai $base_out_filename".".uniq.coverage.bw") if `which bedGraphToBigWig`;
+    &process_cmd("$mosdepth_exec --threads 4 $base_out_filename.uniq.coverage $base_out_filename.uniq.bam");
+    &process_cmd("zcat  $base_out_filename.uniq.coverage.per-base.bed.gz | sort -k1,1 -k2,2n --parallel=4 -S 4G -o $base_out_filename.uniq.coverage.per-base.bg"); 
+    &process_cmd("$bedGraphToBigWig_exec $base_out_filename.uniq.coverage.per-base.bg $genome.fai $base_out_filename".".uniq.coverage.bw");
+#   &process_cmd("$bedtools_exec genomecov -split -bg -ibam $base_out_filename"
+#     .".uniq.bam| sort -S 4G -k1,1 -k2,2n > $base_out_filename".".uniq.coverage.bg");
+#   &process_cmd("bedGraphToBigWig $base_out_filename".".uniq.coverage.bg $genome.fai $base_out_filename".".uniq.coverage.bw") if `which bedGraphToBigWig`;
 
    print LOG "\n$base_out_filename".".uniq.bam:\n";
    &process_cmd(
@@ -459,6 +480,9 @@ sub align_unpaired_files() {
   unless ( -s "$base_out_filename".".mult.bam" || $just_write_out_commands) {
    &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename".".mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename".".mult.bam -");
    &process_cmd("$samtools_exec index $base_out_filename".".mult.bam");
+    &process_cmd("$mosdepth_exec --threads 4 $base_out_filename.mult.coverage $base_out_filename.mult.bam");
+    &process_cmd("zcat  $base_out_filename.mult.coverage.per-base.bed.gz | sort -k1,1 -k2,2n --parallel=4 -S 4G -o $base_out_filename.mult.coverage.per-base.bg"); 
+    &process_cmd("$bedGraphToBigWig_exec $base_out_filename.mult.coverage.per-base.bg $genome.fai $base_out_filename".".mult.coverage.bw");
    print LOG "\n$base_out_filename".".mult.bam:\n";
    &process_cmd(
     "$samtools_exec flagstat $base_out_filename".".mult.bam >> gsnap.$base.log"
@@ -472,6 +496,9 @@ sub align_unpaired_files() {
 #  unless ( -s "$base_out_filename"."_uniq.mult.bam" ) {
 #   &process_cmd("$samtools_exec merge -@ $cpus -l 9 $base_out_filename"."_uniq.mult.bam $base_out_filename"."_uniq.bam $base_out_filename".".mult.bam"   );
 #   &process_cmd("$samtools_exec index $base_out_filename"."_uniq.mult.bam");
+#    &process_cmd("$mosdepth_exec --threads 4 $base_out_filename.uniq.mult.coverage $base_out_filename"."_uniq.mult.bam");
+#    &process_cmd("zcat  $base_out_filename.uniq.mult.coverage.per-base.bed.gz | sort -k1,1 -k2,2n --parallel=4 -S 4G -o $base_out_filename.uniq.mult.coverage.per-base.bg"); 
+#    &process_cmd("$bedGraphToBigWig_exec $base_out_filename.uniq.mult.coverage.per-base.bg $genome.fai $base_out_filename".".uniq.mult.coverage.bw");
 #   print LOG "\n$base_out_filename"."_uniq.mult.bam:\n";
 #   &process_cmd("$samtools_exec flagstat $base_out_filename"."_uniq.mult.bam >> gsnap.$base.log"   );
 #  }
@@ -531,16 +558,59 @@ sub align_paired_files() {
   $file_align_cmd .= $qual_prot if $qual_prot;
 
   $file_align_cmd .=    " --split-output=gsnap.$base --read-group-id=$base $file $pair ";
-  &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )    unless (    -s "$base_out_filename"."_uniq" || -s "$base_out_filename"."_uniq.bam" );
+
+  $file_align_cmd .= " --orientation=$orientation " if $orientation;
+
+
+     if (!$max_pe_distance || $max_pe_distance!~/^\d+$/ || $max_pe_distance < 2){
+	#align 20000 reads picked from subset and get pe_distance
+	my $test_cmd = $file_align_cmd . ' --part=1/1000 ';
+        unless (-s "gsnap.test.$base.concordant_uniq.sizes"){
+		print "Finding out what the right PE distance is\n\n";
+		&process_cmd($test_cmd." --split-output=gsnap.test.$base $file $pair >/dev/null 2> /dev/null",'.', "gsnap.test.$base*");
+		die "Could not produce test alignment for gsnap.test.$base.concordant_uniq" unless -s "gsnap.test.$base.concordant_uniq";
+		#get the mate distance (negative to ensure we are not getting @lines, shuffle it, get 20000 
+        	&process_cmd("cut -s -f 9 gsnap.test.$base.concordant_uniq|grep '^-'|shuf|head -n 20000 > gsnap.test.$base.concordant_uniq.sizes");
+		my @delete = glob("./gsnap.test.$base.*");
+		foreach my $del (@delete){
+			unlink($del) unless $del eq "./gsnap.test.$base.concordant_uniq.sizes";
+		}
+		die "Could not produce test distance data for gsnap.test.$base" unless -s "gsnap.test.$base.concordant_uniq.sizes";
+	}
+        open (SIZ,"gsnap.test.$base.concordant_uniq.sizes");
+	my @size_data;
+	while (my $ln=<SIZ>){
+		chomp($ln);
+		next unless $ln;
+		$ln=~s/^-//;
+		push(@size_data,$ln) if $ln;
+	}
+	close SIZ;
+	my $datapoints = scalar(@size_data);
+	die "No data available from test alignment" unless $datapoints > 0;
+	my $median = &median(\@size_data);
+	$max_pe_distance = int($median + 0.30 * $median) +1; #round up
+	print "Maximum PE distance allowed was estimated as $max_pe_distance from $datapoints datapoints (median $median + 30%)\n\n";
+        $file_align_cmd .= " --pairexpect=$median ";
+    }elsif($max_pe_distance=~/^\d+$/){ 
+      $file_align_cmd .= " --pairexpect=$max_pe_distance ";
+    }
+
+  my $ret = &process_cmd( $file_align_cmd, '.', "gsnap.$base*" )    unless (    -s "$base_out_filename"."_uniq" || -s "$base_out_filename"."_uniq.bam" );
+  next if ( $ret && $ret != 256 );
 
   unless ( -s "$base_out_filename"."_uniq.bam" || $just_write_out_commands) {
    &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename"."_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_uniq.bam -");
    &process_cmd("$samtools_exec index $base_out_filename"."_uniq.bam");
 
    ## For JBrowse
-   &process_cmd("$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $base_out_filename"
-     ."_uniq.bam| sort -S 4G -k1,1 -k2,2n > $base_out_filename"."_uniq.coverage.bg");
-   &process_cmd("bedGraphToBigWig $base_out_filename"."_uniq.coverage.bg $genome.fai $base_out_filename"."_uniq.coverage.bw") if `which bedGraphToBigWig`;
+#   &process_cmd("$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $base_out_filename"
+    &process_cmd("$mosdepth_exec --threads 4 $base_out_filename.uniq.coverage $base_out_filename"."_uniq.bam");
+    &process_cmd("zcat  $base_out_filename.uniq.coverage.per-base.bed.gz | sort -k1,1 -k2,2n --parallel=4 -S 4G -o $base_out_filename.uniq.coverage.per-base.bg"); 
+    &process_cmd("$bedGraphToBigWig_exec $base_out_filename.uniq.coverage.per-base.bg $genome.fai $base_out_filename".".uniq.coverage.bw");
+#   &process_cmd("$bedtools_exec genomecov -split -bg -ibam $base_out_filename"
+#     ."_uniq.bam| sort -S 4G -k1,1 -k2,2n > $base_out_filename"."_uniq.coverage.bg");
+#   &process_cmd("bedGraphToBigWig $base_out_filename"."_uniq.coverage.bg $genome.fai $base_out_filename"."_uniq.coverage.bw") if `which bedGraphToBigWig`;
 
    print LOG "\n$base_out_filename"."_uniq.bam:\n";
    &process_cmd( "$samtools_exec flagstat $base_out_filename"."_uniq.bam >> gsnap.$base.log" );
@@ -549,6 +619,9 @@ sub align_paired_files() {
   unless ( -s "$base_out_filename"."_mult.bam" || $just_write_out_commands) {
    &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename"."_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_mult.bam -");
    &process_cmd("$samtools_exec index $base_out_filename"."_mult.bam");
+    &process_cmd("$mosdepth_exec --threads 4 $base_out_filename.mult.coverage $base_out_filename"."_mult.bam");
+    &process_cmd("zcat  $base_out_filename.mult.coverage.per-base.bed.gz | sort -k1,1 -k2,2n --parallel=4 -S 4G -o $base_out_filename.mult.coverage.per-base.bg"); 
+    &process_cmd("$bedGraphToBigWig_exec $base_out_filename.mult.coverage.per-base.bg $genome.fai $base_out_filename".".mult.coverage.bw");
    print LOG "\n$base_out_filename"."_mult.bam:\n";
    &process_cmd(
     "$samtools_exec flagstat $base_out_filename"."_mult.bam >> gsnap.$base.log"
@@ -613,5 +686,13 @@ sub check_fastq_format() {
   last if $counter >= $max_seqs;
   return ('sanger',length($seq)-1);
  }
+}
+
+sub median() {
+ my $array_ref = shift;
+ my @sorted = sort { $a <=> $b } @{$array_ref};
+ my $median = $sorted[ int( @sorted / 2 ) ];
+ return $array_ref->[0] if !$median;
+ return $median;
 }
 

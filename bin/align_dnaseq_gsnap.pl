@@ -81,8 +81,8 @@ use threads;
 use Thread_helper;
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 
-my ( $gmap_build_exec, $gsnap_exec, $gmap_exec, $samtools_exec,$bunzip2_exec,$bedtools_exec ) =
-  &check_program( "gmap_build", "gsnap", "gmap", "samtools",'bunzip2','bedtools' );
+my ( $gmap_build_exec, $gsnap_exec, $gmap_exec, $samtools_exec,$bunzip2_exec, $mosdepth_exec, $bedGraphToBigWig_exec ) =
+  &check_program( "gmap_build", "gsnap", "gmap", "samtools",'bunzip2','mosdepth','bedGraphToBigWig' );
 &samtools_version_check($samtools_exec);
 my ( $input_dir, $pattern2, $debug, $genome, $genome_dbname, $nofails, $suffix,$piccard_0m,$do_parallel,
      $help, $just_write_out_commands, $split_input, $notpaired, $verbose, $matepair, $build_only, $no_split, $pbzip2_exec );
@@ -93,8 +93,7 @@ my $repeat_path_number = 50;
 my $cpus               = 6;
 my $memory             = '35G';
 my $pattern1            = '_1_';
-#my $pe_distance        = 10000;
-my $pe_distance        = 'adaptive';
+my $max_pe_distance        = 'adaptive';
 my $filetype = '';
 my $do_proportion;
 my $do_large_genome;
@@ -114,7 +113,7 @@ my $do_merge_mult;
              'pattern1:s'      => \$pattern1,
              'pattern2:s'      => \$pattern2,
              'nofail'          => \$nofails,
-             'distance:s'      => \$pe_distance,
+             'distance:s'      => \$max_pe_distance,
              'suffix'          => \$suffix,
              'path_number:i'   => \$repeat_path_number,
              'commands_only:s' => \$just_write_out_commands,
@@ -271,7 +270,7 @@ sub check_program() {
  my @paths;
  foreach my $prog (@progs) {
   my $path = `which $prog`;
-  pod2usage "Error, path to a required program ($prog) cannot be found\n\n"
+  die "\nError, path to a required program ($prog) cannot be found\n\n"
     unless $path =~ /^\//;
   chomp($path);
 #  $path = readlink($path) if -l $path;
@@ -427,9 +426,11 @@ sub align_unpaired_files() {
    &process_cmd("$samtools_exec index $base_out_filename".".uniq.bam");
 
    ## For JBrowse
-   &process_cmd("$bedtools_exec genomecov -split -bg -ibam $base_out_filename"
-     .".uniq.bam| sort -S 4G -k1,1 -k2,2n > $base_out_filename".".uniq.coverage.bg");
-   &process_cmd("bedGraphToBigWig $base_out_filename".".uniq.coverage.bg $genome.fai $base_out_filename".".uniq.coverage.bw") if `which bedGraphToBigWig`;
+#   &process_cmd("$bedtools_exec genomecov -split -bg -ibam $base_out_filename"
+#     .".uniq.bam| sort -S 4G -k1,1 -k2,2n > $base_out_filename".".uniq.coverage.bg");
+    &process_cmd("$mosdepth_exec --threads 4 $base_out_filename.uniq.coverage $base_out_filename.uniq.bam");
+    &process_cmd("zcat  $base_out_filename.uniq.coverage.per-base.bed.gz | sort -k1,1 -k2,2n --parallel=4 -S 4G -o $base_out_filename.uniq.coverage.per-base.bg"); 
+    &process_cmd("$bedGraphToBigWig_exec $base_out_filename.uniq.coverage.per-base.bg $genome.fai $base_out_filename".".uniq.coverage.bw");
 
    print LOG "\n$base_out_filename".".uniq.bam:\n";
    &process_cmd(
@@ -440,6 +441,10 @@ sub align_unpaired_files() {
   unless ( -s $base_out_filename.".mult.bam" || $just_write_out_commands) {
    &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename".".mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename".".mult.bam -"   );
    &process_cmd("$samtools_exec index $base_out_filename".".mult.bam");
+
+   &process_cmd("$mosdepth_exec --threads 4 $base_out_filename.mult.coverage $base_out_filename.mult.bam");
+   &process_cmd("zcat  $base_out_filename.mult.coverage.per-base.bed.gz | sort -k1,1 -k2,2n --parallel=4 -S 4G -o $base_out_filename.mult.coverage.per-base.bg"); 
+   &process_cmd("$bedGraphToBigWig_exec $base_out_filename.mult.coverage.per-base.bg $genome.fai $base_out_filename".".mult.coverage.bw");
    print LOG "\n$base_out_filename".".mult.bam:\n";
    &process_cmd(
     "$samtools_exec flagstat $base_out_filename".".mult.bam >> gsnap.$base.log"
@@ -500,9 +505,9 @@ sub align_paired_files() {
       $file_align_cmd = $gsnap_exec.$align_cmd;
       $file_align_cmd .= " --orientation=RF " if $matepair;
 
-     if (!$pe_distance || $pe_distance!~/^\d+$/ || $pe_distance < 2){
+     if (!$max_pe_distance || $max_pe_distance!~/^\d+$/ || $max_pe_distance < 2){
 	#align 10000 reads picked from subset and get pe_distance
-	my $test_cmd = $file_align_cmd . ' --part=1/100 --pairmax-dna=100000 ';
+	my $test_cmd = $file_align_cmd . ' --part=1/100 ';
         unless (-s "gsnap.test.$base.concordant_uniq.sizes"){
 		print "Finding out what the right PE distance is\n\n";
 		&process_cmd($test_cmd." --split-output=gsnap.test.$base $file $pair >/dev/null 2> /dev/null",'.', "gsnap.test.$base*");
@@ -527,11 +532,11 @@ sub align_paired_files() {
 	my $datapoints = scalar(@size_data);
 	die "No data available from test alignment" unless $datapoints > 0;
 	my $median = &median(\@size_data);
-	$pe_distance = int($median + 0.30 * $median) +1; #round up
-	print "Maximum PE distance allowed was estimated as $pe_distance from $datapoints datapoints (median $median + 30%)\n\n";
-        $file_align_cmd .= " --pairmax-dna=$pe_distance ";
-    }elsif($pe_distance=~/^\d+$/){ 
-      $file_align_cmd .= " --pairmax-dna=$pe_distance ";
+	my $max_pe_distance = int($median + 0.30 * $median) +1; #round up
+	print "Maximum PE distance allowed was estimated as $max_pe_distance from $datapoints datapoints (median $median + 30%)\n\n";
+        $file_align_cmd .= " --pairexpect=$median ";
+    }elsif($max_pe_distance=~/^\d+$/){ 
+      $file_align_cmd .= " --pairexpect=$max_pe_distance ";
     }
    }
 
@@ -551,9 +556,11 @@ sub align_paired_files() {
    &process_cmd("$samtools_exec index $base_out_filename"."_uniq.bam");
 
    ## For JBrowse
-   &process_cmd("$bedtools_exec genomecov -split -bg -ibam $base_out_filename"
-     ."_uniq.bam| sort -S 4G -k1,1 -k2,2n > $base_out_filename"."_uniq.coverage.bg");
-   &process_cmd("bedGraphToBigWig $base_out_filename"."_uniq.coverage.bg $genome.fai $base_out_filename"."_uniq.coverage.bw") if `which bedGraphToBigWig`;
+#   &process_cmd("$bedtools_exec genomecov -split -bg -ibam $base_out_filename"
+#     ."_uniq.bam| sort -S 4G -k1,1 -k2,2n > $base_out_filename"."_uniq.coverage.bg");
+   &process_cmd("$mosdepth_exec --threads 4 $base_out_filename.uniq.coverage $base_out_filename"."_uniq.bam");
+   &process_cmd("zcat  $base_out_filename.uniq.coverage.per-base.bed.gz | sort -k1,1 -k2,2n --parallel=4 -S 4G -o $base_out_filename.uniq.coverage.per-base.bg"); 
+   &process_cmd("$bedGraphToBigWig_exec $base_out_filename.uniq.coverage.per-base.bg $genome.fai $base_out_filename".".uniq.coverage.bw");
 
    print LOG "\n$base_out_filename"."_uniq.bam:\n";
    &process_cmd(
@@ -564,6 +571,10 @@ sub align_paired_files() {
   unless ($no_split || -s "$base_out_filename"."_mult.bam" || $just_write_out_commands) {
    &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename"."_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_mult.bam -");
    &process_cmd("$samtools_exec index $base_out_filename"."_mult.bam");
+   &process_cmd("$mosdepth_exec --threads 4 $base_out_filename.mult.coverage $base_out_filename"."_mult.bam");
+   &process_cmd("zcat  $base_out_filename.mult.coverage.per-base.bed.gz | sort -k1,1 -k2,2n --parallel=4 -S 4G -o $base_out_filename.mult.coverage.per-base.bg"); 
+   &process_cmd("$bedGraphToBigWig_exec $base_out_filename.mult.coverage.per-base.bg $genome.fai $base_out_filename".".mult.coverage.bw");
+
    print LOG "\n$base_out_filename"."_mult.bam:\n";
    &process_cmd( "$samtools_exec flagstat $base_out_filename"."_mult.bam >> gsnap.$base.log" );
    unlink("$base_out_filename"."_mult");
