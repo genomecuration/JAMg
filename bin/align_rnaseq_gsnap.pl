@@ -205,7 +205,7 @@ if ($build_only) {
 else {
  $build_cmd = "$gmap_build_exec -D $gmap_dir -d $genome_dbname -e 0 $genome >/dev/null";
  $align_cmd =
-" -D $gmap_dir -d $genome_dbname --nthreads=$cpus  --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam --use-shared-memory=1 --batch=2 ";
+" -D $gmap_dir -d $genome_dbname --nthreads=$cpus  --localsplicedist=$intron_length -N 1 -Q --npaths=$repeat_path_number --format=sam --use-shared-memory=0 ";
 }
 &process_cmd($build_cmd) unless -d $gmap_dir . '/' . $genome_dbname;
 &process_cmd("$samtools_exec faidx $genome") unless -s "$genome.fai";
@@ -513,7 +513,7 @@ sub align_unpaired_files() {
 
 sub align_paired_files() {
  my @files_to_do = @_;
- foreach my $file ( sort @files_to_do ) {
+ FILE: foreach my $file ( sort @files_to_do ) {
   my ($qual_prot,$max_read_length) = &check_fastq_format($file);
   $qual_prot = $qual_prot eq 'fasta' ? '' : ' --quality-protocol='.$qual_prot;
   my $pair = $file;
@@ -531,13 +531,19 @@ sub align_paired_files() {
    if (!$base){$base = $pattern1; chop($base);}
    $group_id = $base;
   }
-  print "Processing $group_id ($file)\n";
   $base .= "_vs_$genome_dbname";
+
+  print "Processing $group_id ($file) vs $genome_dbname as $base.\n";
   if ( -s "gsnap.$base.log" ) {
    open( LOG, "gsnap.$base.log" );
    my @log = <LOG>;
    close LOG;
-   next if $log[-1] && $log[-1] =~ /^GSNAP Completed/;
+   foreach my $ln (@log){
+	if ($ln =~ /^GSNAP Completed/){
+		print "\tAlready existing, skipping.\n";
+   		next FILE;
+	}
+   }
   }
   open( LOG, ">gsnap.$base.log" );
   my $base_out_filename = $notpaired ? "gsnap.$base.unpaired"  : "gsnap.$base.concordant";
