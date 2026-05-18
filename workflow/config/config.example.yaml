@@ -1,0 +1,50 @@
+# Example configuration consumed by `bin/jamg run --config <this-file>`.
+# Paths point at the Phase 2.5 mini-* fixtures in test_suite/. Values are the
+# minimum needed to satisfy the schema; per-rule defaults fill in the rest.
+
+genome: test_suite/mini-genome.fasta
+outdir: test_suite/output
+threads: 4
+species: drosophila
+species_category: Diptera
+max_intron: 100000
+code: JAMG
+
+rnaseq:
+  mode: bam
+  bam: test_suite/mini-rnaseq.bam
+  fastq_pairs: null
+
+trinity_denovo: null
+longreads: null
+
+repeats:
+  contamination_check: true
+  rna_lib: test_suite/mini-repeats-rna.fasta
+  species_lib: test_suite/mini-repeats-species.fasta
+  species_category: Diptera
+
+proteins:
+  swissprot_db: test_suite/mini-proteins.fasta
+
+pasa:
+  config_template: test_suite/mini-pasa.config
+  max_intron_length: 100000
+  tmp_dir: /dev/shm
+
+evm:
+  weights_file: workflow/config/evm_weights.example.txt
+  segment_size: 5000000
+  overlap_size: 80000
+  extra_gff: []
+
+genemark:
+  path: ~/software/gmes_linux_64_4.tar.gz
+  key: ~/software/gm_key_64.gz
+
+augustus:
+  extrinsic_cfg: workflow/config/extrinsic.cfg
+  optimise: false
+  metaparameters: null
+
+manual_curations: null

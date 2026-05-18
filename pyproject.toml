@@ -1,0 +1,49 @@
+[project]
+name = "jamg"
+version = "2.0.0a1"
+description = "JAMg v2: containerised eukaryotic genome annotation pipeline"
+requires-python = ">=3.10"
+dependencies = [
+    "click>=8.1",
+    "pyyaml>=6",
+    "jsonschema>=4",
+]
+
+# A [project.scripts] entry point is intentionally NOT declared here:
+# src/jamg/cli.py computes WORKFLOW = REPO / "workflow" relative to its
+# own __file__, which works only when invoked from a repo checkout (via
+# bin/jamg). A pip-installed wheel places jamg/cli.py under site-packages
+# and `workflow/` is not bundled as package data, so the entry point
+# would crash at WORKFLOW lookup. The supported invocation paths are:
+#   - from a checkout:        `bin/jamg run --config ...`
+#   - from inside jamg.sif:   `apptainer exec jamg.sif jamg-run ...` (a
+#                             future SIF-side wrapper).
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/jamg"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/jamg", "tests/workflow", "tests/scripts"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "bin", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+ignore = ["E501"]
+
+[tool.pyright]
+include = ["src", "bin"]
+exclude = [".pixi", ".snakemake", "test_suite/output"]
+typeCheckingMode = "basic"
+pythonVersion = "3.12"
+reportMissingImports = "error"
+reportMissingParameterType = "warning"
+reportUnknownMemberType = "warning"

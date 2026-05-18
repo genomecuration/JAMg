@@ -1,0 +1,8 @@
+# Config comes exclusively from `--configfile <path>` passed by `bin/jamg run`
+# or by a direct `snakemake --configfile ...` invocation. No hardcoded default.
+include: "rules/common.smk"
+
+
+rule all:
+    input:
+        f"{OUTDIR}/OGS.gff3",

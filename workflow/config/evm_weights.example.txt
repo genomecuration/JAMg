@@ -1,0 +1,9 @@
+# JAMg v2 EVM weights for the minimal v2 default predictor set.
+# Format: TYPE<TAB>SOURCE<TAB>WEIGHT (tabs are required; no spaces).
+# Append rows here for additional sources wired in via evm.extra_gff[].
+ABINITIO_PREDICTION	GeneMarkHMM	2
+ABINITIO_PREDICTION	AUGUSTUS	9
+ABINITIO_PREDICTION	PASA	8
+ABINITIO_PREDICTION	GOLDEN	9
+TRANSCRIPT	PASA	8
+PROTEIN	SWISSPROT	4

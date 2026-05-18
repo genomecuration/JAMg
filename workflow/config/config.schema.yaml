@@ -1,0 +1,141 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+type: object
+additionalProperties: false
+required:
+  - genome
+  - outdir
+  - threads
+  - species
+  - species_category
+  - max_intron
+  - code
+  - rnaseq
+  - repeats
+  - proteins
+  - pasa
+  - evm
+  - genemark
+  - augustus
+properties:
+  genome:
+    type: string
+  outdir:
+    type: string
+  threads:
+    type: integer
+    minimum: 1
+  species:
+    type: string
+  species_category:
+    type: string
+  max_intron:
+    type: integer
+    minimum: 1000
+  code:
+    type: string
+    default: "JAMG"
+  rnaseq:
+    type: object
+    additionalProperties: false
+    required: [mode]
+    properties:
+      mode:
+        enum: [bam, star, gsnap]
+      bam:
+        type: [string, "null"]
+      fastq_pairs:
+        type: [array, "null"]
+        items:
+          type: array
+          items:
+            type: string
+          minItems: 2
+          maxItems: 2
+  trinity_denovo:
+    type: [string, "null"]
+  longreads:
+    type: [string, "null"]
+  repeats:
+    type: object
+    additionalProperties: false
+    required: [contamination_check, rna_lib, species_lib, species_category]
+    properties:
+      contamination_check:
+        type: boolean
+        default: true
+      rna_lib:
+        type: string
+      species_lib:
+        type: string
+      species_category:
+        type: string
+  proteins:
+    type: object
+    additionalProperties: false
+    required: [swissprot_db]
+    properties:
+      swissprot_db:
+        type: string
+  pasa:
+    type: object
+    additionalProperties: false
+    required: [config_template, max_intron_length]
+    properties:
+      config_template:
+        type: string
+      max_intron_length:
+        type: integer
+      tmp_dir:
+        type: string
+        default: "/dev/shm"
+  evm:
+    type: object
+    additionalProperties: false
+    required: [weights_file, segment_size, overlap_size]
+    properties:
+      weights_file:
+        type: string
+      segment_size:
+        type: integer
+        default: 5000000
+      overlap_size:
+        type: integer
+        default: 80000
+      extra_gff:
+        type: array
+        default: []
+        items:
+          type: object
+          required: [path, source_tag]
+          properties:
+            path:
+              type: string
+            source_tag:
+              type: string
+  genemark:
+    type: object
+    additionalProperties: false
+    required: [path, key]
+    properties:
+      path:
+        type: string
+        default: "~/software/gmes_linux_64_4.tar.gz"
+      key:
+        type: string
+        default: "~/software/gm_key_64.gz"
+  augustus:
+    type: object
+    additionalProperties: false
+    required: [extrinsic_cfg, optimise]
+    properties:
+      extrinsic_cfg:
+        type: string
+      optimise:
+        type: boolean
+        default: false
+      metaparameters:
+        type: [string, "null"]
+        default: null
+  manual_curations:
+    type: [string, "null"]
+    default: null
