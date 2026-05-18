@@ -116,22 +116,13 @@ gffread        = "==0.12.9"
 snakemake                       = "==9.21.0"
 snakemake-executor-plugin-slurm = "==2.6.1"
 
-# Perl modules for JAMg's bin/*.pl. The scripts use `#!/usr/bin/env perl`,
-# which resolves to /opt/conda/bin/perl inside the SIF; apt-installed
-# system-perl modules at /usr/share/perl5/* are not on conda-perl's @INC.
-# These bioconda packages install into /opt/conda/lib/perl5/site_perl/.
-perl-bioperl              = "*"
-perl-db_file              = "*"
-perl-yaml                 = "*"
-perl-hash-merge           = "*"
-perl-parallel-forkmanager = "*"
-perl-mce                  = "*"
-perl-json                 = "*"
-perl-xml-libxml           = "*"
-perl-xml-simple           = "*"
-perl-libwww-perl          = "*"
-perl-statistics-descriptive = "*"
-perl-html-parser          = "*"
+# Perl module deps for JAMg's bin/*.pl come from apt (system-perl 5.40)
+# in jamg-base.def, not from bioconda. perl-bioperl on bioconda transitively
+# pulls in perl-bio-samtools pinned to perl 5.22/5.26, which conflicts with
+# samtools 1.23 (perl >=5.32). System-perl + apt's libbio-perl-perl avoids
+# the conflict, has wider package coverage, and serves all JAMg bin/*.pl
+# scripts so long as /usr/bin precedes /opt/conda/bin on PATH (set by
+# jamg.def's %environment).
 
 [environments]
 # `sif` env renders to containers/environment.yml and is the conda layer of

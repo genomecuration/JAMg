@@ -91,7 +91,14 @@ From: jamg-base.sif
 %environment
     export MAMBA_ROOT_PREFIX=/opt/conda
     export PERL5LIB=/opt/jamg/PerlLib
-    export PATH=/opt/jamg/bin:/opt/conda/bin:$PATH
+    # PATH order: /opt/jamg/bin (JAMg scripts) first, then /usr/bin (system
+    # perl 5.40 with apt-installed BioPerl + DB_File + helpers) BEFORE
+    # /opt/conda/bin. JAMg's bin/*.pl use `#!/usr/bin/env perl` which picks
+    # the first perl on PATH; system-perl serves them with the apt module
+    # set, avoiding the bioconda perl-bioperl <-> samtools solver conflict.
+    # conda-perl from bioconda still exists for tools that explicitly
+    # invoke /opt/conda/bin/perl (none of JAMg's bin do).
+    export PATH=/opt/jamg/bin:/usr/bin:/opt/conda/bin:$PATH
     export LC_ALL=C.UTF-8
     export AUGUSTUS_CONFIG_PATH=/opt/jamg/share/Augustus/config
 

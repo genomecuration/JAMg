@@ -52,12 +52,14 @@ From: debian:trixie-slim
         `# PASA uses gmap+minimap2 instead.` \
         jellyfish salmon bowtie2 \
         \
-        `# Perl modules used by GeneMark gmes_petap.pl (#!/usr/bin/perl,` \
-        `# system-perl 5.40). DB_File is part of perl-modules and pulled in` \
-        `# transitively with the perl package; not separately apt-installable.` \
-        `# BioPerl + other JAMg-side modules go to conda-perl via bioconda` \
-        `# (containers/environment.yml), not here.` \
+        `# Perl modules used by GeneMark's gmes_petap.pl AND JAMg's bin/*.pl.` \
+        `# All run under system-perl 5.40; jamg.def's %environment prepends` \
+        `# /usr/bin to PATH so 'env perl' picks system-perl over conda-perl.` \
+        `# DB_File is part of perl-modules-* (transitively installed with` \
+        `# the perl package); not separately apt-installable.` \
         libyaml-perl libhash-merge-perl libparallel-forkmanager-perl libmce-perl \
+        libbio-perl-perl libjson-perl libxml-libxml-perl libxml-simple-perl \
+        libwww-perl libstatistics-descriptive-perl libhtml-parser-perl \
         \
         `# misc utilities` \
         sqlite3 less procps

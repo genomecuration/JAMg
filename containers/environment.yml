@@ -16,19 +16,10 @@ dependencies:
 - gffread ==0.12.9
 - snakemake ==9.21.0
 - snakemake-executor-plugin-slurm ==2.6.1
-# Perl module deps for JAMg's bin/*.pl scripts. These install into
-# /opt/conda/lib/perl5/site_perl/ which IS on conda-perl's @INC (the
-# apt-installed system-perl 5.40 modules live in a different prefix and
-# aren't visible to conda-perl 5.32).
-- perl-bioperl
-- perl-db_file
-- perl-yaml
-- perl-hash-merge
-- perl-parallel-forkmanager
-- perl-mce
-- perl-json
-- perl-xml-libxml
-- perl-xml-simple
-- perl-libwww-perl
-- perl-statistics-descriptive
-- perl-html-parser
+# Perl module deps for JAMg's bin/*.pl scripts come from apt in
+# jamg-base.def (system-perl 5.40 has wider package coverage than
+# bioconda perl-* and avoids the perl-bio-samtools <-> samtools 1.23
+# solver conflict). conda-perl users get DB_File from perl-core.
+# JAMg's bin/*.pl scripts use `#!/usr/bin/env perl` so they pick up
+# whichever perl is first on PATH; jamg.def's %environment prepends
+# /usr/bin to that PATH so system-perl 5.40 wins.
