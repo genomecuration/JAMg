@@ -1,18 +1,30 @@
-# containers/source-pins.toml
-# Per-source commit pins for tools compiled from source inside the SIF.
-# These commits were verified 2026-05-18 by the Explore agent.
-# Primary: nathanweeks/exonerate; fallback: adamewing/exonerate (review-#2 I17).
+# Authoritative pin ledger for tools source-compiled in
+# containers/post-install.sh. The script must agree with these values.
+#
+# Tools NOT in this file:
+#   - Trinity, PASA: separate SIFs (containers/trinity.def, pasa.def).
+#   - exonerate, emboss, trf, ncbi-blast+: apt (debian trixie).
+#   - minimap2, gmap, samtools, bcftools, bedtools, gffread, htslib, star,
+#     repeatmasker, repeatmodeler: bioconda (containers/environment.yml).
 
-[exonerate]
-repo          = "https://github.com/nathanweeks/exonerate.git"
-commit        = "22beeb02"
-fallback_repo = "https://github.com/adamewing/exonerate.git"
-fallback_commit = "09b5f81c"
+[augustus]
+repo   = "https://github.com/Gaius-Augustus/Augustus.git"
+# master commit; the v3.5.0 release tag predates the GCC 15.2 fix and fails
+# to link. Re-pin to the next tagged release when one is cut.
+commit = "cd36870303ec01e8995ebcca90e48bf194ea56e3"
+
+[evidencemodeler]
+repo = "https://github.com/EVidenceModeler/EVidenceModeler.git"
+tag  = "EVidenceModeler-v2.1.0"
+
+[transdecoder]
+repo = "https://github.com/TransDecoder/TransDecoder.git"
+tag  = "TransDecoder-v5.7.1"
 
 [cdbfasta]
 repo   = "https://github.com/gpertea/cdbfasta.git"
-commit = "da8f5ba5"
+commit = "da8f5ba5"      # no semver releases upstream; commit-pinned
 
 [parafly]
 repo   = "https://github.com/ParaFly/ParaFly.git"
-commit = "44487e0f"
+commit = "44487e0f"      # no semver releases upstream; commit-pinned

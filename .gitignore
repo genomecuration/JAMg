@@ -50,10 +50,18 @@ tmp
 docs/plans
 CLAUDE.md
 
-# v2 build artefacts (Phase 1 onwards)
+# v2 build artefacts
 .pixi/
 containers/jamg.sif
 containers/jamg-base.sif
+containers/trinity.sif
+containers/pasa.sif
 containers/build.log
 containers/build-base.log
+containers/build-trinity.log
+containers/build-pasa.log
 .snakemake/
+
+# session-internal scratchpad
+HANDOVER.md
+.claude/

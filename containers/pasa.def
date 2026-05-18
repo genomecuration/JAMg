@@ -1,0 +1,20 @@
+Bootstrap: docker
+From: pasapipeline/pasapipeline:2.5.3
+
+# PASA 2.5.3 SIF, pulled unmodified from the upstream Docker image.
+#
+# Consumed by workflow/rules/pasa.smk via per-rule `container:` directive.
+# Standalone use:
+#   apptainer exec containers/pasa.sif Launch_PASA_pipeline.pl --version
+
+%post
+    # Strip tmp + apt caches upstream may have left.
+    rm -rf /tmp/* /var/tmp/* /root/.cache 2>/dev/null || true
+    apt-get clean 2>/dev/null || true
+    rm -rf /var/lib/apt/lists/* 2>/dev/null || true
+
+%environment
+    export LC_ALL=C.UTF-8
+
+%runscript
+    exec Launch_PASA_pipeline.pl "$@"

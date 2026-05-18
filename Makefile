@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: sif test test-container smoke lint lint-py lint-perl lint-shell lint-snakemake pyright clean docs
+.PHONY: sif sifs test test-container smoke lint lint-py lint-perl lint-shell lint-snakemake pyright clean docs
 
 REPO_ROOT := $(shell git rev-parse --show-toplevel)
 
@@ -9,12 +9,13 @@ REPO_ROOT := $(shell git rev-parse --show-toplevel)
 # host with apptainer fakeroot support OR pull a prebuilt SIF.
 APPTAINER_BUILD_FLAGS := $(shell apptainer build --help 2>/dev/null | grep -q -- --fakeroot && echo --fakeroot)
 
+# `sif` builds the main image only (jamg.sif). `sifs` (plural) builds all
+# four: jamg-base, jamg, trinity, pasa. Iterative dev typically only needs
+# `sif`; CI / fresh host setup uses `sifs`.
 sif: containers/jamg.sif
+sifs: containers/jamg.sif containers/trinity.sif containers/pasa.sif
 
-# Base SIF: debian-slim + apt bootstrap + statically linked micromamba.
-# Rebuilt only when containers/jamg-base.def changes.
-# `-F` forces overwrite of an existing SIF (apptainer build refuses to clobber
-# by default -- reviewer I1).
+# `apptainer build -F` forces overwrite of an existing SIF (default refuses).
 containers/jamg-base.sif: containers/jamg-base.def
 	@echo "Building base SIF with flags: $(APPTAINER_BUILD_FLAGS) (log -> containers/build-base.log)"
 	@set -o pipefail; cd containers && apptainer build -F $(APPTAINER_BUILD_FLAGS) jamg-base.sif jamg-base.def 2>&1 | tee build-base.log || \
@@ -34,15 +35,30 @@ containers/jamg.sif: containers/jamg.def containers/jamg-base.sif containers/env
 	    echo "  - Or pull a prebuilt SIF (see docs/containers.md)"; \
 	    exit 1; }
 
-# test-container: just the container presence test (Phase 1 deliverable).
-# Always runs.
-test-container: sif
-	bash tests/container/test_tools_present.sh containers/jamg.sif
+# Trinity SIF: pulled from upstream Docker image trinityrnaseq/trinityrnaseq.
+# Version pinned in containers/trinity.def. Consumed by workflow/rules/tgg.smk.
+containers/trinity.sif: containers/trinity.def
+	@echo "Pulling Trinity SIF from upstream Docker (log -> containers/build-trinity.log)"
+	@set -o pipefail; cd containers && apptainer build -F $(APPTAINER_BUILD_FLAGS) trinity.sif trinity.def 2>&1 | tee build-trinity.log || \
+	  { echo ""; echo "TRINITY SIF build FAILED -- see containers/build-trinity.log"; exit 1; }
 
-# test: full unit + integration test suite. Phase 2+ adds tests/golden/ + the
-# Snakemake rule tests + tests/no-legacy/. For now, only run what exists.
-# Skip-with-notice for forward-decl paths so this target stays green between
-# phase landings (review B2).
+# PASA SIF: pulled from upstream Docker pasapipeline/pasapipeline.
+# Version pinned in containers/pasa.def. Consumed by workflow/rules/pasa.smk.
+containers/pasa.sif: containers/pasa.def
+	@echo "Pulling PASA SIF from upstream Docker (log -> containers/build-pasa.log)"
+	@set -o pipefail; cd containers && apptainer build -F $(APPTAINER_BUILD_FLAGS) pasa.sif pasa.def 2>&1 | tee build-pasa.log || \
+	  { echo ""; echo "PASA SIF build FAILED -- see containers/build-pasa.log"; exit 1; }
+
+# Per-SIF presence tests. Each SIF has its own tool list under tests/container/.
+test-container: containers/jamg.sif
+	bash tests/container/test_tools_present.sh containers/jamg.sif
+	@[ -f containers/trinity.sif ] && bash tests/container/test_trinity_tools.sh containers/trinity.sif || \
+	  echo "SKIP: containers/trinity.sif not built (run 'make sifs' for full coverage)"
+	@[ -f containers/pasa.sif ] && bash tests/container/test_pasa_tools.sh containers/pasa.sif || \
+	  echo "SKIP: containers/pasa.sif not built (run 'make sifs' for full coverage)"
+
+# Forward-declared paths (tests/golden/, tests/no-legacy/) skip cleanly so the
+# target stays green between phase landings.
 test: test-container
 	@[ -f tests/golden/test_validator.t ] && prove tests/golden/test_validator.t || \
 	  echo "SKIP: tests/golden/test_validator.t (Phase 4 deliverable)"
@@ -51,15 +67,14 @@ test: test-container
 	@[ -f tests/no-legacy/test_legacy_tools_gone.sh ] && bash tests/no-legacy/test_legacy_tools_gone.sh || \
 	  echo "SKIP: tests/no-legacy/test_legacy_tools_gone.sh (Phase 5 deliverable)"
 
-smoke: sif                             # slow: full DAG on mini-genome (~30 min)
+smoke: sif
 	@[ -f tests/e2e/test_full_dag.sh ] && bash tests/e2e/test_full_dag.sh || \
-	  echo "SKIP: tests/e2e/test_full_dag.sh (Phase 6 deliverable)"
+	  echo "SKIP: tests/e2e/test_full_dag.sh (forward-decl)"
 
 lint: lint-py lint-perl lint-shell lint-snakemake
 
 # All lint targets delegate to the pixi task so the Makefile path and the
-# `pixi run` path produce identical output (review B4). The pixi tasks handle
-# phase-aware path existence checks internally.
+# `pixi run` path produce identical output.
 lint-py:
 	pixi run lint-py
 
@@ -77,9 +92,10 @@ pyright:
 
 clean:
 	rm -rf containers/jamg.sif containers/jamg-base.sif \
+	       containers/trinity.sif containers/pasa.sif \
 	       containers/build.log containers/build-base.log \
+	       containers/build-trinity.log containers/build-pasa.log \
 	       .snakemake test_suite/output .pixi
 
 docs:
-	# rendered docs are markdown; nothing to build, but kept for symmetry
 	@echo "docs/*.md require no build"

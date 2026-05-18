@@ -1,0 +1,23 @@
+Bootstrap: docker
+From: trinityrnaseq/trinityrnaseq:2.15.2
+
+# Trinity 2.15.2 SIF, pulled unmodified from the upstream Docker image. The
+# image is the kitchen-sink Trinity build (Trinity + jellyfish + salmon +
+# bowtie2 + samtools + JVM + bioconductor R + DE-analysis tools); v2 invokes
+# only the genome-guided assembly path but ships the whole image because
+# stripping bioconductor would break Trinity's own runtime scripts.
+#
+# Consumed by workflow/rules/tgg.smk via per-rule `container:` directive.
+# Standalone use: `apptainer exec containers/trinity.sif Trinity --version`.
+
+%post
+    # Strip caches the upstream image leaves behind. Bioconductor R stays.
+    rm -rf /tmp/* /var/tmp/* /root/.cache 2>/dev/null || true
+    apt-get clean 2>/dev/null || true
+    rm -rf /var/lib/apt/lists/* 2>/dev/null || true
+
+%environment
+    export LC_ALL=C.UTF-8
+
+%runscript
+    exec Trinity "$@"

@@ -1,45 +1,96 @@
 Bootstrap: docker
 From: debian:trixie-slim
-# Was debian:bookworm-slim (glibc 2.36). Apptainer's libfakeroot.so is
-# bind-mounted from the host (Ubuntu 24.04, glibc 2.39) and requires
-# GLIBC_2.38 inside the SIF -- bookworm-slim's older glibc failed the link.
-# trixie-slim has glibc 2.40 which satisfies the requirement.
 
-# JAMg v2 BASE image -- thin layer holding apt-installed bootstrap tooling
-# (ca-certificates, curl, bzip2, tar, python3) plus a statically-linked
-# micromamba binary at /usr/local/bin/micromamba. The full bioconda tool stack
-# is layered on top by containers/jamg.def via `Bootstrap: localimage`.
+# JAMg v2 base image. Consumed by jamg.def via `Bootstrap: localimage`.
+# trinity.sif and pasa.sif do not layer on this; they pull upstream Docker.
 #
-# Rationale: condaforge/miniforge3:24.11.3-2's mamba 2.x has its libmambapy
-# Python binding linked against libxml2.so.2 (libxml2 2.x ABI), but current
-# conda-forge has rolled libxml2 to .so.16 (libxml2 3.x ABI) -- breaking every
-# mamba invocation. Using a debian base + statically-linked micromamba binary
-# sidesteps the entire conda-package-linkage minefield.
+# debian:trixie-slim required for: glibc 2.40 (apptainer libfakeroot needs
+# GLIBC_2.38) and a complete debian dev toolchain (glib include paths
+# resolve correctly under apt's gcc, unlike conda's gcc_linux-64 which fails
+# on glibconfig.h for some packages).
+#
+# Composition:
+#   - apt: bootstrap, build chain, system libs, r-base-core, exonerate,
+#     emboss, trf, ncbi-blast+, jellyfish, salmon, bowtie2.
+#   - source-build (jamg.def %post): Augustus, EVidenceModeler, TransDecoder,
+#     cdbfasta, ParaFly.
+#   - slim bioconda (jamg.def %post): minimap2, gmap, samtools, bcftools,
+#     bedtools, gffread, htslib, star, repeatmasker, repeatmodeler.
+#   - separate SIFs: trinity.sif, pasa.sif (upstream Docker).
 
 %post
-    set -euxo pipefail
-    apt-get update
-    apt-get install -y --no-install-recommends \
-        ca-certificates curl bzip2 tar python3
-    rm -rf /var/lib/apt/lists/*
+    # /bin/sh in trixie is dash. Stick to dash-safe syntax in this %post.
+    set -eux
 
-    # Statically-linked micromamba binary. Tarball layout: bin/micromamba.
-    # Extract to /usr/local so /usr/local/bin/micromamba ends up on PATH.
+    apt-get update
+
+    # Composition rationale: each grouped block below is a deliberate set.
+    # Keep groups together when editing.
+    apt-get install -y --no-install-recommends \
+        \
+        `# bootstrap and download tools` \
+        ca-certificates curl wget bzip2 tar xz-utils \
+        \
+        `# build chain for source-compiled tools in jamg.def %post` \
+        build-essential autoconf automake libtool cmake git pkg-config \
+        \
+        `# runtime languages. r-base-core only (no r-recommended) -- the` \
+        `# bioconductor pulls in r-recommended are unused by JAMg.` \
+        python3 python3-pip perl r-base-core \
+        \
+        `# system libraries (Augustus, PASA, TransDecoder, Trinity transitive` \
+        `# deps -- linker picks debian versions, one source of truth)` \
+        libboost-all-dev libopenblas-dev libsqlite3-dev libxml2-dev \
+        libcurl4-openssl-dev liblzma-dev libbz2-dev zlib1g-dev libgomp1 \
+        libreadline-dev \
+        \
+        `# small/stable analytic tools (debian-packaged builds)` \
+        exonerate emboss trf ncbi-blast+ \
+        \
+        `# small read-mapping/k-mer tools used by various downstream rules.` \
+        `# blat is intentionally absent: not in debian trixie's apt, and v2` \
+        `# PASA uses gmap+minimap2 instead.` \
+        jellyfish salmon bowtie2 \
+        \
+        `# misc utilities` \
+        sqlite3 less procps
+
+    # Strip apt caches, docs, non-default locales so the base SIF stays lean.
+    apt-get autoremove -y --purge
+    apt-get clean
+    rm -rf /var/lib/apt/lists/* \
+           /var/cache/apt/archives/*.deb \
+           /var/cache/apt/archives/partial/*
+    # Strip docs, man pages, info -- not needed at runtime
+    rm -rf /usr/share/doc/* /usr/share/doc-base/* \
+           /usr/share/man/* /usr/share/info/* \
+           /usr/share/lintian/* /usr/share/linda/*
+    # Keep en* locales; drop everything else (saves ~30 MB)
+    find /usr/share/locale -mindepth 1 -maxdepth 1 -type d \
+         ! -name 'en*' -exec rm -rf {} +
+
+    # Statically-linked micromamba binary -- consumed by jamg.def's %post for
+    # the slim bioconda install. Tarball layout: bin/micromamba.
     curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest \
         | tar -xj -C /usr/local bin/micromamba
     chmod +x /usr/local/bin/micromamba
 
     mkdir -p /opt/conda
 
+    # Final tmp + pip cache sweep. /var/tmp/systemd-private-* dirs are owned
+    # by system services and apptainer's fakeroot can't remove them
+    # ("Operation not permitted"). Tolerate that with `|| true` -- the
+    # cleanup is best-effort anyway.
+    rm -rf /tmp/* /var/tmp/* /root/.cache 2>/dev/null || true
+
 %environment
-    # MAMBA_ROOT_PREFIX is set here so anyone who shells into jamg-base.sif
-    # standalone sees it. The child SIF's %post must export it again
-    # explicitly -- apptainer does NOT propagate the base SIF's %environment
-    # into the child's %post (build-time semantics).
+    # MAMBA_ROOT_PREFIX visible to anyone shelling into jamg-base.sif standalone.
+    # Child SIF (jamg.def) re-exports it in %post (apptainer does not
+    # propagate %environment into the child's %post).
     export MAMBA_ROOT_PREFIX=/opt/conda
-    # PATH includes /opt/conda/bin (populated lazily by child SIFs). It does
-    # NOT include /opt/jamg/bin because that directory is created only by the
-    # child SIF's %files copy (jamg-base.sif standalone has no /opt/jamg/bin
-    # -- code-review N1).
+    # PATH does NOT include /opt/jamg/bin here -- that directory is populated
+    # only by jamg.def's %files copy. Base SIF is meant to be a build
+    # substrate, not a runtime; this PATH keeps it useful for shell-in
+    # debugging without lying about contents.
     export PATH=/opt/conda/bin:$PATH
     export LC_ALL=C.UTF-8

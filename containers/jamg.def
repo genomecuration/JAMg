@@ -1,12 +1,18 @@
 Bootstrap: localimage
 From: jamg-base.sif
 
-# JAMg v2 main image -- layered on top of containers/jamg-base.sif (built from
-# containers/jamg-base.def). The base SIF must exist before this one is built;
-# Makefile's `containers/jamg.sif:` target lists `containers/jamg-base.sif` as
-# a prerequisite to enforce this. `Bootstrap: localimage / From: jamg-base.sif`
-# resolves the path relative to the apptainer build CWD, which the Makefile
-# sets to `containers/` via `cd containers && apptainer build ...`.
+# JAMg v2 main image, layered on top of jamg-base.sif. Holds:
+#   - slim bioconda tool set: minimap2, gmap, samtools, bcftools, bedtools,
+#     gffread, htslib, star, repeatmasker, repeatmodeler.
+#   - source-built: Augustus, EVidenceModeler, TransDecoder, cdbfasta, ParaFly.
+#   - CGP apt deps for the Augustus source build: libgsl-dev,
+#     libsuitesparse-dev, liblpsolve55-dev (installed in %post, not in base,
+#     so the base SIF stays a lean OS substrate).
+#   - bin/ + PerlLib/ glue.
+#
+# Trinity and PASA live in separate SIFs (containers/trinity.def, pasa.def)
+# pulled from upstream Docker. The Snakemake rules use per-rule `container:`
+# directives to dispatch to the right SIF.
 
 %files
     environment.yml /opt/environment.yml
@@ -15,56 +21,68 @@ From: jamg-base.sif
     ../PerlLib /opt/jamg/PerlLib
 
 %post
-    set -euxo pipefail
+    # /bin/sh is dash in the trixie base. Dash-safe top-level; bash sub-shell
+    # for the conda-activate + source-compile dance.
+    set -eux
+
+    # CGP (Augustus Comparative Gene Prediction) build deps. Installed here
+    # rather than in jamg-base so the base SIF stays a lean OS substrate;
+    # CGP libs are JAMg-specific and consumed only by the Augustus source
+    # build below. jamg-base cleaned its apt lists, so refresh them.
+    apt-get update
+    apt-get install -y --no-install-recommends \
+        libgsl-dev libsuitesparse-dev liblpsolve55-dev
+    apt-get clean
+    rm -rf /var/lib/apt/lists/* \
+           /var/cache/apt/archives/*.deb \
+           /var/cache/apt/archives/partial/*
 
     # %environment from the base SIF is NOT propagated into this %post
-    # (apptainer build-time isolation). Re-export the build-time vars here.
-    # (Reviewer C1.)
+    # (apptainer build-time isolation). Re-export here.
     export MAMBA_ROOT_PREFIX=/opt/conda
 
-    # micromamba install -n base (create-or-update) is safer than env update
-    # against a fresh /opt/conda where the `base` env may not yet exist.
-    # (Reviewer I2.)
+    # micromamba install -n base for the slim bioconda set. Smaller package
+    # list -> faster solve (~1-2 min vs ~5+ for the bloated set).
     /usr/local/bin/micromamba install -n base -y -f /opt/environment.yml
 
-    # post-install.sh runs git clone + autoreconf + ./configure + make against
-    # the in-tree exonerate / cdbfasta / ParaFly source trees. Those tools live
-    # in the conda env at /opt/conda/bin (git, autoconf, automake, libtool,
-    # make, gcc_linux-64). Putting /opt/conda/bin on PATH alone is insufficient
-    # because gcc_linux-64 installs `x86_64-conda-linux-gnu-gcc` rather than
-    # plain `gcc`; the conda activate.d hooks set CC, CXX, AR, RANLIB. We
-    # therefore activate the base env so configure scripts find a working C
-    # toolchain. (Reviewers C2 + C3.)
-    export PATH=/opt/conda/bin:$PATH
-    eval "$(/usr/local/bin/micromamba shell hook -s bash)"
-    micromamba activate base
-
     chmod +x /opt/post-install.sh
-    bash /opt/post-install.sh
 
-    # `clean` AFTER post-install so activate.d scripts survive the toolchain
-    # use above (reviewer I4). `-y` is redundant in %post (no prompts) but
-    # harmless (reviewer N2).
+    # Bash subshell: micromamba shell hook emits bash function definitions
+    # that dash cannot parse. The subshell holds the activate + source-build
+    # chain. PATH ordering inside the subshell puts /opt/conda/bin first
+    # because the bioconda compilers + tools need to be on PATH for the
+    # source-compiles to find them.
+    /bin/bash -c '
+        set -euxo pipefail
+        export MAMBA_ROOT_PREFIX=/opt/conda
+        export PATH=/opt/conda/bin:$PATH
+        eval "$(/usr/local/bin/micromamba shell hook -s bash)"
+        micromamba activate base
+        bash /opt/post-install.sh
+    '
+
+    # Cleanup runs AFTER post-install.sh so activate.d scripts are still in
+    # place when source-compiles run.
     /usr/local/bin/micromamba clean -ay
-
-    echo "export PERL5LIB=/opt/jamg/PerlLib" >> /etc/profile.d/jamg.sh
-    echo "export PATH=/opt/jamg/bin:\$PATH"   >> /etc/profile.d/jamg.sh
+    # Strip __pycache__ + .pyc from the conda env (regenerated at runtime)
+    find /opt/conda -type d -name '__pycache__' -exec rm -rf {} + 2>/dev/null || true
+    find /opt/conda -name '*.pyc' -delete 2>/dev/null || true
+    # Strip docs / man / info / locale from the conda env (large for R/python)
+    rm -rf /opt/conda/share/doc/* /opt/conda/share/man/* /opt/conda/share/info/* \
+           /opt/conda/pkgs/* /opt/conda/conda-meta/history
+    find /opt/conda/share/locale -mindepth 1 -maxdepth 1 -type d \
+         ! -name 'en*' -exec rm -rf {} + 2>/dev/null || true
+    # Tmp + pip cache + any source residue post-install.sh missed.
+    # Tolerant rm because /var/tmp may contain systemd-private dirs (owned by
+    # other UIDs, fakeroot can't remove them; cleanup is best-effort).
+    rm -rf /tmp/* /var/tmp/* /root/.cache /opt/src 2>/dev/null || true
 
 %environment
-    # Matches Dockerfile PATH ordering: /opt/jamg/bin before /opt/conda/bin.
-    # (Reviewer I3.)
     export MAMBA_ROOT_PREFIX=/opt/conda
     export PERL5LIB=/opt/jamg/PerlLib
     export PATH=/opt/jamg/bin:/opt/conda/bin:$PATH
     export LC_ALL=C.UTF-8
+    export AUGUSTUS_CONFIG_PATH=/opt/jamg/share/Augustus/config
 
-# %runscript intentionally OMITTED in Phase 1.
-# Phase 2 lands bin/jamg (the Click CLI). When that file exists, the
-# %runscript should be:
-#     %runscript
-#         exec /opt/jamg/bin/jamg "$@"
-# In Phase 1 the SIF is invoked via `apptainer exec containers/jamg.sif <cmd>`
-# (per-tool direct invocation, e.g. for tests/container/test_tools_present.sh).
-# Code-review finding B1 caught this forward-decl: %runscript without bin/jamg
-# would fail `apptainer run jamg.sif` immediately, and Phase 1's test gate
-# does not exercise the runscript path.
+# %runscript is intentionally OMITTED until bin/jamg exists. The SIF is
+# meant to be invoked via `apptainer exec containers/jamg.sif <cmd>`.
