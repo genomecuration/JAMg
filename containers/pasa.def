@@ -7,11 +7,11 @@ From: pasapipeline/pasapipeline:2.5.3
 # Standalone use:
 #   apptainer exec containers/pasa.sif Launch_PASA_pipeline.pl --version
 
-%post
-    # Strip tmp + apt caches upstream may have left.
-    rm -rf /tmp/* /var/tmp/* /root/.cache 2>/dev/null || true
-    apt-get clean 2>/dev/null || true
-    rm -rf /var/lib/apt/lists/* 2>/dev/null || true
+# NOTE: no %post block. The upstream pasapipeline:2.5.3 image is built on a
+# glibc-2.31 base; apptainer's libfakeroot.so requires GLIBC_2.33+ to run
+# under --fakeroot, so any %post would fail at faked startup. The image is
+# used as-is; the tmp / apt caches the upstream image carries are cosmetic
+# only and do not affect runtime behaviour.
 
 %environment
     export LC_ALL=C.UTF-8

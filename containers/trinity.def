@@ -10,11 +10,10 @@ From: trinityrnaseq/trinityrnaseq:2.15.2
 # Consumed by workflow/rules/tgg.smk via per-rule `container:` directive.
 # Standalone use: `apptainer exec containers/trinity.sif Trinity --version`.
 
-%post
-    # Strip caches the upstream image leaves behind. Bioconductor R stays.
-    rm -rf /tmp/* /var/tmp/* /root/.cache 2>/dev/null || true
-    apt-get clean 2>/dev/null || true
-    rm -rf /var/lib/apt/lists/* 2>/dev/null || true
+# NOTE: no %post block. The upstream trinityrnaseq:2.15.2 image may be built
+# on an older glibc base; apptainer's libfakeroot.so requires GLIBC_2.33+ to
+# run under --fakeroot, so any %post would risk failing at faked startup.
+# The image is used as-is; the upstream caches are cosmetic only.
 
 %environment
     export LC_ALL=C.UTF-8
