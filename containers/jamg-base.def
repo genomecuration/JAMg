@@ -52,6 +52,10 @@ From: debian:trixie-slim
         `# PASA uses gmap+minimap2 instead.` \
         jellyfish salmon bowtie2 \
         \
+        `# Perl modules required by GeneMark's gmes_petap.pl (YAML,` \
+        `# Hash::Merge, Parallel::ForkManager, MCE).` \
+        libyaml-perl libhash-merge-perl libparallel-forkmanager-perl libmce-perl \
+        \
         `# misc utilities` \
         sqlite3 less procps
 
