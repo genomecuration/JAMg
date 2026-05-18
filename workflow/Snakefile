@@ -3,6 +3,7 @@
 include: "rules/common.smk"
 include: "rules/repeats.smk"
 include: "rules/rnaseq.smk"
+include: "rules/tgg.smk"
 
 
 rule all:
