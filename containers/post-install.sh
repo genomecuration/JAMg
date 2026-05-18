@@ -73,7 +73,9 @@ git clone --depth 1 --branch "$TRANSDECODER_TAG" "$TRANSDECODER_REPO" TransDecod
 cd TransDecoder
 make
 mkdir -p "$JAMG/share/TransDecoder"
-cp -a TransDecoder.LongOrfs TransDecoder.Predict util pfam PerlLib \
+# TransDecoder 5.7.1 ships: TransDecoder.LongOrfs, TransDecoder.Predict, util,
+# PerlLib. Older versions shipped a pfam/ dir; 5.7.1 dropped it.
+cp -a TransDecoder.LongOrfs TransDecoder.Predict util PerlLib \
     "$JAMG/share/TransDecoder/"
 ln -sf "$JAMG/share/TransDecoder/TransDecoder.LongOrfs" "$JAMG/bin/TransDecoder.LongOrfs"
 ln -sf "$JAMG/share/TransDecoder/TransDecoder.Predict" "$JAMG/bin/TransDecoder.Predict"
@@ -115,8 +117,27 @@ make install
 cd "$SRC"
 
 # -------------------------------------------------------------------------
-# RepeatMasker (bioconda) -- non-interactive configure.
+# RepeatMasker (bioconda) -- libraries staged from host, then non-interactive
+# configure.
+#
+# bioconda's repeatmasker package does NOT ship the repeat libraries
+# (RepeatMasker.lib, RepeatPeps.lib, taxonomy.dat.bz2, etc.). The host's
+# pre-curated library set is bind-mounted at /rm_lib_host (by the Makefile's
+# `apptainer build --bind <RM_LIB_HOST>:/rm_lib_host:ro` call) and copied into
+# $PREFIX/share/RepeatMasker/Libraries/ before the configure step.
 # -------------------------------------------------------------------------
+if [ ! -d "/rm_lib_host" ]; then
+    echo "FATAL: /rm_lib_host not bind-mounted; cannot stage RepeatMasker libraries." >&2
+    echo "Build via 'make sif' (which sets --bind), not bare apptainer build." >&2
+    exit 1
+fi
+mkdir -p "$PREFIX/share/RepeatMasker/Libraries"
+# `cp -a` preserves symlinks verbatim. If the host library set contains
+# symlinks pointing OUTSIDE /rm_lib_host (e.g. to a host filer path), those
+# links would dangle inside the squashed SIF. Use `-aL` to dereference if
+# that becomes an issue.
+cp -a /rm_lib_host/. "$PREFIX/share/RepeatMasker/Libraries/"
+
 "$PREFIX/share/RepeatMasker/configure" \
     -trf_prgm="/usr/bin/trf" \
     -default_search_engine=rmblast \

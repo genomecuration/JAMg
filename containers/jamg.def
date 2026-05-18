@@ -14,6 +14,14 @@ From: jamg-base.sif
 # pulled from upstream Docker. The Snakemake rules use per-rule `container:`
 # directives to dispatch to the right SIF.
 
+%setup
+    # Pre-create the bind destination for the host RepeatMasker libraries.
+    # Apptainer cannot auto-create bind destinations in writable build mode
+    # without overlay/underlay support; %setup runs after bootstrap and
+    # before %files / %post with $APPTAINER_ROOTFS pointing at the extracted
+    # rootfs, so we can mkdir it directly.
+    mkdir -p ${APPTAINER_ROOTFS}/rm_lib_host
+
 %files
     environment.yml /opt/environment.yml
     post-install.sh /opt/post-install.sh
@@ -76,6 +84,9 @@ From: jamg-base.sif
     # Tolerant rm because /var/tmp may contain systemd-private dirs (owned by
     # other UIDs, fakeroot can't remove them; cleanup is best-effort).
     rm -rf /tmp/* /var/tmp/* /root/.cache /opt/src 2>/dev/null || true
+    # /rm_lib_host was the bind-mount target during build; remove the now-empty
+    # stub dir so it doesn't appear in the squashed SIF.
+    rmdir /rm_lib_host 2>/dev/null || true
 
 %environment
     export MAMBA_ROOT_PREFIX=/opt/conda
