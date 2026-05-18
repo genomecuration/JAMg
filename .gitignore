@@ -46,3 +46,6 @@ test_suite/dmel-X-r5.53.repeat.soft.bz2
 3rd_party/mira_4.9.5_2_linux-gnu_x86_64_static.tar.bz2
 3rd_party/mysql-5.7.9-linux-glibc2.5-x86_64/
 3rd_party/samtools-1.3.tar.bz2
+CLAUDE.md
+docs/plans/
+tmp/
