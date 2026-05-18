@@ -26,7 +26,7 @@ test -s "$OUT/${GENOME_BASENAME}.softmasked"          || { echo "softmasked FAST
 test -s "$OUT/${GENOME_BASENAME}.hardmasked"          || { echo "hardmasked FASTA missing";    exit 1; }
 test -s "$OUT/${GENOME_BASENAME}.softmasked.fai"      || { echo "softmasked .fai missing";     exit 1; }
 test -s "$OUT/${GENOME_BASENAME}.hardmasked.fai"      || { echo "hardmasked .fai missing";     exit 1; }
-test -s "$OUT/${GENOME_BASENAME}.softmasked.blastdb.done" || { echo "BLAST-DB sentinel missing"; exit 1; }
+test -e "$OUT/${GENOME_BASENAME}.softmasked.blastdb.done" || { echo "BLAST-DB sentinel missing"; exit 1; }
 test -s "$OUT/all_repeat_masks.gff3.hints"            || { echo "augustus hints missing";      exit 1; }
 
 # At least one feature in the merged GFF (non-comment, non-empty line).

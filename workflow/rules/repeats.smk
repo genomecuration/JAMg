@@ -160,5 +160,6 @@ rule repeats_merge:
         "samtools faidx {output.soft} && samtools faidx {output.hard} && "
         "makeblastdb -dbtype nucl -in {output.soft} -parse_seqids -hash_index "
         f"           -title '{GENOME_BASENAME}' && "
-        "repeatmasker2hints.pl {output.merged} && "
-        "mv {output.merged}.hints {output.hints}"
+        # repeatmasker2hints.pl writes to <input>.hints which already matches
+        # output.hints (declared as merged + '.hints'), so no rename is needed.
+        "repeatmasker2hints.pl {output.merged}"
