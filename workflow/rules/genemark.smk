@@ -53,7 +53,15 @@ rule genemark_preflight:
         '    gunzip -c "{params.gm_key_gz}" > "{params.gm_home}/.gm_key" && '
         '    chmod 600 "{params.gm_home}/.gm_key"; '
         'fi && '
-        'HOME="{params.gm_home}" "{params.workdir}/gmes_linux_64_4/gmes_petap.pl" --help >/dev/null 2>&1 || '
+        # ABI check: invoke gmes_petap.pl with no args (it prints "Usage:"
+        # and exits non-zero) and confirm the "Usage:" line appears. The
+        # subshell disables pipefail because gmes_petap.pl's exit=1 would
+        # otherwise propagate through the pipe even when grep matches.
+        # A missing Perl module would surface as "Can't locate <module>"
+        # without ever reaching the usage banner.
+        '( set +o pipefail; '
+        '  HOME="{params.gm_home}" "{params.workdir}/gmes_linux_64_4/gmes_petap.pl" 2>&1 '
+        '    | grep -q "^Usage:" ) || '
         '  {{ echo "FATAL: gmes_petap.pl could not load Perl modules under SIF Perl"; exit 1; }}'
 
 
@@ -80,18 +88,29 @@ rule genemark:
     shell:
         "cd {params.gm_dir_abs} && "
         # Build an intron-only evidence file from the rnaseq hints. The
-        # noncanonical=true lines are filtered out per the plan.
-        "grep -E '^[^#].*\\tintron\\t' {params.rnaseq_abs} 2>/dev/null "
+        # noncanonical=true lines are filtered out per the plan. The grep
+        # may match zero lines (no spliced reads); that is handled by the
+        # `--ES` fallback below.
+        "( set +o pipefail; "
+        "  grep -E '^[^#].*\\tintron\\t' {params.rnaseq_abs} 2>/dev/null "
         "    | grep -v 'noncanonical=true' "
-        "    | sort -k1,1 -k4,4n > all_evidence_introns.gff3 || true; "
+        "    | sort -k1,1 -k4,4n > all_evidence_introns.gff3 ); "
+        # Pick --ET (evidence from transcripts) if we have introns, else
+        # --ES (self-training only). The mini-fixture's wgsim reads are
+        # unspliced, so --ES is the only viable mode for the smoke test.
+        "if [ -s all_evidence_introns.gff3 ]; then "
+        "    GM_MODE='--ET all_evidence_introns.gff3 --et_score 10'; "
+        "else "
+        "    GM_MODE='--ES'; "
+        "fi && "
         "HOME='{params.gm_home_abs}' "
         "{params.workdir_abs}/gmes_linux_64_4/gmes_petap.pl "
-        "    --ET all_evidence_introns.gff3 --et_score 10 "
+        "    $GM_MODE "
         "    --soft_mask 1 --max_mask 10000 "
         "    --cores {threads} "
         "    --sequence {params.softmasked_abs} && "
-        "[ -s genemark.gtf ] || cp genemark.gtf {output.gtf} 2>/dev/null || "
-        "    {{ echo 'FATAL: gmes_petap.pl did not produce genemark.gtf' >&2; exit 1; }}; "
+        "[ -s genemark.gtf ] || "
+        "    {{ echo 'FATAL: gmes_petap.pl did not produce genemark.gtf' >&2; exit 1; }} && "
         # Convert GTF to canonical GFF3 with source=GeneMarkHMM.
         "gtf_to_gff3_format.pl genemark.gtf {params.softmasked_abs} GeneMarkHMM "
         "    | grep -v '^# ' > {output.gff3}"

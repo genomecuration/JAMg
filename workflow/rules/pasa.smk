@@ -49,6 +49,7 @@ rule pasa_setup_db:
         template_abs  = _PASA_TEMPLATE,
         db_path       = _pasa_db_path(),
         pasa_dir_abs  = lambda _wc, output: _os.path.dirname(_os.path.abspath(output.transcripts)),
+        trinity_gg_abs = lambda _wc, input: _os.path.abspath(input.trinity_gg),
     container: "containers/pasa.sif"
     threads: 1
     resources:
@@ -57,7 +58,7 @@ rule pasa_setup_db:
         "mkdir -p {params.pasa_dir_abs} && cd {params.pasa_dir_abs} && "
         # Build transcripts.fasta from up to three sources. Trinity-GG is
         # always present; Trinity-TDN and longreads are optional.
-        "cat {input.trinity_gg} > transcripts.fasta && "
+        "cat {params.trinity_gg_abs} > transcripts.fasta && "
         "if [ '{params.trinity_tdn}' != 'NONE' ]; then "
         "    if [ ! -s '{params.trinity_tdn}' ]; then "
         "        echo 'FATAL: trinity_denovo path \"{params.trinity_tdn}\" does not exist or is empty' >&2; "
