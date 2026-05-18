@@ -49,26 +49,33 @@ W=test_suite/.work
 mkdir -p "$W" tools/cache
 
 # --- mini-genome ---------------------------------------------------------
+# 1 Mb region of D. melanogaster X chromosome, well past the 5 kb telomeric
+# zone. Contains the original 51 kb gene-rich window plus surrounding
+# context for tools that require minimum genome sizes (e.g. GeneMark-ES
+# self-training expects >=1 Mb).
 TMP=$(mktemp --suffix .fasta)
 bzcat test_suite/dmel-X-r5.53.fasta.bz2 > "$TMP"
 "${RUN[@]}" samtools faidx "$TMP" 2>/dev/null
-"${RUN[@]}" samtools faidx "$TMP" X:137987-188995 2>/dev/null \
-    | sed 's|^>X:137987-188995|>X_mini|' > test_suite/mini-genome.fasta
+"${RUN[@]}" samtools faidx "$TMP" X:100001-1100000 2>/dev/null \
+    | sed 's|^>X:100001-1100000|>X_mini|' > test_suite/mini-genome.fasta
 rm -f "$TMP" "${TMP}.fai"
 "${RUN[@]}" samtools faidx test_suite/mini-genome.fasta 2>/dev/null
 
 # --- mini-rnaseq.bam -----------------------------------------------------
+# 100k PE reads over 1 Mb is ~20x coverage at 100bp (sufficient for STAR
+# alignment + augustus coverage hints).
 rm -f "$W/mini_r1.fq" "$W/mini_r2.fq"
-"${RUN[@]}" wgsim -S 42 -N 50000 -1 100 -2 100 -e 0.005 -r 0.001 -R 0 -X 0 \
+"${RUN[@]}" wgsim -S 42 -N 100000 -1 100 -2 100 -e 0.005 -r 0.001 -R 0 -X 0 \
     test_suite/mini-genome.fasta \
     "$W/mini_r1.fq" "$W/mini_r2.fq" > "$W/wgsim.mut" 2>"$W/wgsim.err"
 
 rm -rf "$W/star_idx"
 mkdir -p "$W/star_idx"
+# SAindexNbases 10 for ~1 Mb (rule of thumb: min(14, log2(genome)/2 - 1)).
 "${RUN[@]}" STAR --runMode genomeGenerate \
     --genomeDir "$W/star_idx" \
     --genomeFastaFiles test_suite/mini-genome.fasta \
-    --genomeSAindexNbases 8 --runThreadN 4 \
+    --genomeSAindexNbases 10 --runThreadN 4 \
     >"$W/star_index.log" 2>&1
 
 "${RUN[@]}" STAR --runMode alignReads --runThreadN 4 \
@@ -97,9 +104,9 @@ tar -xf test_suite/Drosophila_official_annotations_cleaned.tar -C "$W" \
 bunzip2 -kf "$W/melanogaster/dmel-all-no-analysis-r5.53.gff3.gff3.clean.bz2"
 SRC_GFF=$W/melanogaster/dmel-all-no-analysis-r5.53.gff3.gff3.clean
 
-awk -F'\t' -v OFS='\t' -v off=137986 '
+awk -F'\t' -v OFS='\t' -v off=100000 '
     /^#/ { print; next }
-    $1=="X" && $4 >= 137987 && $5 <= 188995 && ($3=="gene"||$3=="mRNA"||$3=="exon"||$3=="CDS"||$3=="five_prime_UTR"||$3=="three_prime_UTR") {
+    $1=="X" && $4 >= 100001 && $5 <= 1100000 && ($3=="gene"||$3=="mRNA"||$3=="exon"||$3=="CDS"||$3=="five_prime_UTR"||$3=="three_prime_UTR") {
         $1 = "X_mini"; $4 -= off; $5 -= off; print
     }
 ' "$SRC_GFF" > "$W/mini-annot.gff3"
