@@ -1,3 +1,0 @@
-note QTEXT
-
-comment QTEXT

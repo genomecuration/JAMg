@@ -1,7 +1,0 @@
-# ACD file for QA testing - bad qualifier name
-#
-appl: badqualname [ doc: "testing" group: "testing" ]
-
-sequence: sequence1 [ param: Y ]
-
-outfile: outtest [ param: Y odirectory: "$(outdir)" ]

@@ -1,5 +1,0 @@
-# ACD file for QA testing - missing the application definition
-#
-appl: noleftappl
-
-outfile: outtest [ param: Y odirectory: "$(outdir)" ]

@@ -1,4 +1,0 @@
-# Empty database definition
-
-dbname unknowns [ method: "notknown" format: "noformat" type:
-                  "nosuchtype" ]
