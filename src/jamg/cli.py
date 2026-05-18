@@ -138,6 +138,12 @@ def cli() -> None:
     type=int,
     help="slurm: concurrent submissions cap. Required when --executor=slurm.",
 )
+@click.option(
+    "--until",
+    "until_rule",
+    default=None,
+    help="Stop after the named rule and its dependencies are produced.",
+)
 @click.option("--executor", default="local", type=click.Choice(["local", "slurm"]))
 @click.option(
     "--container-runtime",
@@ -151,6 +157,7 @@ def run(
     unlock: bool,
     cores: int,
     jobs: int | None,
+    until_rule: str | None,
     executor: str,
     container_runtime: str | None,
 ) -> None:
@@ -160,23 +167,37 @@ def run(
     binds = collect_binds(cfg)
     bind_args = " ".join(f"--bind {b}" for b in binds)
 
-    # Snakemake 9 uses --software-deployment-method to select the runtime
-    # and --apptainer-args to pass through to apptainer. The container-image
-    # cache flag is still named --singularity-prefix in 9.x (the apptainer
-    # rename was not adopted); --apptainer-args is the post-rename name.
+    # Detect whether we're running inside an apptainer/singularity SIF.
+    # When inside, every rule's tools come from the SIF we're already in,
+    # so we MUST NOT pass --software-deployment-method (which would try
+    # to dispatch nested apptainer calls per rule, breaking the run).
+    inside_sif = bool(
+        os.environ.get("APPTAINER_CONTAINER")
+        or os.environ.get("APPTAINER_NAME")
+        or os.environ.get("SINGULARITY_CONTAINER")
+        or os.environ.get("SINGULARITY_NAME")
+    )
+
     cmd = [
         "snakemake",
         "--snakefile",
         str(WORKFLOW / "Snakefile"),
         "--configfile",
         config_path,
-        "--software-deployment-method",
-        "apptainer",
-        "--singularity-prefix",
-        str(REPO / ".snakemake" / "apptainer"),
-        "--apptainer-args",
-        bind_args,
     ]
+    if not inside_sif:
+        # Snakemake 9: --software-deployment-method selects the runtime;
+        # --apptainer-args is passed through to apptainer; the cache-prefix
+        # flag is still --singularity-prefix in 9.x (apptainer rename not
+        # adopted upstream).
+        cmd += [
+            "--software-deployment-method",
+            "apptainer",
+            "--singularity-prefix",
+            str(REPO / ".snakemake" / "apptainer"),
+            "--apptainer-args",
+            bind_args,
+        ]
     if executor == "slurm":
         if jobs is None:
             raise click.ClickException("--jobs N required when --executor=slurm")
@@ -194,6 +215,13 @@ def run(
         cmd.append("--dry-run")
     if unlock:
         cmd.append("--unlock")
+    if until_rule:
+        # Pass the rule name as a positional target. Snakemake's --until takes
+        # nargs='+', so "--until X X" eats both tokens as --until args and
+        # leaves no positional target, meaning `rule all` is still the
+        # resolution root. A positional target alone gives the same DAG
+        # behavior (build the rule + its dependencies) without that bug.
+        cmd.append(until_rule)
     sys.exit(subprocess.call(cmd, env={**os.environ, "JAMG_CONTAINER_RUNTIME": runtime}))
 
 

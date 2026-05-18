@@ -1,6 +1,7 @@
 # Config comes exclusively from `--configfile <path>` passed by `bin/jamg run`
 # or by a direct `snakemake --configfile ...` invocation. No hardcoded default.
 include: "rules/common.smk"
+include: "rules/repeats.smk"
 
 
 rule all:

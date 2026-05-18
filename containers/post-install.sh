@@ -123,9 +123,25 @@ cd "$SRC"
     -rmblast_dir="$PREFIX/bin" \
     -libdir="$PREFIX/share/RepeatMasker/Libraries" </dev/null
 
-# Expose RepeatMasker util scripts on PATH (rmOutToGFF3.pl lives in util/)
+# Expose RepeatMasker util scripts on PATH (rmOutToGFF3.pl lives in util/).
+# A bare symlink into /opt/conda/bin/ is broken because Perl resolves @INC from
+# the SCRIPT'S DIRECTORY (not the symlink target), so CrossmatchSearchEngine.pm
+# at $PREFIX/share/RepeatMasker/ is not found. Install thin wrapper scripts
+# that set PERL5LIB and exec the real script via its absolute path.
 for s in "$PREFIX/share/RepeatMasker/util/"*.pl; do
-    [ -e "$s" ] && ln -sf "$s" "$PREFIX/bin/$(basename "$s")"
+    [ -e "$s" ] || continue
+    name=$(basename "$s")
+    # Bioconda pre-creates symlinks at $PREFIX/bin/<name> pointing back into
+    # share/RepeatMasker/util/. A `cat > <path>` that follows that symlink
+    # would write the wrapper INTO the real util script (O_CREAT|O_TRUNC
+    # follows symlinks). Unlink first so the heredoc creates a fresh file.
+    rm -f "$PREFIX/bin/$name"
+    cat > "$PREFIX/bin/$name" <<WRAPEOF
+#!/bin/sh
+export PERL5LIB="$PREFIX/share/RepeatMasker:\${PERL5LIB-}"
+exec "$s" "\$@"
+WRAPEOF
+    chmod +x "$PREFIX/bin/$name"
 done
 
 # Cleanup: remove the source tree (jamg.def's %post does a broader sweep too,

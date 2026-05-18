@@ -159,7 +159,7 @@ for i in range(20):
     L = random.randint(150, 500)
     start = random.randint(0, N - L)
     chunk = seq[start:start+L]
-    print(f">species_repeat_{i+1}#Unknown/Simulated")
+    print(f">species_repeat_{i+1}#LINE/L1")
     for j in range(0, len(chunk), 80):
         print(chunk[j:j+80])
 PY
