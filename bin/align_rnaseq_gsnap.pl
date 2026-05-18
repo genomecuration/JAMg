@@ -93,6 +93,8 @@ my (
 );
 my $cwd = `pwd`;
 chomp($cwd);
+my $tmpdir = $ENV{TMP} ? $ENV{TMP} : $cwd;
+
 my $gmap_dir           = "$RealBin/../databases/gmap/";
 my $repeat_path_number = 10;
 my $intron_length      = 70000;
@@ -460,15 +462,15 @@ sub align_unpaired_files() {
   next if ( $ret && $ret != 256 );
 
   unless ( -s "$base_out_filename".".uniq.bam" || $just_write_out_commands) {
-   &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename".".uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename".".uniq.bam -");
+   &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename".".uniq | $samtools_exec sort -T $tmpdir/tmp.$base_out_filename -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename".".uniq.bam -");
    &process_cmd("$samtools_exec index $base_out_filename".".uniq.bam");
 
    ## For JBrowse
     &process_cmd("$mosdepth_exec --threads 4 $base_out_filename.uniq.coverage $base_out_filename.uniq.bam");
-    &process_cmd("zcat  $base_out_filename.uniq.coverage.per-base.bed.gz | sort -k1,1 -k2,2n --parallel=4 -S 4G -o $base_out_filename.uniq.coverage.per-base.bg"); 
+    &process_cmd("zcat  $base_out_filename.uniq.coverage.per-base.bed.gz | sort -T $tmpdir -k1,1 -k2,2n --parallel=4 -S 4G -o $base_out_filename.uniq.coverage.per-base.bg"); 
     &process_cmd("$bedGraphToBigWig_exec $base_out_filename.uniq.coverage.per-base.bg $genome.fai $base_out_filename".".uniq.coverage.bw");
 #   &process_cmd("$bedtools_exec genomecov -split -bg -ibam $base_out_filename"
-#     .".uniq.bam| sort -S 4G -k1,1 -k2,2n > $base_out_filename".".uniq.coverage.bg");
+#     .".uniq.bam| sort -T $tmpdir -S 4G -k1,1 -k2,2n > $base_out_filename".".uniq.coverage.bg");
 #   &process_cmd("bedGraphToBigWig $base_out_filename".".uniq.coverage.bg $genome.fai $base_out_filename".".uniq.coverage.bw") if `which bedGraphToBigWig`;
 
    print LOG "\n$base_out_filename".".uniq.bam:\n";
@@ -478,10 +480,10 @@ sub align_unpaired_files() {
    unlink("$base_out_filename".".uniq");
   }
   unless ( -s "$base_out_filename".".mult.bam" || $just_write_out_commands) {
-   &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename".".mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename".".mult.bam -");
+   &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename".".mult | $samtools_exec sort -T $tmpdir/tmp.$base_out_filename -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename".".mult.bam -");
    &process_cmd("$samtools_exec index $base_out_filename".".mult.bam");
     &process_cmd("$mosdepth_exec --threads 4 $base_out_filename.mult.coverage $base_out_filename.mult.bam");
-    &process_cmd("zcat  $base_out_filename.mult.coverage.per-base.bed.gz | sort -k1,1 -k2,2n --parallel=4 -S 4G -o $base_out_filename.mult.coverage.per-base.bg"); 
+    &process_cmd("zcat  $base_out_filename.mult.coverage.per-base.bed.gz | sort -T $tmpdir -k1,1 -k2,2n --parallel=4 -S 4G -o $base_out_filename.mult.coverage.per-base.bg"); 
     &process_cmd("$bedGraphToBigWig_exec $base_out_filename.mult.coverage.per-base.bg $genome.fai $base_out_filename".".mult.coverage.bw");
    print LOG "\n$base_out_filename".".mult.bam:\n";
    &process_cmd(
@@ -497,7 +499,7 @@ sub align_unpaired_files() {
 #   &process_cmd("$samtools_exec merge -@ $cpus -l 9 $base_out_filename"."_uniq.mult.bam $base_out_filename"."_uniq.bam $base_out_filename".".mult.bam"   );
 #   &process_cmd("$samtools_exec index $base_out_filename"."_uniq.mult.bam");
 #    &process_cmd("$mosdepth_exec --threads 4 $base_out_filename.uniq.mult.coverage $base_out_filename"."_uniq.mult.bam");
-#    &process_cmd("zcat  $base_out_filename.uniq.mult.coverage.per-base.bed.gz | sort -k1,1 -k2,2n --parallel=4 -S 4G -o $base_out_filename.uniq.mult.coverage.per-base.bg"); 
+#    &process_cmd("zcat  $base_out_filename.uniq.mult.coverage.per-base.bed.gz | sort -T $tmpdir -k1,1 -k2,2n --parallel=4 -S 4G -o $base_out_filename.uniq.mult.coverage.per-base.bg"); 
 #    &process_cmd("$bedGraphToBigWig_exec $base_out_filename.uniq.mult.coverage.per-base.bg $genome.fai $base_out_filename".".uniq.mult.coverage.bw");
 #   print LOG "\n$base_out_filename"."_uniq.mult.bam:\n";
 #   &process_cmd("$samtools_exec flagstat $base_out_filename"."_uniq.mult.bam >> gsnap.$base.log"   );
@@ -533,7 +535,7 @@ sub align_paired_files() {
   }
   $base .= "_vs_$genome_dbname";
 
-  print "Processing $group_id ($file) vs $genome_dbname as $base.\n";
+  print "Processing $group_id ($file) vs $genome_dbname as $base\n";
   if ( -s "gsnap.$base.log" ) {
    open( LOG, "gsnap.$base.log" );
    my @log = <LOG>;
@@ -606,16 +608,16 @@ sub align_paired_files() {
   next if ( $ret && $ret != 256 );
 
   unless ( -s "$base_out_filename"."_uniq.bam" || $just_write_out_commands) {
-   &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename"."_uniq | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_uniq.bam -");
+   &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename"."_uniq | $samtools_exec sort -T $tmpdir/tmp.$base_out_filename -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_uniq.bam -");
    &process_cmd("$samtools_exec index $base_out_filename"."_uniq.bam");
 
    ## For JBrowse
 #   &process_cmd("$bedtools_exec genomecov -split -bg -g $genome.fai -ibam $base_out_filename"
     &process_cmd("$mosdepth_exec --threads 4 $base_out_filename.uniq.coverage $base_out_filename"."_uniq.bam");
-    &process_cmd("zcat  $base_out_filename.uniq.coverage.per-base.bed.gz | sort -k1,1 -k2,2n --parallel=4 -S 4G -o $base_out_filename.uniq.coverage.per-base.bg"); 
+    &process_cmd("zcat  $base_out_filename.uniq.coverage.per-base.bed.gz | sort -T $tmpdir -k1,1 -k2,2n --parallel=4 -S 4G -o $base_out_filename.uniq.coverage.per-base.bg"); 
     &process_cmd("$bedGraphToBigWig_exec $base_out_filename.uniq.coverage.per-base.bg $genome.fai $base_out_filename".".uniq.coverage.bw");
 #   &process_cmd("$bedtools_exec genomecov -split -bg -ibam $base_out_filename"
-#     ."_uniq.bam| sort -S 4G -k1,1 -k2,2n > $base_out_filename"."_uniq.coverage.bg");
+#     ."_uniq.bam| sort -T $tmpdir -S 4G -k1,1 -k2,2n > $base_out_filename"."_uniq.coverage.bg");
 #   &process_cmd("bedGraphToBigWig $base_out_filename"."_uniq.coverage.bg $genome.fai $base_out_filename"."_uniq.coverage.bw") if `which bedGraphToBigWig`;
 
    print LOG "\n$base_out_filename"."_uniq.bam:\n";
@@ -623,10 +625,10 @@ sub align_paired_files() {
    unlink("$base_out_filename"."_uniq");
   }
   unless ( -s "$base_out_filename"."_mult.bam" || $just_write_out_commands) {
-   &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename"."_mult | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_mult.bam -");
+   &process_cmd("$samtools_exec view -h -u -T $genome $base_out_filename"."_mult | $samtools_exec sort -T $tmpdir/tmp.$base_out_filename -@ $samtools_sort_CPUs -l 9 -m $memory -o $base_out_filename"."_mult.bam -");
    &process_cmd("$samtools_exec index $base_out_filename"."_mult.bam");
     &process_cmd("$mosdepth_exec --threads 4 $base_out_filename.mult.coverage $base_out_filename"."_mult.bam");
-    &process_cmd("zcat  $base_out_filename.mult.coverage.per-base.bed.gz | sort -k1,1 -k2,2n --parallel=4 -S 4G -o $base_out_filename.mult.coverage.per-base.bg"); 
+    &process_cmd("zcat  $base_out_filename.mult.coverage.per-base.bed.gz | sort -T $tmpdir -k1,1 -k2,2n --parallel=4 -S 4G -o $base_out_filename.mult.coverage.per-base.bg"); 
     &process_cmd("$bedGraphToBigWig_exec $base_out_filename.mult.coverage.per-base.bg $genome.fai $base_out_filename".".mult.coverage.bw");
    print LOG "\n$base_out_filename"."_mult.bam:\n";
    &process_cmd(
@@ -635,7 +637,7 @@ sub align_paired_files() {
    unlink("$base_out_filename"."_mult");
   }
   if (!$just_write_out_commands && (-s $out_halfmapped && !-s "$out_halfmapped.bam")){
-    &process_cmd("$samtools_exec view -h -u -T $genome $out_halfmapped | $samtools_exec sort -@ $samtools_sort_CPUs -l 9 -m $memory -o $out_halfmapped.bam -");
+    &process_cmd("$samtools_exec view -h -u -T $genome $out_halfmapped | $samtools_exec sort -T $tmpdir/tmp.$base_out_filename -@ $samtools_sort_CPUs -l 9 -m $memory -o $out_halfmapped.bam -");
     &process_cmd("$samtools_exec index $out_halfmapped.bam");
     unlink($out_halfmapped) if -s "$out_halfmapped.bam";
   }
