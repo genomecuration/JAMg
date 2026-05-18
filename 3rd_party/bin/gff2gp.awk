@@ -1,0 +1,1 @@
+../geneid/bin/gff2gp.awk

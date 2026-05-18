@@ -1,0 +1,1 @@
+../geneid/bin/getgenes.pl
