@@ -1,0 +1,23 @@
+TRF (Tandem Repeats Finder) License Acceptance Record
+======================================================
+
+TRF version: 4.09.1 (the bioconda pin is `trf>=4.09.1` in pixi.toml /
+             containers/environment.yml; 4.10.0rc2 is a pre-release and
+             sorts below 4.10 in PEP 440 semantics, so the pin uses the
+             last stable release 4.09.1)
+
+License URL: http://tandem.bu.edu/trf/trf.html
+
+TRF is free for academic and non-profit use. Commercial users must obtain
+a separate license from the authors at Boston University.
+
+By including TRF in the JAMg SIF image and running the JAMg pipeline, you
+confirm that your use of TRF complies with the terms at the URL above.
+
+This file documents that acceptance for build-time auditing purposes. It is
+referenced by the RepeatMasker non-interactive configure step in
+containers/post-install.sh, which passes the TRF binary path to
+RepeatMasker/configure -trf_prgm.
+
+If you redistribute the JAMg SIF, you are responsible for ensuring that
+downstream users are aware of and comply with the TRF license terms.

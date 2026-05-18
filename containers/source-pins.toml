@@ -1,0 +1,18 @@
+# containers/source-pins.toml
+# Per-source commit pins for tools compiled from source inside the SIF.
+# These commits were verified 2026-05-18 by the Explore agent.
+# Primary: nathanweeks/exonerate; fallback: adamewing/exonerate (review-#2 I17).
+
+[exonerate]
+repo          = "https://github.com/nathanweeks/exonerate.git"
+commit        = "22beeb02"
+fallback_repo = "https://github.com/adamewing/exonerate.git"
+fallback_commit = "09b5f81c"
+
+[cdbfasta]
+repo   = "https://github.com/gpertea/cdbfasta.git"
+commit = "da8f5ba5"
+
+[parafly]
+repo   = "https://github.com/ParaFly/ParaFly.git"
+commit = "44487e0f"

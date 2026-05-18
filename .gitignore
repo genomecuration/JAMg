@@ -49,3 +49,11 @@ test_suite/dmel-X-r5.53.repeat.soft.bz2
 tmp
 docs/plans
 CLAUDE.md
+
+# v2 build artefacts (Phase 1 onwards)
+.pixi/
+containers/jamg.sif
+containers/jamg-base.sif
+containers/build.log
+containers/build-base.log
+.snakemake/

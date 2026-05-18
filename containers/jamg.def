@@ -1,0 +1,70 @@
+Bootstrap: localimage
+From: jamg-base.sif
+
+# JAMg v2 main image -- layered on top of containers/jamg-base.sif (built from
+# containers/jamg-base.def). The base SIF must exist before this one is built;
+# Makefile's `containers/jamg.sif:` target lists `containers/jamg-base.sif` as
+# a prerequisite to enforce this. `Bootstrap: localimage / From: jamg-base.sif`
+# resolves the path relative to the apptainer build CWD, which the Makefile
+# sets to `containers/` via `cd containers && apptainer build ...`.
+
+%files
+    environment.yml /opt/environment.yml
+    post-install.sh /opt/post-install.sh
+    ../bin /opt/jamg/bin
+    ../PerlLib /opt/jamg/PerlLib
+
+%post
+    set -euxo pipefail
+
+    # %environment from the base SIF is NOT propagated into this %post
+    # (apptainer build-time isolation). Re-export the build-time vars here.
+    # (Reviewer C1.)
+    export MAMBA_ROOT_PREFIX=/opt/conda
+
+    # micromamba install -n base (create-or-update) is safer than env update
+    # against a fresh /opt/conda where the `base` env may not yet exist.
+    # (Reviewer I2.)
+    /usr/local/bin/micromamba install -n base -y -f /opt/environment.yml
+
+    # post-install.sh runs git clone + autoreconf + ./configure + make against
+    # the in-tree exonerate / cdbfasta / ParaFly source trees. Those tools live
+    # in the conda env at /opt/conda/bin (git, autoconf, automake, libtool,
+    # make, gcc_linux-64). Putting /opt/conda/bin on PATH alone is insufficient
+    # because gcc_linux-64 installs `x86_64-conda-linux-gnu-gcc` rather than
+    # plain `gcc`; the conda activate.d hooks set CC, CXX, AR, RANLIB. We
+    # therefore activate the base env so configure scripts find a working C
+    # toolchain. (Reviewers C2 + C3.)
+    export PATH=/opt/conda/bin:$PATH
+    eval "$(/usr/local/bin/micromamba shell hook -s bash)"
+    micromamba activate base
+
+    chmod +x /opt/post-install.sh
+    bash /opt/post-install.sh
+
+    # `clean` AFTER post-install so activate.d scripts survive the toolchain
+    # use above (reviewer I4). `-y` is redundant in %post (no prompts) but
+    # harmless (reviewer N2).
+    /usr/local/bin/micromamba clean -ay
+
+    echo "export PERL5LIB=/opt/jamg/PerlLib" >> /etc/profile.d/jamg.sh
+    echo "export PATH=/opt/jamg/bin:\$PATH"   >> /etc/profile.d/jamg.sh
+
+%environment
+    # Matches Dockerfile PATH ordering: /opt/jamg/bin before /opt/conda/bin.
+    # (Reviewer I3.)
+    export MAMBA_ROOT_PREFIX=/opt/conda
+    export PERL5LIB=/opt/jamg/PerlLib
+    export PATH=/opt/jamg/bin:/opt/conda/bin:$PATH
+    export LC_ALL=C.UTF-8
+
+# %runscript intentionally OMITTED in Phase 1.
+# Phase 2 lands bin/jamg (the Click CLI). When that file exists, the
+# %runscript should be:
+#     %runscript
+#         exec /opt/jamg/bin/jamg "$@"
+# In Phase 1 the SIF is invoked via `apptainer exec containers/jamg.sif <cmd>`
+# (per-tool direct invocation, e.g. for tests/container/test_tools_present.sh).
+# Code-review finding B1 caught this forward-decl: %runscript without bin/jamg
+# would fail `apptainer run jamg.sif` immediately, and Phase 1's test gate
+# does not exercise the runscript path.

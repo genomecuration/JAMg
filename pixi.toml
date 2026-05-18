@@ -1,0 +1,136 @@
+[workspace]
+name             = "jamg"
+version          = "2.0.0a1"
+description      = "JAMg v2 - containerised eukaryotic genome annotation"
+authors          = ["Alexie Papanicolaou"]
+channels         = ["conda-forge", "bioconda"]
+platforms        = ["linux-64"]   # ARM/aarch64 tracked separately
+
+[tasks]
+lint        = { depends-on = ["lint-py", "lint-perl", "lint-shell", "lint-snakemake"] }
+# Phase-aware lint-py: lint only what exists today. src/ + tests/jamg/ +
+# tests/scripts/ are Phase 2+ deliverables; check them ONLY when present
+# (code-review N4). Phase 1 has just bin/'s Python files.
+lint-py = """
+  paths=$(for p in src bin tests/jamg tests/scripts; do [ -e "$p" ] && echo "$p"; done | tr '\\n' ' ')
+  if [ -z "$paths" ]; then echo 'lint-py: no Python source paths exist yet'; exit 0; fi
+  ruff check $paths && pyright $paths
+"""
+# lint-perl uses the local-lib perlcritic installed by `pixi run setup-perl-tools`.
+# If perlcritic is not yet installed, the task falls back to a `perl -c` syntax
+# check across bin/ + PerlLib/ and prints how to install.
+lint-perl   = """
+  if [ -x .pixi/perl5/bin/perlcritic ]; then
+    PERL5LIB=.pixi/perl5/lib/perl5 .pixi/perl5/bin/perlcritic --severity 4 bin/ PerlLib/
+  else
+    echo 'perlcritic not installed; falling back to perl -c syntax check.'
+    echo 'Run: pixi run setup-perl-tools to install Perl::Critic into .pixi/perl5/.'
+    git ls-files 'bin/*.pl' 'PerlLib/**/*.pm' | xargs -n1 -r perl -Ibin -IPerlLib -c
+  fi
+"""
+# lint-shell aligns with the Makefile path (review B4) -- shellcheck every
+# tracked .sh anywhere in the repo. Skip with notice if none yet.
+lint-shell = """
+  files=$(git ls-files '*.sh' 2>/dev/null)
+  if [ -z "$files" ]; then echo 'lint-shell: no tracked .sh files'; exit 0; fi
+  shellcheck $files
+"""
+# lint-snakemake: workflow/ is a Phase 2 deliverable; skip with notice if the
+# Snakefile is not yet present (review B3). When present, --configfile is
+# required because common.smk runs validate(config, schema) at parse time
+# (plan review-#4 C-4-2).
+lint-snakemake = """
+  if [ ! -f workflow/Snakefile ]; then
+    echo 'lint-snakemake: workflow/Snakefile not yet present (Phase 2 deliverable)'
+    exit 0
+  fi
+  snakemake --snakefile workflow/Snakefile --configfile workflow/config/config.example.yaml --lint
+"""
+# Phase-aware test runner: pytest dirs are Phase 2+; .t files are Phase 4+.
+# Skip with notice for missing paths so `pixi run test` stays green between
+# phase landings (mirrors Makefile `test` target -- review B2).
+test = """
+  for p in tests/jamg tests/workflow tests/scripts; do
+    if [ -d "$p" ]; then pytest "$p" || exit $?; else echo "SKIP: $p (forward-decl)"; fi
+  done
+  for g in tests/golden/*.t tests/scripts/*.t; do
+    [ -f "$g" ] && prove "$g" || true
+  done
+"""
+sif         = "make sif"           # delegates to Makefile
+
+# One-shot bootstrap for Perl::Critic. bioconda's `perl-app-cpanminus` pins to
+# perl 5.26, which conflicts with our `perl>=5.32`; using the upstream fatpack
+# cpanm avoids the conflict and isolates installed CPAN dists under .pixi/perl5/
+# so they're wiped by `make clean` (which removes .pixi).
+setup-perl-tools = """
+  set -euo pipefail
+  mkdir -p .pixi
+  if [ ! -x .pixi/cpanm ]; then
+    curl -fsSL https://cpanmin.us > .pixi/cpanm
+    chmod +x .pixi/cpanm
+  fi
+  .pixi/cpanm --notest --local-lib .pixi/perl5 Perl::Critic
+"""
+
+[dependencies]
+python      = ">=3.12"
+click       = ">=8.1"
+pyyaml      = ">=6"
+jsonschema  = ">=4"
+pytest      = ">=8"
+ruff        = ">=0.5"
+pyright     = ">=1.1.380"
+shellcheck  = ">=0.10"
+snakemake   = ">=9.0,<10.0"
+snakemake-executor-plugin-slurm = "*"
+perl        = ">=5.32"
+perl-test-simple = "*"           # provides Test::More
+perl-test-harness = "*"
+# perlcritic: NOT a conda package. Installed via `pixi run setup-perl-tools` into .pixi/perl5/.
+# `curl` is needed to bootstrap cpanm.
+curl        = "*"
+
+[feature.sif.dependencies]
+# The full bioconda tool stack that goes into the SIF -- NOT installed on the host.
+augustus       = "==3.5.0"
+evidencemodeler = "==2.1.0"
+pasa           = "==2.5.3"
+transdecoder   = ">=6.0.0"
+repeatmasker   = ">=4.2.3"
+repeatmodeler  = ">=2.0.6"
+trf            = ">=4.09.1"   # bioconda has 4.09.1 stable + 4.10.0rc2 (pre-release);
+                              # rc2 sorts below 4.10 in semver, so >=4.10 was unsatisfiable.
+                              # Stable 4.09.1 is the safe pick for canonical OGS output.
+trinity        = ">=2.15.0"
+minimap2       = ">=2.28"
+gmap           = "*"
+star           = ">=2.7.11a"  # STAR uses letter-suffixed releases (2.7.11a/b);
+                              # PEP 440 sorts 2.7.11b < 2.7.11.0, so >=2.7.11 was unsatisfiable.
+blast          = ">=2.16"
+samtools       = ">=1.21"
+bcftools       = ">=1.21"
+bedtools       = "==2.31.1"
+htslib         = ">=1.21"
+gffread        = ">=0.12.9"
+# Snakemake also goes into the SIF so `apptainer exec jamg.sif jamg run ...` works on
+# hosts that don't have pixi/snakemake. (test_tools_present.sh checks for `snakemake`.)
+snakemake      = ">=9.0,<10.0"
+snakemake-executor-plugin-slurm = "*"
+# build tooling for in-tree compiles (exonerate, cdbtools, parafly)
+gcc_linux-64   = "*"
+gxx_linux-64   = "*"
+make           = "*"
+autoconf       = "*"
+automake       = "*"
+libtool        = "*"
+pkg-config     = "*"
+git            = "*"
+
+[environments]
+# Default environment is implicit (uses [dependencies] only).
+# `sif` env is the bioconda tool stack that gets rendered to containers/environment.yml
+# and shipped into the SIF. `no-default-feature = true` excludes the host-dev
+# dependencies (pyright, ruff, pytest, perl-test-*, etc.) so the rendered
+# env.yml is the minimal bioinformatics stack -- the SIF stays lean.
+sif = { features = ["sif"], no-default-feature = true }
