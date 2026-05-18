@@ -7,6 +7,7 @@ include: "rules/tgg.smk"
 include: "rules/pasa.smk"
 include: "rules/proteins.smk"
 include: "rules/genemark.smk"
+include: "rules/golden.smk"
 
 
 rule all:
