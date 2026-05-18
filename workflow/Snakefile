@@ -2,6 +2,7 @@
 # or by a direct `snakemake --configfile ...` invocation. No hardcoded default.
 include: "rules/common.smk"
 include: "rules/repeats.smk"
+include: "rules/rnaseq.smk"
 
 
 rule all:
