@@ -6,6 +6,7 @@ include: "rules/rnaseq.smk"
 include: "rules/tgg.smk"
 include: "rules/pasa.smk"
 include: "rules/proteins.smk"
+include: "rules/genemark.smk"
 
 
 rule all:
