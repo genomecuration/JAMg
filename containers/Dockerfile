@@ -7,7 +7,11 @@
 
 # Base layer (mirrors containers/jamg-base.def): debian-slim + apt bootstrap
 # tools + statically linked micromamba.
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
+# Was debian:bookworm-slim; bumped to trixie (glibc 2.40) so the SIF satisfies
+# apptainer's libfakeroot.so GLIBC_2.38 requirement -- bookworm's glibc 2.36
+# was too old. Same constraint applies to Docker builds running under apptainer
+# inspect or rootless docker with apparmor.
 
 # %post equivalent (base layer)
 RUN apt-get update \

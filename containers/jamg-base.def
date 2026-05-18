@@ -1,5 +1,9 @@
 Bootstrap: docker
-From: debian:bookworm-slim
+From: debian:trixie-slim
+# Was debian:bookworm-slim (glibc 2.36). Apptainer's libfakeroot.so is
+# bind-mounted from the host (Ubuntu 24.04, glibc 2.39) and requires
+# GLIBC_2.38 inside the SIF -- bookworm-slim's older glibc failed the link.
+# trixie-slim has glibc 2.40 which satisfies the requirement.
 
 # JAMg v2 BASE image -- thin layer holding apt-installed bootstrap tooling
 # (ca-certificates, curl, bzip2, tar, python3) plus a statically-linked
