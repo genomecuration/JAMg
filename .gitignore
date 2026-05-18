@@ -65,3 +65,10 @@ containers/build-pasa.log
 # session-internal scratchpad
 HANDOVER.md
 .claude/
+
+# fixture build cache (large; .sha256 is committed for reproducibility)
+tools/cache/*
+!tools/cache/.sha256
+test_suite/.work/
+test_suite/output/
+__pycache__/
