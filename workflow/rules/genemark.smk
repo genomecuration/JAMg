@@ -112,5 +112,8 @@ rule genemark:
         "[ -s genemark.gtf ] || "
         "    {{ echo 'FATAL: gmes_petap.pl did not produce genemark.gtf' >&2; exit 1; }} && "
         # Convert GTF to canonical GFF3 with source=GeneMarkHMM.
+        # Write the basename (not {output.gff3}) because the shell has
+        # already `cd`'d into {params.gm_dir_abs}, which IS the directory
+        # containing {output.gff3}.
         "gtf_to_gff3_format.pl genemark.gtf {params.softmasked_abs} GeneMarkHMM "
-        "    | grep -v '^# ' > {output.gff3}"
+        "    | grep -v '^# ' > genemark.gff3"
