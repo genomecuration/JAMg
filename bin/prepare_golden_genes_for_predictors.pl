@@ -220,9 +220,7 @@ pod2usage $! unless &GetOptions(
 pod2usage if $show_help;
 
 my $sort_buffer = '5G';  # will run up to two sorts in parallel
-my $tmpdir = $ENV{'TMP'};
-$tmpdir = $ENV{'TMPDIR'} if !$tmpdir;
-$tmpdir = '/tmp' if !$tmpdir;
+my $tmpdir = $ENV{'TMP'} // $ENV{'TMPDIR'} // die "TMP or TMPDIR env var must be set; /tmp is forbidden on this host";
 my $sort_exec = &check_sort_version;
 
 my ( $makeblastdb_exec, $tblastn_exec, $tblastx_exec ) =
@@ -2029,15 +2027,15 @@ do
         do
 
 echo "             gawk '{if (NR==27)  {print 1-$IoWF+0.2, 1-$IoWF-0.1, 1-$IoWF-0.1, 1-$IoWF+0.2;} else if (NR==30)  {print $IoWF, $IoWF, $IoWF, $IoWF;} else if (NR==36) {print $IeWF, $IeWF, $IeWF, $IeWF;} else  
-print}' $PARAM > /tmp/tmp.$$.$IoWF.$IeWF   "
+print}' $PARAM > ${TMP}/tmp.$$.$IoWF.$IeWF   "
 
-echo "           $GENEID/geneid -GP /tmp/tmp.$$.$IoWF.$IeWF $SEQFILE |egrep -v 'exon|^#' |sort +0 -1 +3n | gawk '{if (NR==1) ant=\$1; if (\$1!=ant) {print \"#\$\";ant=\$1}; print }' > /tmp/Predictions.$$.$IoWF.$I
-eWF.gff"        
+echo "           $GENEID/geneid -GP ${TMP}/tmp.$$.$IoWF.$IeWF $SEQFILE |egrep -v 'exon|^#' |sort +0 -1 +3n | gawk '{if (NR==1) ant=\$1; if (\$1!=ant) {print \"#\$\";ant=\$1}; print }' > ${TMP}/Predictions.$$.$IoWF.$I
+eWF.gff"
 
-echo "       $EVAL/evaluation -sta /tmp/Predictions.$$.$IoWF.$IeWF.gff $CDSFILE | tail -2 | head -1 |  gawk '{printf \"%6.2f    %6.2f   %6.2f   %6.2f   %6.2f   %6.2f   %6.2f   %6.2f   %6.2f   %6.2f   %6.2f   %6.2
+echo "       $EVAL/evaluation -sta ${TMP}/Predictions.$$.$IoWF.$IeWF.gff $CDSFILE | tail -2 | head -1 |  gawk '{printf \"%6.2f    %6.2f   %6.2f   %6.2f   %6.2f   %6.2f   %6.2f   %6.2f   %6.2f   %6.2f   %6.2f   %6.2
 f\\n\", $IoWF, $IeWF, \$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$12, \$13}' > result_$IoWF.$IeWF.txt "
 
-echo "              rm /tmp/Predictions.$$.$IoWF.$IeWF.gff "
+echo "              rm ${TMP}/Predictions.$$.$IoWF.$IeWF.gff "
 
           IeWF=$(echo $IeWF + $deWF|bc)
           ef=`gawk "BEGIN{print ($IeWF <= $FeWF) ? 1 : 0}"`
@@ -2047,7 +2045,7 @@ echo "              rm /tmp/Predictions.$$.$IoWF.$IeWF.gff "
     of=`gawk "BEGIN{print ($IoWF <= $FoWF) ? 1 : 0}"`
   done
 exit
-rm /tmp/tmp.$$
+rm ${TMP}/tmp.$$
 { echo "###"; echo "### Execution time for [$0] : $SECONDS secs";
   echo "$L$L$L$L";
   echo ""; } 1>&2;

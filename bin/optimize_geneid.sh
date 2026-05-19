@@ -26,7 +26,7 @@ if [[ ! $PARAM || ! $SEQFILE || ! $CDSFILE || ! -f $PARAM || ! -f $SEQFILE || ! 
 	echo No input! Give: parameter_file genome_fasta gff_annotations prefix
 	exit 255
 fi
-mkdir /tmp/$USER 2>/dev/null
+mkdir -p "${TMP:?TMP env var must be set; /tmp is forbidden}/$USER" 2>/dev/null
 
 echo "
 SN  = sensitivity nucleotide level
@@ -54,7 +54,7 @@ do
         while [ $ef -ne 0 ]
         do
 
-echo "gawk '{if (NR==27)  {print 1-$IoWF+0.2, 1-$IoWF-0.1, 1-$IoWF-0.1, 1-$IoWF+0.2;} else if (NR==30)  {print $IoWF, $IoWF, $IoWF, $IoWF;} else if (NR==36) {print $IeWF, $IeWF, $IeWF, $IeWF;} else  print}' $PARAM > /tmp/$USER/tmp.$$.$IoWF.$IeWF   ;   $JAMG_PATH/3rd_party/geneid/bin/geneid -GP /tmp/$USER/tmp.$$.$IoWF.$IeWF $SEQFILE |egrep -v 'exon|^#' | gawk '{if (NR==1) ant=\$1; if (\$1!=ant) {print \"#\$\";ant=\$1}; print }' > /tmp/$USER/Predictions.$$.$IoWF.$IeWF.gff; $JAMG_PATH/bin/purge.geneid.real.gff.pl $CDSFILE /tmp/$USER/Predictions.$$.$IoWF.$IeWF.gff  ;  $JAMG_PATH/3rd_party/geneid/bin/evaluation -sta /tmp/$USER/Predictions.$$.$IoWF.$IeWF.gff /tmp/$USER/Predictions.$$.$IoWF.$IeWF.gff.valid | tail -2 | head -1 |  gawk '{printf \"%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f\\n\", $IoWF, $IeWF, \$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$12, \$13}' > "$PREFIX"_result_$IoWF.$IeWF.txt ;   rm -f  /tmp/$USER/Predictions.$$.$IoWF.$IeWF.gff* "
+echo "gawk '{if (NR==27)  {print 1-$IoWF+0.2, 1-$IoWF-0.1, 1-$IoWF-0.1, 1-$IoWF+0.2;} else if (NR==30)  {print $IoWF, $IoWF, $IoWF, $IoWF;} else if (NR==36) {print $IeWF, $IeWF, $IeWF, $IeWF;} else  print}' $PARAM > ${TMP}/$USER/tmp.$$.$IoWF.$IeWF   ;   $JAMG_PATH/3rd_party/geneid/bin/geneid -GP ${TMP}/$USER/tmp.$$.$IoWF.$IeWF $SEQFILE |egrep -v 'exon|^#' | gawk '{if (NR==1) ant=\$1; if (\$1!=ant) {print \"#\$\";ant=\$1}; print }' > ${TMP}/$USER/Predictions.$$.$IoWF.$IeWF.gff; $JAMG_PATH/bin/purge.geneid.real.gff.pl $CDSFILE ${TMP}/$USER/Predictions.$$.$IoWF.$IeWF.gff  ;  $JAMG_PATH/3rd_party/geneid/bin/evaluation -sta ${TMP}/$USER/Predictions.$$.$IoWF.$IeWF.gff ${TMP}/$USER/Predictions.$$.$IoWF.$IeWF.gff.valid | tail -2 | head -1 |  gawk '{printf \"%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f	%6.2f\\n\", $IoWF, $IeWF, \$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$12, \$13}' > "$PREFIX"_result_$IoWF.$IeWF.txt ;   rm -f  ${TMP}/$USER/Predictions.$$.$IoWF.$IeWF.gff* "
 
           IeWF=$(echo $IeWF + $deWF|bc)
           ef=`gawk "BEGIN{print ($IeWF <= $FeWF) ? 1 : 0}"`
@@ -64,7 +64,7 @@ echo "gawk '{if (NR==27)  {print 1-$IoWF+0.2, 1-$IoWF-0.1, 1-$IoWF-0.1, 1-$IoWF+
     of=`gawk "BEGIN{print ($IoWF <= $FoWF) ? 1 : 0}"`
   done
 exit
-rm /tmp/$USER/tmp.$$
+rm ${TMP}/$USER/tmp.$$
 { echo "###"; echo "### Execution time for [$0] : $SECONDS secs";
   echo "$L$L$L$L";
   echo ""; } 1>&2;

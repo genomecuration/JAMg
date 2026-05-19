@@ -23,7 +23,9 @@ use lib ("$RealBin/../PerlLib");
 $ENV{PATH} .= ":$RealBin:$RealBin/../3rd_party/bin/";
 
 my ($split_fasta,%ref_data,@hintfiles);
-my ($tmpdir,$cpus,$sort_buffer) = ("/tmp",6,'4G');
+my ($tmpdir,$cpus,$sort_buffer) = (
+    $ENV{'TMP'} // $ENV{'TMPDIR'} // die "TMP or TMPDIR env var must be set; /tmp is forbidden",
+    6, '4G');
 my ($file2split,$splitfiledir);
 my $size_mbp=0.5;
 my $overlap_bp = 1e4;

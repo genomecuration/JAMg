@@ -9,9 +9,7 @@ use lib ("$RealBin/../PerlLib");
 
 my $cpus = 4;
 my $sort_buffer = '1G';
-my $tmpdir = $ENV{'TMP'};
-$tmpdir = $ENV{'TMPDIR'} if !$tmpdir;
-$tmpdir = '/tmp' if !$tmpdir;
+my $tmpdir = $ENV{'TMP'} // $ENV{'TMPDIR'} // die "TMP or TMPDIR env var must be set; /tmp is forbidden on this host";
 
 my $repeat_gff_file = shift;
 die "Give Repeat GFF file\n" unless $repeat_gff_file && -s $repeat_gff_file;

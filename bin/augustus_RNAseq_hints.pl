@@ -73,9 +73,7 @@ my ( @bamfiles, $genome, $help, $master_bamfile,$intron_db_only, $do_it_faster, 
 
 my $cpus = 4;
 my $sort_buffer = '5G';
-my $tmpdir = $ENV{'TMP'};
-$tmpdir = $ENV{'TMPDIR'} if !$tmpdir;
-$tmpdir = '/tmp' if !$tmpdir;
+my $tmpdir = $ENV{'TMP'} // $ENV{'TMPDIR'} // die "TMP or TMPDIR env var must be set; /tmp is forbidden on this host";
 my $window           = 50;
 my $min_coverage        = 20;
 my $min_jr_score        = 34;
