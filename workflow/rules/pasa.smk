@@ -132,10 +132,19 @@ rule pasa_compare_transdecoder:
         tdn            = rules.pasa_setup_db.output.tdn_accs,
         genome         = config["genome"],
     output:
-        pasa_assemblies = f"{_PASA_DIR}/pasa_assemblies.gff3",
-        transdecoder    = f"{_PASA_DIR}/pasa.transdecoder.genome.gff3",
-        polya           = f"{_PASA_DIR}/polyAsites.fasta",
-        pass1           = f"{_PASA_DIR}/pasa.sqlite.pass1.bz2",
+        pasa_assemblies   = f"{_PASA_DIR}/pasa_assemblies.gff3",
+        transdecoder      = f"{_PASA_DIR}/pasa.transdecoder.genome.gff3",
+        # 4 additional pasa_asmbls_to_training_set.dbi products. Golden
+        # genes (§3e) needs all 5 PASA inputs: --pasa_gff, --pasa_genome,
+        # --pasa_assembly, --pasa_peptides, --pasa_cds (per the script's
+        # check_for_options in bin/prepare_golden_genes_for_predictors.pl
+        # line 3415-3426; missing any of them triggers pod2usage).
+        transdecoder_gff  = f"{_PASA_DIR}/pasa.transdecoder.gff3",
+        transdecoder_pep  = f"{_PASA_DIR}/pasa.transdecoder.pep",
+        transdecoder_cds  = f"{_PASA_DIR}/pasa.transdecoder.cds",
+        assemblies_fasta  = f"{_PASA_DIR}/pasa.assemblies.fasta",
+        polya             = f"{_PASA_DIR}/polyAsites.fasta",
+        pass1             = f"{_PASA_DIR}/pasa.sqlite.pass1.bz2",
     params:
         genome_abs    = _GENOME_ABS,
         max_intron    = _PASA_MAX_INTRON,
@@ -186,6 +195,32 @@ rule pasa_compare_transdecoder:
         "done && "
         "test -s pasa.transdecoder.genome.gff3 || "
         "    {{ echo 'FATAL: pasa_asmbls_to_training_set.dbi produced no *.assemblies.fasta.transdecoder.genome.gff3' >&2; exit 1; }} && "
+        # Rename the four additional pasa_asmbls_to_training_set.dbi
+        # products into stable names (snakemake outputs declared above).
+        # The .gff3, .pep, .cds are the transcript-coord TransDecoder
+        # products; .assemblies.fasta is PASA's assembled transcripts.
+        "for f in *.assemblies.fasta.transdecoder.gff3; do "
+        "    if [ -e \"$f\" ]; then cp \"$f\" pasa.transdecoder.gff3; break; fi; "
+        "done && "
+        "test -s pasa.transdecoder.gff3 || "
+        "    {{ echo 'FATAL: missing *.assemblies.fasta.transdecoder.gff3' >&2; exit 1; }} && "
+        "for f in *.assemblies.fasta.transdecoder.pep; do "
+        "    if [ -e \"$f\" ]; then cp \"$f\" pasa.transdecoder.pep; break; fi; "
+        "done && "
+        "test -s pasa.transdecoder.pep || "
+        "    {{ echo 'FATAL: missing *.assemblies.fasta.transdecoder.pep' >&2; exit 1; }} && "
+        "for f in *.assemblies.fasta.transdecoder.cds; do "
+        "    if [ -e \"$f\" ]; then cp \"$f\" pasa.transdecoder.cds; break; fi; "
+        "done && "
+        "test -s pasa.transdecoder.cds || "
+        "    {{ echo 'FATAL: missing *.assemblies.fasta.transdecoder.cds' >&2; exit 1; }} && "
+        "for f in *.assemblies.fasta; do "
+        # Match only the bare assemblies fasta, not *.assemblies.fasta.<ext>
+        "    case \"$f\" in *.transdecoder*|*.fai|*.gmap|*.mm2) continue;; esac; "
+        "    if [ -e \"$f\" ]; then cp \"$f\" pasa.assemblies.fasta; break; fi; "
+        "done && "
+        "test -s pasa.assemblies.fasta || "
+        "    {{ echo 'FATAL: missing PASA *.assemblies.fasta' >&2; exit 1; }} && "
         "for f in *.pasa_assemblies.gff3; do "
         "    if [ -e \"$f\" ]; then cp \"$f\" pasa_assemblies.gff3; break; fi; "
         "done && "
