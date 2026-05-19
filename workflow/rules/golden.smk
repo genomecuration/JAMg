@@ -1,7 +1,6 @@
 # Golden gene set: high-confidence PASA-derived gene models used to train
-# the predictors (Augustus) and to seed EVM. Runs the v1
-# bin/prepare_golden_genes_for_predictors.pl until Phase 4 lands the
-# rewritten bin/prepare_golden_genes.pl + PerlLib/Golden/*.pm modules.
+# the predictors (Augustus) and to seed EVM. Wraps
+# bin/prepare_golden_genes.pl + PerlLib/Golden/{Alignment,Filter,Augustus}.pm.
 
 import os as _os
 
@@ -11,10 +10,9 @@ _INTRON            = config["max_intron"]
 
 
 rule golden_genes:
-    # bin/prepare_golden_genes_for_predictors.pl::check_for_options (line
-    # 3415-3426) requires ALL FIVE PASA inputs to be supplied together
-    # AND non-empty; passing only --pasa_genome + --pasa_assembly (the
-    # initial naive choice) triggers pod2usage and exit 2.
+    # bin/prepare_golden_genes.pl::check_for_options requires ALL FIVE PASA
+    # inputs together AND non-empty; passing only --pasa_genome +
+    # --pasa_assembly triggers pod2usage and exit 2.
     input:
         softmasked       = rules.repeats_merge.output.soft,
         pasa_gff         = rules.pasa_compare_transdecoder.output.transdecoder_gff,
@@ -39,20 +37,16 @@ rule golden_genes:
     resources:
         mem_mb = 16000,
     shell:
-        # The v1 script defaults --gmap_dir to $RealBin/../databases/gmap/
-        # which resolves to /opt/jamg/databases/gmap/ inside the SIF (read-
-        # only). Point it at a writable subdirectory of the rule's workdir
-        # so gmap_build can write its database where snakemake has bind-
-        # mounted write access.
-        #
-        # The script's check_augustus derives augustus_dir =
-        # dirname(dirname(augustus_exec)). With augustus at /opt/jamg/bin/
-        # that gives /opt/jamg/, then it looks for /opt/jamg/scripts/...
-        # which doesn't exist. Pass --augustus explicitly pointing at the
-        # actual Augustus install location (jamg.sif puts it under
-        # /opt/jamg/share/Augustus/ with bin/ + scripts/ subdirs).
-        "mkdir -p {params.golden_dir_abs}/gmap && cd {params.golden_dir_abs} && "
-        "prepare_golden_genes_for_predictors.pl "
+        # --gmap_dir points at a writable subdirectory of the rule's workdir
+        # (the SIF's default /opt/jamg/databases/gmap/ is read-only). The
+        # driver's check_augustus derives augustus_dir =
+        # dirname(dirname(augustus_exec)) which gives /opt/jamg/, where the
+        # auxiliary scripts/ subtree does not exist. Pass --augustus
+        # explicitly pointing at the actual install location
+        # (jamg.sif: /opt/jamg/share/Augustus/{bin,scripts}/).
+        "mkdir -p {params.golden_dir_abs}/gmap && "
+        "prepare_golden_genes.pl "
+        "    --outdir {params.golden_dir_abs} "
         "    --genome {params.genome_abs} "
         "    --softmasked {params.softmasked_abs} "
         "    --pasa_gff {params.pasa_gff_abs} "

@@ -1,0 +1,3 @@
+source: ~/bin/trim_gff3.py
+staged: 2026-05-19
+rationale: same-strand-overlap rescue of Augustus-only predictions; renamed to avoid name collision with the unrelated bin/trim_gff3.pl (ID-list filter).
