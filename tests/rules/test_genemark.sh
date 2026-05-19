@@ -26,7 +26,7 @@ done
 rm -rf "$OUT"
 
 apptainer exec --bind "$REPO":"$REPO" --bind "$HOME":"$HOME" "$SIF" \
-    "$REPO/bin/jamg" run --config "$CFG" --cores 4 --until genemark
+    "$REPO/bin/jamg" run --config "$CFG" --cores "${SLURM_CPUS_PER_TASK:-20}" --until genemark
 
 test -e "$OUT/.preflight.ok"     || { echo "preflight sentinel missing";          exit 1; }
 test -s "$OUT/genemark.gff3"     || { echo "genemark.gff3 missing/empty";         exit 1; }

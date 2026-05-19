@@ -136,7 +136,7 @@ if [[ ! -s "$SPROT_FA.pdb" ]]; then
 fi
 
 "${RUN[@]}" blastx -query test_suite/mini-genome.fasta -db "$SPROT_FA" \
-    -outfmt 6 -max_target_seqs 500 -num_threads 4 -evalue 1e-10 \
+    -outfmt 6 -max_target_seqs 500 -num_threads "${SLURM_CPUS_PER_TASK:-20}" -evalue 1e-10 \
     -out "$W/mini_blastx.tsv" 2>/dev/null
 
 cut -f2 "$W/mini_blastx.tsv" | sort -u > "$W/prot_ids.txt"

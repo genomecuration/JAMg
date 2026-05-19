@@ -26,7 +26,7 @@ rm -rf "$OUT"
 # nesting apptainer-in-apptainer is not supported, so inside-SIF invocation
 # does not work for this rule.
 cd "$REPO"
-pixi run "$REPO/bin/jamg" run --config "$CFG" --cores 4 --until tgg_trinity
+pixi run "$REPO/bin/jamg" run --config "$CFG" --cores "${SLURM_CPUS_PER_TASK:-20}" --until tgg_trinity
 
 test -s "$OUT/Trinity-GG.fasta" || { echo "Trinity-GG.fasta missing or empty"; exit 1; }
 # `; true` normalises grep's exit status so $() captures only the count line.

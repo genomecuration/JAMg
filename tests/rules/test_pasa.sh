@@ -21,7 +21,7 @@ done
 rm -rf "$OUT"
 
 cd "$REPO"
-pixi run "$REPO/bin/jamg" run --config "$CFG" --cores 4 --until pasa_hints
+pixi run "$REPO/bin/jamg" run --config "$CFG" --cores "${SLURM_CPUS_PER_TASK:-20}" --until pasa_hints
 
 test -s "$OUT/pasa_assemblies.gff3"                          || { echo "pasa_assemblies.gff3 missing/empty";  exit 1; }
 test -e "$OUT/pasa.transdecoder.genome.gff3"                 || { echo "transdecoder GFF missing";           exit 1; }

@@ -19,7 +19,7 @@ fi
 rm -rf "$OUT"
 
 apptainer exec --bind "$REPO":"$REPO" "$SIF" \
-    "$REPO/bin/jamg" run --config "$CFG" --cores 4 --until repeats_merge
+    "$REPO/bin/jamg" run --config "$CFG" --cores "${SLURM_CPUS_PER_TASK:-20}" --until repeats_merge
 
 test -s "$OUT/all_repeat_masks.gff3"                  || { echo "merged GFF missing";          exit 1; }
 test -s "$OUT/${GENOME_BASENAME}.softmasked"          || { echo "softmasked FASTA missing";    exit 1; }

@@ -17,7 +17,7 @@ fi
 rm -rf "$OUT"
 
 apptainer exec --bind "$REPO":"$REPO" "$SIF" \
-    "$REPO/bin/jamg" run --config "$CFG" --cores 4 --until proteins_hints
+    "$REPO/bin/jamg" run --config "$CFG" --cores "${SLURM_CPUS_PER_TASK:-20}" --until proteins_hints
 
 test -s "$OUT/swissprot.blastx.gff3"       || { echo "blastx GFF missing/empty";   exit 1; }
 test -e "$OUT/swissprot.blastx.gff3.hints" || { echo "augustus hints missing";     exit 1; }

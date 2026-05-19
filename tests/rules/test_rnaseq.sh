@@ -18,7 +18,7 @@ fi
 rm -rf "$OUT"
 
 apptainer exec --bind "$REPO":"$REPO" "$SIF" \
-    "$REPO/bin/jamg" run --config "$CFG" --cores 4 --until rnaseq_hints
+    "$REPO/bin/jamg" run --config "$CFG" --cores "${SLURM_CPUS_PER_TASK:-20}" --until rnaseq_hints
 
 test -s "$OUT/rnaseq.sorted.bam"     || { echo "sorted BAM missing";    exit 1; }
 test -e "$OUT/rnaseq.sorted.bam.bai" || { echo "BAM index missing";     exit 1; }
