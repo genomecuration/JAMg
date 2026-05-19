@@ -72,3 +72,18 @@ tools/cache/*
 test_suite/.work/
 test_suite/output/
 __pycache__/
+
+# Regeneratable mini-fixtures. The on-disk files are produced by
+# tools/build_fixtures.sh from the bundled sources (bzip2'd genome,
+# annotation tar, rnammer-SILVA library, UniProt SwissProt cache).
+# Only test_suite/mini-config.yaml stays tracked because it is the
+# hand-authored config the workflow reads at runtime.
+test_suite/mini-genome.fasta
+test_suite/mini-genome.fasta.fai
+test_suite/mini-rnaseq.bam
+test_suite/mini-rnaseq.bam.bai
+test_suite/mini-transcripts.fasta
+test_suite/mini-proteins.fasta
+test_suite/mini-proteins.fasta.*
+test_suite/mini-repeats-rna.fasta
+test_suite/mini-repeats-species.fasta

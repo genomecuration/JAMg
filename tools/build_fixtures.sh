@@ -149,8 +149,12 @@ if [[ ! -s test_suite/mini-proteins.fasta.pdb ]]; then
 fi
 
 # --- mini-repeats-rna.fasta (20 entries from rnammer-SILVA) ---------------
-bzcat databases/repeats/rnammer-SILVA.classified.nr95.renamed.fasta.bz2 \
-    | awk 'BEGIN{n=0} /^>/{n++; if(n>20) exit} {print}' > test_suite/mini-repeats-rna.fasta
+# Decompress into a temp file first so the awk 20-entry cutoff does not
+# SIGPIPE bzcat (set -o pipefail would propagate that as a script-fatal
+# error). Drop the temp afterwards.
+bzcat databases/repeats/rnammer-SILVA.classified.nr95.renamed.fasta.bz2 > "$W/rnammer.fa"
+awk 'BEGIN{n=0} /^>/{n++; if(n>20) exit} {print}' "$W/rnammer.fa" > test_suite/mini-repeats-rna.fasta
+rm -f "$W/rnammer.fa"
 
 # --- mini-repeats-species.fasta (20 sampled windows from mini-genome) -----
 python3 - <<'PY' > test_suite/mini-repeats-species.fasta
