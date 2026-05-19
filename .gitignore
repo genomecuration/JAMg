@@ -87,3 +87,9 @@ test_suite/mini-proteins.fasta
 test_suite/mini-proteins.fasta.*
 test_suite/mini-repeats-rna.fasta
 test_suite/mini-repeats-species.fasta
+
+# PASA auto-emits gmap/minimap2 indexes + cidx alongside the genome
+# the first time pasa_align runs. Regeneratable.
+test_suite/mini-genome.fasta.cidx
+test_suite/mini-genome.fasta.gmap/
+test_suite/mini-genome.fasta.mm2/
