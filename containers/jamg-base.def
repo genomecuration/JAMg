@@ -38,6 +38,12 @@ From: debian:trixie-slim
         `# bioconductor pulls in r-recommended are unused by JAMg.` \
         python3 python3-pip perl r-base-core \
         \
+        `# python3 packages for bin/jamg (Click CLI) when system-python is` \
+        `# used. /usr/bin precedes /opt/conda/bin on PATH (set by jamg.def's` \
+        `# %environment) so env python3 resolves here; conda still has its` \
+        `# own click/yaml via the bioconda env.` \
+        python3-click python3-yaml python3-jsonschema \
+        \
         `# system libraries (Augustus, PASA, TransDecoder, Trinity transitive` \
         `# deps -- linker picks debian versions, one source of truth)` \
         libboost-all-dev libopenblas-dev libsqlite3-dev libxml2-dev \
