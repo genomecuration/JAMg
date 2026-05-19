@@ -93,3 +93,7 @@ test_suite/mini-repeats-species.fasta
 test_suite/mini-genome.fasta.cidx
 test_suite/mini-genome.fasta.gmap/
 test_suite/mini-genome.fasta.mm2/
+
+# RepeatMasker writes a per-run famdb classification cache under the
+# repo root when its query lineage isn't found in the curated Dfam.
+.RepeatMaskerCache/
