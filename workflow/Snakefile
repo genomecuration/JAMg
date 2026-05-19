@@ -8,6 +8,7 @@ include: "rules/pasa.smk"
 include: "rules/proteins.smk"
 include: "rules/genemark.smk"
 include: "rules/golden.smk"
+include: "rules/augustus.smk"
 
 
 rule all:

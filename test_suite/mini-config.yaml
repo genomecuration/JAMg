@@ -1,7 +1,7 @@
 genome: test_suite/mini-genome.fasta
 outdir: test_suite/output
 threads: 4
-species: drosophila
+species: fly
 species_category: Diptera
 max_intron: 70000
 code: TEST
