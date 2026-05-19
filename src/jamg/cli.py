@@ -67,6 +67,19 @@ def collect_binds(config_dict: dict[str, Any]) -> list[str]:
     output_keys = [("outdir",)]
     binds: set[str] = {"/dev/shm", str(SIF.parent.resolve()), str(WORKFLOW.resolve())}
 
+    # Bind the scratch directories that tools read via $TMP / $TMPDIR. PASA's
+    # PASA_alignment_assembler.pm:218 reads $ENV{TMPDIR} and opens
+    # `$tmpdir/pasa.<token>.+.in` for write; if the directory is not bound,
+    # the open fails inside the container (overlay filesystem cannot
+    # create files under a non-existent parent path) with a misleading
+    # "Can't open file" error.
+    for env_var in ("TMP", "TMPDIR"):
+        val = os.environ.get(env_var)
+        if val:
+            p = Path(os.path.expanduser(val)).resolve()
+            if p.exists() and p.is_dir():
+                binds.add(str(p))
+
     def _walk(node: Any, path: tuple[str, ...]) -> Any:
         for k in path:
             if not isinstance(node, dict) or k not in node:

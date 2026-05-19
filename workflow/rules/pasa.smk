@@ -105,11 +105,13 @@ rule pasa_align:
     shell:
         "cd {params.pasa_dir_abs} && "
         "mkdir -p $(dirname {params.db_path}) && "
-        # If a prior align ran and we have a snapshot but /dev/shm was
-        # cleaned, restore the sqlite from the snapshot before invoking PASA.
-        "if [ ! -s {params.db_path} ] && [ -s pasa.sqlite.align.bz2 ]; then "
-        "    bunzip2 -c pasa.sqlite.align.bz2 > {params.db_path}; "
-        "fi && "
+        # PASA's -C (create) refuses to run against an existing populated
+        # sqlite ("table URL_templates already exists"). /dev/shm survives
+        # across snakemake re-runs on the same compute node, so a stale
+        # sqlite from a prior partial run can block this one. Always start
+        # fresh; snakemake's job-level cache on pasa.sqlite.align.bz2
+        # already prevents re-running this rule when its output is current.
+        "rm -f {params.db_path} && "
         "Launch_PASA_pipeline.pl -c alignAssembly.config -C "
         "  -g {params.genome_abs} "
         "  -T -t transcripts.fasta.clean -u transcripts.fasta "
@@ -146,9 +148,12 @@ rule pasa_compare_transdecoder:
     shell:
         "cd {params.pasa_dir_abs} && "
         "mkdir -p $(dirname {params.db_path}) && "
-        "if [ ! -s {params.db_path} ] && [ -s pasa.sqlite.align.bz2 ]; then "
-        "    bunzip2 -c pasa.sqlite.align.bz2 > {params.db_path}; "
-        "fi && "
+        # /dev/shm persists across runs on the same compute node, so a stale
+        # sqlite from a prior incomplete run could be present. Restore the
+        # in-repo snapshot unconditionally (overwriting any stale state) so
+        # -R resumes against the correct state.
+        "rm -f {params.db_path} && "
+        "bunzip2 -c pasa.sqlite.align.bz2 > {params.db_path} && "
         "Launch_PASA_pipeline.pl -c alignAssembly.config -R "
         "  -g {params.genome_abs} "
         "  --MAX_INTRON_LENGTH {params.max_intron} "
@@ -156,92 +161,56 @@ rule pasa_compare_transdecoder:
         "  --TRANSDECODER --CPU {threads} "
         "  -T -t transcripts.fasta.clean -u transcripts.fasta "
         "  --TDN tdn.accs && "
+        # PASA's --TRANSDECODER flag runs TransDecoder on the input
+        # transcripts (produces transcripts.fasta.clean.transdecoder.gff3)
+        # but does NOT call the script that converts the assembled-transcript
+        # ORFs into genome coordinates. That requires
+        # pasa_asmbls_to_training_set.dbi as a separate post-step; it
+        # produces pasa.sqlite.assemblies.fasta.transdecoder.genome.gff3,
+        # which the §3i evm_tag_pasa_transdecoder rule consumes (renamed
+        # below to pasa.transdecoder.genome.gff3).
+        "$PASAHOME/scripts/pasa_asmbls_to_training_set.dbi "
+        "  --pasa_transcripts_fasta pasa.sqlite.assemblies.fasta "
+        "  --pasa_transcripts_gff3 pasa.sqlite.pasa_assemblies.gff3 && "
         # PASA emits outputs with prefixes derived from the db basename; the
         # standardised names below are the actual file basenames produced
         # by Launch_PASA_pipeline.pl with our config. Snapshot the sqlite
         # state IMMEDIATELY after the compare; the next compare overwrites it.
+        # Each rename loop: stop at the first match (break) so a stale
+        # leftover file from a prior aborted run does not silently overwrite
+        # the freshly-produced output. If no match exists, FATAL loudly
+        # rather than letting `set -e` swallow the for-loop's exit code.
         "bzip2 -c {params.db_path} > pasa.sqlite.pass1.bz2 && "
         "for f in *.assemblies.fasta.transdecoder.genome.gff3; do "
-        "    [ -e \"$f\" ] && cp \"$f\" pasa.transdecoder.genome.gff3; "
+        "    if [ -e \"$f\" ]; then cp \"$f\" pasa.transdecoder.genome.gff3; break; fi; "
         "done && "
+        "test -s pasa.transdecoder.genome.gff3 || "
+        "    {{ echo 'FATAL: pasa_asmbls_to_training_set.dbi produced no *.assemblies.fasta.transdecoder.genome.gff3' >&2; exit 1; }} && "
         "for f in *.pasa_assemblies.gff3; do "
-        "    [ -e \"$f\" ] && cp \"$f\" pasa_assemblies.gff3; "
+        "    if [ -e \"$f\" ]; then cp \"$f\" pasa_assemblies.gff3; break; fi; "
         "done && "
+        "test -s pasa_assemblies.gff3 || "
+        "    {{ echo 'FATAL: PASA produced no *.pasa_assemblies.gff3' >&2; exit 1; }} && "
         "for f in *.polyAsites.fasta; do "
-        "    [ -e \"$f\" ] && cp \"$f\" polyAsites.fasta && break; "
-        "done"
+        "    if [ -e \"$f\" ]; then cp \"$f\" polyAsites.fasta; break; fi; "
+        "done && "
+        "test -e polyAsites.fasta || "
+        "    {{ echo 'FATAL: PASA produced no *.polyAsites.fasta' >&2; exit 1; }}"
 
 
-rule pasa_compare_load_1:
-    # Launch_PASA_pipeline.pl -A -L --annots pasa_assemblies.gff3.
-    # Emits pass2.bz2 + the first gene_structures_post_PASA_updates.<round>.gff3.
-    input:
-        pasa_assemblies = rules.pasa_compare_transdecoder.output.pasa_assemblies,
-        cfg             = rules.pasa_setup_db.output.config_rendered,
-        clean           = rules.pasa_setup_db.output.transcripts_clean,
-        genome          = config["genome"],
-    output:
-        pass2     = f"{_PASA_DIR}/pasa.sqlite.pass2.bz2",
-        updates_1 = f"{_PASA_DIR}/gene_structures_post_PASA_updates.round1.gff3",
-    params:
-        genome_abs    = _GENOME_ABS,
-        pasa_dir_abs  = lambda _wc, input: _os.path.dirname(_os.path.abspath(input.cfg)),
-        db_path       = _pasa_db_path(),
-    container: "containers/pasa.sif"
-    threads: THREADS
-    resources:
-        mem_mb = 8000,
-    shell:
-        "cd {params.pasa_dir_abs} && "
-        "mkdir -p $(dirname {params.db_path}) && "
-        "if [ ! -s {params.db_path} ] && [ -s pasa.sqlite.pass1.bz2 ]; then "
-        "    bunzip2 -c pasa.sqlite.pass1.bz2 > {params.db_path}; "
-        "fi && "
-        "Launch_PASA_pipeline.pl -c alignAssembly.config "
-        "  -g {params.genome_abs} -t transcripts.fasta.clean "
-        "  -A -L --annots pasa_assemblies.gff3 && "
-        "bzip2 -c {params.db_path} > pasa.sqlite.pass2.bz2 && "
-        # PASA emits multiple round files in a single compare-load; pick the
-        # first numerically (round1.gff3 lexically before round2.gff3, valid
-        # since round-N stays single-digit for our 2-pass pipeline).
-        "first=$(ls *.gene_structures_post_PASA_updates.*.gff3 2>/dev/null | sort -V | head -1) && "
-        "[ -n \"$first\" ] && cp \"$first\" gene_structures_post_PASA_updates.round1.gff3"
-
-
-rule pasa_compare_load_2:
-    # Launch_PASA_pipeline.pl -A -L --annots <previous gene_structures>.
-    # Emits pass3.bz2 + the second gene_structures_post_PASA_updates.<round>.gff3.
-    # pass3.bz2 is the snapshot §3j consumes via bunzip2 -fkc.
-    input:
-        updates_1 = rules.pasa_compare_load_1.output.updates_1,
-        cfg       = rules.pasa_setup_db.output.config_rendered,
-        clean     = rules.pasa_setup_db.output.transcripts_clean,
-        genome    = config["genome"],
-    output:
-        pass3     = f"{_PASA_DIR}/pasa.sqlite.pass3.bz2",
-        updates_2 = f"{_PASA_DIR}/gene_structures_post_PASA_updates.round2.gff3",
-    params:
-        genome_abs    = _GENOME_ABS,
-        pasa_dir_abs  = lambda _wc, input: _os.path.dirname(_os.path.abspath(input.cfg)),
-        db_path       = _pasa_db_path(),
-    container: "containers/pasa.sif"
-    threads: THREADS
-    resources:
-        mem_mb = 8000,
-    shell:
-        "cd {params.pasa_dir_abs} && "
-        "mkdir -p $(dirname {params.db_path}) && "
-        "if [ ! -s {params.db_path} ] && [ -s pasa.sqlite.pass2.bz2 ]; then "
-        "    bunzip2 -c pasa.sqlite.pass2.bz2 > {params.db_path}; "
-        "fi && "
-        "Launch_PASA_pipeline.pl -c alignAssembly.config "
-        "  -g {params.genome_abs} -t transcripts.fasta.clean "
-        "  -A -L --annots gene_structures_post_PASA_updates.round1.gff3 && "
-        "bzip2 -c {params.db_path} > pasa.sqlite.pass3.bz2 && "
-        # Pick the latest round file by version-sort; numeric tail (round2,
-        # round3, ...) is robust to round10+ ordering issues.
-        "last=$(ls *.gene_structures_post_PASA_updates.*.gff3 2>/dev/null | sort -V | tail -1) && "
-        "[ -n \"$last\" ] && cp \"$last\" gene_structures_post_PASA_updates.round2.gff3"
+# NOTE: pasa_compare_load_1 / pasa_compare_load_2 were originally specified
+# in plan §3d but moved out after testing. PASA's `-A -L --annots <gff>` mode
+# updates an EXISTING gene annotation with PASA's transcript evidence (per
+# PASA upstream wiki, PASA_genome_annotation.md inside pasa.sif: "The PASA
+# software can update any preexisting set of protein-coding gene
+# annotations"). Pre-EVM there is NO existing annotation; passing PASA's own
+# assemblies as `--annots` produces a 0-byte gene_structures_post_PASA_
+# updates output because PASA is asked to compare its own evidence against
+# itself. Empirically confirmed 2026-05-19 on the mini-fixture.
+#
+# The two compare-load passes belong post-EVM (plan §3j step 2, "Post-EVM
+# PASA compares (x2)") where EVM-combined gene models ARE the preexisting
+# annotation. They will be implemented in ogs.smk when §3j lands.
 
 
 rule pasa_hints:
@@ -258,5 +227,10 @@ rule pasa_hints:
     resources:
         mem_mb = 2000,
     shell:
-        "pasapolyA2hints.pl {input.polya} > {output.polya_hints} && "
+        # pasapolyA2hints.pl lives under /opt/jamg/share/Augustus/scripts/
+        # inside jamg.sif (Augustus auxiliary script, not in /opt/jamg/bin
+        # which is on PATH). Its upstream shebang is broken (`#!/usr/bin
+        # env`, missing slash); jamg.def %post patches it in place at SIF
+        # build time. Invoke by absolute path.
+        "/opt/jamg/share/Augustus/scripts/pasapolyA2hints.pl {input.polya} > {output.polya_hints} && "
         "gff2hints.pl {input.pasa_assemblies}"

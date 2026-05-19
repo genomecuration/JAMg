@@ -88,6 +88,14 @@ From: jamg-base.sif
     # stub dir so it doesn't appear in the squashed SIF.
     rmdir /rm_lib_host 2>/dev/null || true
 
+    # Augustus's pasapolyA2hints.pl ships with a broken shebang
+    # `#!/usr/bin env` (missing slash); the script fails at runtime with
+    # `bad interpreter: Permission denied`. Patch in place. This is the
+    # only Augustus script with a malformed shebang on Augustus master
+    # commit cd368703 (audited 2026-05-19).
+    sed -i 's|^#!/usr/bin env|#!/usr/bin/env perl|' \
+        /opt/jamg/share/Augustus/scripts/pasapolyA2hints.pl
+
 %environment
     export MAMBA_ROOT_PREFIX=/opt/conda
     export PERL5LIB=/opt/jamg/PerlLib

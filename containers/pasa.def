@@ -15,6 +15,18 @@ From: pasapipeline/pasapipeline:2.5.3
 
 %environment
     export LC_ALL=C.UTF-8
+    # The upstream Docker image sets ENV PATH=$PASAHOME:$PASAHOME/bin:$PATH,
+    # but the docker2singularity conversion drops it (10-docker2singularity.sh
+    # rewrites PATH to /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    # only). PASAHOME itself survives. Restore the PATH so Launch_PASA_pipeline.pl
+    # and the other PASA scripts are findable when invoked via `apptainer exec`.
+    # /usr/local/src/PASApipeline is the PASA install path baked into the
+    # upstream pasapipeline:2.5.3 Docker image (verified via
+    # `apptainer exec containers/pasa.sif find / -name Launch_PASA_pipeline.pl`).
+    # If a future PASA image moves this, the fallback silently keeps the old
+    # path; bump it in lockstep with the Bootstrap: docker From: tag above.
+    export PASAHOME="${PASAHOME:-/usr/local/src/PASApipeline}"
+    export PATH="$PASAHOME:$PASAHOME/bin:$PATH"
 
 %runscript
     exec Launch_PASA_pipeline.pl "$@"
