@@ -1,18 +1,22 @@
 #!/usr/bin/env bash
-# Phase 6 end-to-end smoke. Runs the full DAG on the mini-fixtures and
-# asserts the OGS gene count is within +/-1 of the baseline at
+# Phase 6 end-to-end smoke. Runs the full DAG via Layout B (snakemake's
+# Slurm executor fans each rule out as its own sbatch via the profile at
+# workflow/profiles/slurm/). Invoke FROM THE HEAD NODE (lazebnik), NOT
+# wrapped in sbatch: this script's snakemake process submits each rule
+# and waits for completion. Total wall clock = DAG critical path, not
+# the sum of all rule times.
+#
+# Intentionally does NOT pre-stage upstream outputs (except the
+# committed genemark fixture, which is required because gmes_petap
+# cannot converge on the 100 kb extract). All other rules run from
+# scratch. This is the END-TO-END BASELINE, not a deployability smoke.
+# For fast per-rule smokes that pre-stage upstream from the snapshot,
+# see tests/rules/test_*.sh.
+#
+# Asserts the OGS gene count is within +/-1 of the baseline at
 # test_suite/expected/OGS.gff3 (committed by `make smoke` once the
-# pipeline is stable).
-#
-# Also asserts no legacy artefacts (zff, geneid, fathom) in the output.
-#
-# This is the END-TO-END BASELINE: it intentionally does NOT pre-stage
-# upstream outputs (only genemark, which needs the 1 Mb fixture). All
-# other rules run from scratch on the 100 kb default fixture. Runtime
-# is therefore long (15-30 min on Layout A; ~5-10 min on Layout B once
-# Task 10 lands). This test is the gold standard, not a deployability
-# smoke. For fast per-rule smokes that pre-stage upstream from the
-# snapshot, see tests/rules/test_*.sh.
+# pipeline is stable). Also asserts no legacy artefacts (zff, geneid,
+# fathom) in the output.
 
 set -euo pipefail
 
@@ -54,7 +58,11 @@ touch -d '2038-01-15' "$REPO/test_suite/output/genemark/genemark.gff3" \
                      "$REPO/test_suite/output/genemark/genemark.gtf" \
                      "$REPO/test_suite/output/genemark/.preflight.ok"
 
-pixi run "$REPO/bin/jamg" run --config "$CFG" --cores "${SLURM_CPUS_PER_TASK:-20}" --mtime-only
+# Layout B: snakemake-slurm submits each rule as its own sbatch via the
+# profile at workflow/profiles/slurm/. Per-rule threads/mem_mb map to
+# --cpus-per-task / --mem on the sbatch line. This script runs on the
+# head node and waits for all per-rule jobs to complete.
+pixi run "$REPO/bin/jamg" run --config "$CFG" --executor slurm --jobs 32 --mtime-only
 
 test -s "$REPO/test_suite/output/OGS.gff3" || { echo "no OGS.gff3"; exit 1; }
 

@@ -1,0 +1,24 @@
+# Snakemake profile for the Slurm executor. Consumed by
+# `bin/jamg run --executor slurm` (see src/jamg/cli.py:217-224).
+# Each rule's `threads:` and `resources: mem_mb=N` declarations map to
+# sbatch --cpus-per-task and --mem. Activates the upstream
+# snakemake-executor-plugin-slurm bundled in pixi (jamg.sif).
+#
+# Layout A (single sbatch wrapping the whole DAG on one node) is what
+# pre-Task-9 production runs and the smoke tests use. Layout B (this
+# profile) submits each rule as its own sbatch, so rules fan out across
+# the 4-node cluster (main / de21 / himem partitions). Total wall clock
+# becomes the DAG critical path rather than the sum of all rules.
+executor: slurm
+jobs: 32                                # parallel job cap; cluster has 4 nodes ~221 CPUs total
+default-resources:
+  - slurm_partition=main
+  - slurm_account=""                    # cluster has no accounting; empty is fine
+  - runtime=10080                       # 7 days; partition default is INFINITE
+  - mem_mb=4000
+  - cpus_per_task=1
+restart-times: 0                        # let failures surface immediately
+keep-incomplete: false
+rerun-incomplete: false                 # snakemake re-decides; trust mtime
+latency-wait: 30                        # NFS metadata latency across nodes
+printshellcmds: true
