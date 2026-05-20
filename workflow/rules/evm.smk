@@ -224,8 +224,13 @@ rule evm_abinitio_cat:
     output:
         gff = f"{_EVM_DIR}/abinitio_gene_predictions.gff3.sorted",
     params:
-        evm_dir  = _EVM_DIR,
-        repo_bin = _REPO_BIN,
+        evm_dir       = _EVM_DIR,
+        repo_bin      = _REPO_BIN,
+        genemark_abs  = lambda _wc, input: _os.path.abspath(input.genemark),
+        augustus_abs  = lambda _wc, input: _os.path.abspath(input.augustus),
+        golden_abs    = lambda _wc, input: _os.path.abspath(input.golden),
+        pasa_td_abs   = lambda _wc, input: _os.path.abspath(input.pasa_td),
+        extra_abs     = lambda _wc, input: " ".join(_os.path.abspath(p) for p in input.extra),
     container: "containers/jamg.sif"
     threads: 1
     resources:
@@ -233,8 +238,8 @@ rule evm_abinitio_cat:
     shell:
         "export PATH={params.repo_bin}:$PATH && "
         "mkdir -p {params.evm_dir} && cd {params.evm_dir} && "
-        "cat {input.genemark} {input.augustus} {input.golden} {input.pasa_td} "
-        "    {input.extra} > abinitio_gene_predictions.gff3 && "
+        "cat {params.genemark_abs} {params.augustus_abs} {params.golden_abs} {params.pasa_td_abs} "
+        "    {params.extra_abs} > abinitio_gene_predictions.gff3 && "
         "sort_gff3.pl abinitio_gene_predictions.gff3"
 
 
@@ -255,8 +260,10 @@ rule evm_preflight:
     resources:
         mem_mb = 1000,
     shell:
-        # Tab-delimiter precheck (review-#7 I-7-5):
-        "awk -F'\\t' '!/^#/ {{ if (NF < 9) {{ "
+        # Tab-delimiter precheck (review-#7 I-7-5). Skip comments and
+        # whitespace-only lines (GFF3 allows blank record-separators that
+        # may carry stray spaces under some emitters).
+        "awk -F'\\t' '!/^#/ && /[^[:space:]]/ {{ if (NF < 9) {{ "
         "    printf(\"FATAL: non-tab-delimited row in %s:%d (got %d fields)\\n\", FILENAME, NR, NF); exit 1 "
         "}} }}' {input.gff} && "
         # Subset check (review-#7 C-7-2): predictions' source tokens ⊆ weights' ABINITIO_PREDICTION sources.
@@ -289,21 +296,30 @@ rule evm_stage_repeats:
     output:
         repeats_local = f"{_EVM_DIR}/all_repeat_masks.gff3",
     params:
-        evm_dir = _EVM_DIR,
+        evm_dir          = _EVM_DIR,
+        repeats_abs      = lambda _wc, input: _os.path.abspath(input.repeats),
+        golden_abs       = lambda _wc, input: _os.path.abspath(input.golden),
+        pasa_td_abs      = lambda _wc, input: _os.path.abspath(input.pasa_td),
+        genemark_abs     = lambda _wc, input: _os.path.abspath(input.genemark),
+        augustus_abs     = lambda _wc, input: _os.path.abspath(input.augustus),
+        proteins_abs     = lambda _wc, input: _os.path.abspath(input.proteins),
+        tr_align_abs     = lambda _wc, input: _os.path.abspath(input.tr_align),
+        abinitio_cat_abs = lambda _wc, input: _os.path.abspath(input.abinitio_cat),
     container: "containers/jamg.sif"
     threads: 1
     resources:
         mem_mb = 1000,
     shell:
         "cd {params.evm_dir} && "
-        "grep -v '^#' {input.repeats} > all_repeat_masks.gff3 && "
-        "ln -sf {input.golden}    . && "
-        "ln -sf {input.pasa_td}   . && "
-        "ln -sf {input.genemark}  . && "
-        "ln -sf {input.augustus}  . && "
-        "ln -sf {input.proteins}  . && "
-        "ln -sf {input.tr_align}  . && "
-        "ln -sf {input.abinitio_cat} ."
+        "grep -v '^#' {params.repeats_abs} > all_repeat_masks.gff3 && "
+        "ln -sf {params.golden_abs}       . && "
+        "ln -sf {params.pasa_td_abs}      . && "
+        "ln -sf {params.genemark_abs}     . && "
+        "ln -sf {params.augustus_abs}     . && "
+        "ln -sf {params.proteins_abs}     . && "
+        "ln -sf {params.tr_align_abs}     ."
+        # abinitio_gene_predictions.gff3.sorted is already in {evm_dir}
+        # (evm_abinitio_cat writes there directly); no symlink needed.
 
 
 # ---------------------------------------------------------------------------
@@ -329,8 +345,13 @@ rule evm_run:
     resources:
         mem_mb = 32000,
     shell:
+        # /opt/jamg/bin/EVidenceModeler is a symlink to
+        # /opt/jamg/share/EVidenceModeler/EVidenceModeler, but EVM uses
+        # $FindBin::Bin to locate its sibling EvmUtils/ + PerlLib/, and
+        # FindBin returns the symlink's directory, not the target. Invoke
+        # by the real path so EvmUtils/ resolves alongside it.
         "cd {params.evm_dir} && "
-        "EVidenceModeler "
+        "/opt/jamg/share/EVidenceModeler/EVidenceModeler "
         "  --weights {params.weights_abs} "
         "  --segmentSize 5000000 --overlapSize 80000 "
         "  --sample_id {params.sample_id} "

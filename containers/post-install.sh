@@ -114,6 +114,12 @@ CXXFLAGS="-fopenmp -O2" CFLAGS="-fopenmp -O2" LDFLAGS="-fopenmp" \
     ./configure --prefix="$JAMG"
 make -j"$(nproc)"
 make install
+# EVidenceModeler hardcodes its ParaFly path as
+# $PLUGINS_DIR/ParaFly/bin/ParaFly (EVidenceModeler line 327).
+# Symlink so EVM's pipeline finds the binary without modification.
+mkdir -p "$JAMG/share/EVidenceModeler/plugins/ParaFly/bin"
+ln -sf "$JAMG/bin/ParaFly" \
+       "$JAMG/share/EVidenceModeler/plugins/ParaFly/bin/ParaFly"
 cd "$SRC"
 
 # -------------------------------------------------------------------------

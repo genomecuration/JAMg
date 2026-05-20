@@ -35,8 +35,10 @@ rule ogs_rescue_augustus:
         missed   = f"{_OGS_DIR}/missed_genes.gff3",
         combined = f"{_OGS_DIR}/EVM.combined.gff3",
     params:
-        ogs_dir  = _OGS_DIR,
-        repo_bin = _REPO_BIN_OGS,
+        ogs_dir      = _OGS_DIR,
+        repo_bin     = _REPO_BIN_OGS,
+        evm_abs      = lambda _wc, input: _os.path.abspath(input.evm),
+        augustus_abs = lambda _wc, input: _os.path.abspath(input.augustus),
     container: "containers/jamg.sif"
     threads: 1
     resources:
@@ -44,9 +46,9 @@ rule ogs_rescue_augustus:
     shell:
         "export PATH={params.repo_bin}:$PATH && "
         "mkdir -p {params.ogs_dir} && cd {params.ogs_dir} && "
-        "trim_overlap_gff3.py --file1 {input.augustus} --file2 {input.evm} "
+        "trim_overlap_gff3.py --file1 {params.augustus_abs} --file2 {params.evm_abs} "
         "    -o missed_genes.gff3 && "
-        "cat missed_genes.gff3 {input.evm} > EVM.combined.gff3"
+        "cat missed_genes.gff3 {params.evm_abs} > EVM.combined.gff3"
 
 
 # ---------------------------------------------------------------------------
@@ -72,6 +74,11 @@ rule ogs_pasa_compare_1:
         max_intron = config.get("max_intron", 70000),
         ogs_dir    = _OGS_DIR,
         pasa_dir   = _PASA_DIR_REF,
+        cfg_abs    = lambda _wc, input: _os.path.abspath(input.cfg),
+        clean_abs  = lambda _wc, input: _os.path.abspath(input.clean),
+        full_abs   = lambda _wc, input: _os.path.abspath(input.full),
+        tdn_abs    = lambda _wc, input: _os.path.abspath(input.tdn),
+        pass1_abs  = lambda _wc, input: _os.path.abspath(input.pass1),
     container: "containers/pasa.sif"
     threads: THREADS
     resources:
@@ -82,14 +89,14 @@ rule ogs_pasa_compare_1:
         # produces files there. Stage by symlink into ogs/ so writes don't
         # collide with pasa/.
         "mkdir -p {params.ogs_dir} && cd {params.ogs_dir} && "
-        "ln -sf {input.cfg}   alignAssembly.config && "
-        "ln -sf {input.clean} transcripts.fasta.clean && "
-        "ln -sf {input.full}  transcripts.fasta && "
-        "ln -sf {input.tdn}   tdn.accs && "
+        "ln -sf {params.cfg_abs}   alignAssembly.config && "
+        "ln -sf {params.clean_abs} transcripts.fasta.clean && "
+        "ln -sf {params.full_abs}  transcripts.fasta && "
+        "ln -sf {params.tdn_abs}   tdn.accs && "
         # Fresh sqlite from the upstream pass1 snapshot. /dev/shm survives
         # scancel, so always overwrite.
         "rm -f /dev/shm/pasa.sqlite && "
-        "bunzip2 -c {input.pass1} > /dev/shm/pasa.sqlite && "
+        "bunzip2 -c {params.pass1_abs} > /dev/shm/pasa.sqlite && "
         "Launch_PASA_pipeline.pl -c alignAssembly.config "
         "  -A -L --annots EVM.combined.gff3 "
         "  -g {params.genome_abs} "
@@ -125,19 +132,35 @@ rule ogs_pasa_compare_2:
         snapshot   = f"{_OGS_DIR}/pasa.sqlite.evm_pasa2.bz2",
         candidate  = f"{_OGS_DIR}/EVM.combined.pasa2.gff3",
     params:
-        genome_abs = _GENOME_ABS_OGS,
-        max_intron = config.get("max_intron", 70000),
-        ogs_dir    = _OGS_DIR,
+        genome_abs   = _GENOME_ABS_OGS,
+        max_intron   = config.get("max_intron", 70000),
+        ogs_dir      = _OGS_DIR,
+        snap_1_abs   = lambda _wc, input: _os.path.abspath(input.snap_1),
+        update_1_abs = lambda _wc, input: _os.path.abspath(input.update_1),
+        cfg_abs      = lambda _wc, input: _os.path.abspath(input.cfg),
+        clean_abs    = lambda _wc, input: _os.path.abspath(input.clean),
+        full_abs     = lambda _wc, input: _os.path.abspath(input.full),
+        tdn_abs      = lambda _wc, input: _os.path.abspath(input.tdn),
     container: "containers/pasa.sif"
     threads: THREADS
     resources:
         mem_mb = 16000,
     shell:
+        # Re-create the per-OGS-dir symlinks: a --forcerun ogs_pasa_compare_2
+        # (or a partial clean of {ogs_dir}) wipes compare_1's symlinks and
+        # PASA aborts because Launch_PASA_pipeline.pl reads
+        # alignAssembly.config / transcripts.fasta / transcripts.fasta.clean /
+        # tdn.accs by bare name from cwd. Snakemake doesn't track these
+        # without `input:` entries; declare them, re-symlink unconditionally.
         "cd {params.ogs_dir} && "
+        "ln -sf {params.cfg_abs}   alignAssembly.config && "
+        "ln -sf {params.clean_abs} transcripts.fasta.clean && "
+        "ln -sf {params.full_abs}  transcripts.fasta && "
+        "ln -sf {params.tdn_abs}   tdn.accs && "
         "rm -f /dev/shm/pasa.sqlite && "
-        "bunzip2 -c {input.snap_1} > /dev/shm/pasa.sqlite && "
+        "bunzip2 -c {params.snap_1_abs} > /dev/shm/pasa.sqlite && "
         "Launch_PASA_pipeline.pl -c alignAssembly.config "
-        "  -A -L --annots {input.update_1} "
+        "  -A -L --annots {params.update_1_abs} "
         "  -g {params.genome_abs} "
         "  --MAX_INTRON_LENGTH {params.max_intron} "
         "  --CPU {threads} "
@@ -251,20 +274,21 @@ rule ogs_emit:
     params:
         outdir     = OUTDIR,
         genome_abs = _GENOME_ABS_OGS,
+        sorted_abs = lambda _wc, input: _os.path.abspath(input.sorted),
     container: "containers/jamg.sif"
     threads: 1
     resources:
         mem_mb = 4000,
     shell:
         "cd {params.outdir} && "
-        "cp {input.sorted} OGS.gff3 && "
+        "cp {params.sorted_abs} OGS.gff3 && "
         # gffread one-shot: -y peptide, -x CDS, -w mRNA, -T GTF, --bed BED.
-        "gffread {input.sorted} -g {params.genome_abs} "
+        "gffread {params.sorted_abs} -g {params.genome_abs} "
         "  -y OGS.pep.fasta "
         "  -x OGS.CDS.fasta "
         "  -w OGS.mRNA.fasta && "
-        "gffread {input.sorted} -T -o OGS.gtf && "
-        "gffread {input.sorted} --bed -o OGS.bed"
+        "gffread {params.sorted_abs} -T -o OGS.gtf && "
+        "gffread {params.sorted_abs} --bed -o OGS.bed"
 
 
 # ---------------------------------------------------------------------------

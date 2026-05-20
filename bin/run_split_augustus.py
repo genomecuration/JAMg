@@ -1,4 +1,7 @@
-#!/usr/bin/env python3
+#!/opt/conda/bin/python3
+# Uses /opt/conda/bin/python3 directly because the SIF puts /usr/bin
+# before /opt/conda on PATH and the apt-installed /usr/bin/python3
+# does not carry BioPython. Conda's python3 has it.
 
 import argparse
 import sys
@@ -111,6 +114,14 @@ def split_fasta(fasta, chunks, rundir, verbose):
     out = {}
     output_files = []
     for c in seqs_of_chunk:
+        # Symmetry with split_fasta_by_hints: skip empty chunks. The LPT
+        # allocator leaves chunks empty when scaffold count < chunk count
+        # (typical of small fixtures). validate_output_files would then
+        # reject the zero-byte file.
+        if not seqs_of_chunk[c]:
+            if verbose:
+                sys.stderr.write(f'Skipping empty chunk {c}\n')
+            continue
         if verbose:
             sys.stderr.write(f'Writing {len(seqs_of_chunk[c])} seqs to chunk {c}\n')
         chunk_file = chunkfile(rundir, fasta.name, c)
@@ -131,6 +142,14 @@ def split_fasta_by_hints(fasta, seqs_of_chunk, chunks_of_seq, rundir, verbose):
     output_files = []
     
     for c in seqs_of_chunk:
+        # Skip empty chunks: with a small fixture (1 scaffold, 20 chunks)
+        # the LPT allocator puts the whole scaffold in one chunk and
+        # leaves the rest empty; the downstream validator rejects empty
+        # files. Augustus simply won't be invoked on a missing chunk.
+        if not seqs_of_chunk[c] or not any(r in records for r in seqs_of_chunk[c]):
+            if verbose:
+                sys.stderr.write(f'Skipping empty chunk {c}\n')
+            continue
         if verbose:
             sys.stderr.write(f'Writing {len(seqs_of_chunk[c])} seqs to chunk {c}\n')
         chunk_file = chunkfile(rundir, fasta.name, c)

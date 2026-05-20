@@ -86,17 +86,30 @@ rule augustus:
         extrinsic       = _EXTRINSIC_ABS,
         aug_dir_abs     = lambda _wc, output: _os.path.dirname(_os.path.abspath(output.gff)),
         softmasked_abs  = lambda _wc, input: _os.path.abspath(input.softmasked),
+        # absolutise every hint input so the `cd {aug_dir_abs}` below
+        # doesn't break the relative paths snakemake hands us.
+        repeats_hints_abs       = lambda _wc, input: _os.path.abspath(input.repeats_hints),
+        rnaseq_hints_abs        = lambda _wc, input: _os.path.abspath(input.rnaseq_hints),
+        pasa_assembly_hints_abs = lambda _wc, input: _os.path.abspath(input.pasa_assembly_hints),
+        polya_hints_abs         = lambda _wc, input: _os.path.abspath(input.polya_hints),
+        golden_hints_abs        = lambda _wc, input: _os.path.abspath(input.golden_hints),
+        proteins_hints_abs      = lambda _wc, input: _os.path.abspath(input.proteins_hints),
+        repo_bin                = _os.path.abspath(_os.path.join(workflow.basedir, "..", "bin")),
     container: "containers/jamg.sif"
     threads: THREADS
     resources:
         mem_mb = 16000,
     shell:
+        # Use the host repo's bin/run_split_augustus.py (shebang
+        # /opt/conda/bin/python3 to access BioPython) instead of the
+        # SIF-baked copy that points at /usr/bin/python3 (no Bio).
+        "export PATH={params.repo_bin}:$PATH && "
         "mkdir -p {params.aug_dir_abs} && cd {params.aug_dir_abs} && "
         # Pile all hint files into one. Per plan: repeats + rnaseq + pasa
         # assemblies + polyA + golden + proteins. NOT GeneMark.
-        "cat {input.repeats_hints} {input.rnaseq_hints} "
-        "    {input.pasa_assembly_hints} {input.polya_hints} "
-        "    {input.golden_hints} {input.proteins_hints} "
+        "cat {params.repeats_hints_abs} {params.rnaseq_hints_abs} "
+        "    {params.pasa_assembly_hints_abs} {params.polya_hints_abs} "
+        "    {params.golden_hints_abs} {params.proteins_hints_abs} "
         "    > genome_augustus.all.hintfile && "
         # run_split_augustus.py partitions the softmasked genome + the
         # hintfile into {threads} balanced chunks and emits per-chunk
