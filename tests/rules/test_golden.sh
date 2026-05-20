@@ -3,21 +3,15 @@
 # Runs the full upstream chain (repeats + pasa) then golden_genes ->
 # golden_hints.
 #
-# CURRENT STATUS (2026-05-19): expected to FAIL end-to-end until Phase 4
-# rewrite of the driver lands. The v1 bridge
-# bin/prepare_golden_genes_for_predictors.pl requires AAT.pl + the
-# 'filter' binary (the latter is an ELF compiled tool from
-# 3rd_party/bin/filter); neither is bundled in jamg.sif. Three other
-# integration fixes for the v1 bridge are already in golden.smk's
-# current shell (--gmap_dir for the read-only SIF path, --augustus
-# pointing at the actual install location, and all 5 PASA inputs
-# satisfying check_for_options).
-#
-# Per systematic-debugging skill: 3 sequential fixes revealed new
-# missing dependencies each time = architectural problem with the v1
-# bridge. Plan §4 explicitly rewrites the driver to remove these
-# v1-era deps; bundling AAT into jamg.sif as a workaround would be
-# fighting that plan.
+# CURRENT STATUS: PASSING. JID 9994 (2026-05-20, --norefine mode) ran
+# the full upstream chain through golden_hints in 5:08 and produced
+# 712 features. Phase 4 (`bb3e82a5`) replaced the v1 bridge with
+# `bin/prepare_golden_genes.pl` + PerlLib/Golden/*.pm (pure-Perl
+# validator, no AAT, no fathom). The Phase 3e+3j integration fixes
+# in golden.smk pass --norefine to exonerate; --refine remains
+# multi-minute per query on the mini-fixture and is not exercised
+# here. The snakemake-wrapped chain downstream of golden (augustus
+# + EVM + ogs) is verified separately by tests/rules/test_evm.sh.
 #
 # Uses `pixi run` because the DAG spans both jamg.sif (golden + repeats)
 # and pasa.sif (pasa_align / compare_transdecoder upstream).
