@@ -1,1 +1,0 @@
-../GlimmerHMM/bin/glimmhmm.pl

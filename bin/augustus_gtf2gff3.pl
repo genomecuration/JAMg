@@ -56,15 +56,15 @@ close OUT;
 
 sub parseAndStoreGTF{
     my %seen = ();
-    my ($txid, $geneid, $chr, $start, $end, $feature, $strand, $source, $stop_codon);
+    my ($txid, $gene_identifier, $chr, $start, $end, $feature, $strand, $source, $stop_codon);
     foreach my $line (<STDIN>){
 	my @f = split /\t/, $line;
 	next if (@f<8);
 	($chr,$source,$feature,$start,$end,$strand) = ($f[0],$f[1],$f[2],$f[3],$f[4],$f[6]);
 	# check whether it is a line with 'gene' feature
 	if ($f[2] eq "gene" && ($f[8] =~ /ID=([^;]+)/ || $f[8] =~ /gene_id."?([^";]+)"?/ || $f[8] =~ /^(\S+)$/)){
-	    $geneid = $1;
-	    $geneLine{$geneid} = \@f;
+	    $gene_identifier = $1;
+	    $geneLine{$gene_identifier} = \@f;
 	    next;
 	} 
 	# check whether it is a line with 'transcript' feature
@@ -94,10 +94,10 @@ sub parseAndStoreGTF{
 	    }
 	}
 	if ($f[8] =~ /gene_id."?([^";]+)"?/){
-	    $geneid = $1;
+	    $gene_identifier = $1;
 	} else {
 	    if($f[8] =~ /Parent=([^;]+)/){
-		$geneid = $geneOf{$1};
+		$gene_identifier = $geneOf{$1};
 	    }else{
 		die ("Neither GTF nor GFF format in the following line:\n$line\ngene_id not found.\n");
 	    }
@@ -109,8 +109,8 @@ sub parseAndStoreGTF{
 	    $seen{$txid} = 1;
 	}
 	# assign parental gene id to tx id
-	#die ("transcript $txid has conflicting gene parents: ".$geneOf{$txid}." and $geneid. Remember: In GTF txids need to be overall unique.")
-	  $geneOf{$txid} = $geneid   if (defined($geneOf{$txid}) && $geneOf{$txid} ne $geneid);
+	#die ("transcript $txid has conflicting gene parents: ".$geneOf{$txid}." and $gene_identifier. Remember: In GTF txids need to be overall unique.")
+	  $geneOf{$txid} = $gene_identifier   if (defined($geneOf{$txid}) && $geneOf{$txid} ne $gene_identifier);
 	
 	if ($feature eq "CDS" || $feature eq "coding_exon" || $feature eq "exon" || $feature =~ /UTR/i){
 	    $txs{$txid} = {"strand"=>$strand, "chr"=>$chr, "source"=>$source, "CDS"=>[], "UTR"=>[], "exon"=>[], "intron"=>[], "rest"=>[]} if (!exists($txs{$txid}));
@@ -257,22 +257,22 @@ sub convert{
 sub printConvertedGTF {
     my @lines;
     my %seen = ();
-    my $geneid;
+    my $gene_identifier;
     foreach my $txid (@txorder){
 	# print gene line before the first transcript of this gene
-	$geneid = $geneOf{$txid};
-	if (!$seen{$geneid} && defined($geneLine{$geneid})){
+	$gene_identifier = $geneOf{$txid};
+	if (!$seen{$gene_identifier} && defined($geneLine{$gene_identifier})){
 	    if ($gff3) {
-		$geneLine{$geneid}->[8] = "ID=$geneid;\n";
+		$geneLine{$gene_identifier}->[8] = "ID=$gene_identifier;\n";
 	    }
-	    print OUT join ("\t", @{$geneLine{$geneid}});
-	    $seen{$geneid} = 1;
+	    print OUT join ("\t", @{$geneLine{$gene_identifier}});
+	    $seen{$gene_identifier} = 1;
 	}
 	# print transcript line
 	if ($txs{$txid}{"txline"}[0] ne ""){
 	    if ($gff3) {
 		$txs{$txid}{"txline"}->[2] = "mRNA";
-		$txs{$txid}{"txline"}->[8] = "ID=$txid;Parent=$geneid\n";
+		$txs{$txid}{"txline"}->[8] = "ID=$txid;Parent=$gene_identifier\n";
 	    }
 	    print OUT join ("\t", @{$txs{$txid}{"txline"}});
 	}

@@ -1,0 +1,152 @@
+= JAMg v2 procedure
+:toc: macro
+:toclevels: 2
+
+toc::[]
+
+== Prerequisites
+
+* Apptainer (or Singularity 3.8+) on the host.
+* RepeatMasker `Libraries/` directory available on the host (license-encumbered; not shipped). Path goes to `make sifs RM_LIB_HOST=...`.
+* GeneMark-ES license + tarball (`gmes_linux_64_*.tar.gz`) on the host. Path goes to `genemark.gm_home:` in the config.
+* `pixi` for the host CLI (https://pixi.sh).
+* Slurm if dispatching per-rule jobs (optional; single-host runs are fine).
+
+== Inputs
+
+| Required | Optional |
+|---|---|
+| Genome FASTA | RNA-seq BAM (or STAR / gsnap inputs) |
+| Repeat-modeller species library | Trinity-GG transcripts |
+| SwissProt protein FASTA (BLAST DB) | Manual curations GFF |
+
+The config schema is at `workflow/config/config.schema.yaml`. An example
+that runs against the bundled 1 Mb fixture is at
+`test_suite/mini-config.yaml`.
+
+== One-liner
+
+[source,bash]
+----
+make sifs RM_LIB_HOST=/path/to/RepeatMasker/Libraries
+cp test_suite/mini-config.yaml my-genome.yaml
+$EDITOR my-genome.yaml
+bin/jamg run --config my-genome.yaml --cores 20
+----
+
+The CLI wraps Snakemake; `--cores`, `--profile`, `--dry-run`, `--unlock`,
+`--rerun-triggers`, etc. all pass through.
+
+== Pipeline stages
+
+[cols="1,3"]
+|===
+| Stage | What
+
+| repeats
+| 4-pass RepeatMasker (species + rna-specific + general + contamination
+  check) + merge → softmasked + hardmasked genome FASTAs + repeats GFF.
+
+| rnaseq
+| 3 input modes (`bam` | `star` | `gsnap`) → sorted-indexed BAM +
+  augustus hint GFF.
+
+| tgg
+| Trinity genome-guided assembly → `Trinity-GG.fasta` (consumed by PASA).
+
+| pasa
+| `setup_db` → `align` → `compare_transdecoder` → `hints`. Produces
+  pasa.transdecoder.{genome,gff,pep,cds}.gff3 + pasa_assemblies.gff3 +
+  polyAsites hints.
+
+| proteins
+| BLASTX vs SwissProt → swissprot.blastx.gff3 + hints.
+
+| genemark
+| `gmes_petap` (ET if RNA-seq junctions, otherwise ES) → genemark.gff3.
+
+| golden
+| `bin/prepare_golden_genes.pl` builds the high-confidence golden gene
+  set from PASA + GMAP + exonerate. Pure-Perl canonical-splice +
+  CDS-completeness validator in `Golden::Filter`. Outputs the golden
+  GFF + GenBank training files + augustus hints.
+
+| augustus
+| Hint pile (repeats + rnaseq + pasa + golden + proteins + polyA) →
+  chunked Augustus run via `run_split_augustus.py` + ParaFly → merged
+  `augustus_results.gff3`.
+
+| evm
+| Tag + sort the 4 ab-initio sources (augustus, genemark, golden,
+  pasa-transdecoder); preflight against `evm_weights.txt`; symlink
+  inputs into `evm/`; invoke EvidenceModeler → `EVM.gff3`.
+
+| ogs
+| Rescue Augustus-only genes via `bin/trim_overlap_gff3.py`; two
+  post-EVM PASA compare-load passes; `create_features_from_gff3.pl`
+  rewrites IDs; `fix_pasa_evm_gff.pl` + `gt gff3` validates and
+  sorts; `gffread` emits the six final OGS products.
+|===
+
+== Outputs
+
+Under `outdir:` from the config:
+
+* `OGS.gff3` — Official Gene Set.
+* `OGS.{mRNA,CDS,pep}.fasta`.
+* `OGS.gtf`, `OGS.bed`.
+
+Intermediate artefacts under `outdir/{repeats,rnaseq,tgg,pasa,
+proteins,genemark,golden,augustus,evm,ogs}/`.
+
+== Troubleshooting
+
+[cols="1,3"]
+|===
+| Symptom | Resolution
+
+| `RuleException`: `command not found: prepare_golden_genes.pl`
+| Driver lives at `$REPO/bin/`, not in the SIF's `/opt/jamg/bin/`. The
+  `golden.smk` rule prepends `$REPO/bin` to `$PATH`; verify the binding
+  resolved (`apptainer exec containers/jamg.sif env | grep PATH` from
+  the rule's shell).
+
+| `LockException` on snakemake startup
+| Previous run was killed mid-execution. `rm -rf .snakemake/locks/`.
+
+| GeneMark key expired
+| Re-download `gm_key_64` from http://exon.gatech.edu/GeneMark/license_download.cgi
+  and replace the file under `gm_home`.
+
+| `/dev/shm` fills up
+| The PASA + post-EVM PASA compares use `/dev/shm` for their SQLite
+  databases. If the node has multiple PASA workflows running, the
+  shared shm fills. Restart, or temporarily redirect via
+  `apptainer --bind /tmp:/dev/shm`.
+
+| `Unknown GFF format for ##gff-version 3`
+| GMAP emitted a header-only split file. Already mitigated in
+  `Golden::Alignment::run_gmap`; if it recurs, check the gmap
+  command-line flags and the `*.uniq` split files.
+
+| EVM preflight fatals: `predictions GFF contains source tokens
+  absent from EVM weights`
+| Add an `ABINITIO_PREDICTION <token> <weight>` row to
+  `workflow/config/evm_weights.example.txt` (or your overriding
+  per-genome weights file), or drop the offending source from
+  `evm.extra_gff[]`.
+|===
+
+== Re-running parts of the DAG
+
+Use `--until <rulename>` for a partial DAG. For instance, to refresh
+augustus without re-running EVM:
+
+[source,bash]
+----
+bin/jamg run --config my-genome.yaml --until augustus --rerun-triggers mtime
+----
+
+Snakemake's `--rerun-triggers mtime` avoids re-running rules whose
+inputs are unchanged in time even when the rule body or container
+environment was edited.

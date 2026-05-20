@@ -1,1 +1,0 @@
-../geneid/bin/pro2log_ini.awk

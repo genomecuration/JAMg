@@ -1,1 +1,0 @@
-../geneid/bin/files.awk

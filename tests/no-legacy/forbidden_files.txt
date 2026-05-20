@@ -1,0 +1,38 @@
+# tests/no-legacy/forbidden_files.txt — single source of truth (review-#4 I-4-7).
+# Paths that must NOT exist in v2-revamp HEAD. Both Phase 4 (golden refactor)
+# and Phase 5 (bulk delete) feed into this list.
+#
+# bin/ orphans (predictors dropped + JBrowse plumbing out-of-scope)
+bin/SNAP_output_to_gff3.pl
+bin/optimize_geneid.sh
+bin/purge.geneid.real.gff.pl
+bin/zff2hintzff.pl
+bin/align_rnaseq_gsnap.pl
+bin/align_dnaseq_gsnap.pl
+bin/align_rnaseq_cleanup.pl
+bin/bam_to_jbrowse.pl
+bin/bigwig_to_jbrowse.pl
+bin/sra_to_jbrowse.pl
+bin/tab_to_jbrowse.pl
+bin/prepare_domain_exon_annotation.pl
+bin/prepare_evm_calls_from_maker_output.pl
+bin/download_ncbi_assembly_raw_data.pl
+bin/prepare_trinity_genome_assembly_pbs.pl
+bin/JAMG_TGG_cmds.pl
+# Phase 4.7 deletion (golden refactor): the original 3838-line script
+bin/prepare_golden_genes_for_predictors.pl
+# 3rd_party + legacy env mgmt
+3rd_party/
+env.sh
+env.source
+# Legacy docs (replaced by procedure_v2.md / containers.md / migration-v1-to-v2.md)
+docs/procedure.asciidoc
+docs/procedure.html
+docs/tutorial.asciidoc
+docs/tutorial.html
+docs/creating_and_using_hhblits_databases.asciidoc
+docs/creating_and_using_hhblits_databases.html
+docs/index.asciidoc
+docs/index.html
+docs/build.sh
+databases/hhblits

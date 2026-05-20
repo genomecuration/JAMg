@@ -13,10 +13,9 @@
  training / test / optimisation subsets, and emits the Augustus-shaped
  artefacts (GenBank files + extrinsic hints).
 
- v2 of the old `prepare_golden_genes_for_predictors.pl`. SNAP, geneid and
- GlimmerHMM emission has been removed; the fathom-based validator has been
- replaced by a pure-Perl canonical-splice + CDS-completeness check in
- PerlLib/Golden/Filter.pm.
+ Emits Augustus-shaped artefacts only (GenBank training files + extrinsic
+ hints). The canonical-splice + CDS-completeness check is implemented in
+ pure Perl by PerlLib/Golden/Filter.pm.
 
 =head1 USAGE
 
@@ -87,9 +86,8 @@ Acceptance criteria (canonical mode):
     No overlapping genes (best score wins)
     Canonical splice sites (GT..AG or GC..AG); no isoforms
 
-The pure-Perl validator in Golden::Filter::validate_gene_structure replaces
-v1's fathom-based check and writes one line per rejected gene to
-gene_validation.log in -outdir.
+Golden::Filter::validate_gene_structure (pure Perl) writes one line per
+rejected gene to gene_validation.log in -outdir.
 
 =head1 AUTHORS
 
@@ -272,6 +270,9 @@ our $genome_sequence_file =
 our $genome_sequence_file_dir  = dirname($genome_sequence_file);
 our $genome_sequence_file_base = basename($genome_sequence_file);
 our $genome_dir                = basename($genome_file) . '_dir';
+# run_blast / run_aat / parse_genome_gff each write per-scaffold filter
+# files into $genome_dir. mkdir up-front rather than per-caller.
+mkdir $genome_dir unless -d $genome_dir;
 our $genome_dbname             = $genome_sequence_file_base . '.gmap';
 print "Processing genome $genome_sequence_file_dir/$genome_sequence_file_base\n";
 

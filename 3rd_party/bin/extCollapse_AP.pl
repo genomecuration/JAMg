@@ -1,1 +1,0 @@
-../aatpackage/bin/extCollapse_AP.pl

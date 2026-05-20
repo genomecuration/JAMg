@@ -20,7 +20,7 @@ Provide a GFF3 file and a genome FASTA file to phase and create sequence feature
   -verbose            Print progress and debug info
   -skip_delete        Skip Status=Delete mRNAs
   -one_isoform        Process only one isoform per gene
-  -rename             Rename the IDs with a new JAMg IDs, up to 32 characters (needed for hhblits). Don't use with -name
+  -rename             Rename the IDs with a new JAMg IDs, up to 32 characters. Don't use with -name
   -strip_name         Remove Name tag
   -change_source  :s  Change GFF Source to this value
   -simple             Don't add introns and splice sites in GFF

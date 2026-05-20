@@ -1,1 +1,0 @@
-../geneid/bin/Optimization_new.sh

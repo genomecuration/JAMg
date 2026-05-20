@@ -1,6 +1,0 @@
-README for HMM directory
-========================
-
-These files can be loaded without explicit path if the $ZOE environment
-variable has been set to the Zoe directory.
-

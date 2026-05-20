@@ -1,2 +1,0 @@
-# Chrysalis
-Chrysalis codebase
