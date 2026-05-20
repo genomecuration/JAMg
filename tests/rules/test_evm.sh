@@ -45,7 +45,6 @@ mkdir -p "$GM_OUT"
 cp "$REPO/test_suite/fixtures/genemark.gff3" "$GM_OUT/genemark.gff3"
 cp "$REPO/test_suite/fixtures/genemark.gtf"  "$GM_OUT/genemark.gtf"
 : > "$GM_OUT/.preflight.ok"
-touch -d '2038-01-15' "$GM_OUT/genemark.gff3" "$GM_OUT/genemark.gtf" "$GM_OUT/.preflight.ok"
 
 pixi run "$REPO/bin/jamg" run --config "$CFG" --cores "${SLURM_CPUS_PER_TASK:-20}" \
     --until evm_run

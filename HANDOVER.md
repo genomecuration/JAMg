@@ -11,19 +11,19 @@
 
 ```
 JAMg branch: v2-revamp
-JAMg HEAD:   eeab866e (working tree has extensive uncommitted changes; see below)
+JAMg HEAD:   3de6d229 (working tree clean; 1 commit ahead of origin)
 ```
 
-Submodules (registered, working trees populated, parent pointer staged):
+Submodules (registered, parent pointer committed):
 
 | Submodule | Path | Local HEAD | Pushed to origin? |
 |---|---|---|---|
-| alpapan/EVidenceModeler | `containers/src/EVidenceModeler` | `905ebe2` on `fix/negative-offset-warn` (= origin/master, ff-merged) | **YES** (master) |
-| alpapan/PASApipeline | `containers/src/PASApipeline` | `dc5497d` on `fix/gcc14-implicit-int` (1 commit ahead of origin/master `cc1f8d7`) | **NO**  -  needs explicit user push approval |
+| alpapan/EVidenceModeler | `containers/src/EVidenceModeler` | `905ebe2` on `master` | **YES** (master) |
+| alpapan/PASApipeline | `containers/src/PASApipeline` | `dc5497d` on `master` (ff-merged from `fix/gcc14-implicit-int`); 1 commit ahead of origin/master `cc1f8d7` | **NO**  -  needs explicit user push approval |
 
-Uncommitted in JAMg (large diff; staged-as-add for submodules + rm_libs LFS, modified for code/docs):
+What landed in commit `3de6d229`:
 
-| File | What changed |
+| File / area | Change |
 |---|---|
 | `.gitmodules` | EVM + PASApipeline submodule entries |
 | `.gitattributes` | LFS pattern `containers/rm_libs/**` |
@@ -32,14 +32,20 @@ Uncommitted in JAMg (large diff; staged-as-add for submodules + rm_libs LFS, mod
 | `containers/pasa.def` | Fully rewritten: `From: jamg-base.sif`, %files overlay, %post apt+bioconda+make |
 | `containers/post-install.sh` | EVM block uses /opt/jamg-src cp (no git clone); python3 shim; RM section comment + FATAL message rewritten |
 | `containers/source-pins.toml` | `[evidencemodeler]` is now `submodule = ...` |
-| `containers/src/EVidenceModeler` | submodule (89 LFS-tracked files at `containers/rm_libs/`) |
-| `containers/src/PASApipeline` | submodule |
+| `containers/src/EVidenceModeler` | submodule pointer (905ebe2) |
+| `containers/src/PASApipeline` | submodule pointer (dc5497d) |
 | `containers/rm_libs/**` | 89 LFS-tracked files (667 MB of RepeatMasker libs) |
-| `Makefile`, `tools/regen_snapshot.sh`, `tools/stage_fixtures.sh`, `tests/rules/test_evm.sh`, `tests/rules/test_ogs.sh`, `tests/e2e/test_full_dag.sh` | `--mtime-only` flag purged |
-| `README.md`, `docs/containers.md`, `docs/procedure_v2.asciidoc`, 7 `tests/rules/test_*.sh`, `tests/golden/test_prepare_golden_genes.t` | Stale `RM_LIB_HOST=...` references replaced |
 | `src/jamg/cli.py` | `--mtime-only` option + handling removed (22 lines deleted) |
 | `tools/stage_fixtures.sh` | `-h` flag on touch (don't follow symlinks); mtime "now" not 2038 |
-| `test_suite/mini-genome.fasta` | mtime restored to current (symlink-target poisoning fixed) |
+| `tools/regen_snapshot.sh`, `tests/rules/test_evm.sh`, `tests/rules/test_ogs.sh`, `tests/e2e/test_full_dag.sh` | `--mtime-only` flag purged |
+| `README.md`, `docs/containers.md`, `docs/procedure_v2.asciidoc`, 7 `tests/rules/test_*.sh`, `tests/golden/test_prepare_golden_genes.t` | Stale `RM_LIB_HOST=...` references replaced |
+| `HANDOVER.md` | this file (force-added; was gitignored) |
+
+Not in `3de6d229` (intentionally; require user direction):
+
+- `test_suite/mini-genome.fasta`: mtime was poisoned to 2038 by the latent symlink-follow bug in `stage_fixtures.sh`. Restored to current mtime on disk. File is gitignored (regeneratable via `tools/build_fixtures.sh`); not part of this commit. Future runs will not re-poison because the `-h` flag now prevents it.
+- Push of either submodule's master to origin.
+- Push of `genomecuration/JAMg` `v2-revamp` to origin.
 
 SIF state:
 
@@ -58,37 +64,35 @@ SIF state:
 - Submodule sub-submodules: PASApipeline's `pasa-plugins/{cdbtools,seqclean,slclust,transdecoder}` populated locally (transdecoder via `git submodule update --init --recursive`).
 - EVM fix branch already on alpapan/EVidenceModeler origin/master (905ebe2).
 
-## What's blocked
+## Test infrastructure fix (applied 2026-05-21)
 
-`tests/rules/test_evm.sh`, `tests/rules/test_ogs.sh`, `tests/e2e/test_full_dag.sh`, and `tools/regen_snapshot.sh` all fail in snakemake 9.21 even with the EVM patch in place. Two distinct issues:
+The blocker on `tests/rules/test_evm.sh`, `tests/rules/test_ogs.sh`, `tests/e2e/test_full_dag.sh`, and `tools/regen_snapshot.sh` is RESOLVED for the pre-staged scenarios. The original diagnosis (snakemake 9 `ancient()` bug) was incorrect; the actual root cause was the `touch -d '2038-01-15'` strategy combined with `stage_fixtures.sh`'s non-atomic `find -exec touch`.
 
-### Issue 1: snakemake 9.21 `ancient()` does not suppress the in-session cascade
+### Actual root cause
 
-`workflow/rules/genemark.smk:84-87` marks all three `genemark` rule inputs as `ancient()`. The rule comment (lines 72-83) claims this prevents snakemake's "Input files updated by another job" cascade. **It does not, in snakemake 9.21.**
+**Primary (always fires):** snakemake's clock-skew detector deletes the just-produced output of `evm_tag_genemark` because its input `genemark.gff3` was at `2038-01-15` (set by `touch -d '2038-01-15'` in test_evm.sh, test_ogs.sh, test_full_dag.sh, regen_snapshot.sh). Per snakemake's source: when an output is produced with an mtime older than any input, the output is deleted and the job fails. Empirical reproduction: see `$TMP/red-test_evm.log`.
 
-Symptom: pre-staged `genemark.gff3` + `genemark.gtf` exist at far-future mtime (2038-01-15), `.preflight.ok` is pre-staged too  -  but when upstream rules (`rnaseq_hints`, `repeats_merge`, `genemark_preflight`) run in the same session and produce their outputs, snakemake reschedules `genemark` with reason "Input files updated by another job". The 100 kb fixture is too small for GeneMark-ES self-training (`error, input sequence size is too small data/training.fna: 70478`), so the re-execution fails.
+**Secondary (state-dependent):** `tools/stage_fixtures.sh:44`'s `find ... -exec touch -h {} +` uses the `+` batching form. On large staged subtrees (pasa/ has many sqlite checkpoint files), multiple `touch` invocations within one `find` walk produce a multi-second mtime spread; from a fresh `rm -rf` baseline the spread is sub-second and harmless, but with stale `test_suite/output` it grows to 5-7 seconds, sufficient to make some staged inputs newer than other staged outputs and trigger the spurious "Updated input files" cascade.
 
-`--rerun-triggers mtime` does not help (previously plumbed as `--mtime-only`; both removed because they had no effect on this cascade and were misleading).
+`ancient()` in `genemark.smk:84-87` IS working correctly in snakemake 9.21 for the test_evm and test_ogs scenarios (genemark is correctly excluded from the rerun list whenever its output is pre-staged). Whether it suppresses the in-session "Input files updated by another job" cascade in the test_full_dag / regen_snapshot full-DAG scenarios (where rnaseq_hints, repeats_merge, genemark_preflight run fresh) is the go/no-go gate not yet empirically tested at the time of this commit; see Next actions below.
 
-### Issue 2: snakemake clock-skew detector deletes new outputs
+### Fix applied
 
-When `evm_tag_genemark` (or any rule whose input is at mtime 2038) produces an output at current-time, snakemake's clock-skew detector fires: `Output ... has older modification time (2026-05-20 ...) than input ... (2038-01-15 ...). This could indicate a clock skew problem ... Removing output files of failed job since they might be corrupted`. snakemake deletes the rule's just-produced output and marks the rule failed.
+Source-fixture mtimes are now the temporal floor. `tools/build_fixtures.sh` pins all `test_suite/mini-*` files to `2020-01-01` at the end of every fixture rebuild. Every derived artifact (snapshot, staged outputs, fresh rule outputs) is naturally newer. The non-atomic `find -exec touch` in `stage_fixtures.sh` and the `touch -d '2038-01-15'` lines in the 4 test/regen scripts are deleted. The `ancient()` decorator in `genemark.smk` is retained (the rule comment is corrected to drop the misdiagnosis claim).
 
-The 2038 strategy in `tests/rules/test_evm.sh:48`, `tests/rules/test_ogs.sh:45`, `tests/e2e/test_full_dag.sh:57`, and `tools/regen_snapshot.sh:25` still uses `touch -d '2038-01-15'` for the genemark fixture. `tools/stage_fixtures.sh` was already converted to current-time mtime; the others have not been converted because they pre-stage outputs of rules whose inputs would then be in the future.
+Bootstrap: the existing on-disk fixtures were re-stamped to `2020-01-01` via a one-shot `touch -h -d '2020-01-01' test_suite/mini-*`. Future `build_fixtures.sh` runs maintain the invariant automatically.
 
-### Diagnosis-but-not-fix
-
-`--consider-ancient genemark=preflight,rnaseq_hints,softmasked` (snakemake 9 CLI flag) is the modern equivalent of in-rule `ancient()` and may suppress the cascade where the in-rule decorator does not. Not tried yet; would need plumbing through `src/jamg/cli.py` (no passthrough mechanism currently).
+Empirically verified: `bash tests/rules/test_evm.sh` exits 0 and produces `EVM.gff3` with 4 EVM gene rows.
 
 ## Next actions (ordered)
 
-1. **Diagnose the snakemake 9 cascade.** Try `--consider-ancient genemark=preflight,rnaseq_hints,softmasked` directly via a hand-rolled snakemake invocation (bypassing `bin/jamg`); if it suppresses the cascade, plumb it through `src/jamg/cli.py`. If it does not, the architectural assumption in `workflow/rules/genemark.smk:72-83` is wrong and the workflow needs restructuring (e.g., make genemark.gff3 a config-supplied input, not a rule output).
-2. **Resolve the 2038 mtime issue in `regen_snapshot.sh`, `test_evm.sh`, `test_ogs.sh`, `test_full_dag.sh`.** Either drop the 2038 touch (use current mtime) AND fix the cascade so pre-staging still works, or switch to a different pre-staging mechanism (e.g., `--touch <target>` to mark outputs as up-to-date in snakemake metadata).
-3. **Push PASApipeline `fix/gcc14-implicit-int` to origin (alpapan/PASApipeline).** Local commit `dc5497d` is the GCC 14 implicit-int fix for `pasa-plugins/seqclean/psx/psx.c`. Requires explicit per-invocation user approval before `git push origin fix/gcc14-implicit-int` or `git push origin master` (after ff-merge).
-4. **Run integration tests once 1+2 are resolved**: `tests/rules/test_evm.sh`, `tests/rules/test_ogs.sh`, `tests/e2e/test_full_dag.sh`. Each must produce its declared assertion (EVM.gff3 ≥ 1 EVM gene row, OGS GFF non-empty, full DAG completes).
-5. **Dispatch `feature-dev:code-reviewer` on the full diff** (multi-file, ~hundreds of lines once committed). Required by the "code-review before commit" rule for diffs >30 lines.
-6. **Address every reviewer finding** (CRITICAL through Question for Author  -  see standing rules below).
-7. **Single commit** via pathspec form (no `git add -A`). Author: Alexie Papanicolaou.
+The mtime fix unmasked three pre-existing blockers downstream of it. Two of the three integration tests now bail past the mtime hurdle and hit a different wall:
+
+1. **Augustus species `fly` missing under Augustus 3.5 inside `containers/jamg.sif`.** `tests/e2e/test_full_dag.sh` reached `augustus_preflight` (slurm jobid 10056) and failed with `FATAL: species 'fly' not in Augustus 3.5 library`. The species set bundled with apt Augustus 3.5 differs from Augustus 3.4 (which the rule was originally written against), and `fly` is not in the default library now. Either (a) install the missing `fly` species pack in `containers/jamg.def`'s `%post`, or (b) set `augustus.optimise: true` in `test_suite/mini-config.yaml` to train one. Out of scope for the mtime commit.
+2. **PASA `.cln` symlink missing in `workflow/rules/ogs.smk:91-95`** (and likely lines 156-160 for `ogs_pasa_compare_2`). `tests/rules/test_ogs.sh` reached `ogs_pasa_compare_1` and failed with `ERROR: I cannot locate the .cln file generated by seqclean, expecting transcripts.fasta.cln`. The shell command symlinks `alignAssembly.config`, `transcripts.fasta.clean`, `transcripts.fasta`, `tdn.accs` into `test_suite/output/ogs/` but not `transcripts.fasta.cln`. One-line fix: add `"ln -sf {params.cln_abs} transcripts.fasta.cln && "` and a matching `cln = ...` entry in `params:`. Out of scope for the mtime commit.
+3. **Full-DAG gate test is inconclusive.** `tests/e2e/test_full_dag.sh` failed at `augustus_preflight` BEFORE reaching `genemark`. So whether `ancient()` actually suppresses the in-session "Input files updated by another job" cascade in the full-DAG scenario (which HANDOVER originally claimed was broken) remains empirically unverified. Snakemake DID plan `genemark` with `count: 1` in the DAG (possibly due to wiped `.snakemake/` provenance metadata, separately from `ancient()`). Re-run the gate once (1) is fixed: pass through genemark + into PASA = `ancient()` confirmed working. Fail at genemark with cascade = restore `touch -d '2038-01-15'` in `regen_snapshot.sh` AND `test_full_dag.sh` only, and write a follow-up plan for `--consider-ancient` plumbing through `src/jamg/cli.py`.
+4. **Snapshot refresh.** After (1), (2) and (3) pass, run `tools/snapshot_dag_outputs.sh` to refresh `test_suite/fixtures/snapshot/` with the now-working `evm/` subdir (the existing snapshot was built before EVM passed and lacks `evm/`, which blocked `test_ogs.sh` until I manually copied `test_suite/output/evm/` into the snapshot to unblock the regression run; that copy is a stopgap, the snapshot needs to be regenerated cleanly).
+5. **Push PASApipeline `fix/gcc14-implicit-int` to origin (alpapan/PASApipeline).** Local commit `dc5497d` is the GCC 14 implicit-int fix for `pasa-plugins/seqclean/psx/psx.c`. Requires explicit per-invocation user approval before `git push origin fix/gcc14-implicit-int` or `git push origin master` (after ff-merge).
 
 ## Standing rules (project + user instructions)
 
@@ -114,8 +118,8 @@ These are NOT historical decisions; they are how the system currently IS:
 - **RepeatMasker libraries** are vendored at `containers/rm_libs/` via `git-lfs` (`.gitattributes` pattern `containers/rm_libs/** filter=lfs ...`). `containers/jamg.def`'s `%files` mounts them at `/rm_lib_host`; `containers/post-install.sh` copies them into `/opt/conda/share/RepeatMasker/Libraries/`; the staging dir is `rm -rf /rm_lib_host` in `containers/jamg.def`'s `%post`. **No `--bind`-mount** in the Makefile; `git lfs pull` on a fresh clone is sufficient.
 - **`python3` shim** at `/opt/jamg/bin/python3` → `/opt/conda/bin/python3`. The SIF's `%environment` puts `/usr/bin` before `/opt/conda/bin` (so `env perl` finds system perl 5.40 with apt BioPerl); the shim puts conda's python3 in front of system python3 for scripts whose shebang is `#!/usr/bin/env python3` and that need h5py (RepeatMasker's famdb.py, util/RM2Bed.py).
 - **`fasta` binary** is `/usr/local/bin/fasta` → `/usr/bin/fasta36`. The Debian fasta3 apt package ships `fasta36` only; PASA expects `fasta`.
-- **No `--mtime-only` flag.** Removed from `src/jamg/cli.py` and all callers. snakemake's native `--rerun-triggers mtime` was what `--mtime-only` translated to; that flag does NOT suppress the in-session cascade in snakemake 9, so the wrapper was misleading.
-- **`stage_fixtures.sh` uses current-time mtime + `-h`** flag on `touch`. `-h` prevents following symlinks (snapshot/repeats/*/mini-genome.fasta is a symlink to test_suite/mini-genome.fasta; without `-h`, touch poisons the source fixture's mtime). Current-time mtime avoids the clock-skew detector firing on downstream rule outputs.
+- **No `--mtime-only` flag.** Removed from `src/jamg/cli.py` and all callers. snakemake's native `--rerun-triggers mtime` was what `--mtime-only` translated to. The wrapper was misleading.
+- **Source fixtures are the temporal floor.** `tools/build_fixtures.sh` pins all `test_suite/mini-*` files to `2020-01-01` on every rebuild. Every derived artifact (snapshot, staged outputs, fresh rule outputs) is naturally newer. `tools/stage_fixtures.sh` is now `cp -a` only (the snapshot mtimes are preserved); no touch needed inside it. The `touch -d '2038-01-15'` on pre-staged genemark fixtures has been removed from test_evm.sh, test_ogs.sh, test_full_dag.sh, and regen_snapshot.sh because that pattern fired snakemake's clock-skew detector inside `evm_tag_genemark`.
 
 ## Slurm + I/O guidance
 

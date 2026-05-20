@@ -69,18 +69,18 @@ rule genemark:
     # Run GeneMark-ET with RNA-seq intron evidence. Produces genemark.gtf
     # and a canonical GFF3 via gtf_to_gff3_format.pl.
     #
-    # rnaseq_hints and softmasked are marked ancient() so snakemake's
-    # in-session DAG cascade ("Input files updated by another job") does
-    # NOT re-trigger genemark when those upstream rules execute in the
-    # same session. This lets per-rule tests and the seed full-DAG run
-    # pre-stage the genemark fixture (committed at test_suite/fixtures/
-    # genemark.gff3, subset of a 1 Mb prediction) and have snakemake skip
-    # the rule on the 100 kb default fixture. Without ancient(), the
-    # cascade fires even with --rerun-triggers mtime + far-future stamps,
-    # and the pre-stage is undone within the session. Missing-output
-    # still triggers the rule normally, so a first-run (no pre-staged
-    # genemark.gtf) behaves identically to before. To force a re-run when
-    # upstream evidence changes, use `snakemake --forcerun genemark`.
+    # ancient() on inputs is INTENDED to suppress snakemake's in-session "Input
+    # files updated by another job" cascade. Without it, when rnaseq_hints or
+    # repeats_merge run in the same session, snakemake would re-trigger genemark
+    # even though the pre-staged genemark output (test_suite/fixtures/genemark.gff3,
+    # a 100 kb subset of a 1 Mb prediction) is already present. gmes_petap --ES
+    # cannot converge on the 100 kb default fixture (needs >=1 Mb training data),
+    # so re-running would fail. Whether ancient() fully suppresses this cascade in
+    # snakemake 9.21 has been verified empirically for the test_evm and test_ogs
+    # scenarios (pre-staged upstream); the test_full_dag / regen_snapshot scenario
+    # (upstream rules fresh) is not yet fully verified at the time of writing.
+    # Missing output still triggers the rule normally. Force a re-run after
+    # upstream evidence changes with `snakemake --forcerun genemark`.
     input:
         preflight    = ancient(rules.genemark_preflight.output.sentinel),
         rnaseq_hints = ancient(rules.rnaseq_hints.output.hints),

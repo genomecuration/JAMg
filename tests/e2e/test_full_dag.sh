@@ -54,9 +54,6 @@ mkdir -p "$REPO/test_suite/output/genemark"
 cp "$GM_FIXTURE" "$REPO/test_suite/output/genemark/genemark.gff3"
 cp "$GM_FIXTURE_GTF" "$REPO/test_suite/output/genemark/genemark.gtf"
 : > "$REPO/test_suite/output/genemark/.preflight.ok"
-touch -d '2038-01-15' "$REPO/test_suite/output/genemark/genemark.gff3" \
-                     "$REPO/test_suite/output/genemark/genemark.gtf" \
-                     "$REPO/test_suite/output/genemark/.preflight.ok"
 
 # Layout B: snakemake-slurm submits each rule as its own sbatch via the
 # profile at workflow/profiles/slurm/. Per-rule threads/mem_mb map to
