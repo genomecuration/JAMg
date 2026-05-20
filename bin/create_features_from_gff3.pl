@@ -62,7 +62,7 @@ $|=1;
 our $SEE;
 my $codon_table = 'universal';
 my $minorf = 96;    #minimum orf size in bp
-my $to_bed_exec = "$RealBin/../3rd_party/PASA/misc_utilities/gene_gff3_to_bed.pl";
+my $to_bed_exec = "/opt/jamg/share/EVidenceModeler/EvmUtils/gene_gff3_to_bed.pl";
 my ($simple_gff3, $gfffile, $genome, $change_name,$lettername,$verbose, $fix_first_phase, $padding_file,
  $one_iso, $do_rename, $change_source, $strip_name, $split_single, $delete_ns, $bioproject_locus_id,$go_file,%dbxref_hash, $is_galaxy );
 pod2usage $! unless &GetOptions(

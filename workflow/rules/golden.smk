@@ -62,6 +62,13 @@ rule golden_genes:
         "    --gmap_dir {params.golden_dir_abs}/gmap "
         "    --augustus /opt/jamg/share/Augustus "
         "    --intron {params.intron} "
+        # --norefine: skip exonerate's --refine region pass. Refinement is
+        # slow on PASA contigs (multi-minute per query under ParaFly) and
+        # is documented to "prevent segmentation faults in some searches".
+        # Trade-off: slightly less accurate exonerate alignments; the
+        # downstream Golden::Filter::validate_gene_structure check still
+        # filters non-canonical genes.
+        "    --norefine "
         "    --threads {threads}"
 
 
