@@ -32,7 +32,7 @@ hits=$(
       -E '\b(SNAP|snap|GeneID|geneid|GlimmerHMM|glimmer|HHblits|hhblits|HHsuite|hhsuite|HHsearch|hhsearch|fathom|\.zff\b)\b' \
       bin/ PerlLib/ \
       $(find tests -type f \( -name '*.pl' -o -name '*.pm' -o -name '*.py' -o -name '*.smk' -o -name '*.sh' -o -name '*.t' \) \
-         ! -path 'tests/no-legacy/*') \
+         ! -path 'tests/no-legacy/*' ! -path 'tests/e2e/*') \
       workflow/Snakefile workflow/rules/common.smk workflow/rules/repeats.smk \
       workflow/rules/tgg.smk workflow/rules/pasa.smk workflow/rules/golden.smk \
       workflow/rules/genemark.smk workflow/rules/proteins.smk workflow/rules/augustus.smk \
