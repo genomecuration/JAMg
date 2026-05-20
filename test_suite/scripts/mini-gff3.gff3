@@ -1,0 +1,13 @@
+##gff-version 3
+ctgB	maker	gene	500	900	.	+	.	ID=gene2
+ctgB	maker	mRNA	500	900	.	+	.	ID=mRNA2;Parent=gene2
+ctgB	maker	exon	500	900	.	+	.	ID=exon2.1;Parent=mRNA2
+ctgB	maker	CDS	500	900	.	+	0	ID=cds2.1;Parent=mRNA2
+
+ctgA	maker	gene	100	300	.	+	.	ID=gene1
+ctgA	maker	mRNA	100	300	.	+	.	ID=mRNA1;Parent=gene1
+ctgA	maker	exon	100	200	.	+	.	ID=exon1.1;Parent=mRNA1
+ctgA	maker	intron	201	250	.	+	.	ID=intron1.1;Parent=mRNA1
+ctgA	maker	exon	251	300	.	+	.	ID=exon1.2;Parent=mRNA1
+ctgA	maker	CDS	100	200	.	+	0	ID=cds1.1;Parent=mRNA1
+ctgA	maker	CDS	251	300	.	+	1	ID=cds1.2;Parent=mRNA1

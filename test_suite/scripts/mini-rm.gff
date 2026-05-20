@@ -1,0 +1,4 @@
+# RepeatMasker output (gff)
+ctgA	RepeatMasker	similarity	100	350	17.2	+	.	Target "Motif:DNA1" 1 250
+ctgA	RepeatMasker	similarity	500	750	22.1	-	.	Target "Motif:LTR2" 1 250
+ctgB	RepeatMasker	similarity	1000	1500	10.0	+	.	Target "Motif:SINE1" 1 500

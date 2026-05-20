@@ -1,0 +1,5 @@
+chr1	AUGUSTUS	gene	1000	2000	0.5	+	.	g1
+chr1	AUGUSTUS	transcript	1000	2000	0.5	+	.	g1.t1
+chr1	AUGUSTUS	CDS	1100	1500	0.9	+	0	transcript_id "g1.t1"; gene_id "g1";
+chr1	AUGUSTUS	CDS	1700	1900	0.9	+	0	transcript_id "g1.t1"; gene_id "g1";
+chr1	AUGUSTUS	stop_codon	1898	1900	.	+	0	transcript_id "g1.t1"; gene_id "g1";

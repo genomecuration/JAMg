@@ -1,0 +1,30 @@
+Command line: [exonerate -minorf 96 -protein -in mini.pep -separate -aat_dir . -aat_suffix filter -threads 1 -intron_max 1000 -model protein2genome]
+Hostname: [test-host]
+
+vulgar: query1 1 100 + ctgA 1 300 + 1500 M 100 300
+
+# --- START OF GFF DUMP ------------------------------------------------------
+##gff-version 2
+##source-version exonerate:protein2genome:local 2.4.0
+##date 2026-01-01
+##type DNA
+#
+#
+# seqname source feature start end score strand frame attributes
+#
+ctgA	exonerate:protein2genome:local	gene	100	300	1500	+	.	gene_id 0 ; sequence query1
+ctgA	exonerate:protein2genome:local	cds	100	300	.	+	.
+ctgA	exonerate:protein2genome:local	exon	100	300	.	+	.	insertions 0 ; deletions 0
+ctgA	exonerate:protein2genome:local	similarity	100	300	1500	+	.	alignment_id 0 ; Query query1 ; Align 100 1 300
+# --- END OF GFF DUMP --------------------------------------------------------
+#
+RYOAP_START
+RYOAP_STATS_D
+Stats: 1500	0	100	0	0	0.95	0.98
+RYOAP_QUERY_D
+QUERY	query1	1	100
+ATGAAACGGGGGTAA
+RYOAP_TARGET_D
+TARGET	ctgA	100	300
+ATGAAACGGGGGTAA
+RYOAP_END
