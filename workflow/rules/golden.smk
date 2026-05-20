@@ -32,6 +32,7 @@ rule golden_genes:
         pasa_cds_abs       = lambda _wc, input: _os.path.abspath(input.pasa_cds),
         golden_dir_abs     = lambda _wc, output: _os.path.dirname(_os.path.abspath(output.gff)),
         intron             = _INTRON,
+        repo_bin           = _os.path.abspath(_os.path.join(workflow.basedir, "..", "bin")),
     container: "containers/jamg.sif"
     threads: THREADS
     resources:
@@ -44,6 +45,10 @@ rule golden_genes:
         # auxiliary scripts/ subtree does not exist. Pass --augustus
         # explicitly pointing at the actual install location
         # (jamg.sif: /opt/jamg/share/Augustus/{bin,scripts}/).
+        # bin/ lives on the host (bind-mounted into the SIF at the repo
+        # root); /opt/jamg/bin/ holds the upstream-shipped helpers. Add
+        # repo bin/ to PATH so prepare_golden_genes.pl resolves.
+        "export PATH={params.repo_bin}:$PATH && "
         "mkdir -p {params.golden_dir_abs}/gmap && "
         "prepare_golden_genes.pl "
         "    --outdir {params.golden_dir_abs} "
