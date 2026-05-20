@@ -18,7 +18,7 @@ OUT="$REPO/test_suite/output-1mb/genemark"
 FIXTURE_DIR="$REPO/test_suite/fixtures"
 
 if [[ ! -f "$SIF" ]]; then
-    echo "ERROR: $SIF not found. Run 'make sif RM_LIB_HOST=...' first." >&2
+    echo "ERROR: $SIF not found. Run 'make sif' first." >&2
     exit 1
 fi
 

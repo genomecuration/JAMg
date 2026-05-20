@@ -28,7 +28,7 @@ touch -d '2038-01-15' test_suite/output/genemark/genemark.gff3 \
 # 4. Run the seed full DAG (everything through ogs_emit), producing the
 # outputs Task 3 snapshots.
 pixi run bin/jamg run --config test_suite/mini-config.yaml --cores "${SLURM_CPUS_PER_TASK:-20}" \
-    --mtime-only --until ogs_emit
+    --until ogs_emit
 
 # 5. Snapshot.
 bash tools/snapshot_dag_outputs.sh

@@ -1,1 +1,5 @@
 *.bz2 filter=lfs diff=lfs merge=lfs -text
+# RepeatMasker libraries (RepBase + RM open-4 release). Vendored under
+# containers/rm_libs/ so the SIF build does not depend on host-bind paths
+# like the legacy RM_LIB_HOST=/apps/.../Libraries pattern.
+containers/rm_libs/** filter=lfs diff=lfs merge=lfs -text

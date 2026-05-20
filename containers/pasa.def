@@ -1,32 +1,103 @@
-Bootstrap: docker
-From: pasapipeline/pasapipeline:2.5.3
+Bootstrap: localimage
+From: jamg-base.sif
 
-# PASA 2.5.3 SIF, pulled unmodified from the upstream Docker image.
+# PASA SIF, bootstrap from jamg-base.sif (Debian trixie, glibc-2.40+,
+# apt-installed perl 5.40 + BioPerl + Berkeley DB perl + DBI). The
+# modern glibc base resolves the libfakeroot.so / GLIBC_2.33 conflict
+# that blocked %post on the previous pasapipeline:2.5.3 Docker base.
+#
+# PASA itself is vendored from the alpapan/PASApipeline submodule at
+# containers/src/PASApipeline (carries `replaced with fasta retriever`
+# + `ignore comment lines` patches on top of v2.5.3). The submodule's
+# pasa-plugins sub-submodules (cdbtools, seqclean, slclust) are
+# populated in the parent JAMg clone via `git submodule update
+# --init --recursive`; the transdecoder sub-submodule is cloned in
+# %post (its git ref is not propagated through %files).
 #
 # Consumed by workflow/rules/pasa.smk via per-rule `container:` directive.
 # Standalone use:
 #   apptainer exec containers/pasa.sif Launch_PASA_pipeline.pl --version
 
-# NOTE: no %post block. The upstream pasapipeline:2.5.3 image is built on a
-# glibc-2.31 base; apptainer's libfakeroot.so requires GLIBC_2.33+ to run
-# under --fakeroot, so any %post would fail at faked startup. The image is
-# used as-is; the tmp / apt caches the upstream image carries are cosmetic
-# only and do not affect runtime behaviour.
+%files
+    src/PASApipeline /opt/PASApipeline
+
+%post
+    set -eux
+    export DEBIAN_FRONTEND=noninteractive
+
+    # PASA-specific apt deps. jamg-base.sif already provides:
+    #   - perl 5.40 with libbio-perl-perl, libdbi-perl, libdb-perl,
+    #     libxml-libxml-perl, libyaml-perl, libjson-perl, etc.
+    #   - libsqlite3-dev, sqlite3, libboost-all-dev, build-essential.
+    # PASA adds on top: Berkeley DB headers (libdb-dev), GD bindings
+    # (libgd-dev + libgd-perl), DBD::SQLite, DBD::mysql (PASA's
+    # alignAssembly.config supports both backends), cpanminus for any
+    # cpanm fallback. The alignment binaries gmap, fasta3, minimap2,
+    # samtools are present in Debian trixie's apt; blat is not (it lives
+    # in bioconda only), so it is installed via micromamba below.
+    apt-get update
+    apt-get install -y --no-install-recommends \
+        libdb-dev libgd-dev libgd-perl \
+        libdbd-sqlite3-perl libdbd-mysql-perl \
+        libssl-dev \
+        liburi-perl libio-compress-perl \
+        cpanminus pkg-config \
+        gmap fasta3 minimap2 samtools
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+
+    # blat and pblat are not in Debian trixie apt; install both via
+    # bioconda micromamba. MAMBA_ROOT_PREFIX is exported by jamg-base.sif's
+    # %environment, but apptainer %post does not inherit %environment, so
+    # re-export here. /opt/conda is a pre-created empty dir from
+    # jamg-base.sif.
+    #
+    # Channel order: conda-forge FIRST, bioconda SECOND. Bioconda packages
+    # depend on conda-forge for base libraries (zlib, libpng, libgcc-ng);
+    # listing bioconda alone fails the solver (`no viable options ...
+    # libpng =* * does not exist`).
+    export MAMBA_ROOT_PREFIX=/opt/conda
+    /usr/local/bin/micromamba install -n base -y \
+        -c conda-forge -c bioconda \
+        blat pblat
+    /usr/local/bin/micromamba clean -ay
+
+    # PASA expects a `fasta` binary on PATH (the Pearson FASTA suite's
+    # main alignment tool). Debian's fasta3 apt package ships
+    # /usr/bin/fasta36 with no plain `fasta` alias; the upstream PASA
+    # Dockerfile renames it via `cp fasta36 /usr/local/bin/fasta`. Use
+    # a symlink for the same effect with zero copy cost.
+    ln -sf /usr/bin/fasta36 /usr/local/bin/fasta
+
+    # PASA's Makefile expects pasa-plugins/transdecoder to be
+    # populated. %files copies the parent submodule's working tree but
+    # not its sub-submodule .git references, so clone the dep into
+    # place now. The other plugins (cdbtools, seqclean, slclust) ARE
+    # already populated because the parent JAMg clone was initialised
+    # with `git submodule update --init --recursive` before %files ran.
+    cd /opt/PASApipeline/pasa-plugins
+    if [ -z "$(ls -A transdecoder 2>/dev/null)" ]; then
+        rm -rf transdecoder
+        git clone --depth 1 \
+            https://github.com/TransDecoder/TransDecoder.git transdecoder
+    fi
+
+    # Build pasa_cpp + plugins (slclust, cdbfasta/cdbyank, mdust, psx,
+    # trimpoly, seqclean) per the top-level PASA Makefile. Outputs land
+    # in /opt/PASApipeline/bin/ which is on PATH via %environment.
+    cd /opt/PASApipeline
+    make CC=gcc CXX=g++ -j"$(nproc)"
 
 %environment
     export LC_ALL=C.UTF-8
-    # The upstream Docker image sets ENV PATH=$PASAHOME:$PASAHOME/bin:$PATH,
-    # but the docker2singularity conversion drops it (10-docker2singularity.sh
-    # rewrites PATH to /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-    # only). PASAHOME itself survives. Restore the PATH so Launch_PASA_pipeline.pl
-    # and the other PASA scripts are findable when invoked via `apptainer exec`.
-    # /usr/local/src/PASApipeline is the PASA install path baked into the
-    # upstream pasapipeline:2.5.3 Docker image (verified via
-    # `apptainer exec containers/pasa.sif find / -name Launch_PASA_pipeline.pl`).
-    # If a future PASA image moves this, the fallback silently keeps the old
-    # path; bump it in lockstep with the Bootstrap: docker From: tag above.
-    export PASAHOME="${PASAHOME:-/usr/local/src/PASApipeline}"
-    export PATH="$PASAHOME:$PASAHOME/bin:$PATH"
+    export PASAHOME=/opt/PASApipeline
+    export MAMBA_ROOT_PREFIX=/opt/conda
+    # $PASAHOME first so Launch_PASA_pipeline.pl is found; $PASAHOME/bin
+    # next for the compiled-from-Makefile binaries (pasa, slclust,
+    # cdbfasta, mdust, etc.); /opt/conda/bin last so the bioconda blat
+    # (and any future bioconda additions) are reachable without
+    # disturbing perl resolution.
+    export PATH="$PASAHOME:$PASAHOME/bin:/opt/conda/bin:$PATH"
 
 %runscript
     exec Launch_PASA_pipeline.pl "$@"

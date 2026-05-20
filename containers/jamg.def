@@ -14,19 +14,22 @@ From: jamg-base.sif
 # pulled from upstream Docker. The Snakemake rules use per-rule `container:`
 # directives to dispatch to the right SIF.
 
-%setup
-    # Pre-create the bind destination for the host RepeatMasker libraries.
-    # Apptainer cannot auto-create bind destinations in writable build mode
-    # without overlay/underlay support; %setup runs after bootstrap and
-    # before %files / %post with $APPTAINER_ROOTFS pointing at the extracted
-    # rootfs, so we can mkdir it directly.
-    mkdir -p ${APPTAINER_ROOTFS}/rm_lib_host
-
 %files
     environment.yml /opt/environment.yml
     post-install.sh /opt/post-install.sh
     ../bin /opt/jamg/bin
     ../PerlLib /opt/jamg/PerlLib
+    # EVM source vendored via the alpapan/EVidenceModeler submodule at
+    # containers/src/EVidenceModeler (pinned by parent-repo SHA). %post
+    # copies the working tree out of /opt/jamg-src into the live install
+    # tree, then cleans the staging directory.
+    src/EVidenceModeler /opt/jamg-src/EVidenceModeler
+    # RepeatMasker Libraries vendored under containers/rm_libs/ via git-lfs
+    # (.gitattributes tracks containers/rm_libs/**). Mounted into the SIF
+    # build at /rm_lib_host so the existing post-install.sh RepeatMasker
+    # section consumes it unchanged (cp -a /rm_lib_host/. ...). Replaces
+    # the legacy `--bind RM_LIB_HOST=...` Makefile invocation.
+    rm_libs /rm_lib_host
 
 %post
     # /bin/sh is dash in the trixie base. Dash-safe top-level; bash sub-shell
@@ -84,9 +87,12 @@ From: jamg-base.sif
     # Tolerant rm because /var/tmp may contain systemd-private dirs (owned by
     # other UIDs, fakeroot can't remove them; cleanup is best-effort).
     rm -rf /tmp/* /var/tmp/* /root/.cache /opt/src 2>/dev/null || true
-    # /rm_lib_host was the bind-mount target during build; remove the now-empty
-    # stub dir so it doesn't appear in the squashed SIF.
-    rmdir /rm_lib_host 2>/dev/null || true
+    # /rm_lib_host is the SIF-build staging dir populated by %files. Once
+    # post-install.sh has copied the libraries into their canonical location
+    # under /opt/conda/share/RepeatMasker/Libraries/, the staging copy is
+    # redundant. Remove it so the squashed SIF does not ship 667 MB of
+    # duplicates.
+    rm -rf /rm_lib_host
 
     # Augustus's pasapolyA2hints.pl ships with a broken shebang
     # `#!/usr/bin env` (missing slash); the script fails at runtime with

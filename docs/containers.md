@@ -9,7 +9,7 @@ build cache.
 | Image | Base | Carries | Built via |
 |---|---|---|---|
 | `containers/jamg-base.sif` | `ubuntu:24.04` + bioconda | bioconda toolchain, system Perl + apt-installed BioPerl, Click + Snakemake | `make sif-base` |
-| `containers/jamg.sif` | `jamg-base.sif` (`Bootstrap: localimage`) | Augustus master, EVidenceModeler, TransDecoder, GeneMark glue, RepeatMasker + Libraries (host-supplied), JAMg `bin/` + `PerlLib/` | `make sif RM_LIB_HOST=...` |
+| `containers/jamg.sif` | `jamg-base.sif` (`Bootstrap: localimage`) | Augustus master, EVidenceModeler (alpapan fork), TransDecoder, GeneMark glue, RepeatMasker + Libraries (vendored via git-lfs at `containers/rm_libs/`), JAMg `bin/` + `PerlLib/` | `make sif` |
 | `containers/trinity.sif` | upstream Docker | Trinity (de novo + GG modes) | `make sif-trinity` |
 | `containers/pasa.sif` | upstream Docker | PASA pipeline, Launch_PASA_pipeline.pl, pasa_asmbls_to_training_set.dbi | `make sif-pasa` |
 
@@ -21,14 +21,15 @@ startup.
 ## Building
 
 ```bash
-# RepeatMasker libraries are user-supplied (license-encumbered). Point
-# RM_LIB_HOST at a RepeatMasker `Libraries/` directory. The build mounts
-# them read-only at /rm_lib_host and copies into the SIF.
-make sifs RM_LIB_HOST=/path/to/RepeatMasker/Libraries
+# RepeatMasker libraries (license-encumbered) are vendored under
+# containers/rm_libs/ via git-lfs. A clean clone followed by 'git lfs pull'
+# is sufficient; jamg.def %files mounts the directory into the SIF build at
+# /rm_lib_host and the in-SIF post-install.sh copies it into place.
+make sifs
 ```
 
 Individual targets: `make sif-base`, `make sif-trinity`, `make sif-pasa`,
-then `make sif RM_LIB_HOST=...`. The four images are independent except
+then `make sif`. The four images are independent except
 for `jamg.sif` layering on `jamg-base.sif`.
 
 ## Rebuilding for a tool upgrade
@@ -36,7 +37,7 @@ for `jamg.sif` layering on `jamg-base.sif`.
 1. Edit `containers/environment.yml` (bioconda packages) or
    `containers/post-install.sh` (in-place pip/cpan installs).
 2. `rm -f containers/jamg-base.sif containers/jamg.sif`
-3. `make sifs RM_LIB_HOST=/path/to/RepeatMasker/Libraries`
+3. `make sifs`
 
 Build logs land in `containers/build-base.log` and `containers/build.log`.
 

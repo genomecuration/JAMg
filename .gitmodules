@@ -1,0 +1,6 @@
+[submodule "containers/src/EVidenceModeler"]
+	path = containers/src/EVidenceModeler
+	url = git@github.com:alpapan/EVidenceModeler.git
+[submodule "containers/src/PASApipeline"]
+	path = containers/src/PASApipeline
+	url = https://github.com/alpapan/PASApipeline

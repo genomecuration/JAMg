@@ -13,7 +13,7 @@ OUT="$REPO/test_suite/output/tgg"
 
 for sif in "$JAMG_SIF" "$TRINITY_SIF"; do
     if [[ ! -f "$sif" ]]; then
-        echo "ERROR: $sif not found. Run 'make sifs RM_LIB_HOST=...' first." >&2
+        echo "ERROR: $sif not found. Run 'make sifs' first." >&2
         exit 1
     fi
 done

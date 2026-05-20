@@ -27,27 +27,19 @@ containers/jamg-base.sif: containers/jamg-base.def
 # post-install.sh, so any change to either layer triggers the right rebuild.
 # Build log written to containers/build.log AND streamed to stdout via `tee` so
 # background invocations and CI both get a tailable artefact.
-# RepeatMasker libraries are NOT shipped with bioconda's repeatmasker package
-# and have license restrictions, so the user supplies them. Pass the host
-# path on the make command line:
-#
-#     make sif RM_LIB_HOST=/path/to/RepeatMasker/Libraries
-#
-# The directory must contain RepeatMasker.lib, RepeatPeps.lib,
-# RepeatMaskerLib.embl, taxonomy.dat.bz2 (and BLAST sibling indices).
-# Source: RepBase (https://www.girinst.org) + RepeatMasker open-4 release.
-RM_LIB_HOST ?=
-
-containers/jamg.sif: containers/jamg.def containers/jamg-base.sif containers/environment.yml containers/post-install.sh
+# RepeatMasker libraries are vendored under containers/rm_libs/ via git-lfs
+# (.gitattributes tracks `containers/rm_libs/**`). jamg.def %files mounts the
+# directory at /rm_lib_host so the in-SIF post-install.sh consumes it
+# unchanged. No `RM_LIB_HOST=` argument needed; a clean clone with `git lfs
+# pull` is sufficient.
+containers/jamg.sif: containers/jamg.def containers/jamg-base.sif containers/environment.yml containers/post-install.sh containers/rm_libs/RepeatMaskerLib.embl
 	@echo "Building main SIF with flags: $(APPTAINER_BUILD_FLAGS) (log -> containers/build.log)"
-	@[ -n "$(RM_LIB_HOST)" ] || { echo "FATAL: RM_LIB_HOST not set. Usage: make sif RM_LIB_HOST=/path/to/RepeatMasker/Libraries"; exit 1; }
-	@[ -d "$(RM_LIB_HOST)" ] || { echo "FATAL: RepeatMasker libraries dir $(RM_LIB_HOST) does not exist"; exit 1; }
+	@[ -s containers/rm_libs/RepeatMaskerLib.embl ] || { echo "FATAL: containers/rm_libs/RepeatMaskerLib.embl missing or empty. Run 'git lfs pull' to fetch the vendored libraries."; exit 1; }
 	@set -o pipefail; cd containers && \
 	  apptainer build -F $(APPTAINER_BUILD_FLAGS) \
-	    --bind "$(RM_LIB_HOST)":/rm_lib_host:ro \
 	    jamg.sif jamg.def 2>&1 | tee build.log || \
 	  { echo ""; echo "SIF build FAILED -- see containers/build.log"; \
-	    echo "  - Try: cd containers && sudo apptainer build -F --bind $(RM_LIB_HOST):/rm_lib_host:ro jamg.sif jamg.def"; \
+	    echo "  - Try: cd containers && sudo apptainer build -F jamg.sif jamg.def"; \
 	    echo "  - Or pull a prebuilt SIF (see docs/containers.md)"; \
 	    exit 1; }
 

@@ -62,7 +62,7 @@ touch -d '2038-01-15' "$REPO/test_suite/output/genemark/genemark.gff3" \
 # profile at workflow/profiles/slurm/. Per-rule threads/mem_mb map to
 # --cpus-per-task / --mem on the sbatch line. This script runs on the
 # head node and waits for all per-rule jobs to complete.
-pixi run "$REPO/bin/jamg" run --config "$CFG" --executor slurm --jobs 32 --mtime-only
+pixi run "$REPO/bin/jamg" run --config "$CFG" --executor slurm --jobs 32
 
 test -s "$REPO/test_suite/output/OGS.gff3" || { echo "no OGS.gff3"; exit 1; }
 

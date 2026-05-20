@@ -10,7 +10,7 @@ CFG="$REPO/test_suite/mini-config.yaml"
 OUT="$REPO/test_suite/output/proteins"
 
 if [[ ! -f "$SIF" ]]; then
-    echo "ERROR: $SIF not found. Run 'make sif RM_LIB_HOST=...' first." >&2
+    echo "ERROR: $SIF not found. Run 'make sif' first." >&2
     exit 1
 fi
 

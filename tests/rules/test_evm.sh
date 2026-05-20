@@ -48,7 +48,7 @@ cp "$REPO/test_suite/fixtures/genemark.gtf"  "$GM_OUT/genemark.gtf"
 touch -d '2038-01-15' "$GM_OUT/genemark.gff3" "$GM_OUT/genemark.gtf" "$GM_OUT/.preflight.ok"
 
 pixi run "$REPO/bin/jamg" run --config "$CFG" --cores "${SLURM_CPUS_PER_TASK:-20}" \
-    --until evm_run --mtime-only
+    --until evm_run
 
 test -s "$OUT/EVM.gff3" || { echo "EVM.gff3 missing or empty"; exit 1; }
 

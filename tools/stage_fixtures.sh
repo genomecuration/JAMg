@@ -22,9 +22,25 @@ for sub in "$@"; do
     [[ -d "$SRC/$sub" ]] || { echo "FATAL: snapshot has no $sub/ subdir" >&2; exit 1; }
     rm -rf "$DST/$sub"
     cp -a "$SRC/$sub" "$DST/$sub"
-    # 2038-01-15 is the 32-bit time_t cap on many filesystems; later dates
-    # silently clamp. Newer than any input snakemake will see, so the mtime
-    # check unconditionally treats staged outputs as up-to-date.
-    find "$DST/$sub" -exec touch -d '2038-01-15' {} +
+    # Set the staged outputs' mtime to "now". This is later than any
+    # source-fixture mtime snakemake will encounter (test_suite/mini-*),
+    # so snakemake's mtime check treats staged outputs as
+    # up-to-date and skips re-running the staged rules. Downstream rules
+    # whose outputs come from these staged inputs produce files with
+    # mtime "now+ε", which is strictly later than the staged inputs --
+    # snakemake's clock-skew detector does NOT fire (it requires input
+    # mtime to be in the future relative to system time).
+    #
+    # The earlier `-d '2038-01-15'` trick clamped to the 32-bit time_t
+    # cap to make staged outputs unconditionally newest, but it broke
+    # any downstream rule that needed to produce new output: snakemake
+    # would refuse to accept the new file because its mtime (now) was
+    # older than the staged input (2038). See HANDOVER for the bug
+    # history.
+    #
+    # `-h` is mandatory: snapshot/repeats/*/mini-genome.fasta is a
+    # symlink to test_suite/mini-genome.fasta; without -h, the touch
+    # would silently overwrite the source fixture's mtime.
+    find "$DST/$sub" -exec touch -h {} +
     echo "staged $sub/"
 done

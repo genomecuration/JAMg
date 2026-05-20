@@ -8,9 +8,10 @@ gene-set construction, hint emission, Augustus chunking).
 ## Quick start
 
 ```bash
-# 1. Build the four Apptainer images. RM_LIB_HOST is your RepeatMasker
-#    Libraries directory (host-supplied; license-encumbered).
-make sifs RM_LIB_HOST=/path/to/RepeatMasker/Libraries
+# 1. Build the four Apptainer images. RepeatMasker libraries are vendored
+#    under containers/rm_libs/ via git-lfs; a clean clone followed by
+#    'git lfs pull' is sufficient (no RM_LIB_HOST argument needed).
+make sifs
 
 # 2. Author a per-genome config YAML. test_suite/mini-config.yaml is
 #    a working example against the bundled D. melanogaster X-fragment

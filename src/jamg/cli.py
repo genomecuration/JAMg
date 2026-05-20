@@ -164,19 +164,6 @@ def cli() -> None:
     type=click.Choice(["apptainer", "singularity"]),
     help="Override autodetect.",
 )
-@click.option(
-    "--mtime-only",
-    is_flag=True,
-    default=False,
-    help=(
-        "Pass --rerun-triggers mtime to snakemake (test-only). With this set, "
-        "snakemake re-runs a rule ONLY when an input's mtime changed; edits to "
-        "rule code/params/inputs/software-env do NOT trigger a re-run. Required "
-        "by tests that pre-stage rule outputs as fixtures (so the pre-stage "
-        "survives across config switches). Production runs should NOT pass "
-        "this; without it, config edits correctly re-run dependent rules."
-    ),
-)
 def run(
     config_path: str,
     dry_run: bool,
@@ -186,7 +173,6 @@ def run(
     until_rule: str | None,
     executor: str,
     container_runtime: str | None,
-    mtime_only: bool,
 ) -> None:
     runtime = container_runtime or _detect_runtime()
     with open(config_path) as fh:
@@ -212,14 +198,6 @@ def run(
         "--configfile",
         config_path,
     ]
-    if mtime_only:
-        # Snakemake 9 defaults rerun triggers to {mtime, input, params,
-        # software-env, code}. With --mtime-only, only mtime triggers a rerun.
-        # Test scripts that pre-stage rule outputs (e.g. genemark.gff3 subset
-        # of a 1 Mb run) with a far-future mtime require this so snakemake
-        # skips the pre-staged rule. Production runs MUST NOT use this flag
-        # (config edits would silently not re-run dependent rules).
-        cmd += ["--rerun-triggers", "mtime"]
     if not inside_sif:
         # Snakemake 9: --software-deployment-method selects the runtime;
         # --apptainer-args is passed through to apptainer; the cache-prefix

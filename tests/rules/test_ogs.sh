@@ -45,7 +45,7 @@ cp "$REPO/test_suite/fixtures/genemark.gtf"  "$GM_OUT/genemark.gtf"
 touch -d '2038-01-15' "$GM_OUT/genemark.gff3" "$GM_OUT/genemark.gtf" "$GM_OUT/.preflight.ok"
 
 pixi run "$REPO/bin/jamg" run --config "$CFG" --cores "${SLURM_CPUS_PER_TASK:-20}" \
-    --until ogs_emit --mtime-only
+    --until ogs_emit
 
 fail=0
 for product in OGS.gff3 OGS.mRNA.fasta OGS.CDS.fasta OGS.pep.fasta OGS.gtf OGS.bed; do

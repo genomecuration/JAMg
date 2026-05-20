@@ -14,8 +14,12 @@ repo   = "https://github.com/Gaius-Augustus/Augustus.git"
 commit = "cd36870303ec01e8995ebcca90e48bf194ea56e3"
 
 [evidencemodeler]
-repo = "https://github.com/EVidenceModeler/EVidenceModeler.git"
-tag  = "EVidenceModeler-v2.1.0"
+# Vendored as a JAMg submodule at containers/src/EVidenceModeler. The
+# parent-repo submodule SHA is the authoritative pin; this section is
+# informational. The fork carries a negative-offset-warn patch on the
+# upstream v2.1.0 base (see the submodule's commit log).
+submodule = "containers/src/EVidenceModeler"
+upstream  = "https://github.com/alpapan/EVidenceModeler.git"
 
 [transdecoder]
 repo = "https://github.com/TransDecoder/TransDecoder.git"

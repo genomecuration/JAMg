@@ -18,7 +18,7 @@ my $mrna     = "$repo/test_suite/mini-transcripts.fasta";
 my $softmask = "$repo/test_suite/output/repeats/mini-genome.fasta.softmasked";
 
 if (! -s $sif) {
-    plan skip_all => "containers/jamg.sif missing; run 'make sifs RM_LIB_HOST=...' first";
+    plan skip_all => "containers/jamg.sif missing; run 'make sifs' first";
 }
 if (! -s $softmask) {
     plan skip_all => "softmasked fixture missing at $softmask; run 'bash tests/rules/test_repeats.sh' first";

@@ -53,15 +53,17 @@ done
 cd "$SRC"
 
 # -------------------------------------------------------------------------
-# EVidenceModeler 2.1.0 (annotation evidence integrator; pure Perl, no compile).
+# EVidenceModeler (annotation evidence integrator; pure Perl, no compile).
+# Sourced from the alpapan/EVidenceModeler submodule, vendored into the SIF
+# build context via jamg.def %files at /opt/jamg-src/EVidenceModeler. The
+# `cp -a .../* …` glob skips the submodule's .git/ + dotfiles; the staging
+# directory is removed at the end of this script so it does not bloat the
+# final SIF.
 # -------------------------------------------------------------------------
-EVM_REPO=https://github.com/EVidenceModeler/EVidenceModeler.git
-EVM_TAG=EVidenceModeler-v2.1.0
-git clone --depth 1 --branch "$EVM_TAG" "$EVM_REPO" EVidenceModeler
 mkdir -p "$JAMG/share/EVidenceModeler"
-cp -a EVidenceModeler/* "$JAMG/share/EVidenceModeler/"
-# EVM's top-level `EVidenceModeler` script is the user entry point
+cp -a /opt/jamg-src/EVidenceModeler/* "$JAMG/share/EVidenceModeler/"
 ln -sf "$JAMG/share/EVidenceModeler/EVidenceModeler" "$JAMG/bin/EVidenceModeler"
+rm -rf /opt/jamg-src/EVidenceModeler
 cd "$SRC"
 
 # -------------------------------------------------------------------------
@@ -120,28 +122,41 @@ make install
 mkdir -p "$JAMG/share/EVidenceModeler/plugins/ParaFly/bin"
 ln -sf "$JAMG/bin/ParaFly" \
        "$JAMG/share/EVidenceModeler/plugins/ParaFly/bin/ParaFly"
+
+# python3 entry-point shim. The SIF's %environment puts /usr/bin BEFORE
+# /opt/conda/bin so that `env perl` resolves to the apt-installed system
+# perl 5.40 with BioPerl + DB_File (a deliberate single-source-of-truth
+# decision in jamg-base.def). For python3 the same ordering hits a wall:
+# RepeatMasker's bioconda package ships scripts with `#!/usr/bin/env
+# python3` (famdb.py, util/RM2Bed.py) that need h5py, and /usr/bin/python3
+# does not have h5py while /opt/conda/bin/python3 does. Shimming a
+# python3 link under /opt/jamg/bin (which precedes both) makes env find
+# the conda python first without changing perl's resolution.
+ln -sf /opt/conda/bin/python3 "$JAMG/bin/python3"
+
 cd "$SRC"
 
 # -------------------------------------------------------------------------
-# RepeatMasker (bioconda) -- libraries staged from host, then non-interactive
-# configure.
+# RepeatMasker (bioconda) -- libraries staged from the SIF build context,
+# then non-interactive configure.
 #
 # bioconda's repeatmasker package does NOT ship the repeat libraries
-# (RepeatMasker.lib, RepeatPeps.lib, taxonomy.dat.bz2, etc.). The host's
-# pre-curated library set is bind-mounted at /rm_lib_host (by the Makefile's
-# `apptainer build --bind <RM_LIB_HOST>:/rm_lib_host:ro` call) and copied into
-# $PREFIX/share/RepeatMasker/Libraries/ before the configure step.
+# (RepeatMasker.lib, RepeatPeps.lib, taxonomy.dat.bz2, etc.). The library
+# set is vendored under containers/rm_libs/ (LFS-tracked) and staged into
+# the SIF build at /rm_lib_host by jamg.def %files, then copied into
+# $PREFIX/share/RepeatMasker/Libraries/ here before the configure step.
+# The /rm_lib_host staging dir is removed at the end of jamg.def %post so
+# the squashed SIF does not ship 667 MB of duplicates.
 # -------------------------------------------------------------------------
 if [ ! -d "/rm_lib_host" ]; then
-    echo "FATAL: /rm_lib_host not bind-mounted; cannot stage RepeatMasker libraries." >&2
-    echo "Build via 'make sif' (which sets --bind), not bare apptainer build." >&2
+    echo "FATAL: /rm_lib_host not populated; cannot stage RepeatMasker libraries." >&2
+    echo "containers/rm_libs/ is likely empty. Run 'git lfs pull' to fetch the vendored libraries, then rebuild." >&2
     exit 1
 fi
 mkdir -p "$PREFIX/share/RepeatMasker/Libraries"
-# `cp -a` preserves symlinks verbatim. If the host library set contains
-# symlinks pointing OUTSIDE /rm_lib_host (e.g. to a host filer path), those
-# links would dangle inside the squashed SIF. Use `-aL` to dereference if
-# that becomes an issue.
+# `cp -a` preserves symlinks verbatim. Symlinks pointing OUTSIDE the
+# vendored set would dangle inside the squashed SIF; if that becomes an
+# issue, use `-aL` to dereference.
 cp -a /rm_lib_host/. "$PREFIX/share/RepeatMasker/Libraries/"
 
 "$PREFIX/share/RepeatMasker/configure" \

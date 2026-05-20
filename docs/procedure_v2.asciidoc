@@ -7,7 +7,7 @@ toc::[]
 == Prerequisites
 
 * Apptainer (or Singularity 3.8+) on the host.
-* RepeatMasker `Libraries/` directory available on the host (license-encumbered; not shipped). Path goes to `make sifs RM_LIB_HOST=...`.
+* RepeatMasker `Libraries/` directory available on the host (license-encumbered; not shipped). Path goes to `make sifs`.
 * GeneMark-ES license + tarball (`gmes_linux_64_*.tar.gz`) on the host. Path goes to `genemark.gm_home:` in the config.
 * `pixi` for the host CLI (https://pixi.sh).
 * Slurm if dispatching per-rule jobs (optional; single-host runs are fine).
@@ -28,7 +28,7 @@ that runs against the bundled 1 Mb fixture is at
 
 [source,bash]
 ----
-make sifs RM_LIB_HOST=/path/to/RepeatMasker/Libraries
+make sifs
 cp test_suite/mini-config.yaml my-genome.yaml
 $EDITOR my-genome.yaml
 bin/jamg run --config my-genome.yaml --cores 20
@@ -215,7 +215,7 @@ EVM upstream and rebuilding `containers/jamg.sif`.
 1. Create `tests/rules/test_<rule>.sh` modelled on `test_evm.sh`.
 2. The script must (a) symlink-or-copy required fixtures from
    `test_suite/`, (b) call `bash tools/stage_fixtures.sh <upstream-subdirs>`,
-   (c) run `pixi run bin/jamg run --until <rule> --mtime-only`,
+   (c) run `pixi run bin/jamg run --until <rule>`,
    (d) assert on the rule's declared outputs.
 3. Tests use the 100 kb default config (`test_suite/mini-config.yaml`)
    unless they need GeneMark training, in which case use
