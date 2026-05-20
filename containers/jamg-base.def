@@ -31,8 +31,10 @@ From: debian:trixie-slim
         `# bootstrap and download tools` \
         ca-certificates curl wget bzip2 tar xz-utils \
         \
-        `# build chain for source-compiled tools in jamg.def %post` \
-        build-essential autoconf automake libtool cmake git pkg-config \
+        `# build chain for source-compiled tools in jamg.def %post.` \
+        `# gfortran is required by R packages with Fortran source (logspline,` \
+        `# statmod) pulled in transitively by polyester from GitHub.` \
+        build-essential autoconf automake libtool cmake git pkg-config gfortran \
         \
         `# runtime languages. r-base-core only (no r-recommended) -- the` \
         `# bioconductor pulls in r-recommended are unused by JAMg.` \
@@ -83,6 +85,30 @@ From: debian:trixie-slim
     # Keep en* locales; drop everything else (saves ~30 MB)
     find /usr/share/locale -mindepth 1 -maxdepth 1 -type d \
          ! -name 'en*' -exec rm -rf {} +
+
+    # polyester for tools/build_fixtures.sh: simulates paired-end RNA-seq
+    # reads from the Drosophila GFF-derived transcripts FASTA so that
+    # downstream rules (Trinity-GG, augustus RNA-seq hints, genemark --ET)
+    # see reads with real splice patterns. Polyester was deprecated from
+    # Bioconductor in 3.21 and removed in 3.22; install from upstream GitHub.
+    # zlibbioc was also removed from 3.22 but is in polyester's DESCRIPTION,
+    # so pull it from Bioconductor's GitHub mirror.
+    # Biostrings, IRanges, S4Vectors, limma are still in 3.22 and pulled
+    # via BiocManager. logspline / statmod are CRAN packages with Fortran
+    # source (needs gfortran in the apt block above).
+    R --no-save <<'RSCRIPT'
+options(repos = c(CRAN = 'https://cloud.r-project.org'))
+install.packages(c('BiocManager', 'remotes'))
+BiocManager::install(c('Biostrings', 'IRanges', 'S4Vectors', 'limma'),
+                     ask = FALSE, update = FALSE)
+install.packages(c('logspline', 'statmod'))
+remotes::install_github('Bioconductor/zlibbioc',
+                        upgrade = 'never', quiet = FALSE)
+remotes::install_github('alyssafrazee/polyester',
+                        upgrade = 'never', quiet = FALSE)
+library(polyester); library(Biostrings)
+cat('polyester', as.character(packageVersion('polyester')), 'OK\n')
+RSCRIPT
 
     # Statically-linked micromamba binary -- consumed by jamg.def's %post for
     # the slim bioconda install. Tarball layout: bin/micromamba.

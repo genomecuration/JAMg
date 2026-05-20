@@ -19,7 +19,7 @@
 #   - https://ftp.uniprot.org/.../uniprot_sprot.fasta.gz               (cached at tools/cache/)
 #
 # Reproducibility notes:
-#   - wgsim -S 42                                seed pinned
+#   - polyester seed=42                          PE RNA-seq simulation seed pinned
 #   - python random.seed(42)                     seed pinned for species-repeats sampling
 #   - SwissProt: fetched from UniProt's current-release URL, NOT a named-release
 #     pin. On first run the SHA256 is recorded into tools/cache/.sha256; later
@@ -35,15 +35,16 @@
 #     quality metrics, so this masking aggressiveness is acceptable.
 #
 # Outputs:
-#   test_suite/mini-genome.fasta      + .fai      (100 kb, X:100001-200000)
-#   test_suite/mini-rnaseq.bam        + .bai      (~10k reads, ~20x coverage)
-#   test_suite/mini-transcripts.fasta             (annotation in 100 kb window)
-#   test_suite/mini-proteins.fasta    + BLAST DB  (SwissProt hits to 100 kb)
-#   test_suite/mini-repeats-rna.fasta             (20 rnammer entries; size-independent)
-#   test_suite/mini-repeats-species.fasta         (20 windows sampled from 100 kb)
-#   test_suite/mini-genome-1mb.fasta   + .fai     (1 Mb, X:100001-1100000)
-#   test_suite/mini-rnaseq-1mb.bam     + .bai     (~100k reads, ~20x coverage)
-#   test_suite/mini-repeats-species-1mb.fasta     (20 windows sampled from 1 Mb)
+#   test_suite/mini-genome.fasta            + .fai      (100 kb, X:100001-200000)
+#   test_suite/mini-transcripts.fasta                   (spliced transcripts in 100 kb window)
+#   test_suite/mini-rnaseq.bam              + .bai      (polyester PE reads, 10x per-transcript)
+#   test_suite/mini-proteins.fasta          + BLAST DB  (SwissProt hits to 100 kb)
+#   test_suite/mini-repeats-rna.fasta                   (20 rnammer entries; size-independent)
+#   test_suite/mini-repeats-species.fasta               (20 windows sampled from 100 kb)
+#   test_suite/mini-genome-1mb.fasta        + .fai      (1 Mb, X:100001-1100000)
+#   test_suite/mini-transcripts-1mb.fasta               (spliced transcripts in 1 Mb window)
+#   test_suite/mini-rnaseq-1mb.bam          + .bai      (polyester PE reads, 10x per-transcript)
+#   test_suite/mini-repeats-species-1mb.fasta           (20 windows sampled from 1 Mb)
 
 set -euo pipefail
 
@@ -72,36 +73,83 @@ bunzip2 -kf "$W/melanogaster/dmel-all-no-analysis-r5.53.gff3.gff3.clean.bz2"
 SRC_GFF=$W/melanogaster/dmel-all-no-analysis-r5.53.gff3.gff3.clean
 
 # ----------------------------------------------------------------------------
-# build_genome_fixture <end_coord> <wgsim_N> <star_saindexnbases> \
-#                      <genome_out> <bam_out> <species_repeats_out> <tag>
+# build_genome_fixture <start_coord> <end_coord> <target_cov> <star_saindexnbases> \
+#                      <genome_out> <transcripts_out> <bam_out> <species_repeats_out> <tag>
 #
-# Extracts X:100001-<end_coord> from $SRC_FA (renamed to >X_mini), simulates
-# wgsim_N PE reads at 100 bp, aligns with STAR (--genomeSAindexNbases =
-# star_saindexnbases), samples 20 species repeat windows from the extracted
-# genome. wgsim_N should be chosen to give ~20x coverage on the extract.
-# <tag> is a short label used in log filenames ("100kb", "1mb").
+# Extracts X:<start_coord>-<end_coord> from $SRC_FA (renamed to >X_mini),
+# subsets the source GFF to that window, extracts spliced transcripts via
+# gffread, then drives Bioconductor polyester to simulate paired-end RNA-seq
+# reads FROM the transcripts FASTA at <target_cov> per-transcript coverage.
+# STAR aligns those reads to the genome with splice-aware mode so the BAM
+# carries real intron-spanning split reads (which augustus RNA-seq hints and
+# genemark --ET both need). Also samples 20 species repeat windows from the
+# extracted genome. <tag> is a short label used in log filenames.
 # ----------------------------------------------------------------------------
 build_genome_fixture() {
-    local end="$1"
-    local wgsim_n="$2"
-    local star_sai="$3"
-    local genome_out="$4"
-    local bam_out="$5"
-    local species_out="$6"
-    local tag="$7"          # short label for log lines
+    local start="$1"
+    local end="$2"
+    local target_cov="$3"
+    local star_sai="$4"
+    local genome_out="$5"
+    local transcripts_out="$6"
+    local bam_out="$7"
+    local species_out="$8"
+    local tag="$9"          # short label for log lines
+
+    local off=$(( start - 1 ))      # offset for GFF coord rebasing
 
     # --- genome ---
-    "${RUN[@]}" samtools faidx "$SRC_FA" "X:100001-$end" 2>/dev/null \
+    "${RUN[@]}" samtools faidx "$SRC_FA" "X:$start-$end" 2>/dev/null \
         | sed 's|^>X:.*|>X_mini|' > "$genome_out"
     "${RUN[@]}" samtools faidx "$genome_out" 2>/dev/null
 
-    # --- wgsim PE reads + STAR alignment ---
-    local r1="$W/${tag}_r1.fq" r2="$W/${tag}_r2.fq"
-    rm -f "$r1" "$r2"
-    "${RUN[@]}" wgsim -S 42 -N "$wgsim_n" -1 100 -2 100 -e 0.005 -r 0.001 -R 0 -X 0 \
-        "$genome_out" "$r1" "$r2" \
-        > "$W/${tag}_wgsim.mut" 2>"$W/${tag}_wgsim.err"
+    # --- annotation window -> spliced transcripts FASTA ---
+    awk -F'\t' -v OFS='\t' -v start="$start" -v end="$end" -v off="$off" '
+        /^#/ { print; next }
+        $1=="X" && $4 >= start && $5 <= end && ($3=="gene"||$3=="mRNA"||$3=="exon"||$3=="CDS"||$3=="five_prime_UTR"||$3=="three_prime_UTR") {
+            $1 = "X_mini"; $4 -= off; $5 -= off; print
+        }
+    ' "$SRC_GFF" > "$W/${tag}_annot.gff3"
 
+    "${RUN[@]}" gffread -w "$transcripts_out" \
+        -g "$genome_out" "$W/${tag}_annot.gff3" 2>/dev/null
+
+    # --- polyester paired-end RNA-seq simulation from transcripts ---
+    # Per-transcript coverage = (reads_per_tx * 2 * 100 bp) / tx_length.
+    # Solve for reads_per_tx: ceil(tx_length * target_cov / 200). Floor at 50
+    # so very short transcripts still yield a paired-fragment minimum.
+    local pol_out="$W/${tag}_polyester"
+    rm -rf "$pol_out"; mkdir -p "$pol_out"
+    "${RUN[@]}" Rscript - "$transcripts_out" "$pol_out" "$target_cov" \
+        > "$W/${tag}_polyester.log" 2>&1 <<'RSCRIPT'
+args <- commandArgs(trailingOnly = TRUE)
+fasta_path <- args[1]
+outdir <- args[2]
+target_cov <- as.numeric(args[3])
+suppressPackageStartupMessages({ library(polyester); library(Biostrings) })
+txs <- readDNAStringSet(fasta_path)
+reads_per_tx <- pmax(50L, as.integer(ceiling(width(txs) * target_cov / 200)))
+countmat <- matrix(reads_per_tx, ncol = 1L)
+simulate_experiment_countmat(
+    fasta_path, readmat = countmat, outdir = outdir,
+    paired = TRUE, readlen = 100L,
+    fraglen = 200, fragsd = 25,
+    seed = 42L, strand_specific = TRUE,
+    error_model = 'illumina5', bias = 'none'
+)
+cat(sprintf('polyester wrote %d transcripts, total reads = %d\n',
+    length(txs), sum(reads_per_tx)))
+RSCRIPT
+
+    local r1="$pol_out/sample_01_1.fasta"
+    local r2="$pol_out/sample_01_2.fasta"
+    [[ -s "$r1" && -s "$r2" ]] || {
+        echo "FATAL: polyester did not produce paired FASTAs in $pol_out" >&2
+        tail -50 "$W/${tag}_polyester.log" >&2
+        exit 1
+    }
+
+    # --- STAR alignment to genome (splice-aware) ---
     local star_idx="$W/${tag}_star_idx"
     rm -rf "$star_idx"; mkdir -p "$star_idx"
     "${RUN[@]}" STAR --runMode genomeGenerate \
@@ -121,16 +169,30 @@ build_genome_fixture() {
     cp "$W/${tag}_star_aln_Aligned.sortedByCoord.out.bam" "$bam_out"
     "${RUN[@]}" samtools index "$bam_out" 2>/dev/null
 
-    # Sanity: at least 10% of reads mapped (lower bar than 1 Mb because
-    # short fixtures show more edge-effects).
-    local mapped
+    # Sanity 1: at least 50% of reads must map (transcripts are subset of the
+    # genome, so mapping rate should be near 100% absent edge effects).
+    local mapped total
     mapped=$("${RUN[@]}" samtools flagstat "$bam_out" 2>/dev/null \
         | awk '/^[0-9]+ \+ [0-9]+ primary mapped/{print $1; exit}')
-    local min=$(( wgsim_n * 2 / 10 ))   # 10% of 2*N (PE = 2 reads/pair)
-    if ! [[ "$mapped" =~ ^[0-9]+$ ]] || (( mapped < min )); then
-        echo "FATAL: only $mapped mapped reads in $bam_out (need >=$min for ~20x cov)" >&2
+    total=$("${RUN[@]}" samtools flagstat "$bam_out" 2>/dev/null \
+        | awk '/^[0-9]+ \+ [0-9]+ primary$/{print $1; exit}')
+    if ! [[ "$mapped" =~ ^[0-9]+$ && "$total" =~ ^[0-9]+$ ]] || (( total == 0 )) || (( mapped * 2 < total )); then
+        echo "FATAL: only $mapped/$total reads mapped in $bam_out (need >=50%)" >&2
         exit 1
     fi
+
+    # Sanity 2: BAM must carry intron-spanning split reads (CIGAR contains
+    # an N operator). Zero N-cigar reads means the fixture is no better than
+    # the old wgsim-from-genome and the genemark --ET / augustus hint paths
+    # will not exercise their intron logic.
+    local n_split
+    n_split=$("${RUN[@]}" samtools view "$bam_out" 2>/dev/null \
+        | awk '$6 ~ /N/ {n++} END {print n+0}')
+    if (( n_split < 1 )); then
+        echo "FATAL: $bam_out has zero N-CIGAR (intron-spanning) reads" >&2
+        exit 1
+    fi
+    echo "OK: $tag fixture — $mapped/$total mapped, $n_split intron-spanning reads"
 
     # --- species-repeats: 20 sampled windows from this genome ---
     python3 - "$genome_out" "$species_out" <<'PY'
@@ -156,47 +218,32 @@ PY
 
 # ----------------------------------------------------------------------------
 # 100 kb default fixture (X:100001-200000)
-# 1k pairs * 2 reads/pair * 100 bp = 200 kb sequencing on 100 kb ≈ 2x coverage.
-# 2x is enough for STAR to align + Trinity-GG to assemble a handful of
-# transcripts; we are NOT testing assembly quality, just rule wiring.
-# Trinity-GG runtime scales with read count, not genome size, so the 10x
-# read-count cut from the original 10k is the largest single test-time win.
+# Polyester samples 10x per-transcript coverage from the spliced transcripts.
 # SAindexNbases 7 = min(14, log2(100_000)/2 - 1) ≈ 7.3 -> 7.
 # ----------------------------------------------------------------------------
 build_genome_fixture \
-    200000 1000 7 \
+    100001 200000 10 7 \
     test_suite/mini-genome.fasta \
+    test_suite/mini-transcripts.fasta \
     test_suite/mini-rnaseq.bam \
     test_suite/mini-repeats-species.fasta \
     100kb
 
 # ----------------------------------------------------------------------------
 # 1 Mb genemark fixture (X:100001-1100000)
-# 100k pairs * 2 reads/pair * 100 bp = 20 Mb sequencing on 1 Mb ≈ 20x coverage.
+# 10x per-transcript coverage (same as 100 kb; coverage is per-transcript, not
+# per-genome-bp, so the same target gives roughly the same read budget per gene).
 # SAindexNbases 9 = min(14, log2(1_000_000)/2 - 1) ≈ 8.96 -> 9 (10 overshoots
 # the formula's cap and can segfault STAR's index builder on small genomes).
-# Used only by tests/rules/test_genemark.sh; gmes_petap --ES needs >=1 Mb.
+# Used by tests/rules/test_genemark.sh; gmes_petap needs >=1 Mb.
 # ----------------------------------------------------------------------------
 build_genome_fixture \
-    1100000 100000 9 \
+    100001 1100000 10 9 \
     test_suite/mini-genome-1mb.fasta \
+    test_suite/mini-transcripts-1mb.fasta \
     test_suite/mini-rnaseq-1mb.bam \
     test_suite/mini-repeats-species-1mb.fasta \
     1mb
-
-# ----------------------------------------------------------------------------
-# Annotation-derived fixtures (transcripts + proteins). Default is 100 kb;
-# downstream tests on the 100 kb genome use these.
-# ----------------------------------------------------------------------------
-awk -F'\t' -v OFS='\t' -v off=100000 '
-    /^#/ { print; next }
-    $1=="X" && $4 >= 100001 && $5 <= 200000 && ($3=="gene"||$3=="mRNA"||$3=="exon"||$3=="CDS"||$3=="five_prime_UTR"||$3=="three_prime_UTR") {
-        $1 = "X_mini"; $4 -= off; $5 -= off; print
-    }
-' "$SRC_GFF" > "$W/mini-annot.gff3"
-
-"${RUN[@]}" gffread -w test_suite/mini-transcripts.fasta \
-    -g test_suite/mini-genome.fasta "$W/mini-annot.gff3" 2>/dev/null
 
 # --- mini-proteins.fasta (subset of SwissProt with hits to mini-genome) ----
 SPROT_URL="https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz"

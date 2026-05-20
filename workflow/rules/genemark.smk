@@ -89,23 +89,17 @@ rule genemark:
         "cd {params.gm_dir_abs} && "
         # Build an intron-only evidence file from the rnaseq hints. The
         # noncanonical=true lines are filtered out per the plan. The grep
-        # may match zero lines (no spliced reads); that is handled by the
-        # `--ES` fallback below.
+        # must match at least one line; absent intron evidence means the
+        # rnaseq fixture is broken (no splice information).
         "( set +o pipefail; "
         "  grep -E '^[^#].*\\tintron\\t' {params.rnaseq_abs} 2>/dev/null "
         "    | grep -v 'noncanonical=true' "
         "    | sort -k1,1 -k4,4n > all_evidence_introns.gff3 ); "
-        # Pick --ET (evidence from transcripts) if we have introns, else
-        # --ES (self-training only). The mini-fixture's wgsim reads are
-        # unspliced, so --ES is the only viable mode for the smoke test.
-        "if [ -s all_evidence_introns.gff3 ]; then "
-        "    GM_MODE='--ET all_evidence_introns.gff3 --et_score 10'; "
-        "else "
-        "    GM_MODE='--ES'; "
-        "fi && "
+        "[ -s all_evidence_introns.gff3 ] || "
+        "    {{ echo 'FATAL: no intron evidence for genemark --ET (rnaseq_hints broken or fixture lacks splice information)' >&2; exit 1; }} && "
         "HOME='{params.gm_home_abs}' "
         "{params.workdir_abs}/gmes_linux_64_4/gmes_petap.pl "
-        "    $GM_MODE "
+        "    --ET all_evidence_introns.gff3 --et_score 10 "
         "    --soft_mask 1 --max_mask 10000 "
         "    --cores {threads} "
         "    --sequence {params.softmasked_abs} && "
