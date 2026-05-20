@@ -1,0 +1,48 @@
+# 1 Mb genemark-only config. Used by tests/rules/test_genemark.sh because
+# gmes_petap.pl --ES self-training requires >=1 Mb to converge. Every
+# other rule test uses the 100 kb default (test_suite/mini-config.yaml).
+#
+# Tests downstream of genemark (test_evm, test_ogs, test_full_dag) run
+# on the 100 kb default and PRE-STAGE the genemark output (subset of a
+# 1 Mb run) into test_suite/output/genemark/ so snakemake skips the
+# genemark rule via mtime comparison.
+genome: test_suite/mini-genome-1mb.fasta
+# Distinct outdir so test_genemark (this config) can run in parallel with
+# test_evm/test_ogs/test_full_dag (mini-config.yaml, outdir=test_suite/output)
+# without race conditions on shared paths. The genemark FIXTURE that
+# downstream tests pre-stage is at test_suite/fixtures/genemark.gff3
+# (separate from either outdir, so no collision there).
+outdir: test_suite/output-1mb
+threads: 4
+species: fly
+species_category: Diptera
+max_intron: 70000
+code: TEST
+rnaseq:
+  mode: bam
+  bam: test_suite/mini-rnaseq-1mb.bam
+trinity_denovo: null
+longreads: null
+repeats:
+  contamination_check: true
+  rna_lib: test_suite/mini-repeats-rna.fasta
+  species_lib: test_suite/mini-repeats-species-1mb.fasta
+  species_category: Diptera
+proteins:
+  swissprot_db: test_suite/mini-proteins.fasta
+pasa:
+  config_template: workflow/scripts/alignAssembly.config.template
+  max_intron_length: 70000
+  tmp_dir: /dev/shm
+evm:
+  weights_file: workflow/config/evm_weights.example.txt
+  segment_size: 5000000
+  overlap_size: 80000
+  extra_gff: []
+genemark:
+  path: ~/software/gmes_linux_64_4.tar.gz
+  key: ~/software/gm_key_64.gz
+augustus:
+  optimise: false
+  extrinsic_cfg: workflow/config/extrinsic.cfg
+manual_curations: null
