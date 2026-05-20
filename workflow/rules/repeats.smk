@@ -157,8 +157,13 @@ rule repeats_merge:
     resources:
         mem_mb = 4000,
     shell:
-        "grep -hv '^#' {input.general} {input.rna} {input.spp} | grep -v '^$' | "
-        "  sort -k1,1 -k4,5n | awk '!seen[$1,$4,$5,$7]++' > {output.merged} && "
+        # grep -v returns exit 1 when no lines match (all inputs empty = no
+        # repeats found in the genome). Wrap in (...) || touch so the rule
+        # tolerates an all-empty repeat set. bedtools maskfasta handles an
+        # empty BED without complaint (output is the unmasked input).
+        "(grep -hv '^#' {input.general} {input.rna} {input.spp} | grep -v '^$' | "
+        "  sort -k1,1 -k4,5n | awk '!seen[$1,$4,$5,$7]++' > {output.merged}) "
+        "  || touch {output.merged} && "
         "bedtools maskfasta -fi {input.genome} -fo {output.soft} -bed {output.merged} -soft && "
         "bedtools maskfasta -fi {input.genome} -fo {output.hard} -bed {output.merged} && "
         "samtools faidx {output.soft} && samtools faidx {output.hard} && "

@@ -87,14 +87,14 @@ rule genemark:
         mem_mb = 8000,
     shell:
         "cd {params.gm_dir_abs} && "
-        # Build an intron-only evidence file from the rnaseq hints. The
-        # noncanonical=true lines are filtered out per the plan. The grep
-        # must match at least one line; absent intron evidence means the
-        # rnaseq fixture is broken (no splice information).
-        "( set +o pipefail; "
-        "  grep -E '^[^#].*\\tintron\\t' {params.rnaseq_abs} 2>/dev/null "
-        "    | grep -v 'noncanonical=true' "
-        "    | sort -k1,1 -k4,4n > all_evidence_introns.gff3 ); "
+        # Build an intron-only evidence file from the rnaseq hints. GFF3 is
+        # strictly tab-delimited; use awk -F'\t' so field 3 is matched
+        # exactly. POSIX ERE does not define \t and the SIF's GNU grep 3.11
+        # treats it as a literal two-char sequence, so the previous
+        # grep -E '...\tintron\t...' returned zero matches inside the SIF.
+        "awk -F'\\t' '!/^#/ && $3==\"intron\" && $9 !~ /noncanonical=true/' "
+        "    {params.rnaseq_abs} "
+        "    | sort -k1,1 -k4,4n > all_evidence_introns.gff3; "
         "[ -s all_evidence_introns.gff3 ] || "
         "    {{ echo 'FATAL: no intron evidence for genemark --ET (rnaseq_hints broken or fixture lacks splice information)' >&2; exit 1; }} && "
         "HOME='{params.gm_home_abs}' "

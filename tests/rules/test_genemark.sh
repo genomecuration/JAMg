@@ -8,7 +8,7 @@ set -euo pipefail
 
 REPO="$(git -C "$(dirname "$0")" rev-parse --show-toplevel)"
 SIF="$REPO/containers/jamg.sif"
-# 1 Mb genome (gmes_petap --ES needs >=1 Mb for self-training).
+# 1 Mb genome (gmes_petap --ET needs enough transcript coverage to converge).
 # Every other rule test uses the 100 kb default mini-config.yaml.
 # Distinct outdir (test_suite/output-1mb) so this test can run in parallel
 # with test_evm / test_ogs / test_full_dag (which use test_suite/output)
