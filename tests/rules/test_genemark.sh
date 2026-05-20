@@ -62,9 +62,26 @@ echo "OK: genemark rule produced $n features in genemark.gff3"
 # the time EVM consumes it. Filtering by start coord ($4<=100000) would
 # admit invalid rows that overshoot the 100 kb genome boundary.
 mkdir -p "$FIXTURE_DIR"
-awk -F'\t' '/^#/ {print; next} $1=="X_mini" && $4>=1 && $5<=100000 {print}' \
-    "$OUT/genemark.gff3" > "$FIXTURE_DIR/genemark.gff3"
-awk -F'\t' '/^#/ {print; next} $1=="X_mini" && $4>=1 && $5<=100000 {print}' \
-    "$OUT/genemark.gtf"  > "$FIXTURE_DIR/genemark.gtf"
+# Insert a blank line before each gene block (except the first) so the
+# emitted fixture has the inter-record separator that sort_gff3.pl
+# (called by workflow/rules/evm.smk's evm_tag_genemark rule) expects.
+# Without separators sort_gff3.pl warns "I don't know what delimiter" and
+# evm_tag_genemark exits non-zero.
+awk -F'\t' '
+    /^#/ {print; next}
+    $1=="X_mini" && $4>=1 && $5<=100000 {
+        if ($3=="gene" && emitted>0) print ""
+        print
+        emitted++
+    }
+' "$OUT/genemark.gff3" > "$FIXTURE_DIR/genemark.gff3"
+awk -F'\t' '
+    /^#/ {print; next}
+    $1=="X_mini" && $4>=1 && $5<=100000 {
+        if ($3=="gene" && emitted>0) print ""
+        print
+        emitted++
+    }
+' "$OUT/genemark.gtf"  > "$FIXTURE_DIR/genemark.gtf"
 subset_n=$(grep -cE '^[^#]\S' "$FIXTURE_DIR/genemark.gff3" || true)
 echo "OK: emitted 100 kb subset fixture ($subset_n features) -> $FIXTURE_DIR/genemark.gff3"

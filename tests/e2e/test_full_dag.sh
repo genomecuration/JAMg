@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
 # Phase 6 end-to-end smoke. Runs the full DAG on the mini-fixtures and
-# asserts the OGS gene count is within ±1 of the baseline at
+# asserts the OGS gene count is within +/-1 of the baseline at
 # test_suite/expected/OGS.gff3 (committed by `make smoke` once the
 # pipeline is stable).
 #
 # Also asserts no legacy artefacts (zff, geneid, fathom) in the output.
+#
+# This is the END-TO-END BASELINE: it intentionally does NOT pre-stage
+# upstream outputs (only genemark, which needs the 1 Mb fixture). All
+# other rules run from scratch on the 100 kb default fixture. Runtime
+# is therefore long (15-30 min on Layout A; ~5-10 min on Layout B once
+# Task 10 lands). This test is the gold standard, not a deployability
+# smoke. For fast per-rule smokes that pre-stage upstream from the
+# snapshot, see tests/rules/test_*.sh.
 
 set -euo pipefail
 

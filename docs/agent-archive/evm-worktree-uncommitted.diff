@@ -1,0 +1,276 @@
+diff --git a/test_suite/fixtures/genemark.gff3 b/test_suite/fixtures/genemark.gff3
+deleted file mode 100644
+index 26642745..00000000
+--- a/test_suite/fixtures/genemark.gff3
++++ /dev/null
+@@ -1,72 +0,0 @@
+-X_mini	GeneMarkHMM	gene	80616	83238	.	-	.	ID=5_g;Name=5_t
+-X_mini	GeneMarkHMM	mRNA	80616	83238	.	-	.	ID=5_t;Parent=5_g;Name=5_t
+-X_mini	GeneMarkHMM	exon	83074	83238	.	-	.	ID=5_t.exon1;Parent=5_t
+-X_mini	GeneMarkHMM	CDS	83074	83238	.	-	0	ID=cds.5_t;Parent=5_t
+-X_mini	GeneMarkHMM	exon	81410	81559	.	-	.	ID=5_t.exon2;Parent=5_t
+-X_mini	GeneMarkHMM	CDS	81410	81559	.	-	0	ID=cds.5_t;Parent=5_t
+-X_mini	GeneMarkHMM	exon	80982	81074	.	-	.	ID=5_t.exon3;Parent=5_t
+-X_mini	GeneMarkHMM	CDS	80982	81074	.	-	0	ID=cds.5_t;Parent=5_t
+-X_mini	GeneMarkHMM	exon	80616	80924	.	-	.	ID=5_t.exon4;Parent=5_t
+-X_mini	GeneMarkHMM	CDS	80616	80924	.	-	0	ID=cds.5_t;Parent=5_t
+-X_mini	GeneMarkHMM	gene	49102	51464	.	+	.	ID=3_g;Name=3_t
+-X_mini	GeneMarkHMM	mRNA	49102	51464	.	+	.	ID=3_t;Parent=3_g;Name=3_t
+-X_mini	GeneMarkHMM	exon	49102	49201	.	+	.	ID=3_t.exon1;Parent=3_t
+-X_mini	GeneMarkHMM	CDS	49102	49201	.	+	0	ID=cds.3_t;Parent=3_t
+-X_mini	GeneMarkHMM	exon	49914	50674	.	+	.	ID=3_t.exon2;Parent=3_t
+-X_mini	GeneMarkHMM	CDS	49914	50674	.	+	2	ID=cds.3_t;Parent=3_t
+-X_mini	GeneMarkHMM	exon	50795	50973	.	+	.	ID=3_t.exon3;Parent=3_t
+-X_mini	GeneMarkHMM	CDS	50795	50973	.	+	0	ID=cds.3_t;Parent=3_t
+-X_mini	GeneMarkHMM	exon	51032	51464	.	+	.	ID=3_t.exon4;Parent=3_t
+-X_mini	GeneMarkHMM	CDS	51032	51464	.	+	1	ID=cds.3_t;Parent=3_t
+-X_mini	GeneMarkHMM	gene	90649	95627	.	-	.	ID=6_g;Name=6_t
+-X_mini	GeneMarkHMM	mRNA	90649	95627	.	-	.	ID=6_t;Parent=6_g;Name=6_t
+-X_mini	GeneMarkHMM	exon	94412	95627	.	-	.	ID=6_t.exon1;Parent=6_t
+-X_mini	GeneMarkHMM	CDS	94412	95627	.	-	0	ID=cds.6_t;Parent=6_t
+-X_mini	GeneMarkHMM	exon	91609	94304	.	-	.	ID=6_t.exon2;Parent=6_t
+-X_mini	GeneMarkHMM	CDS	91609	94304	.	-	2	ID=cds.6_t;Parent=6_t
+-X_mini	GeneMarkHMM	exon	90649	91137	.	-	.	ID=6_t.exon3;Parent=6_t
+-X_mini	GeneMarkHMM	CDS	90649	91137	.	-	0	ID=cds.6_t;Parent=6_t
+-X_mini	GeneMarkHMM	gene	40883	45800	.	+	.	ID=2_g;Name=2_t
+-X_mini	GeneMarkHMM	mRNA	40883	45800	.	+	.	ID=2_t;Parent=2_g;Name=2_t
+-X_mini	GeneMarkHMM	exon	40883	41595	.	+	.	ID=2_t.exon1;Parent=2_t
+-X_mini	GeneMarkHMM	CDS	40883	41595	.	+	0	ID=cds.2_t;Parent=2_t
+-X_mini	GeneMarkHMM	exon	42462	44154	.	+	.	ID=2_t.exon2;Parent=2_t
+-X_mini	GeneMarkHMM	CDS	42462	44154	.	+	1	ID=cds.2_t;Parent=2_t
+-X_mini	GeneMarkHMM	exon	44327	44568	.	+	.	ID=2_t.exon3;Parent=2_t
+-X_mini	GeneMarkHMM	CDS	44327	44568	.	+	0	ID=cds.2_t;Parent=2_t
+-X_mini	GeneMarkHMM	exon	44671	45026	.	+	.	ID=2_t.exon4;Parent=2_t
+-X_mini	GeneMarkHMM	CDS	44671	45026	.	+	1	ID=cds.2_t;Parent=2_t
+-X_mini	GeneMarkHMM	exon	45083	45213	.	+	.	ID=2_t.exon5;Parent=2_t
+-X_mini	GeneMarkHMM	CDS	45083	45213	.	+	2	ID=cds.2_t;Parent=2_t
+-X_mini	GeneMarkHMM	exon	45513	45800	.	+	.	ID=2_t.exon6;Parent=2_t
+-X_mini	GeneMarkHMM	CDS	45513	45800	.	+	0	ID=cds.2_t;Parent=2_t
+-X_mini	GeneMarkHMM	gene	52732	68545	.	-	.	ID=4_g;Name=4_t
+-X_mini	GeneMarkHMM	mRNA	52732	68545	.	-	.	ID=4_t;Parent=4_g;Name=4_t
+-X_mini	GeneMarkHMM	exon	68540	68545	.	-	.	ID=4_t.exon1;Parent=4_t
+-X_mini	GeneMarkHMM	CDS	68540	68545	.	-	0	ID=cds.4_t;Parent=4_t
+-X_mini	GeneMarkHMM	exon	67503	68477	.	-	.	ID=4_t.exon2;Parent=4_t
+-X_mini	GeneMarkHMM	CDS	67503	68477	.	-	0	ID=cds.4_t;Parent=4_t
+-X_mini	GeneMarkHMM	exon	67212	67425	.	-	.	ID=4_t.exon3;Parent=4_t
+-X_mini	GeneMarkHMM	CDS	67212	67425	.	-	0	ID=cds.4_t;Parent=4_t
+-X_mini	GeneMarkHMM	exon	66377	66996	.	-	.	ID=4_t.exon4;Parent=4_t
+-X_mini	GeneMarkHMM	CDS	66377	66996	.	-	2	ID=cds.4_t;Parent=4_t
+-X_mini	GeneMarkHMM	exon	65521	65646	.	-	.	ID=4_t.exon5;Parent=4_t
+-X_mini	GeneMarkHMM	CDS	65521	65646	.	-	0	ID=cds.4_t;Parent=4_t
+-X_mini	GeneMarkHMM	exon	65323	65458	.	-	.	ID=4_t.exon6;Parent=4_t
+-X_mini	GeneMarkHMM	CDS	65323	65458	.	-	0	ID=cds.4_t;Parent=4_t
+-X_mini	GeneMarkHMM	exon	64797	65242	.	-	.	ID=4_t.exon7;Parent=4_t
+-X_mini	GeneMarkHMM	CDS	64797	65242	.	-	2	ID=cds.4_t;Parent=4_t
+-X_mini	GeneMarkHMM	exon	63233	63399	.	-	.	ID=4_t.exon8;Parent=4_t
+-X_mini	GeneMarkHMM	CDS	63233	63399	.	-	0	ID=cds.4_t;Parent=4_t
+-X_mini	GeneMarkHMM	exon	60570	60820	.	-	.	ID=4_t.exon9;Parent=4_t
+-X_mini	GeneMarkHMM	CDS	60570	60820	.	-	1	ID=cds.4_t;Parent=4_t
+-X_mini	GeneMarkHMM	exon	60403	60512	.	-	.	ID=4_t.exon10;Parent=4_t
+-X_mini	GeneMarkHMM	CDS	60403	60512	.	-	2	ID=cds.4_t;Parent=4_t
+-X_mini	GeneMarkHMM	exon	60230	60357	.	-	.	ID=4_t.exon11;Parent=4_t
+-X_mini	GeneMarkHMM	CDS	60230	60357	.	-	0	ID=cds.4_t;Parent=4_t
+-X_mini	GeneMarkHMM	exon	52732	53704	.	-	.	ID=4_t.exon12;Parent=4_t
+-X_mini	GeneMarkHMM	CDS	52732	53704	.	-	1	ID=cds.4_t;Parent=4_t
+-X_mini	GeneMarkHMM	gene	38472	39293	.	-	.	ID=1_g;Name=1_t
+-X_mini	GeneMarkHMM	mRNA	38472	39293	.	-	.	ID=1_t;Parent=1_g;Name=1_t
+-X_mini	GeneMarkHMM	exon	38472	39293	.	-	.	ID=1_t.exon1;Parent=1_t
+-X_mini	GeneMarkHMM	CDS	38472	39293	.	-	0	ID=cds.1_t;Parent=1_t
+diff --git a/test_suite/fixtures/genemark.gff3 b/test_suite/fixtures/genemark.gff3
+new file mode 120000
+index 00000000..eaa6db23
+--- /dev/null
++++ b/test_suite/fixtures/genemark.gff3
+@@ -0,0 +1 @@
++/mnt/lazebnik/home/30042108/software/gits/JAMg/test_suite/fixtures/genemark.gff3
+\ No newline at end of file
+diff --git a/test_suite/fixtures/genemark.gtf b/test_suite/fixtures/genemark.gtf
+deleted file mode 100644
+index a7cd7a64..00000000
+--- a/test_suite/fixtures/genemark.gtf
++++ /dev/null
+@@ -1,78 +0,0 @@
+-X_mini	GeneMark.hmm3	gene	38472	39293	.	-	.	gene_id "1_g"; transcript_id "1_t";
+-X_mini	GeneMark.hmm3	mRNA	38472	39293	.	-	.	gene_id "1_g"; transcript_id "1_t";
+-X_mini	GeneMark.hmm3	stop_codon	38472	38474	.	-	0	gene_id "1_g"; transcript_id "1_t";
+-X_mini	GeneMark.hmm3	CDS	38472	39293	.	-	0	gene_id "1_g"; transcript_id "1_t"; cds_type "Single"; count "1_1";
+-X_mini	GeneMark.hmm3	start_codon	39291	39293	.	-	0	gene_id "1_g"; transcript_id "1_t";
+-X_mini	GeneMark.hmm3	gene	40883	45800	.	+	.	gene_id "2_g"; transcript_id "2_t";
+-X_mini	GeneMark.hmm3	mRNA	40883	45800	.	+	.	gene_id "2_g"; transcript_id "2_t";
+-X_mini	GeneMark.hmm3	start_codon	40883	40885	.	+	0	gene_id "2_g"; transcript_id "2_t";
+-X_mini	GeneMark.hmm3	CDS	40883	41595	.	+	0	gene_id "2_g"; transcript_id "2_t"; cds_type "Initial"; count "1_6";
+-X_mini	GeneMark.hmm3	intron	41596	42461	.	+	2	gene_id "2_g"; transcript_id "2_t";
+-X_mini	GeneMark.hmm3	CDS	42462	44154	.	+	1	gene_id "2_g"; transcript_id "2_t"; cds_type "Internal"; count "2_6";
+-X_mini	GeneMark.hmm3	intron	44155	44326	.	+	0	gene_id "2_g"; transcript_id "2_t";
+-X_mini	GeneMark.hmm3	CDS	44327	44568	.	+	0	gene_id "2_g"; transcript_id "2_t"; cds_type "Internal"; count "3_6";
+-X_mini	GeneMark.hmm3	intron	44569	44670	.	+	2	gene_id "2_g"; transcript_id "2_t";
+-X_mini	GeneMark.hmm3	CDS	44671	45026	.	+	1	gene_id "2_g"; transcript_id "2_t"; cds_type "Internal"; count "4_6";
+-X_mini	GeneMark.hmm3	intron	45027	45082	.	+	1	gene_id "2_g"; transcript_id "2_t";
+-X_mini	GeneMark.hmm3	CDS	45083	45213	.	+	2	gene_id "2_g"; transcript_id "2_t"; cds_type "Internal"; count "5_6";
+-X_mini	GeneMark.hmm3	intron	45214	45512	.	+	0	gene_id "2_g"; transcript_id "2_t";
+-X_mini	GeneMark.hmm3	CDS	45513	45800	.	+	0	gene_id "2_g"; transcript_id "2_t"; cds_type "Terminal"; count "6_6";
+-X_mini	GeneMark.hmm3	stop_codon	45798	45800	.	+	0	gene_id "2_g"; transcript_id "2_t";
+-X_mini	GeneMark.hmm3	gene	49102	51464	.	+	.	gene_id "3_g"; transcript_id "3_t";
+-X_mini	GeneMark.hmm3	mRNA	49102	51464	.	+	.	gene_id "3_g"; transcript_id "3_t";
+-X_mini	GeneMark.hmm3	start_codon	49102	49104	.	+	0	gene_id "3_g"; transcript_id "3_t";
+-X_mini	GeneMark.hmm3	CDS	49102	49201	.	+	0	gene_id "3_g"; transcript_id "3_t"; cds_type "Initial"; count "1_4";
+-X_mini	GeneMark.hmm3	intron	49202	49913	.	+	1	gene_id "3_g"; transcript_id "3_t";
+-X_mini	GeneMark.hmm3	CDS	49914	50674	.	+	2	gene_id "3_g"; transcript_id "3_t"; cds_type "Internal"; count "2_4";
+-X_mini	GeneMark.hmm3	intron	50675	50794	.	+	0	gene_id "3_g"; transcript_id "3_t";
+-X_mini	GeneMark.hmm3	CDS	50795	50973	.	+	0	gene_id "3_g"; transcript_id "3_t"; cds_type "Internal"; count "3_4";
+-X_mini	GeneMark.hmm3	intron	50974	51031	.	+	2	gene_id "3_g"; transcript_id "3_t";
+-X_mini	GeneMark.hmm3	CDS	51032	51464	.	+	1	gene_id "3_g"; transcript_id "3_t"; cds_type "Terminal"; count "4_4";
+-X_mini	GeneMark.hmm3	stop_codon	51462	51464	.	+	0	gene_id "3_g"; transcript_id "3_t";
+-X_mini	GeneMark.hmm3	gene	52732	68545	.	-	.	gene_id "4_g"; transcript_id "4_t";
+-X_mini	GeneMark.hmm3	mRNA	52732	68545	.	-	.	gene_id "4_g"; transcript_id "4_t";
+-X_mini	GeneMark.hmm3	stop_codon	52732	52734	.	-	0	gene_id "4_g"; transcript_id "4_t";
+-X_mini	GeneMark.hmm3	CDS	52732	53704	.	-	1	gene_id "4_g"; transcript_id "4_t"; cds_type "Terminal"; count "12_12";
+-X_mini	GeneMark.hmm3	intron	53705	60229	.	-	2	gene_id "4_g"; transcript_id "4_t";
+-X_mini	GeneMark.hmm3	CDS	60230	60357	.	-	0	gene_id "4_g"; transcript_id "4_t"; cds_type "Internal"; count "11_12";
+-X_mini	GeneMark.hmm3	intron	60358	60402	.	-	0	gene_id "4_g"; transcript_id "4_t";
+-X_mini	GeneMark.hmm3	CDS	60403	60512	.	-	2	gene_id "4_g"; transcript_id "4_t"; cds_type "Internal"; count "10_12";
+-X_mini	GeneMark.hmm3	intron	60513	60569	.	-	1	gene_id "4_g"; transcript_id "4_t";
+-X_mini	GeneMark.hmm3	CDS	60570	60820	.	-	1	gene_id "4_g"; transcript_id "4_t"; cds_type "Internal"; count "9_12";
+-X_mini	GeneMark.hmm3	intron	60821	63232	.	-	2	gene_id "4_g"; transcript_id "4_t";
+-X_mini	GeneMark.hmm3	CDS	63233	63399	.	-	0	gene_id "4_g"; transcript_id "4_t"; cds_type "Internal"; count "8_12";
+-X_mini	GeneMark.hmm3	intron	63400	64796	.	-	0	gene_id "4_g"; transcript_id "4_t";
+-X_mini	GeneMark.hmm3	CDS	64797	65242	.	-	2	gene_id "4_g"; transcript_id "4_t"; cds_type "Internal"; count "7_12";
+-X_mini	GeneMark.hmm3	intron	65243	65322	.	-	1	gene_id "4_g"; transcript_id "4_t";
+-X_mini	GeneMark.hmm3	CDS	65323	65458	.	-	0	gene_id "4_g"; transcript_id "4_t"; cds_type "Internal"; count "6_12";
+-X_mini	GeneMark.hmm3	intron	65459	65520	.	-	0	gene_id "4_g"; transcript_id "4_t";
+-X_mini	GeneMark.hmm3	CDS	65521	65646	.	-	0	gene_id "4_g"; transcript_id "4_t"; cds_type "Internal"; count "5_12";
+-X_mini	GeneMark.hmm3	intron	65647	66376	.	-	0	gene_id "4_g"; transcript_id "4_t";
+-X_mini	GeneMark.hmm3	CDS	66377	66996	.	-	2	gene_id "4_g"; transcript_id "4_t"; cds_type "Internal"; count "4_12";
+-X_mini	GeneMark.hmm3	intron	66997	67211	.	-	1	gene_id "4_g"; transcript_id "4_t";
+-X_mini	GeneMark.hmm3	CDS	67212	67425	.	-	0	gene_id "4_g"; transcript_id "4_t"; cds_type "Internal"; count "3_12";
+-X_mini	GeneMark.hmm3	intron	67426	67502	.	-	0	gene_id "4_g"; transcript_id "4_t";
+-X_mini	GeneMark.hmm3	CDS	67503	68477	.	-	0	gene_id "4_g"; transcript_id "4_t"; cds_type "Internal"; count "2_12";
+-X_mini	GeneMark.hmm3	intron	68478	68539	.	-	0	gene_id "4_g"; transcript_id "4_t";
+-X_mini	GeneMark.hmm3	CDS	68540	68545	.	-	0	gene_id "4_g"; transcript_id "4_t"; cds_type "Initial"; count "1_12";
+-X_mini	GeneMark.hmm3	start_codon	68543	68545	.	-	0	gene_id "4_g"; transcript_id "4_t";
+-X_mini	GeneMark.hmm3	gene	80616	83238	.	-	.	gene_id "5_g"; transcript_id "5_t";
+-X_mini	GeneMark.hmm3	mRNA	80616	83238	.	-	.	gene_id "5_g"; transcript_id "5_t";
+-X_mini	GeneMark.hmm3	stop_codon	80616	80618	.	-	0	gene_id "5_g"; transcript_id "5_t";
+-X_mini	GeneMark.hmm3	CDS	80616	80924	.	-	0	gene_id "5_g"; transcript_id "5_t"; cds_type "Terminal"; count "4_4";
+-X_mini	GeneMark.hmm3	intron	80925	80981	.	-	0	gene_id "5_g"; transcript_id "5_t";
+-X_mini	GeneMark.hmm3	CDS	80982	81074	.	-	0	gene_id "5_g"; transcript_id "5_t"; cds_type "Internal"; count "3_4";
+-X_mini	GeneMark.hmm3	intron	81075	81409	.	-	0	gene_id "5_g"; transcript_id "5_t";
+-X_mini	GeneMark.hmm3	CDS	81410	81559	.	-	0	gene_id "5_g"; transcript_id "5_t"; cds_type "Internal"; count "2_4";
+-X_mini	GeneMark.hmm3	intron	81560	83073	.	-	0	gene_id "5_g"; transcript_id "5_t";
+-X_mini	GeneMark.hmm3	CDS	83074	83238	.	-	0	gene_id "5_g"; transcript_id "5_t"; cds_type "Initial"; count "1_4";
+-X_mini	GeneMark.hmm3	start_codon	83236	83238	.	-	0	gene_id "5_g"; transcript_id "5_t";
+-X_mini	GeneMark.hmm3	gene	90649	95627	.	-	.	gene_id "6_g"; transcript_id "6_t";
+-X_mini	GeneMark.hmm3	mRNA	90649	95627	.	-	.	gene_id "6_g"; transcript_id "6_t";
+-X_mini	GeneMark.hmm3	stop_codon	90649	90651	.	-	0	gene_id "6_g"; transcript_id "6_t";
+-X_mini	GeneMark.hmm3	CDS	90649	91137	.	-	0	gene_id "6_g"; transcript_id "6_t"; cds_type "Terminal"; count "3_3";
+-X_mini	GeneMark.hmm3	intron	91138	91608	.	-	0	gene_id "6_g"; transcript_id "6_t";
+-X_mini	GeneMark.hmm3	CDS	91609	94304	.	-	2	gene_id "6_g"; transcript_id "6_t"; cds_type "Internal"; count "2_3";
+-X_mini	GeneMark.hmm3	intron	94305	94411	.	-	1	gene_id "6_g"; transcript_id "6_t";
+-X_mini	GeneMark.hmm3	CDS	94412	95627	.	-	0	gene_id "6_g"; transcript_id "6_t"; cds_type "Initial"; count "1_3";
+-X_mini	GeneMark.hmm3	start_codon	95625	95627	.	-	0	gene_id "6_g"; transcript_id "6_t";
+diff --git a/test_suite/fixtures/genemark.gtf b/test_suite/fixtures/genemark.gtf
+new file mode 120000
+index 00000000..8b560b7e
+--- /dev/null
++++ b/test_suite/fixtures/genemark.gtf
+@@ -0,0 +1 @@
++/mnt/lazebnik/home/30042108/software/gits/JAMg/test_suite/fixtures/genemark.gtf
+\ No newline at end of file
+diff --git a/tests/rules/test_evm.sh b/tests/rules/test_evm.sh
+index ccc71697..bacfe1ff 100755
+--- a/tests/rules/test_evm.sh
++++ b/tests/rules/test_evm.sh
+@@ -14,6 +14,7 @@ CFG="$REPO/test_suite/mini-config.yaml"
+ OUT="$REPO/test_suite/output/evm"
+ GM_OUT="$REPO/test_suite/output/genemark"
+ GM_FIXTURE="$REPO/test_suite/fixtures/genemark.gff3"
++GM_FIXTURE_SORTED="$REPO/test_suite/fixtures/genemark.gff3.sorted"
+ 
+ for sif in "$JAMG_SIF" "$PASA_SIF"; do
+     [[ -f "$sif" ]] || { echo "ERROR: $sif missing"; exit 1; }
+@@ -30,6 +31,12 @@ if [[ ! -s "$GM_FIXTURE" ]]; then
+     echo "Run 'bash tests/rules/test_genemark.sh' first to produce it." >&2
+     exit 1
+ fi
++if [[ ! -s "$GM_FIXTURE_SORTED" ]]; then
++    echo "FATAL: genemark sorted fixture missing at $GM_FIXTURE_SORTED" >&2
++    echo "This file is committed to the repo alongside genemark.gff3 and genemark.gtf." >&2
++    echo "Check test_suite/fixtures/ in the git tree." >&2
++    exit 1
++fi
+ cd "$REPO"
+ # Wipe the whole output tree (not just $OUT) so stale intermediate files
+ # from a prior cancelled run or a different config (e.g. test_genemark on
+@@ -41,19 +48,66 @@ rm -rf test_suite/output
+ GM_FIXTURE_GTF="$REPO/test_suite/fixtures/genemark.gtf"
+ [[ -s "$GM_FIXTURE_GTF" ]] || {
+     echo "FATAL: genemark .gtf fixture missing at $GM_FIXTURE_GTF" >&2
+-    echo "Run 'bash tests/rules/test_genemark.sh' first to (re)produce both fixtures." >&2
++    echo "Run 'bash tests/rules/test_genemark.sh' first to (re)produce all fixtures." >&2
+     exit 1
+ }
++
++# Phase 1: build the two upstream branches that feed the genemark rule
++# (rnaseq_hints and repeats_merge) in a separate snakemake invocation,
++# without --mtime-only. This gives those outputs current-session timestamps
++# WITHOUT marking them as "updated by another job" in the phase-2 run.
++# Snakemake 9's "updated by another job" tracking is per-invocation: inputs
++# produced in a prior completed invocation are treated as pre-existing files
++# and compared by mtime only, so the 2038 genemark fixture survives the
++# mtime check in phase 2. Running both in one call or in the same
++# invocation as --until evm_run would mark them "updated by another job"
++# and force the genemark rule to re-run regardless of its far-future mtime.
++pixi run "$REPO/bin/jamg" run --config "$CFG" --cores "${SLURM_CPUS_PER_TASK:-20}" --until rnaseq_hints
++pixi run "$REPO/bin/jamg" run --config "$CFG" --cores "${SLURM_CPUS_PER_TASK:-20}" --until repeats_merge
++
++# Assert the load-bearing upstream outputs exist before pre-staging genemark.
++[[ -s "$REPO/test_suite/output/rnaseq/rnaseq.hints" ]] || {
++    echo "FATAL: rnaseq.hints missing after phase-1 rnaseq_hints run" >&2; exit 1
++}
++[[ -s "$REPO/test_suite/output/repeats/mini-genome.fasta.softmasked" ]] || {
++    echo "FATAL: softmasked genome missing after phase-1 repeats_merge run" >&2; exit 1
++}
++
++# Pre-stage the genemark outputs with a mtime 2 seconds in the future relative
++# to now. This must be NEWER than the phase-1 outputs (so snakemake's mtime
++# check skips genemark and evm_tag_genemark), but NOT so far in the future
++# that snakemake raises a WorkflowError ("Output has older modification time
++# than input - clock skew") on downstream rules that produce their outputs at
++# the current wall-clock time (which will be slightly newer than the 2-second
++# offset). 2038 was the original approach; it was rejected because snakemake
++# aborts with a clock-skew WorkflowError on any rule whose output (current
++# time) is older than a 2038-mtime input.
++#
++# evm_tag_genemark is also skipped by pre-staging its output
++# (genemark.gff3.sorted) with the same future mtime, so its output is not
++# older than its input.
++GM_STAGE_TS=$(( $(date +%s) + 2 ))
+ mkdir -p "$GM_OUT"
+-cp "$GM_FIXTURE" "$GM_OUT/genemark.gff3"
+-cp "$GM_FIXTURE_GTF" "$GM_OUT/genemark.gtf"
++cp "$GM_FIXTURE"        "$GM_OUT/genemark.gff3"
++cp "$GM_FIXTURE_SORTED" "$GM_OUT/genemark.gff3.sorted"
++cp "$GM_FIXTURE_GTF"    "$GM_OUT/genemark.gtf"
+ : > "$GM_OUT/.preflight.ok"
+-# 2038-01-15 is the 32-bit time_t boundary on this filesystem; later
+-# dates silently clamp. 2038 is still far-future enough for snakemake.
+-touch -d '2038-01-15' "$GM_OUT/genemark.gff3" "$GM_OUT/genemark.gtf" "$GM_OUT/.preflight.ok"
++touch -d "@${GM_STAGE_TS}" "$GM_OUT/genemark.gff3" "$GM_OUT/genemark.gff3.sorted" \
++                           "$GM_OUT/genemark.gtf" "$GM_OUT/.preflight.ok"
+ 
++# Phase 2: run the full downstream chain (augustus, golden, pasa, proteins,
++# evm) with --mtime-only so the pre-staged genemark fixture is not re-run
++# despite having inputs that now exist on disk.
+ pixi run "$REPO/bin/jamg" run --config "$CFG" --cores "${SLURM_CPUS_PER_TASK:-20}" --until evm_run --mtime-only
+ 
++# Verify the genemark fixture was not clobbered: mtime must still be above
++# the pre-stage timestamp.
++gm_mtime=$(stat -c '%Y' "$GM_OUT/genemark.gff3" 2>/dev/null || echo 0)
++if (( gm_mtime < GM_STAGE_TS )); then
++    echo "FATAL: genemark.gff3 was overwritten during phase 2 (mtime reset below pre-stage value)" >&2
++    exit 1
++fi
++
+ test -s "$OUT/EVM.gff3" || { echo "EVM.gff3 missing or empty"; exit 1; }
+ 
+ # At least one EVidenceModeler-emitted feature row (column 2 source 'EVM').

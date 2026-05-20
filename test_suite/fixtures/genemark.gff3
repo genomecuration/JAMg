@@ -8,6 +8,7 @@ X_mini	GeneMarkHMM	exon	80982	81074	.	-	.	ID=5_t.exon3;Parent=5_t
 X_mini	GeneMarkHMM	CDS	80982	81074	.	-	0	ID=cds.5_t;Parent=5_t
 X_mini	GeneMarkHMM	exon	80616	80924	.	-	.	ID=5_t.exon4;Parent=5_t
 X_mini	GeneMarkHMM	CDS	80616	80924	.	-	0	ID=cds.5_t;Parent=5_t
+
 X_mini	GeneMarkHMM	gene	49102	51464	.	+	.	ID=3_g;Name=3_t
 X_mini	GeneMarkHMM	mRNA	49102	51464	.	+	.	ID=3_t;Parent=3_g;Name=3_t
 X_mini	GeneMarkHMM	exon	49102	49201	.	+	.	ID=3_t.exon1;Parent=3_t
@@ -18,6 +19,7 @@ X_mini	GeneMarkHMM	exon	50795	50973	.	+	.	ID=3_t.exon3;Parent=3_t
 X_mini	GeneMarkHMM	CDS	50795	50973	.	+	0	ID=cds.3_t;Parent=3_t
 X_mini	GeneMarkHMM	exon	51032	51464	.	+	.	ID=3_t.exon4;Parent=3_t
 X_mini	GeneMarkHMM	CDS	51032	51464	.	+	1	ID=cds.3_t;Parent=3_t
+
 X_mini	GeneMarkHMM	gene	90649	95627	.	-	.	ID=6_g;Name=6_t
 X_mini	GeneMarkHMM	mRNA	90649	95627	.	-	.	ID=6_t;Parent=6_g;Name=6_t
 X_mini	GeneMarkHMM	exon	94412	95627	.	-	.	ID=6_t.exon1;Parent=6_t
@@ -26,6 +28,7 @@ X_mini	GeneMarkHMM	exon	91609	94304	.	-	.	ID=6_t.exon2;Parent=6_t
 X_mini	GeneMarkHMM	CDS	91609	94304	.	-	2	ID=cds.6_t;Parent=6_t
 X_mini	GeneMarkHMM	exon	90649	91137	.	-	.	ID=6_t.exon3;Parent=6_t
 X_mini	GeneMarkHMM	CDS	90649	91137	.	-	0	ID=cds.6_t;Parent=6_t
+
 X_mini	GeneMarkHMM	gene	40883	45800	.	+	.	ID=2_g;Name=2_t
 X_mini	GeneMarkHMM	mRNA	40883	45800	.	+	.	ID=2_t;Parent=2_g;Name=2_t
 X_mini	GeneMarkHMM	exon	40883	41595	.	+	.	ID=2_t.exon1;Parent=2_t
@@ -40,6 +43,7 @@ X_mini	GeneMarkHMM	exon	45083	45213	.	+	.	ID=2_t.exon5;Parent=2_t
 X_mini	GeneMarkHMM	CDS	45083	45213	.	+	2	ID=cds.2_t;Parent=2_t
 X_mini	GeneMarkHMM	exon	45513	45800	.	+	.	ID=2_t.exon6;Parent=2_t
 X_mini	GeneMarkHMM	CDS	45513	45800	.	+	0	ID=cds.2_t;Parent=2_t
+
 X_mini	GeneMarkHMM	gene	52732	68545	.	-	.	ID=4_g;Name=4_t
 X_mini	GeneMarkHMM	mRNA	52732	68545	.	-	.	ID=4_t;Parent=4_g;Name=4_t
 X_mini	GeneMarkHMM	exon	68540	68545	.	-	.	ID=4_t.exon1;Parent=4_t
@@ -66,6 +70,7 @@ X_mini	GeneMarkHMM	exon	60230	60357	.	-	.	ID=4_t.exon11;Parent=4_t
 X_mini	GeneMarkHMM	CDS	60230	60357	.	-	0	ID=cds.4_t;Parent=4_t
 X_mini	GeneMarkHMM	exon	52732	53704	.	-	.	ID=4_t.exon12;Parent=4_t
 X_mini	GeneMarkHMM	CDS	52732	53704	.	-	1	ID=cds.4_t;Parent=4_t
+
 X_mini	GeneMarkHMM	gene	38472	39293	.	-	.	ID=1_g;Name=1_t
 X_mini	GeneMarkHMM	mRNA	38472	39293	.	-	.	ID=1_t;Parent=1_g;Name=1_t
 X_mini	GeneMarkHMM	exon	38472	39293	.	-	.	ID=1_t.exon1;Parent=1_t

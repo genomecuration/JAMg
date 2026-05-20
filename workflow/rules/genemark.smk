@@ -66,12 +66,25 @@ rule genemark_preflight:
 
 
 rule genemark:
-    # Run GeneMark-ES with RNA-seq intron evidence. Produces genemark.gtf
+    # Run GeneMark-ET with RNA-seq intron evidence. Produces genemark.gtf
     # and a canonical GFF3 via gtf_to_gff3_format.pl.
+    #
+    # rnaseq_hints and softmasked are marked ancient() so snakemake's
+    # in-session DAG cascade ("Input files updated by another job") does
+    # NOT re-trigger genemark when those upstream rules execute in the
+    # same session. This lets per-rule tests and the seed full-DAG run
+    # pre-stage the genemark fixture (committed at test_suite/fixtures/
+    # genemark.gff3, subset of a 1 Mb prediction) and have snakemake skip
+    # the rule on the 100 kb default fixture. Without ancient(), the
+    # cascade fires even with --rerun-triggers mtime + far-future stamps,
+    # and the pre-stage is undone within the session. Missing-output
+    # still triggers the rule normally, so a first-run (no pre-staged
+    # genemark.gtf) behaves identically to before. To force a re-run when
+    # upstream evidence changes, use `snakemake --forcerun genemark`.
     input:
-        preflight  = rules.genemark_preflight.output.sentinel,
-        rnaseq_hints = rules.rnaseq_hints.output.hints,
-        softmasked = rules.repeats_merge.output.soft,
+        preflight    = ancient(rules.genemark_preflight.output.sentinel),
+        rnaseq_hints = ancient(rules.rnaseq_hints.output.hints),
+        softmasked   = ancient(rules.repeats_merge.output.soft),
     output:
         gtf  = f"{_GM_DIR}/genemark.gtf",
         gff3 = f"{_GM_DIR}/genemark.gff3",
