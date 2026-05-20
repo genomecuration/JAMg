@@ -43,7 +43,11 @@ rule repeats_contamination_check:
     shell:
         "mkdir -p $(dirname {output.gff}) && cd $(dirname {output.gff}) && "
         "ln -sf {params.genome_abs} . && "
-        "(RepeatMasker -s -excln -pa {threads} -gff -xsmall -gccalc -frag 5000000000 "
+        # famdb.py uses #!/usr/bin/env python3 which resolves to /usr/bin/python3
+        # (Python 3.13, no h5py) in the container because /usr/bin precedes
+        # /opt/conda/bin on PATH. Prepend conda so famdb.py gets conda python3
+        # (3.12 + h5py) for the -species lookup.
+        "(PATH=/opt/conda/bin:$PATH RepeatMasker -s -excln -pa {threads} -gff -xsmall -gccalc -frag 5000000000 "
         "   -e ncbi -is_only -species '{params.cat}' $(basename {params.genome_abs}) "
         " || true); "
         "touch $(basename {output.gff})"
@@ -64,7 +68,7 @@ rule repeats_general:
     shell:
         "mkdir -p $(dirname {output.gff}) && cd $(dirname {output.gff}) && "
         "ln -sf {params.genome_abs} . && "
-        "(RepeatMasker -s -excln -pa {threads} -gff -xsmall -gccalc "
+        "(PATH=/opt/conda/bin:$PATH RepeatMasker -s -excln -pa {threads} -gff -xsmall -gccalc "
         "   -frag 500000 -e ncbi -species '{params.cat}' $(basename {params.genome_abs}) "
         " || true); "
         "touch $(basename {output.gff})"
@@ -162,4 +166,7 @@ rule repeats_merge:
         f"           -title '{GENOME_BASENAME}' && "
         # repeatmasker2hints.pl writes to <input>.hints which already matches
         # output.hints (declared as merged + '.hints'), so no rename is needed.
-        "repeatmasker2hints.pl {output.merged}"
+        # Guard against empty merged GFF (e.g. clean genome with no library hits):
+        # the script exits 255 on empty input, so we touch the hints file instead.
+        "if [ -s {output.merged} ]; then repeatmasker2hints.pl {output.merged}; "
+        "else touch {output.hints}; fi"
