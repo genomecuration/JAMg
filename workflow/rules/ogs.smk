@@ -205,9 +205,10 @@ rule ogs_create_features:
     shell:
         "export PATH={params.repo_bin}:$PATH && "
         "cd {params.ogs_dir} && "
-        # create_features_from_gff3.pl emits <input>.renamed.gff3 (and a
-        # number of sidecar files); --strip_name (not --strip) per the
-        # script's GetOptions.
+        # create_features_from_gff3.pl appends `.gff3` to the -gff arg, so
+        # the produced renamed GFF3 is at EVM.combined.pasa2.gff3.gff3.
+        # Also emits sidecar BED + per-feature FASTAs at .bed / .cds.fasta /
+        # .gene.fasta / .mRNA.fasta / .pep.fasta / .track / .inx / .mRNA.map.
         "create_features_from_gff3.pl "
         "  -rename "
         "  -genome {params.genome_abs} "
@@ -216,23 +217,15 @@ rule ogs_create_features:
         "  -delete_ns 5 "
         "  -strip_name "
         "  -fix_first_phase && "
-        # Apply the species-code prefix to the renamed GFF3 (v1 recipe:
+        # Apply the species-code prefix (v1:342):
         # grep -v "^#" $file | sed "s/=JAM/=$code.JAM/g" | sed "s/cds.JAM/cds.$code.JAM/g"
-        # | sed "s/=novel_gene/=$code.novel_gene/g" | sed "s/=novel_model/=$code.novel_model/g").
-        # Strip "##" directives + "#" comments first (matches v1 line 342),
-        # then apply the 4 substitutions in one sed pass.
-        'grep -v "^#" EVM.combined.pasa2.gff3.renamed.gff3 '
+        # | sed "s/=novel_gene/=$code.novel_gene/g" | sed "s/=novel_model/=$code.novel_model/g"
+        # Strip "##" directives + "#" comments first, then apply the 4
+        # substitutions in one sed pass. Write straight to the declared
+        # snakemake output filename.
+        'grep -v "^#" EVM.combined.pasa2.gff3.gff3 '
         '  | sed -E "s/=JAM/={params.code}.JAM/g; s/cds[.]JAM/cds.{params.code}.JAM/g; s/=novel_gene/={params.code}.novel_gene/g; s/=novel_model/={params.code}.novel_model/g" '
-        '  > EVM.combined.pasa2.gff3.renamed.gff3.tmp && '
-        "mv EVM.combined.pasa2.gff3.renamed.gff3.tmp EVM.combined.pasa2.gff3.renamed.gff3 && "
-        # Resolve the produced name to our declared canonical output.
-        "if [ -s EVM.combined.pasa2.gff3.renamed.gff3 ]; then "
-        "  cp EVM.combined.pasa2.gff3.renamed.gff3 EVM.combined.pasa2.renamed.gff3; "
-        "else "
-        "  for f in EVM.combined.pasa2.gff3*renamed*.gff3; do "
-        "    [ -s \"$f\" ] && cp \"$f\" EVM.combined.pasa2.renamed.gff3 && break; "
-        "  done; "
-        "fi && "
+        '  > EVM.combined.pasa2.renamed.gff3 && '
         "test -s EVM.combined.pasa2.renamed.gff3 || "
         "    {{ echo 'FATAL: create_features_from_gff3.pl produced no renamed GFF' >&2; exit 1; }}"
 

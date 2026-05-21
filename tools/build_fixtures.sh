@@ -99,6 +99,13 @@ build_genome_fixture() {
     local off=$(( start - 1 ))      # offset for GFF coord rebasing
 
     # --- genome ---
+    # Remove derived indexes from any prior fixture build at this path.
+    # cdbfasta's .cidx tracks the genome size internally; a stale .cidx
+    # (e.g. built from a 1 Mb extract, then this run produces a 100 kb
+    # extract) causes PASA's cdbyank to fail at compare time with
+    # "Error: invalid 4 database size". PASA will regenerate the .cidx
+    # on first access when it does not exist.
+    rm -f "$genome_out.cidx" "$genome_out.fai"
     "${RUN[@]}" samtools faidx "$SRC_FA" "X:$start-$end" 2>/dev/null \
         | sed 's|^>X:.*|>X_mini|' > "$genome_out"
     "${RUN[@]}" samtools faidx "$genome_out" 2>/dev/null
