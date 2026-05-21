@@ -51,8 +51,13 @@ GM_FIXTURE_GTF="$REPO/test_suite/fixtures/genemark.gtf"
     exit 1
 }
 mkdir -p "$REPO/test_suite/output/genemark"
-cp "$GM_FIXTURE" "$REPO/test_suite/output/genemark/genemark.gff3"
-cp "$GM_FIXTURE_GTF" "$REPO/test_suite/output/genemark/genemark.gtf"
+# Stage to genemark.staged.{gtf,gff3} (NOT genemark.{gtf,gff3}).
+# Snakemake removes declared output files before invoking a rule's shell,
+# so staging by the canonical names is destroyed. The genemark rule's
+# guard reads the .staged. files and cps them into the declared output
+# positions when present (workflow/rules/genemark.smk).
+cp "$GM_FIXTURE" "$REPO/test_suite/output/genemark/genemark.staged.gff3"
+cp "$GM_FIXTURE_GTF" "$REPO/test_suite/output/genemark/genemark.staged.gtf"
 : > "$REPO/test_suite/output/genemark/.preflight.ok"
 
 # Layout B: snakemake-slurm submits each rule as its own sbatch via the

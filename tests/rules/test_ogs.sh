@@ -37,10 +37,13 @@ rm -rf test_suite/output .snakemake
 bash tools/stage_fixtures.sh repeats rnaseq tgg proteins pasa golden augustus evm
 
 # Genemark fixture (separate from the snapshot; subset of a 1 Mb run).
+# Stage to genemark.staged.{gtf,gff3}; snakemake removes declared outputs
+# before invoking the rule, so the genemark rule's guard cps the .staged.
+# files into the declared positions (workflow/rules/genemark.smk).
 GM_OUT="$REPO/test_suite/output/genemark"
 mkdir -p "$GM_OUT"
-cp "$REPO/test_suite/fixtures/genemark.gff3" "$GM_OUT/genemark.gff3"
-cp "$REPO/test_suite/fixtures/genemark.gtf"  "$GM_OUT/genemark.gtf"
+cp "$REPO/test_suite/fixtures/genemark.gff3" "$GM_OUT/genemark.staged.gff3"
+cp "$REPO/test_suite/fixtures/genemark.gtf"  "$GM_OUT/genemark.staged.gtf"
 : > "$GM_OUT/.preflight.ok"
 
 pixi run "$REPO/bin/jamg" run --config "$CFG" --cores "${SLURM_CPUS_PER_TASK:-20}" \

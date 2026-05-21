@@ -102,6 +102,24 @@ rule genemark:
         mem_mb = 8000,
     shell:
         "cd {params.gm_dir_abs} && "
+        # Skip the gmes_petap.pl run when a staged fixture is present. The
+        # staging convention (tests/e2e/test_full_dag.sh): place the fixture
+        # at genemark.staged.gtf + genemark.staged.gff3 (NOT at genemark.gtf
+        # /.gff3 directly - snakemake removes its declared output files
+        # before invoking the rule's shell, so a staging-by-output-name does
+        # not survive). When the staged files are present, the shell cps
+        # them into the declared output positions and exits 0. Production
+        # runs have no staged files and fall through to gmes_petap.pl.
+        # This guard exists because snakemake 9 + slurm executor doesn't
+        # honour ancient() for the in-session 'Input files updated by
+        # another job' cascade, so the genemark rule re-runs even when its
+        # outputs are pre-existing.
+        "if [ -s genemark.staged.gtf ] && [ -s genemark.staged.gff3 ]; then "
+        "    echo 'genemark.staged.* found; copying into outputs and skipping gmes_petap'; "
+        "    cp genemark.staged.gtf  genemark.gtf && "
+        "    cp genemark.staged.gff3 genemark.gff3 && "
+        "    exit 0; "
+        "fi && "
         # Build an intron-only evidence file from the rnaseq hints. GFF3 is
         # strictly tab-delimited; use awk -F'\t' so field 3 is matched
         # exactly. POSIX ERE does not define \t and the SIF's GNU grep 3.11

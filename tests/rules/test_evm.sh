@@ -42,8 +42,12 @@ bash tools/stage_fixtures.sh repeats rnaseq tgg proteins pasa golden augustus
 # test path are consistent.
 GM_OUT="$REPO/test_suite/output/genemark"
 mkdir -p "$GM_OUT"
-cp "$REPO/test_suite/fixtures/genemark.gff3" "$GM_OUT/genemark.gff3"
-cp "$REPO/test_suite/fixtures/genemark.gtf"  "$GM_OUT/genemark.gtf"
+# Stage to genemark.staged.{gtf,gff3} (NOT the declared outputs). Snakemake
+# removes its declared output files before invoking the rule; the genemark
+# rule's guard cps the .staged. files into the declared positions and
+# exits 0 when staging is detected (workflow/rules/genemark.smk).
+cp "$REPO/test_suite/fixtures/genemark.gff3" "$GM_OUT/genemark.staged.gff3"
+cp "$REPO/test_suite/fixtures/genemark.gtf"  "$GM_OUT/genemark.staged.gtf"
 : > "$GM_OUT/.preflight.ok"
 
 pixi run "$REPO/bin/jamg" run --config "$CFG" --cores "${SLURM_CPUS_PER_TASK:-20}" \

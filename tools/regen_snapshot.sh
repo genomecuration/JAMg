@@ -17,16 +17,17 @@ rm -rf test_suite/output test_suite/output-1mb .snakemake
 
 # 3. Pre-stage the committed genemark fixture (the 1 Mb genemark prediction
 # subset to the 100 kb window) so the full DAG on the 100 kb fixture can
-# skip genemark via mtime. test_genemark.sh regenerates this fixture from
-# the 1 Mb config when needed.
+# skip genemark. test_genemark.sh regenerates this fixture from the 1 Mb
+# config when needed.
+#
+# Stage to genemark.staged.{gtf,gff3} (NOT the declared outputs). Snakemake
+# removes its declared output files before invoking the rule, so staging
+# under the canonical names is destroyed. The genemark rule's shell guard
+# (workflow/rules/genemark.smk) cps the .staged. files into the declared
+# positions and exits 0 when staging is detected.
 mkdir -p test_suite/output/genemark
-cp test_suite/fixtures/genemark.gff3 test_suite/output/genemark/genemark.gff3
-cp test_suite/fixtures/genemark.gtf  test_suite/output/genemark/genemark.gtf
-# Plain cp (not cp -a) gives the staged genemark.gff3/.gtf "now" mtime,
-# which is newer than source fixtures (build_fixtures.sh pins them to 2020-01-01).
-# ancient() on genemark's inputs additionally suppresses the in-session
-# "Input files updated by another job" cascade when rnaseq_hints / repeats_merge
-# run fresh during the seed DAG.
+cp test_suite/fixtures/genemark.gff3 test_suite/output/genemark/genemark.staged.gff3
+cp test_suite/fixtures/genemark.gtf  test_suite/output/genemark/genemark.staged.gtf
 
 # 4. Run the seed full DAG (everything through ogs_emit), producing the
 # outputs Task 3 snapshots.
