@@ -84,6 +84,7 @@ rule genemark:
     input:
         preflight    = ancient(rules.genemark_preflight.output.sentinel),
         rnaseq_hints = ancient(rules.rnaseq_hints.output.hints),
+        golden_hints = ancient(rules.golden_hints.output.hints),
         softmasked   = ancient(rules.repeats_merge.output.soft),
     output:
         gtf  = f"{_GM_DIR}/genemark.gtf",
@@ -93,6 +94,7 @@ rule genemark:
         workdir_abs = lambda _wc, output: _os.path.abspath(f"{_GM_DIR}/extracted"),
         softmasked_abs = lambda _wc, input: _os.path.abspath(input.softmasked),
         rnaseq_abs     = lambda _wc, input: _os.path.abspath(input.rnaseq_hints),
+        golden_abs     = lambda _wc, input: _os.path.abspath(input.golden_hints),
         gm_dir_abs     = lambda _wc, output: _os.path.dirname(_os.path.abspath(output.gtf)),
     container: "containers/jamg.sif"
     threads: THREADS
@@ -106,8 +108,8 @@ rule genemark:
         # treats it as a literal two-char sequence, so the previous
         # grep -E '...\tintron\t...' returned zero matches inside the SIF.
         "awk -F'\\t' '!/^#/ && $3==\"intron\" && $9 !~ /noncanonical=true/' "
-        "    {params.rnaseq_abs} "
-        "    | sort -k1,1 -k4,4n > all_evidence_introns.gff3; "
+        "    {params.rnaseq_abs} {params.golden_abs} "
+        "    | sort -k1,1 -k4,4n -k5,5n > all_evidence_introns.gff3; "
         "[ -s all_evidence_introns.gff3 ] || "
         "    {{ echo 'FATAL: no intron evidence for genemark --ET (rnaseq_hints broken or fixture lacks splice information)' >&2; exit 1; }} && "
         "HOME='{params.gm_home_abs}' "

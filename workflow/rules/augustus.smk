@@ -34,17 +34,22 @@ rule augustus_preflight:
     resources:
         mem_mb = 1000,
     shell:
-        # (1) species exists in Augustus's species library.
-        # `augustus --species=help` is the documented species-list subcommand
-        # (Augustus throws HelpException(SPECIES_LIST) at properties.cc:422 to
-        # print the catalogue and exit 0).
-        "augustus --species=help 2>&1 "
-        "  | grep -qE \"^[[:space:]]*{params.species}([[:space:]]|$)\" "
-        "  || {{ echo \"FATAL: species '{params.species}' not in Augustus 3.5 library.\"; "
-        "        echo 'Available species:'; "
-        "        augustus --species=help 2>&1 | head -40; "
-        "        echo 'Either pick a built-in species OR set augustus.optimise: true to train one.'; "
-        "        exit 1; }} && "
+        # (1) species exists in Augustus's species library. Check the species
+        # directory directly: augustus reads $AUGUSTUS_CONFIG_PATH/species/<name>/
+        # at load time, so the directory's existence is the authoritative test.
+        # Previously `augustus --species=help | grep -q ...` was used, but the
+        # combination of `set -euo pipefail` + grep -q + augustus's 118-line
+        # output triggers a SIGPIPE race: grep -q exits on first match, the
+        # pipe closes, augustus exits with SIGPIPE status, pipefail propagates
+        # the non-zero exit even though grep matched. The dir check is immune.
+        "if [ ! -d \"$AUGUSTUS_CONFIG_PATH/species/{params.species}\" ]; then "
+        "    echo \"FATAL: species '{params.species}' not in Augustus library.\"; "
+        "    echo \"Looked at: $AUGUSTUS_CONFIG_PATH/species/{params.species}\"; "
+        "    echo 'Available species:'; "
+        "    ls -1 \"$AUGUSTUS_CONFIG_PATH/species/\" | head -40; "
+        "    echo 'Either pick a built-in species OR set augustus.optimise: true to train one.'; "
+        "    exit 1; "
+        "fi && "
         # (2) extrinsic.cfg [SOURCES] line matches the v2 token set.
         # HU stays (Augustus protein-hint source, used by gff2hints.pl on
         # BLASTX output); PASA is NOT in this line (PASA is a transcript-
@@ -120,6 +125,7 @@ rule augustus:
         "    -n {threads} "
         "    -t genome_augustus.all.hintfile "
         "    -c {params.extrinsic} "
+        "    -u on "
         "    -o augustus.cmds && "
         # ParaFly executes the chunked augustus commands in parallel.
         # Stays here (per plan, review-#2 I12: ParaFly NOT replaced by

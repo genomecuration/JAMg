@@ -19,7 +19,8 @@ rule proteins_blastx:
     output:
         tsv = f"{_PROT_DIR}/swissprot.blastx.tsv",
     params:
-        db_abs = _SWISSPROT_DB,
+        db_abs     = _SWISSPROT_DB,
+        max_intron = config["max_intron"],
     container: "containers/jamg.sif"
     threads: THREADS
     resources:
@@ -28,7 +29,7 @@ rule proteins_blastx:
         "mkdir -p $(dirname {output.tsv}) && "
         "blastx -query {input.softmasked} -db {params.db_abs} "
         "       -outfmt 6 -num_threads {threads} -evalue 1e-10 "
-        "       -max_target_seqs 5 "
+        "       -max_target_seqs 5 -max_intron_length {params.max_intron} -lcase_masking "
         "       -out {output.tsv}"
 
 

@@ -20,5 +20,19 @@ default-resources:
 restart-times: 0                        # let failures surface immediately
 keep-incomplete: false
 rerun-incomplete: false                 # snakemake re-decides; trust mtime
+rerun-triggers: [mtime]                 # mtime-only; default Snakemake triggers
+                                        # (code, input, software-env) would
+                                        # invalidate pre-staged fixtures any
+                                        # time a rule is edited, breaking the
+                                        # ancient() + pre-stage strategy used
+                                        # by tests/e2e/test_full_dag.sh.
+                                        #
+                                        # PRODUCTION CONSEQUENCE: rule-body
+                                        # edits do NOT auto-trigger reruns on
+                                        # subsequent invocations of this
+                                        # profile. To force a rerun after
+                                        # editing a rule's shell or params,
+                                        # pass `--forcerun <rule>` explicitly
+                                        # or delete the rule's outputs.
 latency-wait: 30                        # NFS metadata latency across nodes
 printshellcmds: true

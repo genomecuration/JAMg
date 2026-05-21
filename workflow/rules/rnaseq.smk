@@ -37,6 +37,7 @@ rule rnaseq_align_star:
         bam = f"{OUTDIR}/rnaseq/star/Aligned.sortedByCoord.out.bam",
     params:
         genome_abs = _GENOME_ABS,
+        max_intron = config["max_intron"],
         reads = lambda _wc: [
             fq for pair in (config["rnaseq"].get("fastq_pairs") or []) for fq in pair
         ],
@@ -56,7 +57,7 @@ rule rnaseq_align_star:
         "  --readFilesIn {params.reads} "
         "  --outSAMtype BAM SortedByCoordinate "
         "  --outFileNamePrefix {params.out_prefix} "
-        "  --alignIntronMax 50000 && "
+        "  --alignIntronMax {params.max_intron} && "
         "mv {params.out_prefix}Aligned.sortedByCoord.out.bam {output.bam}"
 
 

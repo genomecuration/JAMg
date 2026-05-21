@@ -30,7 +30,12 @@ rule tgg_trinity:
         "mem_gb=$(({resources.mem_mb} / 1024)); [ $mem_gb -lt 1 ] && mem_gb=1; "
         "Trinity --genome_guided_bam {params.bam_abs} "
         "        --genome_guided_max_intron {params.max_intron} "
+        "        --genome_guided_min_coverage 2 "
         "        --max_memory ${{mem_gb}}G "
         "        --CPU {threads} "
+        "        --full_cleanup "
         "        --output {params.workdir} && "
-        "cp {params.workdir}/Trinity-GG.fasta {params.fasta_abs}"
+        # --full_cleanup renames {workdir}/Trinity-GG.fasta to
+        # {workdir}.Trinity-GG.fasta (dot suffix, sibling of workdir)
+        # and removes {workdir}/. Source the renamed path.
+        "cp {params.workdir}.Trinity-GG.fasta {params.fasta_abs}"

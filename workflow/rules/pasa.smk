@@ -38,6 +38,7 @@ rule pasa_setup_db:
     output:
         transcripts        = f"{_PASA_DIR}/transcripts.fasta",
         transcripts_clean  = f"{_PASA_DIR}/transcripts.fasta.clean",
+        cln                = f"{_PASA_DIR}/transcripts.fasta.cln",
         tdn_accs           = f"{_PASA_DIR}/tdn.accs",
         config_rendered    = f"{_PASA_DIR}/alignAssembly.config",
     params:

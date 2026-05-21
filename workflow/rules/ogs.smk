@@ -62,6 +62,7 @@ rule ogs_pasa_compare_1:
         combined = rules.ogs_rescue_augustus.output.combined,
         cfg      = rules.pasa_setup_db.output.config_rendered,
         clean    = rules.pasa_setup_db.output.transcripts_clean,
+        cln      = rules.pasa_setup_db.output.cln,
         full     = rules.pasa_setup_db.output.transcripts,
         tdn      = rules.pasa_setup_db.output.tdn_accs,
         genome   = config["genome"],
@@ -76,6 +77,7 @@ rule ogs_pasa_compare_1:
         pasa_dir   = _PASA_DIR_REF,
         cfg_abs    = lambda _wc, input: _os.path.abspath(input.cfg),
         clean_abs  = lambda _wc, input: _os.path.abspath(input.clean),
+        cln_abs    = lambda _wc, input: _os.path.abspath(input.cln),
         full_abs   = lambda _wc, input: _os.path.abspath(input.full),
         tdn_abs    = lambda _wc, input: _os.path.abspath(input.tdn),
         pass1_abs  = lambda _wc, input: _os.path.abspath(input.pass1),
@@ -91,6 +93,7 @@ rule ogs_pasa_compare_1:
         "mkdir -p {params.ogs_dir} && cd {params.ogs_dir} && "
         "ln -sf {params.cfg_abs}   alignAssembly.config && "
         "ln -sf {params.clean_abs} transcripts.fasta.clean && "
+        "ln -sf {params.cln_abs}   transcripts.fasta.cln && "
         "ln -sf {params.full_abs}  transcripts.fasta && "
         "ln -sf {params.tdn_abs}   tdn.accs && "
         # Fresh sqlite from the upstream pass1 snapshot. /dev/shm survives
@@ -125,6 +128,7 @@ rule ogs_pasa_compare_2:
         snap_1   = rules.ogs_pasa_compare_1.output.snapshot,
         cfg      = rules.pasa_setup_db.output.config_rendered,
         clean    = rules.pasa_setup_db.output.transcripts_clean,
+        cln      = rules.pasa_setup_db.output.cln,
         full     = rules.pasa_setup_db.output.transcripts,
         tdn      = rules.pasa_setup_db.output.tdn_accs,
         genome   = config["genome"],
@@ -139,6 +143,7 @@ rule ogs_pasa_compare_2:
         update_1_abs = lambda _wc, input: _os.path.abspath(input.update_1),
         cfg_abs      = lambda _wc, input: _os.path.abspath(input.cfg),
         clean_abs    = lambda _wc, input: _os.path.abspath(input.clean),
+        cln_abs      = lambda _wc, input: _os.path.abspath(input.cln),
         full_abs     = lambda _wc, input: _os.path.abspath(input.full),
         tdn_abs      = lambda _wc, input: _os.path.abspath(input.tdn),
     container: "containers/pasa.sif"
@@ -155,6 +160,7 @@ rule ogs_pasa_compare_2:
         "cd {params.ogs_dir} && "
         "ln -sf {params.cfg_abs}   alignAssembly.config && "
         "ln -sf {params.clean_abs} transcripts.fasta.clean && "
+        "ln -sf {params.cln_abs}   transcripts.fasta.cln && "
         "ln -sf {params.full_abs}  transcripts.fasta && "
         "ln -sf {params.tdn_abs}   tdn.accs && "
         "rm -f /dev/shm/pasa.sqlite && "
@@ -209,8 +215,16 @@ rule ogs_create_features:
         "  -simple "
         "  -delete_ns 5 "
         "  -strip_name "
-        "  -fix_first_phase "
-        "  -code {params.code} && "
+        "  -fix_first_phase && "
+        # Apply the species-code prefix to the renamed GFF3 (v1 recipe:
+        # grep -v "^#" $file | sed "s/=JAM/=$code.JAM/g" | sed "s/cds.JAM/cds.$code.JAM/g"
+        # | sed "s/=novel_gene/=$code.novel_gene/g" | sed "s/=novel_model/=$code.novel_model/g").
+        # Strip "##" directives + "#" comments first (matches v1 line 342),
+        # then apply the 4 substitutions in one sed pass.
+        'grep -v "^#" EVM.combined.pasa2.gff3.renamed.gff3 '
+        '  | sed -E "s/=JAM/={params.code}.JAM/g; s/cds[.]JAM/cds.{params.code}.JAM/g; s/=novel_gene/={params.code}.novel_gene/g; s/=novel_model/={params.code}.novel_model/g" '
+        '  > EVM.combined.pasa2.gff3.renamed.gff3.tmp && '
+        "mv EVM.combined.pasa2.gff3.renamed.gff3.tmp EVM.combined.pasa2.gff3.renamed.gff3 && "
         # Resolve the produced name to our declared canonical output.
         "if [ -s EVM.combined.pasa2.gff3.renamed.gff3 ]; then "
         "  cp EVM.combined.pasa2.gff3.renamed.gff3 EVM.combined.pasa2.renamed.gff3; "
