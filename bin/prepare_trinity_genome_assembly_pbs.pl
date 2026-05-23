@@ -74,7 +74,7 @@ pod2usage $! unless &GetOptions(
 	'medium_cutoff:i' => \$medium_cut,
 	'sam:s{,}'   => \@user_provided_sam_files,
 	'bam|files_bam:s{,}' => \@user_provided_bam_files,
-	'intron_max:i'   => $intron_max_size,
+	'intron_max:i'   => \$intron_max_size,
 	'single_stranded:s' => \$is_single_stranded,
 	'single_end' => \$single_end,
 	'split_scaffolds' => \$do_split_scaffolds,
